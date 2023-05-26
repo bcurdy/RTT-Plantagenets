@@ -1,21 +1,23 @@
 # lancaster is red
 # york is white
 
-mkdir -p HIRES/output
+mkdir -p HIRES/output HIRES/sticker
 
 function trim {
 	echo trimming $3
-	bash tools/trim_border.sh $1 $2 HIRES/render/$3.ppm HIRES/output/$4.png
+	bash tools/trim_border.sh $1 $2 HIRES/render/$3.png HIRES/output/$4.png
 }
 
 function small {
 	# large square 35x35 => 280
-	convert -gravity Center -crop 280x280+0+0 HIRES/render/$1.ppm HIRES/output/$2.png
+	convert -gravity Center -crop 280x280+0+0 HIRES/render/$1.png HIRES/output/$2.png
 }
 
 function sticker {
-	# round sticker labels 40x40 => 320x320
-	trim 320 320 $1 $1
+	# round sticker labels 42x42 => 336x336 => isometric 42x28
+	echo trimming $1
+	bash tools/trim_border.sh 336 336 HIRES/render/$1.png /tmp/sticker.png
+	convert /tmp/sticker.png -colorspace RGB -resize 84x56! -colorspace sRGB HIRES/sticker/$1.png
 }
 
 function round {
