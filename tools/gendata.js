@@ -145,11 +145,12 @@ var locmap = {}
 // 0=offmap, 1-N=map locales, 100-M=calendar boxes
 var locales = []
 var ways = []
-var highway = []
-var road = []
-var path = []
+var highways = []
+var roads = []
+var paths = []
 
 const scale = 1
+
 
  let strongholds = []
 
@@ -163,8 +164,8 @@ function defloc(region, stronghold, type, name) {
 	if (stronghold > 0)
 		strongholds.push(locales.length)
 	locales.push({ name, type, stronghold, region, ways: [], box: { x, y, w, h } })
-}
 
+}
 function defway(type, list) {
 	let ix = ways.length
 	list = list.map(name=>locmap[name]).sort(cmpnum)
@@ -277,10 +278,6 @@ road("Hexham, Carlisle")
 road("Hexham, Newcastle")
 road("Appleby, Carlisle")
 road("Appleby, Newcastle")
-road("Newcastle, Scarborough")
-road("Scarborough, York")
-road("York, Ravenspur")
-road("Ravenspur, Lincoln")
 road("Lincoln, Nottingham")
 road("Nottingham, Derby")
 road("Chester, Shrewsbury")
@@ -321,7 +318,6 @@ road("Exeter, Plymouth")
 road("Plymouth, Truro")
 road("Truro, Launceston")
 road("Derby, Lichfield")
-
 path("Appleby, Lancaster")
 path("Lancaster, Chester")
 path("Chester, York")
@@ -329,9 +325,14 @@ path("Chester, Harlech")
 path("Harlech, Pembroke")
 path("Pembroke, Cardiff")
 
+//road("Newcastle, Scarborough")
+//road("Scarborough, York")
+//road("York, Ravenspur")
+//road("Ravenspur, Lincoln")
+
 let seaports = [
 	"Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "Dover", "Hastings", "Calais", "Southampton","Dorchester","Exeter","Plymouth","Truro","Bristol","Pembroke","Harlech"
-].map(name => locmap[name]).sort(cmpnum) 
+].map(name => locmap[name]).sort(cmpnum)
 
 function dumplist(name, list) {
 	print(name + ":[")
@@ -345,9 +346,9 @@ locales.forEach(loc => {
 	loc.adjacent_by_highway = []
 	loc.adjacent_by_road = []
 	loc.adjacent_by_path = []
-	loc.highway = []
-	loc.road = []
-	loc.path = []
+	loc.highways = []
+	loc.roads = []
+	loc.paths = []
 	for (let data of loc.ways) {
 		let to = data[0]
 		for (let i = 1; i < data.length; ++i) {
@@ -357,19 +358,19 @@ locales.forEach(loc => {
 			if (ways[way].type === "highway") {
 				if (!loc.adjacent_by_highway.includes(to)) {
 					loc.adjacent_by_highway.push(to)
-					loc.highway.push([to,way])
+					loc.highways.push([to,way])
 				}
 			}
 			if (ways[way].type === "road") {
 				if (!loc.adjacent_by_road.includes(to)) {
 					loc.adjacent_by_road.push(to)
-					loc.road.push([to,way])
+					loc.roads.push([to,way])
 				}
 			}
 			if (ways[way].type === "path") {
 				if (!loc.adjacent_by_path.includes(to)) {
 					loc.adjacent_by_path.push(to)
-					loc.path.push([to,way])
+					loc.paths.push([to,way])
 				}
 			}
 		}
@@ -378,9 +379,9 @@ locales.forEach(loc => {
 	loc.adjacent_by_highway.sort(cmpnum)
 	loc.adjacent_by_road.sort(cmpnum)
 	loc.adjacent_by_path.sort(cmpnum)
-	loc.highway.sort(cmpnum2)
-	loc.road.sort(cmpnum2)
-	loc.path.sort(cmpnum2)
+	loc.highways.sort(cmpnum2)
+	loc.roads.sort(cmpnum2)
+	loc.paths.sort(cmpnum2)
 })
 
 function seats(list) {
@@ -1282,7 +1283,7 @@ vassal(0, "Montagu", "none", 0, "Alice Montagu")
 vassal(0, "Hastings", "none", 0, "Hastings") 
 
 
-function to_path(name) {
+/*function to_path(name) {
 	return name
 		.toLowerCase()
 		.replace(/&/g, 'and')
@@ -1290,7 +1291,7 @@ function to_path(name) {
 		.replace(/ü/g, 'u')
 		.replace(/ö/g, 'o')
 		.replace(/ä/g, 'a')
-}
+}*/
 
 // let vassal_service = {York:[],Lancaster:[]}
 
@@ -1300,7 +1301,7 @@ last_path = []
 last_side = null
 lords.forEach((lord,id) => {
 	let side = lord.side
-	let path = "counters300/lord_" + side.toLowerCase() + "_" + to_path(lord.name)
+	let path = "counters300/lord_" + side + "_" + lord.name
 	if (side !== last_side) {
 		last_side = side
 		last_path = []
@@ -1318,20 +1319,23 @@ last_side = null
 vassals.forEach((vassal,id) => {
 	let seat = vassals[vassal.seat]
 	let name = vassal.name
-	let path = "counters300/vassal_" + to_path(name) + "_" + to_path(seat)
+	let path = "counters300/vassal_" + name + "_" + seat
 /*	if (side !== last_side) {
 		last_side = side
 		last_path = []
 	}*/
-/*	if (!last_path.includes(path)) {
+	/*	if (!last_path.includes(path)) {
 		last_path.push(path)
-		vassal_service[].push(path + ".a.png")
+		vassal_service.push(path + ".a.png")
 		//vassal_service[side].push(path + ".b.png")
 	}*/
 	vassal.image = last_path.indexOf(path)
 }) 
 
-
+/*let script = []
+script.push("mkdir -p service300")
+script.push("montage -mode concatenate -tile 3x " + vassal_service.York.join(" ") + " service300/service_vassals.png")
+*/
 print("const data = {")
 print("seaports:" + JSON.stringify(seaports) + ",")
 print("strongholds:" + JSON.stringify(strongholds) + ",")
@@ -1343,5 +1347,5 @@ dumplist("cards", cards)
 print("}")
 print("if (typeof module !== 'undefined') module.exports = data")
 
-writeFileSync("tools/build_counters3.sh", script.join("\n") + "\n")
-writeFileSync("data.js", data.join("\n") + "\n")
+//fs.writeFileSync("tools/build_counters3.sh", script.join("\n") + "\n")
+fs.writeFileSync("data.js", data.join("\n") + "\n")
