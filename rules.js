@@ -1394,12 +1394,10 @@ exports.setup = function (seed, scenario, options) {
 
 		pieces: {
 			locale: Array(lord_count).fill(NOWHERE),
-			service: Array(lord_count).fill(NEVER),
 			assets: Array(lord_count).fill(0),
 			forces: Array(lord_count).fill(0),
 			routed: Array(lord_count).fill(0),
 			capabilities: Array(lord_count << 1).fill(NOTHING),
-			besieged: 0,
 			moved: 0,
 			vassals: Array(vassal_count).fill(VASSAL_UNAVAILABLE),
 			favour: [],
@@ -1501,13 +1499,17 @@ function is_event_in_play(c) {
 	return set_has(game.events, c)
 }
 
-function is_ravens_rock_in_play() {
-	if (game.battle.round <= 1 && is_melee_step()) {
-		if (game.active === RUSSIANS)
-			return is_event_in_play(EVENT_RUSSIAN_RAVENS_ROCK)
+
+function is_leeward_battle_line_in_play () {
+	if (is_archery_step()) {
+		if (game.active === LANCASTER)
+			return is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
+	}
+		if (game.active === YORK)
+			return is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE)
 	}
 	return false
-}
+
 
 function is_marsh_in_play() {
 	if (game.battle.round <= 2) {
