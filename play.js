@@ -201,8 +201,7 @@ const routed_force_action_name = [ "routed_retinue", "routed_vassal", "routed_me
 const COIN = 1
 const asset_type_count = 4
 const asset_action_name = [ "prov", "coin", "cart", "ship" ]
-const asset_type_x3 = [ 1, 1, 1, 0]
-
+const asset_type_x34 = [ 1, 1, 1, 0]
 
 const VASSAL_READY = 1
 const VASSAL_MUSTERED = 2
@@ -983,11 +982,11 @@ function update_assets(id, parent, assets) {
 	parent.replaceChildren()
 	for (let i = 0; i < asset_type_count; ++i) {
 		let n = pack4_get(assets, i)
-		while (n >= 4) {
-			add_asset(parent, i, 4, id)
-			n -= 4
-		}
-		if (asset_type_x3[i]) {
+		if (asset_type_x34[i]) {
+			while (n >= 4) {
+				add_asset(parent, i, 4, id)
+				n -= 4
+			}
 			while (n >= 3) {
 				add_asset(parent, i, 3, id)
 				n -= 3
