@@ -1285,60 +1285,6 @@ vassal(0, "Thomas Stanley", "none", 0, "Thomas Stanley")
 vassal(0, "Montagu", "none", 0, "Alice Montagu")
 vassal(0, "Hastings", "none", 0, "Hastings") 
 
-
-/*function to_path(name) {
-	return name
-		.toLowerCase()
-		.replace(/&/g, 'and')
-		.replace(/[ -]/g, '_')
-		.replace(/ü/g, 'u')
-		.replace(/ö/g, 'o')
-		.replace(/ä/g, 'a')
-}*/
-
-// let vassal_service = {York:[],Lancaster:[]}
-
-let last_path, last_side
-
-last_path = []
-last_side = null
-lords.forEach((lord,id) => {
-	let side = lord.side
-	let path = "counters300/lord_" + side + "_" + lord.name
-	if (side !== last_side) {
-		last_side = side
-		last_path = []
-	}
-	if (!last_path.includes(path)) {
-		last_path.push(path)
-		// lord_service[side].push(path + ".a.png")
-		// lord_service[side].push(path + ".b.png")
-	}
-	lord.image = last_path.indexOf(path)
-})
-
-last_path = []
-last_side = null
-vassals.forEach((vassal,id) => {
-	let seat = vassals[vassal.seat]
-	let name = vassal.name
-	let path = "counters300/vassal_" + name + "_" + seat
-/*	if (side !== last_side) {
-		last_side = side
-		last_path = []
-	}*/
-	/*	if (!last_path.includes(path)) {
-		last_path.push(path)
-		vassal_service.push(path + ".a.png")
-		//vassal_service[side].push(path + ".b.png")
-	}*/
-	vassal.image = last_path.indexOf(path)
-}) 
-
-/*let script = []
-script.push("mkdir -p service300")
-script.push("montage -mode concatenate -tile 3x " + vassal_service.York.join(" ") + " service300/service_vassals.png")
-*/
 print("const data = {")
 print("seaports:" + JSON.stringify(seaports) + ",")
 print("strongholds:" + JSON.stringify(strongholds) + ",")
@@ -1350,5 +1296,4 @@ dumplist("cards", cards)
 print("}")
 print("if (typeof module !== 'undefined') module.exports = data")
 
-//fs.writeFileSync("tools/build_counters3.sh", script.join("\n") + "\n")
 fs.writeFileSync("data.js", data.join("\n") + "\n")

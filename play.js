@@ -402,47 +402,25 @@ function count_siege_markers(loc) {
 // === BUILD UI ===
 
 const original_boxes = {
-	"calendar box0": [ 2, 16, 316, 22 ],
-	"calendar box1": [ 10, 42, 150, 231 ],
-	"calendar box2": [ 163, 42, 150, 231 ],
-	"calendar box3": [ 328, 42, 150, 231 ],
-	"calendar box4": [ 481, 42, 150, 231 ],
-	"calendar box5": [ 647, 42, 150, 231 ],
-	"calendar box6": [ 799, 42, 150, 231 ],
-	"calendar box7": [ 965, 42, 150, 231 ],
-	"calendar box8": [ 1118, 42, 150, 231 ],
-	"calendar box9": [ 10, 280, 150, 231 ],
-	"calendar box10": [ 163, 280, 150, 231 ],
-	"calendar box11": [ 328, 280, 150, 231 ],
-	"calendar box12": [ 481, 280, 150, 231 ],
-	"calendar box13": [ 647, 280, 150, 231 ],
-	"calendar box14": [ 799, 280, 150, 231 ],
-	"calendar box15": [ 965, 280, 150, 231 ],
-	"calendar box16": [ 1118, 280, 150, 231 ],
-	"calendar box17": [ 957, 514, 316, 22 ],
+	"box1": [238,72,103,163],
+	"box2": [341,72,103,163],
+	"box3": [444,72,99,163],
+	"box4": [544,72,103,163],
+	"box5": [646,72,104,163],
+	"box6": [773,72,102,163],
+	"box7": [875,72,102,163],
+	"box8": [977,72,102,163],
+	"box9": [1079,72,99,163],
+	"box10": [1178,72,102,163],
+	"box11": [773,296,107,155],
+	"box12": [880,296,97,155],
+	"box13": [977,296,102,155],
+	"box14": [1079,296,114,155],
+	"box15": [1192,296,93,155],
+	"box16": [1285,296,65,155],
 }
 
-const calendar_xy = [
-	[ 10, 2 ],
-	[ 10, 42 ],
-	[ 162, 42 ],
-	[ 328, 42 ],
-	[ 480, 42 ],
-	[ 646, 42 ],
-	[ 799, 42 ],
-	[ 965, 42 ],
-	[ 1117, 42 ],
-	[ 10, 280 ],
-	[ 162, 280 ],
-	[ 328, 280 ],
-	[ 480, 280 ],
-	[ 646, 280 ],
-	[ 799, 280 ],
-	[ 965, 280 ],
-	[ 1117, 280 ],
-	[ 1115, 517 ],
-]
-
+const calendar_xy = []
 const locale_xy = []
 
 let expand_calendar = -1
@@ -644,13 +622,14 @@ function build_map() {
 		document.getElementById("pieces").appendChild(e)
 	})
 
-	for (let name in original_boxes) {
+	for (let i = 1; i <= 16; ++i) {
+		let name = "box" + i
 		let x = original_boxes[name][0]
 		let y = original_boxes[name][1]
 		let w = original_boxes[name][2] - 8
 		let h = original_boxes[name][3] - 8
 		let e = ui.boxes[name] = document.createElement("div")
-		e.className = "box " + name
+		e.className = "calendar box " + name
 		e.style.left = x + "px"
 		e.style.top = y + "px"
 		e.style.width = w + "px"
@@ -659,7 +638,6 @@ function build_map() {
 	}
 
 	ui.calendar = [
-		document.querySelector(".calendar.box0"),
 		document.querySelector(".calendar.box1"),
 		document.querySelector(".calendar.box2"),
 		document.querySelector(".calendar.box3"),
@@ -676,7 +654,6 @@ function build_map() {
 		document.querySelector(".calendar.box14"),
 		document.querySelector(".calendar.box15"),
 		document.querySelector(".calendar.box16"),
-		document.querySelector(".calendar.box17")
 	]
 
 	for (let i = 0; i <= 17; ++i)
@@ -1270,14 +1247,6 @@ function on_update() {
 		ui.reserves_panel.classList.add("hide")
 
 	update_court()
-
-	let first_turn = view.scenario >> 5
-	let last_turn = view.scenario & 31
-	for (let i = 0; i <= 17; ++i) {
-		ui.calendar[i].classList.toggle("action", is_action("calendar", i))
-		if (i >= 1 && i <= 16)
-			ui.calendar[i].classList.toggle("end", i < first_turn || i > last_turn)
-	}
 
 	// Misc
 	action_button("lordship", "Lordship")
