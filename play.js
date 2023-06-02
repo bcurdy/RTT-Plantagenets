@@ -61,27 +61,119 @@ function set_has(set, item) {
 function find_lord(name) { return data.lords.findIndex((x) => x.name === name) }
 function find_card(name) { return data.cards.findIndex((x) => x.name === name) }
 
+const LORD_YORK = find_lord("York")
+const LORD_MARCH = find_lord("March")
+const LORD_EDWARD_IV = find_lord("Edward IV")
+const LORD_SALISBURY = find_lord("Salisbury")
+const LORD_RUTLAND = find_lord("Rutland")
+const LORD_PEMBROKE = find_lord("Pembroke")
+const LORD_DEVON = find_lord("Devon")
+const LORD_NORTHUMBERLANDY = find_lord("Northumberland")
+const LORD_GLOUCESTER = find_lord("Gloucester")
+const LORD_RICHARD_III = find_lord("Richard III")
+const LORD_NORFOLK = find_lord("Norfolk")
+const LORD_WARWICKY = find_lord("WarwickY")
+
+const LORD_HENRY_VI = find_lord("Henry VI")
+const LORD_MARGARET = find_lord("Margaret")
+const LORD_SOMERSET = find_lord("Somerset")
+const LORD_EXETER = find_lord("Exeter")
+const LORD_BUCKINGHAM = find_lord("Buckingham")
+const LORD_CLARENCE = find_lord("Clarence")
+const LORD_NORTHUMBERLANDL = find_lord("Northumberland")
+
+const LORD_JASPER_TUDOR = find_lord("Jasper Tudor")
+const LORD_HENRY_TUDOR = find_lord("Henry Tudor")
+const LORD_OXFORD = find_lord("Oxford")
+const LORD_WARWICKL = find_lord("WarwickL")
+
 const first_p1_lord = 0
-const last_p1_lord = 5
-const first_p2_lord = 6
-const last_p2_lord = 11
+const last_p1_lord = 13
+const first_p2_lord = 14
+const last_p2_lord = 27
 
 const first_p1_card = 0
-const last_p1_card = 20
-const first_p2_card = 21
-const last_p2_card = 41
+const last_p1_card = 36
+const first_p2_card = 37
+const last_p2_card = 73
 
-const first_p1_locale = 0
-const last_p1_locale = 23
-const first_p2_locale = 24
-const last_p2_locale = 52
+const Y1 = find_card("Y1")
+const Y2 = find_card("Y2")
+const Y3 = find_card("Y3")
+const Y4 = find_card("Y4")
+const Y5 = find_card("Y5")
+const Y6 = find_card("Y6")
+const Y7 = find_card("Y7")
+const Y8 = find_card("Y8")
+const Y9 = find_card("Y9")
+const Y10 = find_card("Y10")
+const Y11 = find_card("Y11")
+const Y12 = find_card("Y12")
+const Y13 = find_card("Y13")
+const Y14 = find_card("Y14")
+const Y15 = find_card("Y15")
+const Y16 = find_card("Y16")
+const Y17 = find_card("Y17")
+const Y18 = find_card("Y18")
+const Y19 = find_card("Y19")
+const Y20 = find_card("Y20")
+const Y21 = find_card("Y21")
+const Y22 = find_card("Y22")
+const Y23 = find_card("Y23")
+const Y24 = find_card("Y24")
+const Y25 = find_card("Y25")
+const Y26 = find_card("Y26")
+const Y27 = find_card("Y27")
+const Y28 = find_card("Y28")
+const Y29 = find_card("Y29")
+const Y30 = find_card("Y30")
+const Y31 = find_card("Y31")
+const Y32 = find_card("Y32")
+const Y33 = find_card("Y33")
+const Y34 = find_card("Y34")
+const Y35 = find_card("Y35")
+const Y36 = find_card("Y36")
+const Y37 = find_card("Y37")
 
-const R1 = find_card("R1")
-const R11 = find_card("R11")
-const R17 = find_card("R17")
-const T4 = find_card("T4")
-const T10 = find_card("T10")
-const T14 = find_card("T14")
+const L1 = find_card("L1")
+const L2 = find_card("L2")
+const L3 = find_card("L3")
+const L4 = find_card("L4")
+const L5 = find_card("L5")
+const L6 = find_card("L6")
+const L7 = find_card("L7")
+const L8 = find_card("L8")
+const L9 = find_card("L9")
+const L10 = find_card("L10")
+const L11 = find_card("L11")
+const L12 = find_card("L12")
+const L13 = find_card("L13")
+const L14 = find_card("L14")
+const L15 = find_card("L15")
+const L16 = find_card("L16")
+const L17 = find_card("L17")
+const L18 = find_card("L18")
+const L19 = find_card("L19")
+const L20 = find_card("L20")
+const L21 = find_card("L21")
+const L22 = find_card("L22")
+const L23 = find_card("L23")
+const L24 = find_card("L24")
+const L25 = find_card("L25")
+const L26 = find_card("L26")
+const L27 = find_card("L27")
+const L28 = find_card("L28")
+const L29 = find_card("L29")
+const L30 = find_card("L30")
+const L31 = find_card("L31")
+const L32 = find_card("L32")
+const L33 = find_card("L33")
+const L34 = find_card("L34")
+const L35 = find_card("L35")
+const L36 = find_card("L36")
+const L37 = find_card("L37")
+
+
 const EVENT_RUSSIAN_BRIDGE = R1
 const EVENT_TEUTONIC_BRIDGE = T4
 const EVENT_TEUTONIC_FIELD_ORGAN = T10
@@ -91,30 +183,31 @@ const EVENT_RUSSIAN_DIETRICH_VON_GRUNINGEN = R17
 
 const A1 = 0, A2 = 1, A3 = 2, D1 = 3, D2 = 4, D3 = 5
 
-const KNIGHTS = 0, SERGEANTS = 1, LIGHT_HORSE = 2, ASIATIC_HORSE = 3, MEN_AT_ARMS = 4, MILITIA = 5, SERFS = 6
+
+const RETINUE = 0
+const VASSAL = 1
+const MERCENARIES = 2
+const BURGUNDIANS = 3
+const MEN_AT_ARMS = 4
+const MILITIA = 5
+const LONGBOWMEN = 6
 const force_type_count = 7
-const force_action_name = [ "knights", "sergeants", "light_horse", "asiatic_horse", "men_at_arms", "militia", "serfs" ]
-const routed_force_action_name = [ "routed_knights", "routed_sergeants", "routed_light_horse", "routed_asiatic_horse", "routed_men_at_arms", "routed_militia", "routed_serfs" ]
+
+
+const force_action_name = [ "Retinue", "Vassal", "Mercenary", "Burgundians", "Men-at-Arms", "Militia", "Longbowmen" ]
+const routed_force_action_name = [ "routed_retinue", "routed_vassal", "routed_mercenary", "routed_burgundians", "routed_men_at_arms", "routed_militia", "routed_longbowmen" ]
 
 const COIN = 1
-const asset_type_count = 7
-const asset_action_name = [ "prov", "coin", "loot", "cart", "sled", "boat", "ship" ]
-const asset_type_x3 = [ 1, 1, 1, 0, 0, 0, 0 ]
+const asset_type_count = 4
+const asset_action_name = [ "prov", "coin", "cart", "ship" ]
+const asset_type_x3 = [ 1, 1, 1, 0]
 
-const VECHE = 100
-const SUMMER = 0, EARLY_WINTER = 1, LATE_WINTER = 2, RASPUTITSA = 3
-const SEASONS = [ null,
-	SUMMER, SUMMER, EARLY_WINTER, EARLY_WINTER, LATE_WINTER, LATE_WINTER, RASPUTITSA, RASPUTITSA,
-	SUMMER, SUMMER, EARLY_WINTER, EARLY_WINTER, LATE_WINTER, LATE_WINTER, RASPUTITSA, RASPUTITSA,
-	null ]
 
 const VASSAL_READY = 1
 const VASSAL_MUSTERED = 2
 const NOWHERE = -1
 const CALENDAR = 100
-const LEGATE_INDISPOSED = -2
-const LEGATE_ARRIVED = -1
-const GARRISON = 100
+
 
 // === ACTIONS ===
 
