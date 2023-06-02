@@ -2,8 +2,8 @@ main { background-color: dimgray; }
 #roles { background-color: gray; }
 header { background-color: silver; }
 header.your_turn { background-color: orange; }
-#role_Teutons .role_name { background-color: hsl(210,30%,80%); }
-#role_Russians .role_name { background-color: hsl(35,40%,80%); }
+#role_York .role_name { background-color: whitesmoke; }
+#role_Lancaster .role_name { background-color: salmon; }
 #turn_info { background-color: gainsboro; }
 .role_held { float: right; }
 
@@ -15,10 +15,6 @@ header.your_turn { background-color: orange; }
 #log .h5 { text-decoration: underline; }
 
 #log .h1 { background-color: hsl(0,0%,80%); }
-#log .h2.teutonic { background-color: hsl(210,30%,85%); }
-#log .h2.russian { background-color: hsl(36,40%,85%); }
-#log .h3.teutonic { background-color: hsl(210,30%,90%); }
-#log .h3.russian { background-color: hsl(35,40%,90%); }
 
 #log div { padding-left: 20px; text-indent: -12px; }
 #log div.i { padding-left: 32px; text-indent: -12px; }
@@ -41,8 +37,8 @@ header.your_turn { background-color: orange; }
 /* PANELS */
 
 .panel {
-	min-width: 1275px;
-	max-width: 1275px;
+	min-width: 1350px;
+	max-width: 1350px;
 	margin: 12px auto 36px auto;
 	background-color: #555;
 }
@@ -99,8 +95,8 @@ header.your_turn { background-color: orange; }
 	background-size: 93px 130px;
 }
 
-body.Russians #plan_actions .teutonic { display: none }
-body.Teutons #plan_actions .russian { display: none }
+body.York #plan_actions .york { display: none }
+body.Lancaster #plan_actions .lancaster { display: none }
 
 /* BATTLE GRID WITH LORD MATS */
 
@@ -119,7 +115,6 @@ body.Teutons #plan_actions .russian { display: none }
 }
 
 #battle_grid #grid_ga { height: auto; }
-#battle_grid #grid_sw { height: auto; }
 
 .grid_array { background-repeat: no-repeat }
 
@@ -130,35 +125,9 @@ body.Teutons #plan_actions .russian { display: none }
 
 #battle_grid {
 	background-repeat: no-repeat;
-	background-position:
-		95% 350px,
-		85% 175px,
-		10% 300px,
-		90% 800px,
-		10% 850px,
-		40% 1000px;
-	background-image:
-		url(images/battlefield_buildings.png),
-		url(images/battlefield_trees1.png),
-		url(images/battlefield_hill1.png),
-		url(images/battlefield_hill2.png),
-		url(images/battlefield_trees2.png),
-		url(images/battlefield_trees3.png);
 }
 
 #battle_grid.attacker {
-	background-position:
-		10% 900px,
-		5% 725px,
-		90% 850px,
-		10% 250px,
-		90% 250px,
-		60% 100px;
-}
-
-#grid_rg1:empty:not(.action), #grid_rg2:empty:not(.action), #grid_rg3:empty:not(.action),
-#grid_sa1:empty:not(.action), #grid_sa2:empty:not(.action), #grid_sa3:empty:not(.action) {
-	display: none;
 }
 
 #battle_header { grid-row: 1; grid-column: 1 / 4; }
@@ -193,13 +162,6 @@ body.Teutons #plan_actions .russian { display: none }
 .defender #grid_d1 { grid-row: 3; grid-column: 1; }
 .defender #grid_d2 { grid-row: 3; grid-column: 2; }
 .defender #grid_d3 { grid-row: 3; grid-column: 3; }
-.defender #grid_rg1 { grid-row: 4; grid-column: 1; }
-.defender #grid_rg2 { grid-row: 4; grid-column: 2; }
-.defender #grid_rg3 { grid-row: 4; grid-column: 3; }
-.defender #grid_sw { grid-row: 5; grid-column: 2; }
-.defender #grid_sa1 { grid-row: 6; grid-column: 1; }
-.defender #grid_sa2 { grid-row: 6; grid-column: 2; }
-.defender #grid_sa3 { grid-row: 6; grid-column: 3; }
 
 .attacker #grid_a1 { grid-row: 6; grid-column: 3; }
 .attacker #grid_a2 { grid-row: 6; grid-column: 2; }
@@ -208,13 +170,6 @@ body.Teutons #plan_actions .russian { display: none }
 .attacker #grid_d1 { grid-row: 4; grid-column: 3; }
 .attacker #grid_d2 { grid-row: 4; grid-column: 2; }
 .attacker #grid_d3 { grid-row: 4; grid-column: 1; }
-.attacker #grid_rg1 { grid-row: 3; grid-column: 3; }
-.attacker #grid_rg2 { grid-row: 3; grid-column: 2; }
-.attacker #grid_rg3 { grid-row: 3; grid-column: 1; }
-.attacker #grid_sw { grid-row: 2; grid-column: 2; }
-.attacker #grid_sa1 { grid-row: 1; grid-column: 3; }
-.attacker #grid_sa2 { grid-row: 1; grid-column: 2; }
-.attacker #grid_sa3 { grid-row: 1; grid-column: 1; }
 
 .defender #pursuit.rotate,
 .attacker #pursuit:not(.rotate)
@@ -493,7 +448,7 @@ body.shift .mustered_vassals {
 
 .tuck_under_map {
 	margin: 0 auto 36px auto;
-	width: 1275px;
+	width: 1350px;
 	min-height: 260px;
 	margin-top: -130px;
 	display: grid;
@@ -535,9 +490,6 @@ body.shift .mustered_vassals {
 	box-shadow: 0 0 0 1px #444, 0 0 0 4px yellow !important;
 }
 
-.asset.boat.x1 { background-image: url(images/asset_boat_x1.png); }
-.asset.boat.x2 { background-image: url(images/asset_boat_x2.png) }
-.asset.boat.x4 { background-image: url(images/asset_boat_x4.png) }
 .asset.cart.x1 { background-image: url(images/asset_cart_x1.png); }
 .asset.cart.x2 { background-image: url(images/asset_cart_x2.png) }
 .asset.cart.x4 { background-image: url(images/asset_cart_x4.png) }
@@ -545,10 +497,6 @@ body.shift .mustered_vassals {
 .asset.coin.x2 { background-image: url(images/asset_coin_x2.png) }
 .asset.coin.x3 { background-image: url(images/asset_coin_x3.png) }
 .asset.coin.x4 { background-image: url(images/asset_coin_x4.png) }
-.asset.loot.x1 { background-image: url(images/asset_loot_x1.png); }
-.asset.loot.x2 { background-image: url(images/asset_loot_x2.png) }
-.asset.loot.x3 { background-image: url(images/asset_loot_x3.png) }
-.asset.loot.x4 { background-image: url(images/asset_loot_x4.png) }
 .asset.prov.x1 { background-image: url(images/asset_prov_x1.png); }
 .asset.prov.x2 { background-image: url(images/asset_prov_x2.png) }
 .asset.prov.x3 { background-image: url(images/asset_prov_x3.png) }
@@ -556,9 +504,6 @@ body.shift .mustered_vassals {
 .asset.ship.x1 { background-image: url(images/asset_ship_x1.png); }
 .asset.ship.x2 { background-image: url(images/asset_ship_x2.png) }
 .asset.ship.x4 { background-image: url(images/asset_ship_x4.png) }
-.asset.sled.x1 { background-image: url(images/asset_sled_x1.png); }
-.asset.sled.x2 { background-image: url(images/asset_sled_x2.png) }
-.asset.sled.x4 { background-image: url(images/asset_sled_x4.png) }
 
 .marker {
 	border: 2px solid aqua;
@@ -671,7 +616,7 @@ body.shift .mustered_vassals {
 	justify-content: center;
 	align-items: center;
 	min-height: 260px;
-	max-width: 1275px;
+	max-width: 1350px;
 	gap: 16px;
 }
 
@@ -704,8 +649,8 @@ body.shift .mustered_vassals {
 /* MAP */
 
 #mapwrap {
-	width: 1275px;
-	height: 1650px;
+	width: 1350px;
+	height: 1725px;
 	box-shadow: 0px 1px 10px #0008;
 	z-index: 3;
 }
@@ -713,14 +658,14 @@ body.shift .mustered_vassals {
 #map {
 	background-repeat: no-repeat;
 	background-size: cover;
-	width: 1275px;
-	height: 1650px;
+	width: 1350px;
+	height: 1725px;
 	overflow: clip;
 }
 
-#map { background-image: url(map75.jpg) }
+#map { background-image: url(map75.png) }
 @media (min-resolution: 97dpi) {
-#map { background-image: url(map150.jpg) }
+#map { background-image: url(map150.png) }
 }
 
 .box {
@@ -747,6 +692,11 @@ body.shift .mustered_vassals {
 .box.calendar.action {
 	border-color: white;
 	background-color: #fff6;
+}
+
+.box.calendar.box0.action,
+.box.calendar.box17.action {
+	z-index: 200;
 }
 
 .box.way.action {
@@ -1071,8 +1021,6 @@ body.shift .mustered_vassals {
 .card.russian { background-color: #e1d6c1; border-color: #fff7e1 #c1b6a1 #c1b6a1 #fff7e1; box-shadow: 0 0 0 1px #665c4a, 1px 2px 4px #0008; }
 .service_marker.teutonic.vassal { background-color: #777474; border-color: #959292 #5a5858 #5a5858 #959292; box-shadow: 0 0 0 1px #0f0d0d, 1px 2px 4px #0008; }
 .service_marker.russian.vassal { background-color: #f0ead8; border-color: #ffffed #cfc9b8 #cfc9b8 #ffffed; box-shadow: 0 0 0 1px #736e5e, 1px 2px 4px #0008; }
-.asset.sled { background-color: #e5dcc1; border-color: #fffde2 #c5bca1 #c5bca1 #fffde2; box-shadow: 0 0 0 1px #69614a, 1px 2px 4px #0008; }
-.asset.boat { background-color: #adceed; border-color: #cdefff #8eaecc #8eaecc #cdefff; box-shadow: 0 0 0 1px #38556f, 1px 2px 4px #0008; }
 .asset.cart.x1 { background-color: #daba8b; border-color: #fbdaaa #ba9b6d #ba9b6d #fbdaaa; box-shadow: 0 0 0 1px #5f4315, 1px 2px 4px #0008; }
 .asset.cart.x2 { background-color: #d1a973; border-color: #f2c992 #b18a55 #b18a55 #f2c992; box-shadow: 0 0 0 1px #563400, 1px 2px 4px #0008; }
 .asset.cart.x4 { background-color: #c4975b; border-color: #e5b67a #a4793c #a4793c #e5b67a; box-shadow: 0 0 0 1px #4b2500, 1px 2px 4px #0008; }
@@ -1087,10 +1035,6 @@ body.shift .mustered_vassals {
 .asset.ship.x1 { background-color: #79b7e4; border-color: #98d7ff #5a98c3 #5a98c3 #98d7ff; box-shadow: 0 0 0 1px #004066, 1px 2px 4px #0008; }
 .asset.ship.x2 { background-color: #79b7e4; border-color: #98d7ff #5a98c3 #5a98c3 #98d7ff; box-shadow: 0 0 0 1px #004066, 1px 2px 4px #0008; }
 .asset.ship.x4 { background-color: #5da9dd; border-color: #7dc9ff #3d8abc #3d8abc #7dc9ff; box-shadow: 0 0 0 1px #00335f, 1px 2px 4px #0008; }
-.asset.loot.x1 { background-color: #f0b64f; border-color: #ffd771 #cf9628 #cf9628 #ffd771; box-shadow: 0 0 0 1px #703d00, 1px 2px 4px #0008; }
-.asset.loot.x2 { background-color: #eda44c; border-color: #ffc46e #cb8526 #cb8526 #ffc46e; box-shadow: 0 0 0 1px #6c2c00, 1px 2px 4px #0008; }
-.asset.loot.x3 { background-color: #eb924a; border-color: #ffb26b #c97326 #c97326 #ffb26b; box-shadow: 0 0 0 1px #681800, 1px 2px 4px #0008; }
-.asset.loot.x4 { background-color: #e1884a; border-color: #ffa86a #bf6928 #bf6928 #ffa86a; box-shadow: 0 0 0 1px #5f0c00, 1px 2px 4px #0008; }
 .marker.battle { background-color: #d0bf7d; border-color: #f1e09c #b09f5e #b09f5e #f1e09c; box-shadow: 0 0 0 1px #574700, 1px 2px 4px #0008; }
 .marker.storm { background-color: #d0bf7d; border-color: #f1e09c #b09f5e #b09f5e #f1e09c; box-shadow: 0 0 0 1px #574700, 1px 2px 4px #0008; }
 .marker.pursuit { background-color: #c6ab7f; border-color: #e7cb9e #a68c61 #a68c61 #e7cb9e; box-shadow: 0 0 0 1px #4e370a, 1px 2px 4px #0008; }
@@ -1235,18 +1179,18 @@ body.shift .mustered_vassals {
 
 @media (min-width: 2800px) {
 	main { display: grid; gap: 0 12px; }
-	main { grid-template-columns: 0 1275px auto 0; }
+	main { grid-template-columns: 0 1350px auto 0; }
 	#sec_map { grid-row: 1; grid-column: 2 }
 	#sec_battle { grid-row: 2; grid-column: 2 }
 	#sec_lords { grid-row: 1 / 3; grid-column: 3 }
 }
 
 @media (min-width: 3200px) {
-	main { grid-template-columns: 36px 1275px auto 0; }
+	main { grid-template-columns: 36px 1350px auto 0; }
 }
 
 @media (min-width: 4100px) {
-	main { grid-template-columns: 0 1275px 1fr 1275px 0; }
+	main { grid-template-columns: 0 1350px 1fr 1350px 0; }
 	#sec_map { grid-row: 1; grid-column: 2 }
 	#sec_lords { grid-row: 1; grid-column: 3 }
 	#sec_battle { grid-row: 1; grid-column: 4 }

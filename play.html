@@ -4,7 +4,7 @@
 <head>
 <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
 <meta charset="utf-8">
-<title>NEVSKY</title>
+<title>PLANTAGENET</title>
 <link rel="icon" href="favicon.png">
 <link rel="stylesheet" href="/fonts/fonts.css">
 <link rel="stylesheet" href="/common/play.css">
@@ -20,11 +20,10 @@
 		<div class="menu">
 			<div class="menu_title"><img src="/images/cog.svg"></div>
 			<div class="menu_popup">
-				<a class="menu_item" target="_blanK" href="/nevsky/info/rules.html">Rules of Play</a>
-				<a class="menu_item" target="_blanK" href="/nevsky/info/playbook.html">Background Book</a>
-				<a class="menu_item" target="_blanK" href="/nevsky/info/pac.html">Reference Sheets</a>
-				<a class="menu_item" target="_blanK" href="/nevsky/info/cards.html">Arts of War</a>
-				<a class="menu_item" target="_blanK" href="/nevsky/info/lords.html">Lord Mats</a>
+				<a class="menu_item" target="_blanK" href="/plantagenet/info/rulebook.html">Rules of Play</a>
+				<a class="menu_item" target="_blanK" href="/plantagenet/info/playbook.html">Background Book</a>
+				<a class="menu_item" target="_blanK" href="/plantagenet/info/reference.html">Reference Sheets</a>
+				<a class="menu_item" target="_blanK" href="/plantagenet/info/cards.html">Arts of War</a>
 				<div class="resign menu_separator"></div>
 				<div class="resign menu_item" onclick="confirm_resign()">Resign</div>
 			</div>
@@ -38,21 +37,21 @@
 
 <aside>
 	<div id="roles">
-		<div class="role" id="role_Teutons">
+		<div class="role" id="role_York">
 			<div class="role_name">
-				Teutons
+				York
 				<div class="role_held">0 Held</div>
 				<div class="role_user">-</div>
 			</div>
 		</div>
-		<div class="role" id="role_Russians">
+		<div class="role" id="role_Lancaster">
 			<div class="role_name">
-				Russians
+				Lancaster
 				<div class="role_held">0 Held</div>
 				<div class="role_user">-</div>
 			</div>
 		</div>
-		<div class="card_info"><div id="command" class="card teutonic aow_back"></div></div>
+		<div class="card_info"><div id="command" class="card york aow_back"></div></div>
 	</div>
 	<div id="log"></div>
 </aside>
@@ -65,29 +64,13 @@
 <div id="mapwrap">
 <div id="map">
 
-<div id="veche"></div>
-<div class="box veche_label" id="veche_label_top"></div>
-<div class="box veche_label" id="veche_label_bottom"></div>
-<div class="veche_border" id="veche_border_w"></div>
-<div class="veche_border" id="veche_border_e"></div>
-<div class="veche_border" id="veche_border_sw"></div>
-<div class="veche_border" id="veche_border_se"></div>
-
 <div id="locales"></div>
 <div id="boxes"></div>
 
 <div id="pieces">
-	<div id="elr1" class="marker circle enemy_lords_removed teutonic hide"></div>
-	<div id="elr2" class="marker circle enemy_lords_removed russian hide"></div>
 	<div id="turn" class="hide marker circle turn levy t1"></div>
 	<div id="vp2" class="hide marker circle victory russian v0 stack"></div>
 	<div id="vp1" class="hide marker circle victory teutonic v0 stack"></div>
-	<div id="legate" class="hide"></div>
-	<div id="smerdi" class="box"></div>
-	<div id="castle11" class="hide marker rectangle castle teutonic"/></div>
-	<div id="castle12" class="hide marker rectangle castle teutonic"/></div>
-	<div id="castle21" class="hide marker rectangle castle russian"/></div>
-	<div id="castle22" class="hide marker rectangle castle russian"/></div>
 </div>
 
 </div>
@@ -119,11 +102,6 @@
 <div id="battle_grid">
 	<div id="grid_ga">
 		<div id="pursuit" class="marker rectangle pursuit russian hide"></div>
-		<div id="battle_walls1" class="siegeworks"></div>
-		<div id="battle_walls2" class="siegeworks"></div>
-		<div id="garrison"></div>
-		<div id="battle_walls3" class="siegeworks"></div>
-		<div id="battle_walls4" class="siegeworks"></div>
 	</div>
 	<div class="grid_array att" id="grid_a1"></div>
 	<div class="grid_array att" id="grid_a2"></div>
@@ -131,13 +109,6 @@
 	<div class="grid_array def" id="grid_d1"></div>
 	<div class="grid_array def" id="grid_d2"></div>
 	<div class="grid_array def" id="grid_d3"></div>
-	<div class="grid_array att" id="grid_rg1"></div>
-	<div class="grid_array att" id="grid_rg2"></div>
-	<div class="grid_array att" id="grid_rg3"></div>
-	<div class="siegeworks" id="grid_sw"></div>
-	<div class="grid_array def" id="grid_sa1"></div>
-	<div class="grid_array def" id="grid_sa2"></div>
-	<div class="grid_array def" id="grid_sa3"></div>
 </div>
 </div>
 
