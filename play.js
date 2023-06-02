@@ -284,11 +284,6 @@ function on_focus_cylinder(evt) {
 	let info = data.lords[lord]
 	let loc = view.pieces.locale[lord]
 	let tip = info.name
-
-	if (loc >= CALENDAR) {
-		tip += ` - ${info.fealty} Fealty`
-	}
-
 	on_focus(tip)
 }
 
@@ -738,7 +733,8 @@ function build_map() {
 	data.lords.forEach((lord, ix) => {
 		let e = ui.lord_cylinder[ix] = document.createElement("div")
 		let name = clean_name(lord.name)
-		e.className = "cylinder lord lord_" + name + " hide"
+		let side = clean_name(lord.side)
+		e.className = "cylinder lord " + side + " lord_" + name + " hide"
 		register_action(e, "lord", ix)
 		register_tooltip(e, on_focus_cylinder)
 		document.getElementById("pieces").appendChild(e)
