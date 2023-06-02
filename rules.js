@@ -1442,11 +1442,11 @@ function setup_Ia() {
 	muster_lord(LORD_SOMERSET_1, LOC_WELLS)
 
 	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 2)
-	set_lord_cylinder_on_calendar(LORD_EXETER_1, 3)
-	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM, 5)
-	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
-	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
-	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
+	set_lord_cylinder_on_calendar(LORD_EXETER_1, 1)
+	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM, 4)
+	set_lord_cylinder_on_calendar(LORD_SALISBURY, 1)
+	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 2)
+	set_lord_cylinder_on_calendar(LORD_RUTLAND, 4)
 }
 
 function setup_Ib() {
@@ -1467,7 +1467,7 @@ function setup_Ic() {
 	muster_lord(LORD_MARCH, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_BAMBURGH)
 
-	set_lord_cylinder_on_calendar(LORD_HENRY_VI, 5)
+	set_lord_cylinder_on_calendar(LORD_HENRY_VI, 4)
 }
 
 
@@ -6466,11 +6466,11 @@ function has_friendly_lord_who_must_feed() {
 			return true
 	return false
 }
-
+/*
 function can_lord_use_hillforts(lord) {
 	return is_lord_unfed(lord) && is_lord_unbesieged(lord) && is_in_livonia(get_lord_locale(lord))
-}
-
+}*/
+/*
 function can_use_hillforts() {
 	if (game.active === TEUTONS) {
 		if (has_global_capability(AOW_TEUTONIC_HILLFORTS)) {
@@ -6480,7 +6480,7 @@ function can_use_hillforts() {
 		}
 	}
 	return false
-}
+}*/
 
 function goto_feed() {
 	log_br()
@@ -6498,16 +6498,13 @@ function goto_feed() {
 	}
 
 	if (has_friendly_lord_who_must_feed()) {
-		if (can_use_hillforts())
-			game.state = "hillforts"
-		else
-			game.state = "feed"
+		game.state = "feed"
 	} else {
 		end_feed()
 	}
 }
 
-states.hillforts = {
+/* states.hillforts = {
 	inactive: "Hillforts",
 	prompt() {
 		view.prompt = "Hillforts: Skip Feed of one Unbesieged Lord in Livonia."
@@ -6524,7 +6521,7 @@ states.hillforts = {
 		else
 			end_feed()
 	},
-}
+}*/
 
 states.feed = {
 	inactive: "Feed",
@@ -6585,6 +6582,7 @@ states.feed = {
 		game.who = lord
 		game.state = "feed_lord_shared"
 	},
+	// TODO : PILLAGE
 	service_bad(lord) {
 		push_undo()
 		add_lord_service(lord, -1)
@@ -6779,7 +6777,7 @@ function disband_lord(lord, permanently = false) {
 	remove_lieutenant(lord)
 
 	// Smerdi - serfs go back to card
-	game.pieces.smerdi += get_lord_forces(lord, SERFS)
+/*	game.pieces.smerdi += get_lord_forces(lord, SERFS)*/
 
 	discard_lord_capability_n(lord, 0)
 	discard_lord_capability_n(lord, 1)
@@ -6857,7 +6855,7 @@ function end_disband() {
 }
 
 // === LEVY & CAMPAIGN: RANSOM ===
-
+/*
 function enemy_has_ransom() {
 	if (game.active === TEUTONS)
 		return has_global_capability(AOW_RUSSIAN_RANSOM)
@@ -6932,7 +6930,7 @@ states.ransom = {
 		end_ransom()
 	},
 }
-
+*/
 // === CAMPAIGN: REMOVE MARKERS ===
 
 function goto_remove_markers() {
@@ -6941,7 +6939,7 @@ function goto_remove_markers() {
 }
 
 // === END CAMPAIGN: GROWTH ===
-
+// TODO : PLANTAGENET GROW
 function count_enemy_ravaged() {
 	let n = 0
 	for (let loc of game.pieces.ravaged)
@@ -7095,13 +7093,13 @@ function goto_plow_and_reap() {
 	let turn = current_turn()
 	end_plow_and_reap()
 }
-
+/*
 function end_plow_and_reap() {
 	goto_wastage()
-}
+}*/
 
 // === END CAMPAIGN: WASTAGE ===
-
+// TODO : WASTE
 function goto_wastage() {
 	clear_lords_moved()
 
@@ -7118,7 +7116,7 @@ function goto_wastage() {
 	else
 		game.state = "wastage"
 }
-
+/* NO WASTAGE IN PLANTAGENET 
 function check_lord_wastage(lord) {
 	if (get_lord_assets(lord, PROV) > 1)
 		return true
@@ -7160,7 +7158,7 @@ function find_lord_with_capability_card(c) {
 		if (lord_has_capability_card(lord, c))
 			return lord
 	return NOBODY
-}
+}*/
 
 states.wastage = {
 	inactive: "Wastage",
@@ -7204,11 +7202,13 @@ function end_wastage() {
 function goto_reset() {
 	game.state = "reset"
 
-	// Unstack Lieutenants and Lower Lords
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		remove_lieutenant(lord)
+	// Unstack Lieutenants and Lower Lords 
+	/* NO LIEUTENANTS A LA NEVSKY
+		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+		remove_lieutenant(lord)*/
 
 	// Remove all Serfs to the Smerdi card
+	/* NO SMERDI 
 	if (game.active === RUSSIANS) {
 		for (let lord = first_p2_lord; lord <= last_p2_lord; ++lord)
 			set_lord_forces(lord, SERFS, 0)
@@ -7216,7 +7216,7 @@ function goto_reset() {
 			game.pieces.smerdi = 6
 		else
 			game.pieces.smerdi = 0
-	}
+	}*/
 
 	// Discard "This Campaign" events from play.
 	discard_friendly_events("this_campaign")
@@ -7224,6 +7224,8 @@ function goto_reset() {
 
 states.reset = {
 	inactive: "Reset",
+	/* NO VOLUNTARY DISCARD
+	
 	prompt() {
 		view.prompt = "Reset: You may discard any Arts of War cards desired."
 		if (game.active === P1) {
@@ -7255,7 +7257,7 @@ states.reset = {
 				discard_lord_capability(lord, c)
 			}
 		}
-	},
+	},*/
 	end_discard() {
 		end_reset()
 	},
