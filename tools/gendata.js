@@ -569,7 +569,7 @@ let lords = [
 
 	{
 		side: "York",
-		name: "Northumberland",
+		name: "Northumberland Y1",
 		full_name: "Henry Percy",
 		title: "Northumberland",
 		seats: seats("Carlisle"),
@@ -594,7 +594,7 @@ let lords = [
 
 	{
 		side: "York",
-		name: "Northumberland",
+		name: "Northumberland Y2",
 		full_name: "Henry Percy",
 		title: "Northumberland",
 		seats: seats("Carlisle"),
@@ -619,7 +619,7 @@ let lords = [
 
 	{
 		side: "York",
-		name: "Gloucester",
+		name: "Gloucester 1",
 		full_name: "Richard Plantagenet",
 		title: "Duke of Gloucester",
 		seats: seats("Gloucester"),
@@ -643,7 +643,7 @@ let lords = [
 
 	{
 		side: "York",
-		name: "Gloucester",
+		name: "Gloucester 2",
 		full_name: "Richard Plantagenet",
 		title: "Duke of Gloucester",
 		seats: seats("Gloucester"),
@@ -718,7 +718,7 @@ let lords = [
 
 	{
 		side: "York",
-		name: "Warwick",
+		name: "Warwick Y",
 		full_name: "Richard Neville",
 		title: "Earl of Warwick",
 		seats: seats("Calais"),
@@ -790,7 +790,7 @@ let lords = [
 
 	{
 		side: "Lancaster",
-		name: "Somerset",
+		name: "Somerset 1",
 		full_name: "Henry Beaufort",
 		title: "Duke of Somerset",
 		seats: seats("Wells"),
@@ -814,7 +814,7 @@ let lords = [
 
 	{
 		side: "Lancaster",
-		name: "Somerset",
+		name: "Somerset 2",
 		full_name: "Edmund Beaufort",
 		title: "Duke of Somerset",
 		seats: seats("Wells"),
@@ -838,7 +838,7 @@ let lords = [
 
 	{
 		side: "Lancaster",
-		name: "Exeter",
+		name: "Exeter 1",
 		full_name: "Henry Holland",
 		title: "Duke of Exeter",
 		seats: seats("Exeter"),
@@ -862,7 +862,7 @@ let lords = [
 
 	{
 		side: "Lancaster",
-		name: "Exeter",
+		name: "Exeter 2",
 		full_name: "Henry Holland",
 		title: "Duke of Exeter",
 		seats: seats("Exeter"),
@@ -910,7 +910,7 @@ let lords = [
 	},
 	{
 		side: "Lancaster",
-		name: "Northumberland",
+		name: "Northumberland L",
 		full_name: "Henry Percy",
 		title: "Earl of Northumberland",
 		seats: seats("Carlisle"),
@@ -960,7 +960,7 @@ let lords = [
 
 	{
 		side: "Lancaster",
-		name: "Jasper Tudor",
+		name: "Jasper Tudor 1",
 		full_name: "Jasper Tudor",
 		title: "Earl of Pembroke",
 		seats: seats("Harlech"),
@@ -984,7 +984,7 @@ let lords = [
 
 	{
 		side: "Lancaster",
-		name: "Jasper Tudor",
+		name: "Jasper Tudor 2",
 		full_name: "Jasper Tudor",
 		title: "Earl of Pembroke",
 		seats: seats("Pembroke"),
@@ -1057,7 +1057,7 @@ let lords = [
 
 	{
 		side: "Lancaster",
-		name: "Warwick",
+		name: "Warwick L",
 		full_name: "Richard Neville",
 		title: "Earl of Warwick",
 		seats: seats("Calais"),
