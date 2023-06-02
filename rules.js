@@ -763,8 +763,6 @@ function is_card_in_use(c) {
 		return true
 	if (set_has(game.events, c))
 		return true
-	if (set_has(game.capabilities, c))
-		return true
 	if (game.pieces.capabilities.includes(c))
 		return true
 	return false
@@ -798,8 +796,6 @@ function can_discard_card(c) {
 	if (set_has(game.hand1, c))
 		return true
 	if (set_has(game.hand2, c))
-		return true
-	if (set_has(game.capabilities, c))
 		return true
 	if (game.pieces.capabilities.includes(c))
 		return true
@@ -1199,38 +1195,6 @@ function list_ways(from, to) {
 			return ways
 	return null
 }
-/*
-function is_upper_lord(lord) {
-	return map_has(game.pieces.lieutenants, lord)
-}
-
-function is_lower_lord(lord) {
-	for (let i = 1; i < game.pieces.lieutenants.length; i += 2)
-		if (game.pieces.lieutenants[i] === lord)
-			return true
-	return false
-}
-
-function get_lower_lord(upper) {
-	return map_get(game.pieces.lieutenants, upper, NOBODY)
-}
-
-function set_lower_lord(upper, lower) {
-	map_set(game.pieces.lieutenants, upper, lower)
-}
-
-function add_lieutenant(upper) {
-	map_set(game.pieces.lieutenants, upper, NOBODY)
-}
-
-function remove_lieutenant(lord) {
-	for (let i = 0; i < game.pieces.lieutenants.length; i += 2) {
-		if (game.pieces.lieutenants[i] === lord || game.pieces.lieutenants[i + 1] === lord) {
-			array_remove_pair(game.pieces.lieutenants, i)
-			return
-		}
-	}
-}*/
 
 function group_has_capability(c) {
 	for (let lord of game.group)
@@ -1390,7 +1354,6 @@ exports.setup = function (seed, scenario, options) {
 
 		turn: 0,
 		events: [], // this levy/this campaign cards
-		capabilities: [], // global capabilities
 
 		pieces: {
 			locale: Array(lord_count).fill(NOWHERE),
@@ -1400,6 +1363,7 @@ exports.setup = function (seed, scenario, options) {
 			capabilities: Array(lord_count << 1).fill(NOTHING),
 			moved: 0,
 			vassals: Array(vassal_count).fill(VASSAL_UNAVAILABLE),
+			exhausted: [],
 			favour: [],
 		},
 
@@ -1504,12 +1468,11 @@ function is_leeward_battle_line_in_play () {
 	if (is_archery_step()) {
 		if (game.active === LANCASTER)
 			return is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
-	}
 		if (game.active === YORK)
 			return is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE)
 	}
 	return false
-
+}
 
 function is_marsh_in_play() {
 	if (game.battle.round <= 2) {
@@ -7469,8 +7432,8 @@ function gen_action_routed_serfs(lord) {
 	gen_action("routed_serfs", lord)
 }
 
-const P1_LORD_MASK = (1|2|4|8|16|32)
-const P2_LORD_MASK = (1|2|4|8|16|32) << 6
+const P1_LORD_MASK = 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 256 | 512 | 1024 | 2048
+const P2_LORD_MASK = P1_LORD_MASK << 6
 
 exports.view = function (state, current) {
 	load_state(state)
@@ -7484,7 +7447,6 @@ exports.view = function (state, current) {
 		scenario: (scenario_first_turn[game.scenario] << 5) + (scenario_last_turn[game.scenario]),
 		turn: game.turn,
 		events: game.events,
-		capabilities: game.capabilities,
 		pieces: game.pieces,
 		battle: game.battle,
 

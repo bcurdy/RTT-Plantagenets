@@ -169,25 +169,13 @@ function on_blur() {
 function get_locale_tip(id) {
 	let loc = data.locales[id]
 	let tip = loc.name
-	if (loc.name !== "Novgorod") {
-		if (loc.type === "traderoute")
-			tip += " - Trade Route"
-		else
-			tip += " - " + loc.type[0].toUpperCase() + loc.type.substring(1)
-	}
 	if (data.seaports.includes(id))
 		tip += " - Seaport"
 	let list = []
-	if (loc.name === "Adsel" || loc.name === "Fellin" || loc.name === "Leal" || loc.name === "Wenden")
-		list.push("Commandery")
-	if (loc.name === "Novgorod")
-		list.push("Archbishopric")
 	for (let lord = 0; lord < data.lords.length; ++lord) {
 		if (data.lords[lord].seats.includes(id))
 			list.push(data.lords[lord].name)
 	}
-	if (loc.name === "Pskov")
-		list.push("Yaroslav")
 	if (list.length > 0)
 		tip += " - " + list.join(", ")
 	return tip
@@ -204,31 +192,10 @@ function on_focus_cylinder(evt) {
 	let tip = info.name
 
 	if (loc >= CALENDAR) {
-		if (lord !== LORD_ALEKSANDR)
-			tip += ` - ${info.fealty} Fealty`
-		tip += ` - ${info.service} Service`
+		tip += ` - ${info.fealty} Fealty`
 	}
 
 	on_focus(tip)
-}
-
-function on_focus_lord_service_marker(evt) {
-	let lord = evt.target.my_id
-	let info = data.lords[lord]
-	on_focus(`${info.full_name} - ${info.title}`)
-	if (expand_calendar !== view.pieces.service[lord]) {
-		expand_calendar = view.pieces.service[lord]
-		layout_calendar()
-	}
-}
-
-function on_blur_lord_service_marker(evt) {
-	let id = evt.target.my_id
-	on_blur(evt)
-	if (expand_calendar === view.pieces.service[id]) {
-		expand_calendar = -1
-		layout_calendar()
-	}
 }
 
 // === GAME STATE ===
@@ -274,7 +241,7 @@ function is_lord_ambushed(lord) {
 	if (view.battle) {
 		// ambush & 2 = attacker played ambush
 		// ambush & 1 = defender played ambush
-		if (view.battle.attacker === "Teutons") {
+		if (view.battle.attacker === "York") {
 			if ((view.battle.ambush & 1) && is_p1_lord(lord))
 				return is_lord_on_left_or_right(lord)
 			if ((view.battle.ambush & 2) && is_p2_lord(lord))
@@ -318,25 +285,12 @@ function is_p2_locale(loc) {
 }
 
 function count_vp1() {
-	let vp = view.pieces.elr1 << 1
-	for (let loc of view.pieces.conquered)
-		if (is_p2_locale(loc))
-			vp += data.locales[loc].vp << 1
-	for (let loc of view.pieces.ravaged)
-		if (is_p2_locale(loc))
-			vp += 1
+	let vp = 0
 	return vp
 }
 
 function count_vp2() {
-	let vp = view.pieces.elr2 << 1
-	vp += view.pieces.veche_vp << 1
-	for (let loc of view.pieces.conquered)
-		if (is_p1_locale(loc))
-			vp += data.locales[loc].vp << 1
-	for (let loc of view.pieces.ravaged)
-		if (is_p1_locale(loc))
-			vp += 1
+	let vp = 0
 	return vp
 }
 
@@ -358,26 +312,11 @@ function is_vassal_mustered(vassal) {
 }
 
 function is_legate_selected() {
-	return player === "Teutons" && !!view.pieces.legate_selected
+	return player === "York" && !!view.pieces.legate_selected
 }
 
 function is_levy_phase() {
 	return (view.turn & 1) === 0
-}
-
-function is_upper_lord(lord) {
-	return map_has(view.pieces.lieutenants, lord)
-}
-
-function is_lower_lord(lord) {
-	for (let i = 1; i < view.pieces.lieutenants.length; i += 2)
-		if (view.pieces.lieutenants[i] === lord)
-			return true
-	return false
-}
-
-function get_lower_lord(upper) {
-	return map_get(view.pieces.lieutenants, upper, -1)
 }
 
 function is_lord_in_battle(lord) {
@@ -445,7 +384,7 @@ function lord_has_capability(lord, card_or_list) {
 }
 
 function attacker_has_trebuchets() {
-	if (view.battle.attacker === "Teutons") {
+	if (view.battle.attacker === "York") {
 		for (let lord = first_p1_lord; lord <= last_p1_lord; ++lord) {
 			if (get_lord_locale(lord) === view.battle.where && lord_has_unrouted_units(lord)) {
 				if (lord_has_capability(lord, AOW_TEUTONIC_TREBUCHETS))
@@ -463,27 +402,23 @@ function count_siege_markers(loc) {
 // === BUILD UI ===
 
 const original_boxes = {
-	"way crossroads": [ 375, 1179, 116, 37 ],
-	"way wirz": [ 324, 1132, 44, 88 ],
-	"way peipus-east": [ 558, 1049, 55, 120 ],
-	"way peipus-north": [ 513, 958, 90, 57 ],
-	"calendar summer box1": [ 10, 42, 150, 231 ],
-	"calendar summer box2": [ 163, 42, 150, 231 ],
-	"calendar winter box3": [ 328, 42, 150, 231 ],
-	"calendar winter box4": [ 481, 42, 150, 231 ],
-	"calendar winter box5": [ 647, 42, 150, 231 ],
-	"calendar winter box6": [ 799, 42, 150, 231 ],
-	"calendar rasputitsa box7": [ 965, 42, 150, 231 ],
-	"calendar rasputitsa box8": [ 1118, 42, 150, 231 ],
-	"calendar summer box9": [ 10, 280, 150, 231 ],
-	"calendar summer box10": [ 163, 280, 150, 231 ],
-	"calendar winter box11": [ 328, 280, 150, 231 ],
-	"calendar winter box12": [ 481, 280, 150, 231 ],
-	"calendar winter box13": [ 647, 280, 150, 231 ],
-	"calendar winter box14": [ 799, 280, 150, 231 ],
-	"calendar rasputitsa box15": [ 965, 280, 150, 231 ],
-	"calendar rasputitsa box16": [ 1118, 280, 150, 231 ],
 	"calendar box0": [ 2, 16, 316, 22 ],
+	"calendar box1": [ 10, 42, 150, 231 ],
+	"calendar box2": [ 163, 42, 150, 231 ],
+	"calendar box3": [ 328, 42, 150, 231 ],
+	"calendar box4": [ 481, 42, 150, 231 ],
+	"calendar box5": [ 647, 42, 150, 231 ],
+	"calendar box6": [ 799, 42, 150, 231 ],
+	"calendar box7": [ 965, 42, 150, 231 ],
+	"calendar box8": [ 1118, 42, 150, 231 ],
+	"calendar box9": [ 10, 280, 150, 231 ],
+	"calendar box10": [ 163, 280, 150, 231 ],
+	"calendar box11": [ 328, 280, 150, 231 ],
+	"calendar box12": [ 481, 280, 150, 231 ],
+	"calendar box13": [ 647, 280, 150, 231 ],
+	"calendar box14": [ 799, 280, 150, 231 ],
+	"calendar box15": [ 965, 280, 150, 231 ],
+	"calendar box16": [ 1118, 280, 150, 231 ],
 	"calendar box17": [ 957, 514, 316, 22 ],
 }
 
@@ -517,7 +452,6 @@ const ui = {
 	locale_name: [],
 	locale_markers: [],
 	lord_cylinder: [],
-	lord_service: [],
 	lord_mat: [],
 	lord_buttons: [],
 	vassal_service: [],
@@ -533,7 +467,6 @@ const ui = {
 	lord_feed_x2: [],
 	cards: [],
 	boxes: {},
-	ways: [],
 
 	plan_panel: document.getElementById("plan_panel"),
 	plan: document.getElementById("plan"),
@@ -553,11 +486,9 @@ const ui = {
 	hand_panel: document.getElementById("hand_panel"),
 	hand: document.getElementById("hand"),
 
-	held1: document.querySelector("#role_Teutons .role_held"),
-	held2: document.querySelector("#role_Russians .role_held"),
+	held1: document.querySelector("#role_York .role_held"),
+	held2: document.querySelector("#role_Lancaster .role_held"),
 
-	capabilities1: document.getElementById("capabilities1"),
-	capabilities2: document.getElementById("capabilities2"),
 	command: document.getElementById("command"),
 	turn: document.getElementById("turn"),
 	vp1: document.getElementById("vp1"),
@@ -628,8 +559,8 @@ function build_plan() {
 		ui.plan_cards.push(elt)
 		ui.plan.appendChild(elt)
 	}
-	for (let lord = 0; lord < 12; ++lord) {
-		let side = lord < 6 ? "teutonic" : "russian"
+	for (let lord = 0; lord < 24; ++lord) {
+		let side = lord < 12 ? "york" : "lancaster"
 		elt = document.createElement("div")
 		elt.className = `card ${side} cc_lord_${lord}`
 		register_action(elt, "plan", lord)
@@ -638,31 +569,25 @@ function build_plan() {
 	}
 
 	ui.plan_action_pass_p1 = elt = document.createElement("div")
-	elt.className = `card teutonic cc_pass`
+	elt.className = `card york cc_pass`
 	register_action(elt, "plan", -1)
 	ui.plan_actions.appendChild(elt)
 
 	ui.plan_action_pass_p2 = elt = document.createElement("div")
-	elt.className = `card russian cc_pass`
+	elt.className = `card lancaster cc_pass`
 	register_action(elt, "plan", -1)
 	ui.plan_actions.appendChild(elt)
 }
 
-function build_way(name, sel) {
-	let way = data.ways.findIndex(w => w.name === name)
-	ui.ways[way] = document.querySelector(sel)
-	register_action(ui.ways[way], "way", way)
-}
-
 const locale_size = {
-	region: [ 88, 56 ],
-	town: [ 80, 72 ],
-	traderoute: [ 90, 54 ],
-	fort: [ 96, 54 ],
-	castle: [ 96, 56 ],
-	city: [ 126, 80 ],
-	bishopric: [ 106, 72 ],
-	novgorod: [ 144, 86 ],
+	town: [ 100, 100 ],
+	city: [ 100, 100 ],
+	fortress: [ 100, 100 ],
+	harlech: [ 100, 100 ],
+	calais: [ 100, 100 ],
+	london: [ 150, 150 ],
+	exile: [ 150, 200 ],
+	sea: [ 100, 100 ],
 }
 
 function build_map() {
@@ -672,64 +597,23 @@ function build_map() {
 	data.locales.forEach((locale, ix) => {
 		let region = clean_name(locale.region)
 		let { x, y, w, h } = locale.box
+		console.log("LOC", locale, ix, x, y, w, h)
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
 		let e
 
-		switch (locale.type) {
-		case "town":
-			locale_xy[ix] = [ xc, y - 24 ]
-			w = locale_size.town[0]
-			h = locale_size.town[1]
-			x = xc - w/2
-			y = y - h + 16
-			break
-		case "region":
-			xc += 2
-			yc -= 3
-			locale_xy[ix] = [ xc, yc - 24 ]
-			w = locale_size.region[0]
-			h = locale_size.region[1]
-			x = xc - w/2
-			y = yc - h/2
-			break
-		default:
-			locale_xy[ix] = [ xc, y - 36 ]
-			break
-		}
+		locale_xy[ix] = [ xc, yc ]
 
 		// Main Area
 		e = ui.locale[ix] = document.createElement("div")
 		e.className = "locale " + locale.type + " " + region
-		if (locale.type !== "region" && locale.type !== "town") {
-			let ew = locale_size[locale.type][0]
-			let eh = locale_size[locale.type][1]
-			e.style.top = (y - eh) + "px"
-			e.style.left = (xc - ew/2) + "px"
-			e.style.width = (ew) + "px"
-			e.style.height = (eh) + "px"
-		} else {
-			e.style.left = x + "px"
-			e.style.top = y + "px"
-			e.style.width = w + "px"
-			e.style.height = h + "px"
-		}
+		e.style.left = x + "px"
+		e.style.top = y + "px"
+		e.style.width = w + "px"
+		e.style.height = h + "px"
 		register_action(e, "locale", ix, "laden_march")
 		register_tooltip(e, get_locale_tip(ix))
 		document.getElementById("locales").appendChild(e)
-
-		// Name Plate
-		if (locale.type !== 'region' && locale.type !== 'town') {
-			e = ui.locale_name[ix] = document.createElement("div")
-			e.className = "locale_name " + locale.type + " " + region
-			e.style.left = x + "px"
-			e.style.top = y + "px"
-			e.style.width = w + "px"
-			e.style.height = h + "px"
-			register_action(e, "locale", ix, "laden_march")
-			register_tooltip(e, get_locale_tip(ix))
-			document.getElementById("locales").appendChild(e)
-		}
 
 		// Locale Markers
 		e = ui.locale_markers[ix] = document.createElement("div")
@@ -749,28 +633,16 @@ function build_map() {
 		register_tooltip(e, on_focus_cylinder)
 		document.getElementById("pieces").appendChild(e)
 
-		e = ui.lord_service[ix] = document.createElement("div")
-		e.className = "service_marker lord image" + lord.image + " " + clean_name(lord.side) + " " + clean_name(lord.name) + " hide"
-		register_action(e, "service", ix, "service_bad")
-		register_tooltip(e, on_focus_lord_service_marker, on_blur_lord_service_marker)
-		document.getElementById("pieces").appendChild(e)
-
 		build_lord_mat(lord, ix, clean_name(lord.side), clean_name(lord.name))
 	})
 
 	data.vassals.forEach((vassal, ix) => {
-		let lord = data.lords[vassal.lord]
 		let e = ui.vassal_service[ix] = document.createElement("div")
-		e.className = "service_marker vassal image" + vassal.image + " " + clean_name(lord.side) + " " + clean_name(vassal.name) + " hide"
+		e.className = "vassal v" + ix
 		register_action(e, "vassal", ix)
 		register_tooltip(e, data.vassals[ix].name)
 		document.getElementById("pieces").appendChild(e)
 	})
-
-	register_action(ui.legate, "legate")
-	register_tooltip(ui.legate, "William of Modena")
-
-	register_action(ui.veche, "veche")
 
 	for (let name in original_boxes) {
 		let x = original_boxes[name][0]
@@ -810,20 +682,15 @@ function build_map() {
 	for (let i = 0; i <= 17; ++i)
 		register_action(ui.calendar[i], "calendar", i)
 
-	build_way("Crossroads", ".way.crossroads")
-	build_way("Peipus E", ".way.peipus-east")
-	build_way("Peipus W", ".way.peipus-north")
-	build_way("Wirz", ".way.wirz")
-
 	build_plan()
 
-	for (let i = 0; i < 12; ++i)
+	for (let i = 0; i < 6; ++i)
 		register_action(ui.battle_grid_array[i], "array", i)
 
 	for (let c = first_p1_card; c <= last_p1_card; ++c)
-		build_card("teutonic", c)
+		build_card("york", c)
 	for (let c = first_p2_card; c <= last_p2_card; ++c)
-		build_card("russian", c)
+		build_card("lancaster", c)
 }
 
 // === UPDATE UI ===
@@ -864,30 +731,29 @@ function restart_cache() {
 function update_current_card_display() {
 	if (typeof view.what === "number" && view.what >= 0) {
 		if (view.what <= first_p1_card)
-			ui.command.className = `card teutonic aow_${view.what}`
+			ui.command.className = `card york aow_${view.what}`
 		else
-			ui.command.className = `card russian aow_${view.what}`
+			ui.command.className = `card lancaster aow_${view.what}`
 	} else if ((view.turn & 1) === 0) {
-		if (player === "Russians")
-			ui.command.className = `card russian aow_back`
+		if (player === "Lancaster")
+			ui.command.className = `card lancaster aow_back`
 		else
-			ui.command.className = `card teutonic aow_back`
+			ui.command.className = `card york aow_back`
 	} else if (view.command < 0) {
-		if (player === "Russians")
-			ui.command.className = `card russian cc_back`
+		if (player === "Lancaster")
+			ui.command.className = `card lancaster cc_back`
 		else
-			ui.command.className = `card teutonic cc_back`
+			ui.command.className = `card york cc_back`
 	} else {
 		if (view.command < 6)
-			ui.command.className = `card russian cc_lord_${view.command}`
+			ui.command.className = `card lancaster cc_lord_${view.command}`
 		else
-			ui.command.className = `card teutonic cc_lord_${view.command}`
+			ui.command.className = `card york cc_lord_${view.command}`
 	}
 }
 
 function layout_locale_item(loc, e, is_upper) {
 	locale_layout[loc].push([e, is_upper])
-	e.classList.toggle("lieutenant", is_upper)
 }
 
 function layout_locale_cylinders(loc) {
@@ -1010,22 +876,11 @@ function add_force(parent, type, lord, routed) {
 
 function add_asset(parent, type, n, lord) {
 	let elt
-	if (lord === VECHE) {
-		if (is_action("veche_coin"))
-			elt = get_cached_element("action asset " + asset_action_name[type] + " x"+n, "veche_coin", undefined)
-		else
-			elt = get_cached_element("asset " + asset_action_name[type] + " x"+n)
-	} else {
-		if (is_action(asset_action_name[type], lord))
-			elt = get_cached_element("action asset " + asset_action_name[type] + " x"+n, asset_action_name[type], lord)
-		else
-			elt = get_cached_element("asset " + asset_action_name[type] + " x"+n)
-	}
+	if (is_action(asset_action_name[type], lord))
+		elt = get_cached_element("action asset " + asset_action_name[type] + " x"+n, asset_action_name[type], lord)
+	else
+		elt = get_cached_element("asset " + asset_action_name[type] + " x"+n)
 	parent.appendChild(elt)
-}
-
-function add_veche_vp(parent) {
-	parent.appendChild(get_cached_element("marker square conquered russian"))
 }
 
 function update_forces(parent, forces, lord_ix, routed) {
@@ -1064,6 +919,7 @@ function update_assets(id, parent, assets) {
 }
 
 function update_vassals(ready_parent, mustered_parent, lord_ix) {
+	/* TODO: vassals currently with lord
 	for (let v of data.lords[lord_ix].vassals) {
 		let e = ui.vassal_service[v]
 		if (is_vassal_ready(v)) {
@@ -1079,6 +935,7 @@ function update_vassals(ready_parent, mustered_parent, lord_ix) {
 		}
 		e.classList.toggle("action", is_action("vassal", v))
 	}
+	*/
 }
 
 function update_lord_mat(ix) {
@@ -1107,53 +964,26 @@ function update_lord_mat(ix) {
 
 function update_lord(ix) {
 	let locale = view.pieces.locale[ix]
-	let service = view.pieces.service[ix]
 	if (locale < 0) {
 		ui.lord_cylinder[ix].classList.add("hide")
-		ui.lord_service[ix].classList.add("hide")
 		ui.lord_mat[ix].classList.remove("action")
 		return
 	}
 	if (locale < 100) {
-		calendar_layout_service[service].push(ui.lord_service[ix])
-
-		if (!is_lower_lord(ix)) {
-			if (is_upper_lord(ix)) {
-				let lo = get_lower_lord(ix)
-				if (view.pieces.locale[lo] === locale) {
-					layout_locale_item(locale, ui.lord_cylinder[ix], 1)
-					layout_locale_item(locale, ui.lord_cylinder[lo], 0)
-				} else {
-					layout_locale_item(locale, ui.lord_cylinder[ix], 0)
-				}
-			} else {
-				layout_locale_item(locale, ui.lord_cylinder[ix], 0)
-			}
-		}
-
+		layout_locale_item(locale, ui.lord_cylinder[ix])
 		ui.lord_cylinder[ix].classList.remove("hide")
-		ui.lord_service[ix].classList.remove("hide")
 		update_lord_mat(ix)
 	} else {
 		let t = locale - 100
 		if (t > 17) t = 17
 		calendar_layout_cylinder[t].push(ui.lord_cylinder[ix])
 		ui.lord_cylinder[ix].classList.remove("hide")
-		ui.lord_service[ix].classList.add("hide")
 	}
 	ui.lord_cylinder[ix].classList.toggle("besieged", is_lord_besieged(ix))
 	ui.lord_buttons[ix].classList.toggle("action", is_action("lord", ix))
 	ui.lord_cylinder[ix].classList.toggle("action", is_action("lord", ix))
-	ui.lord_service[ix].classList.toggle("action", is_action("service", ix) || is_action("service_bad", ix))
-	ui.lord_service[ix].classList.toggle("bad", is_action("service_bad", ix))
-
-	if (ix === LORD_HERMANN)
-		ui.lord_cylinder[ix].classList.toggle("marshal", !is_lord_on_map(LORD_ANDREAS))
-	if (ix === LORD_ANDREY)
-		ui.lord_cylinder[ix].classList.toggle("marshal", !is_lord_on_map(LORD_ALEKSANDR))
 
 	ui.lord_cylinder[ix].classList.toggle("selected", is_lord_selected(ix))
-	ui.lord_service[ix].classList.toggle("selected", is_lord_selected(ix))
 	ui.lord_mat[ix].classList.toggle("selected", is_lord_selected(ix))
 
 	ui.lord_cylinder[ix].classList.toggle("command", is_lord_command(ix))
@@ -1161,81 +991,6 @@ function update_lord(ix) {
 
 	ui.lord_mat[ix].classList.toggle("besieged", is_lord_besieged(ix))
 	ui.lord_mat[ix].classList.toggle("ambushed", is_lord_ambushed(ix))
-}
-
-function update_legate() {
-	if (view.pieces.legate === LEGATE_INDISPOSED) {
-		ui.legate.classList.add("hide")
-	} else {
-		ui.legate.classList.remove("hide")
-		ui.legate.classList.toggle("action", is_action("legate"))
-		ui.legate.classList.toggle("selected", is_legate_selected())
-		if (view.pieces.legate === LEGATE_ARRIVED) {
-			ui.legate.style.top = "1356px"
-			ui.legate.style.left = "24px"
-		} else {
-			layout_locale_item(view.pieces.legate, ui.legate, 0)
-		}
-	}
-}
-
-function update_smerdi() {
-	ui.smerdi.replaceChildren()
-	for (let i = 0; i < view.pieces.smerdi; ++i)
-		ui.smerdi.appendChild(get_cached_element("unit serfs"))
-}
-
-function update_veche() {
-	ui.veche.replaceChildren()
-
-	let n = view.pieces.veche_coin
-	while (n >= 4) {
-		add_asset(ui.veche, COIN, 4, VECHE)
-		n -= 4
-	}
-	while (n >= 3) {
-		add_asset(ui.veche, COIN, 3, VECHE)
-		n -= 3
-	}
-	while (n >= 2) {
-		add_asset(ui.veche, COIN, 2, VECHE)
-		n -= 2
-	}
-	while (n >= 1) {
-		add_asset(ui.veche, COIN, 1, VECHE)
-		n -= 1
-	}
-
-	for (let i = 0; i < view.pieces.veche_vp; ++i)
-		add_veche_vp(ui.veche)
-}
-
-function update_castle(elt, loc) {
-	if (loc === undefined) {
-		elt.classList.toggle("hide", true)
-	} else {
-		elt.classList.toggle("hide", false)
-		let [xc, yc] = locale_xy[loc]
-		if (is_town_locale(loc)) {
-			elt.style.top = (yc - 26) + "px"
-			elt.style.left = (xc - 49) + "px"
-		} else {
-			elt.style.top = (yc - 15) + "px"
-			elt.style.left = (xc - 49) + "px"
-		}
-		elt.style.zIndex = 0
-	}
-}
-
-function is_teutonic_siege_marker(loc) {
-	if (set_has(view.pieces.castles2, loc))
-		return true
-	if (set_has(view.pieces.castles1, loc))
-		return false
-	if (is_p1_locale(loc))
-		return set_has(view.pieces.conquered, loc)
-	else
-		return !set_has(view.pieces.conquered, loc)
 }
 
 function update_locale(loc) {
@@ -1257,37 +1012,13 @@ function update_locale(loc) {
 		else
 			ui.locale_markers[loc].appendChild(get_cached_element("marker circle battle"))
 
-	if (set_has(view.pieces.ravaged, loc)) {
+	if (set_has(view.pieces.exhausted, loc)) {
 		let cn
 		if (is_p1_locale(loc))
-			cn = "marker small ravaged russian"
+			cn = "marker small exhausted lancaster"
 		else
-			cn = "marker small ravaged teutonic"
+			cn = "marker small exhausted york"
 		ui.locale_markers[loc].appendChild(get_cached_element(cn))
-	}
-
-	if (set_has(view.pieces.conquered, loc)) {
-		let cn
-		if (is_p1_locale(loc))
-			cn = "marker square conquered russian"
-		else
-			cn = "marker square conquered teutonic"
-		for (let i = 0; i < data.locales[loc].vp; ++i)
-			ui.locale_markers[loc].appendChild(get_cached_element(cn))
-	}
-
-	if (set_has(view.pieces.walls, loc))
-		ui.locale_markers[loc].appendChild(get_cached_element("marker square walls"))
-
-	let sieges = map_get(view.pieces.sieges, loc)
-	if (sieges > 0) {
-		let cn
-		if (is_teutonic_siege_marker(loc))
-			cn = "marker square siege teutonic"
-		else
-			cn = "marker square siege russian"
-		for (let i = 0; i < sieges; ++i)
-			ui.locale_markers[loc].appendChild(get_cached_element(cn))
 	}
 }
 
@@ -1300,21 +1031,21 @@ function update_plan() {
 			if (i < view.plan.length) {
 				let lord = view.plan[i]
 				if (lord < 0) {
-					if (player === "Teutons")
-						ui.plan_cards[i].className = "card teutonic cc_pass"
+					if (player === "York")
+						ui.plan_cards[i].className = "card york cc_pass"
 					else
-						ui.plan_cards[i].className = "card russian cc_pass"
+						ui.plan_cards[i].className = "card lancaster cc_pass"
 				} else {
 					if (lord < 6)
-						ui.plan_cards[i].className = "card teutonic cc_lord_" + lord
+						ui.plan_cards[i].className = "card york cc_lord_" + lord
 					else
-						ui.plan_cards[i].className = "card russian cc_lord_" + lord
+						ui.plan_cards[i].className = "card lancaster cc_lord_" + lord
 				}
 			} else if (is_planning && i < max_plan_length()) {
-				if (player === "Teutons")
-					ui.plan_cards[i].className = "card teutonic cc_back"
+				if (player === "York")
+					ui.plan_cards[i].className = "card york cc_back"
 				else
-					ui.plan_cards[i].className = "card russian cc_back"
+					ui.plan_cards[i].className = "card lancaster cc_back"
 			} else {
 				ui.plan_cards[i].className = "hide"
 			}
@@ -1386,16 +1117,6 @@ function update_cards() {
 		ui.hand_panel.classList.add("hide")
 	}
 
-	ui.capabilities1.replaceChildren()
-	for (let i = first_p1_card; i <= last_p1_card; ++i)
-		if (view.capabilities.includes(i))
-			ui.capabilities1.appendChild(ui.cards[i])
-
-	ui.capabilities2.replaceChildren()
-	for (let i = first_p2_card; i <= last_p2_card; ++i)
-		if (view.capabilities.includes(i))
-			ui.capabilities2.appendChild(ui.cards[i])
-
 	for (let ix = 0; ix < data.lords.length; ++ix) {
 		ui.lord_capabilities[ix].replaceChildren()
 		ui.lord_events[ix].replaceChildren()
@@ -1420,16 +1141,16 @@ function update_battle() {
 	let array = view.battle.array
 
 	// Pursuit marker points "up" towards the conceding side
-	if (view.battle.conceded === "Russians") {
-		if (view.battle.attacker === "Russians")
-			ui.pursuit.className = "marker rectangle pursuit teutonic"
+	if (view.battle.conceded === "Lancaster") {
+		if (view.battle.attacker === "Lancaster")
+			ui.pursuit.className = "marker rectangle pursuit york"
 		else
-			ui.pursuit.className = "marker rectangle pursuit teutonic rotate"
-	} else if (view.battle.conceded === "Teutons") {
-		if (view.battle.attacker === "Teutons")
-			ui.pursuit.className = "marker rectangle pursuit russian"
+			ui.pursuit.className = "marker rectangle pursuit york rotate"
+	} else if (view.battle.conceded === "York") {
+		if (view.battle.attacker === "York")
+			ui.pursuit.className = "marker rectangle pursuit lancaster"
 		else
-			ui.pursuit.className = "marker rectangle pursuit russian rotate"
+			ui.pursuit.className = "marker rectangle pursuit lancaster rotate"
 	} else {
 		ui.pursuit.className = "hide"
 	}
@@ -1448,12 +1169,12 @@ function update_battle() {
 }
 
 function update_court() {
-	let tcourt_hdr = (player === "Russians") ? ui.court2_header : ui.court1_header
-	let rcourt_hdr = (player === "Russians") ? ui.court1_header : ui.court2_header
-	tcourt_hdr.textContent = "Teutonic Lords"
-	rcourt_hdr.textContent = "Russian Lords"
-	let tcourt = (player === "Russians") ? ui.court2 : ui.court1
-	let rcourt = (player === "Russians") ? ui.court1 : ui.court2
+	let tcourt_hdr = (player === "Lancaster") ? ui.court2_header : ui.court1_header
+	let rcourt_hdr = (player === "Lancaster") ? ui.court1_header : ui.court2_header
+	tcourt_hdr.textContent = "York Lords"
+	rcourt_hdr.textContent = "Lancaster Lords"
+	let tcourt = (player === "Lancaster") ? ui.court2 : ui.court1
+	let rcourt = (player === "Lancaster") ? ui.court1 : ui.court2
 	tcourt.replaceChildren()
 	rcourt.replaceChildren()
 	for (let lord = 0; lord < 6; ++lord)
@@ -1478,33 +1199,16 @@ function on_update() {
 	for (let ix = 0; ix < data.lords.length; ++ix) {
 		if (view.pieces.locale[ix] < 0) {
 			ui.lord_cylinder[ix].classList.add("hide")
-			ui.lord_service[ix].classList.add("hide")
 		} else {
 			ui.lord_cylinder[ix].classList.remove("hide")
 			update_lord(ix)
 		}
 	}
 
-	for (let way = 0; way < ui.ways.length; ++way) {
-		if (is_action("way", way))
-			ui.ways[way].classList.add("action")
-		else
-			ui.ways[way].classList.remove("action")
-	}
-
 	layout_calendar()
-
-	update_legate()
-	update_smerdi()
-	update_veche()
 
 	for (let loc = 0; loc < data.locales.length; ++loc)
 		update_locale(loc)
-
-	update_castle(ui.castles[0], view.pieces.castles1[0])
-	update_castle(ui.castles[1], view.pieces.castles1[1])
-	update_castle(ui.castles[2], view.pieces.castles2[0])
-	update_castle(ui.castles[3], view.pieces.castles2[1])
 
 	update_current_card_display()
 
@@ -1517,40 +1221,29 @@ function on_update() {
 	let vp2 = count_vp2()
 	if ((vp1 >> 1) === (vp2 >> 1)) {
 		if (vp1 & 1)
-			ui.vp1.className = `marker circle victory teutonic stack v${vp1>>1} half`
+			ui.vp1.className = `marker circle victory york stack v${vp1>>1} half`
 		else
-			ui.vp1.className = `marker circle victory teutonic stack v${vp1>>1}`
+			ui.vp1.className = `marker circle victory york stack v${vp1>>1}`
 		if (vp2 & 1)
-			ui.vp2.className = `marker circle victory russian stack v${vp2>>1} half`
+			ui.vp2.className = `marker circle victory lancaster stack v${vp2>>1} half`
 		else
-			ui.vp2.className = `marker circle victory russian stack v${vp2>>1}`
+			ui.vp2.className = `marker circle victory lancaster stack v${vp2>>1}`
 	} else {
 		if (vp1 & 1)
-			ui.vp1.className = `marker circle victory teutonic v${vp1>>1} half`
+			ui.vp1.className = `marker circle victory york v${vp1>>1} half`
 		else
-			ui.vp1.className = `marker circle victory teutonic v${vp1>>1}`
+			ui.vp1.className = `marker circle victory york v${vp1>>1}`
 		if (vp2 & 1)
-			ui.vp2.className = `marker circle victory russian v${vp2>>1} half`
+			ui.vp2.className = `marker circle victory lancaster v${vp2>>1} half`
 		else
-			ui.vp2.className = `marker circle victory russian v${vp2>>1}`
+			ui.vp2.className = `marker circle victory lancaster v${vp2>>1}`
 	}
-
-	if (view.pieces.elr1)
-		ui.elr1.classList = `marker circle enemy_lords_removed teutonic v${view.pieces.elr1}`
-	else
-		ui.elr1.classList = `marker circle enemy_lords_removed teutonic hide`
-	if (view.pieces.elr2)
-		ui.elr2.classList = `marker circle enemy_lords_removed russian v${view.pieces.elr2}`
-	else
-		ui.elr2.classList = `marker circle enemy_lords_removed russian hide`
 
 	ui.held1.textContent = `${view.held1} Held`
 	ui.held2.textContent = `${view.held2} Held`
 
 	update_plan()
 	update_cards()
-
-	ui.veche.classList.toggle("action", is_action("veche"))
 
 	if (view.battle && view.battle.array) {
 		ui.reserves_panel.classList.remove("hide")
@@ -1667,9 +1360,9 @@ function on_update() {
 
 function on_focus_card_tip(c) {
 	if (c <= first_p1_card)
-		ui.command.className = `card teutonic aow_${c}`
+		ui.command.className = `card york aow_${c}`
 	else
-		ui.command.className = `card russian aow_${c}`
+		ui.command.className = `card lancaster aow_${c}`
 }
 
 function on_blur_card_tip() {
@@ -1702,18 +1395,6 @@ function on_click_locale_tip(loc) {
 	ui.locale[loc].scrollIntoView({ block:"center", inline:"center", behavior:"smooth" })
 }
 
-function on_focus_way_tip(way) {
-	ui.ways[way].classList.add("tip")
-}
-
-function on_blur_way_tip(way) {
-	ui.ways[way].classList.remove("tip")
-}
-
-function on_click_way_tip(way) {
-	ui.ways[way].scrollIntoView({ block:"center", inline:"center", behavior:"smooth" })
-}
-
 function on_click_lord_tip(lord) {
 	ui.lord_mat[lord].scrollIntoView({ block:"center", inline:"center", behavior:"smooth" })
 }
@@ -1728,12 +1409,6 @@ function sub_lord_name(match, p1) {
 	let x = p1 | 0
 	let n = data.lords[x].name
 	return `<span class="lord_tip" onclick="on_click_lord_tip(${x})">${n}</span>`
-}
-
-function sub_way_name(match, p1) {
-	let x = p1 | 0
-	let n = data.ways[x].name
-	return `<span class="way_tip" onmouseenter="on_focus_way_tip(${x})" onmouseleave="on_blur_way_tip(${x})" onclick="on_click_way_tip(${x})">${n}</span>`
 }
 
 function on_log(text) {
@@ -1757,31 +1432,30 @@ function on_log(text) {
 	text = text.replace(/E(\d+)/g, sub_card_event)
 	text = text.replace(/L(\d+)/g, sub_lord_name)
 	text = text.replace(/%(\d+)/g, sub_locale_name)
-	text = text.replace(/W(\d+)/g, sub_way_name)
 
 	if (text.match(/^\.h1/)) {
 		text = text.substring(4)
 		p.className = "h1"
 	}
-	else if (text.match(/^\.h2t/)) {
+	else if (text.match(/^\.h2y/)) {
 		text = text.substring(5)
-		p.className = "h2 teutonic"
+		p.className = "h2 york"
 	}
-	else if (text.match(/^\.h2r/)) {
+	else if (text.match(/^\.h2l/)) {
 		text = text.substring(5)
-		p.className = "h2 russian"
+		p.className = "h2 lancaster"
 	}
 	else if (text.match(/^\.h2/)) {
 		text = text.substring(4)
 		p.className = "h2"
 	}
-	else if (text.match(/^\.h3t/)) {
+	else if (text.match(/^\.h3y/)) {
 		text = text.substring(5)
-		p.className = "h3 teutonic"
+		p.className = "h3 york"
 	}
-	else if (text.match(/^\.h3r/)) {
+	else if (text.match(/^\.h3l/)) {
 		text = text.substring(5)
-		p.className = "h3 russian"
+		p.className = "h3 lancaster"
 	}
 	else if (text.match(/^\.h3/)) {
 		text = text.substring(4)

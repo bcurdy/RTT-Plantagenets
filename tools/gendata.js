@@ -156,10 +156,10 @@ const scale = 1
 
 function defloc(region, stronghold, type, name) {
 	let [x, y, w, h] = boxes[name]
-	x = Math.floor(x * 75 / 300)
-	y = Math.floor(y * 75 / 300)
-	w = Math.ceil(w * 75 / 300)
-	h = Math.ceil(h * 75 / 300)
+	x = Math.floor(x)
+	y = Math.floor(y)
+	w = Math.ceil(w)
+	h = Math.ceil(h)
 	locmap[name] = locales.length
 	if (stronghold > 0)
 		strongholds.push(locales.length)
