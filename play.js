@@ -182,14 +182,6 @@ const L35 = find_card("L35")
 const L36 = find_card("L36")
 const L37 = find_card("L37")
 
-
-const EVENT_RUSSIAN_BRIDGE = R1
-const EVENT_TEUTONIC_BRIDGE = T4
-const EVENT_TEUTONIC_FIELD_ORGAN = T10
-const AOW_TEUTONIC_TREBUCHETS = T14
-const EVENT_RUSSIAN_VALDEMAR = R11
-const EVENT_RUSSIAN_DIETRICH_VON_GRUNINGEN = R17
-
 const A1 = 0, A2 = 1, A3 = 2, D1 = 3, D2 = 4, D3 = 5
 
 
@@ -368,13 +360,13 @@ function get_lord_forces(lord, n) {
 
 function count_lord_all_forces(lord) {
 	return (
-		get_lord_forces(lord, KNIGHTS) +
-		get_lord_forces(lord, SERGEANTS) +
-		get_lord_forces(lord, LIGHT_HORSE) +
-		get_lord_forces(lord, ASIATIC_HORSE) +
+		get_lord_forces(lord, RETINUE) +
+		get_lord_forces(lord, VASSAL) +
+		get_lord_forces(lord, MERCENARIES) +
+		get_lord_forces(lord, BURGUNDIANS) +
 		get_lord_forces(lord, MEN_AT_ARMS) +
 		get_lord_forces(lord, MILITIA) +
-		get_lord_forces(lord, SERFS)
+		get_lord_forces(lord, LONGBOWMEN)
 	)
 }
 
@@ -384,16 +376,6 @@ function is_p1_locale(loc) {
 
 function is_p2_locale(loc) {
 	return loc >= first_p2_locale && loc <= last_p2_locale
-}
-
-function count_vp1() {
-	let vp = 0
-	return vp
-}
-
-function count_vp2() {
-	let vp = 0
-	return vp
 }
 
 function get_lord_locale(lord) {
@@ -621,15 +603,13 @@ const ui = {
 
 	command: document.getElementById("command"),
 	turn: document.getElementById("turn"),
-	vp1: document.getElementById("vp1"),
-	vp2: document.getElementById("vp2"),
+	end: document.getElementById("end"),
 	court1_header: document.getElementById("court1_header"),
 	court2_header: document.getElementById("court2_header"),
 	court1: document.getElementById("court1"),
 	court2: document.getElementById("court2"),
 	battle_panel: document.getElementById("battle_panel"),
 	battle_header: document.getElementById("battle_header"),
-	pursuit: document.getElementById("pursuit"),
 	battle_grid: document.getElementById("battle_grid"),
 	battle_grid_array: [
 		document.getElementById("grid_a1"),
@@ -727,7 +707,6 @@ function build_map() {
 	data.locales.forEach((locale, ix) => {
 		let region = clean_name(locale.region)
 		let { x, y, w, h } = locale.box
-		console.log("LOC", locale, ix, x, y, w, h)
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
 		let e
@@ -758,11 +737,10 @@ function build_map() {
 
 	data.lords.forEach((lord, ix) => {
 		let e = ui.lord_cylinder[ix] = document.createElement("div")
-		e.className = "cylinder lord " + clean_name(lord.side) + " " + clean_name(lord.name) + " hide"
+		e.className = "cylinder lord lord" + ix + " hide"
 		register_action(e, "lord", ix)
 		register_tooltip(e, on_focus_cylinder)
 		document.getElementById("pieces").appendChild(e)
-
 		build_lord_mat(lord, ix, clean_name(lord.side), clean_name(lord.name))
 	})
 
@@ -1251,21 +1229,6 @@ function update_cards() {
 function update_battle() {
 	let array = view.battle.array
 
-	// Pursuit marker points "up" towards the conceding side
-	if (view.battle.conceded === "Lancaster") {
-		if (view.battle.attacker === "Lancaster")
-			ui.pursuit.className = "marker rectangle pursuit york"
-		else
-			ui.pursuit.className = "marker rectangle pursuit york rotate"
-	} else if (view.battle.conceded === "York") {
-		if (view.battle.attacker === "York")
-			ui.pursuit.className = "marker rectangle pursuit lancaster"
-		else
-			ui.pursuit.className = "marker rectangle pursuit lancaster rotate"
-	} else {
-		ui.pursuit.className = "hide"
-	}
-
 	for (let i = 0; i < array.length; ++i) {
 		let lord = array[i]
 		ui.battle_grid_array[i].replaceChildren()
@@ -1323,32 +1286,15 @@ function on_update() {
 
 	update_current_card_display()
 
-	if (view.turn & 1)
-		ui.turn.className = `marker circle turn campaign t${view.turn>>1}`
-	else
-		ui.turn.className = `marker circle turn levy t${view.turn>>1}`
-
-	let vp1 = count_vp1()
-	let vp2 = count_vp2()
-	if ((vp1 >> 1) === (vp2 >> 1)) {
-		if (vp1 & 1)
-			ui.vp1.className = `marker circle victory york stack v${vp1>>1} half`
-		else
-			ui.vp1.className = `marker circle victory york stack v${vp1>>1}`
-		if (vp2 & 1)
-			ui.vp2.className = `marker circle victory lancaster stack v${vp2>>1} half`
-		else
-			ui.vp2.className = `marker circle victory lancaster stack v${vp2>>1}`
+	if (view.turn & 1) {
+		ui.turn.className = `marker circle turn campaign`
 	} else {
-		if (vp1 & 1)
-			ui.vp1.className = `marker circle victory york v${vp1>>1} half`
-		else
-			ui.vp1.className = `marker circle victory york v${vp1>>1}`
-		if (vp2 & 1)
-			ui.vp2.className = `marker circle victory lancaster v${vp2>>1} half`
-		else
-			ui.vp2.className = `marker circle victory lancaster v${vp2>>1}`
+		ui.turn.className = `marker circle turn levy`
 	}
+	ui.turn.style.left = (calendar_xy[view.turn >> 1][0] - 5) + "px"
+	ui.turn.style.top = (calendar_xy[view.turn >> 1][1] + 20) + "px"
+	ui.end.style.left = calendar_xy[view.end][0] - 5
+	ui.end.style.top = calendar_xy[view.end][1] + 20
 
 	ui.held1.textContent = `${view.held1} Held`
 	ui.held2.textContent = `${view.held2} Held`

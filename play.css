@@ -24,7 +24,6 @@ header.your_turn { background-color: orange; }
 #log .card_tip:hover { text-decoration: underline; }
 #log .lord_tip:hover { cursor: pointer; text-decoration: underline; }
 #log .locale_tip:hover { cursor: pointer; text-decoration: underline; }
-#log .way_tip:hover { cursor: pointer; text-decoration: underline; }
 
 .action {
 	cursor: pointer;
@@ -114,8 +113,6 @@ body.Lancaster #plan_actions .lancaster { display: none }
 	padding: 36px 12px 12px 12px;
 }
 
-#battle_grid #grid_ga { height: auto; }
-
 .grid_array { background-repeat: no-repeat }
 
 .grid_array.action {
@@ -127,9 +124,6 @@ body.Lancaster #plan_actions .lancaster { display: none }
 	background-repeat: no-repeat;
 }
 
-#battle_grid.attacker {
-}
-
 #battle_header { grid-row: 1; grid-column: 1 / 4; }
 
 .defender .att,
@@ -138,8 +132,6 @@ body.Lancaster #plan_actions .lancaster { display: none }
 .attacker .def .unit,
 .defender .att .asset,
 .attacker .def .asset,
-.defender .att .service_marker,
-.attacker .def .service_marker,
 .defender .att .moved_fought,
 .attacker .def .moved_fought,
 .defender .att .feed_x2,
@@ -158,62 +150,16 @@ body.Lancaster #plan_actions .lancaster { display: none }
 .defender #grid_a1 { grid-row: 1; grid-column: 1; }
 .defender #grid_a2 { grid-row: 1; grid-column: 2; }
 .defender #grid_a3 { grid-row: 1; grid-column: 3; }
-.defender #grid_ga { grid-row: 2; grid-column: 2; }
-.defender #grid_d1 { grid-row: 3; grid-column: 1; }
-.defender #grid_d2 { grid-row: 3; grid-column: 2; }
-.defender #grid_d3 { grid-row: 3; grid-column: 3; }
+.defender #grid_d1 { grid-row: 2; grid-column: 1; }
+.defender #grid_d2 { grid-row: 2; grid-column: 2; }
+.defender #grid_d3 { grid-row: 2; grid-column: 3; }
 
-.attacker #grid_a1 { grid-row: 6; grid-column: 3; }
-.attacker #grid_a2 { grid-row: 6; grid-column: 2; }
-.attacker #grid_a3 { grid-row: 6; grid-column: 1; }
-.attacker #grid_ga { grid-row: 5; grid-column: 2; }
-.attacker #grid_d1 { grid-row: 4; grid-column: 3; }
-.attacker #grid_d2 { grid-row: 4; grid-column: 2; }
-.attacker #grid_d3 { grid-row: 4; grid-column: 1; }
-
-.defender #pursuit.rotate,
-.attacker #pursuit:not(.rotate)
-{
-	transform: rotate(180deg);
-	border-color: #a68c61 #e7cb9e #e7cb9e #a68c61;
-	box-shadow: 0 0 0 1px #4e370a, -1px -2px 4px #0008;
-}
-
-#pursuit {
-	margin: 15px auto;
-}
-
-.siegeworks {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: 4px;
-	margin: 12px;
-}
-
-.siegeworks:empty { display: none }
-
-#garrison {
-	background-image: url(images/garrison.svg);
-	background-repeat: no-repeat;
-	background-position: center;
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	align-items: center;
-	width: 376px;
-	height: 80px;
-	gap: 2px;
-	margin: 0 auto;
-}
-
-#garrison.action {
-	background-image: url(images/garrison_action.svg);
-}
-
-#garrison.hide { display: none }
-
-#garrison .unit { position: static }
+.attacker #grid_a1 { grid-row: 2; grid-column: 3; }
+.attacker #grid_a2 { grid-row: 2; grid-column: 2; }
+.attacker #grid_a3 { grid-row: 2; grid-column: 1; }
+.attacker #grid_d1 { grid-row: 1; grid-column: 3; }
+.attacker #grid_d2 { grid-row: 1; grid-column: 2; }
+.attacker #grid_d3 { grid-row: 1; grid-column: 1; }
 
 /* MATS */
 
@@ -331,32 +277,21 @@ body.shift #capabilities2 {
 	gap: 2px;
 }
 
-.mat .ready_vassals {
-	position: absolute;
-	z-index: 6;
-}
-
 .mat .mustered_vassals {
 	position: absolute;
 	z-index: 5;
 }
 
-body.shift .mustered_vassals {
-	display: block;
-}
-
-.mat .ready_vassals .service_marker,
-.mat .mustered_vassals .service_marker {
+.mat .mustered_vassals .vassal {
 	transition: margin 100ms;
 	margin-top: -24px;
 }
 
-.mat .ready_vassals:hover .service_marker,
-.mat .mustered_vassals:hover .service_marker {
+.mat .mustered_vassals:hover .vassal {
 	margin-top: 1px;
 }
 
-.mat .mustered_vassals .service_marker {
+.mat .mustered_vassals .vassal {
 	margin-top: -38px;
 }
 
@@ -365,105 +300,28 @@ body.shift .mustered_vassals {
 	background-repeat: no-repeat;
 }
 
-.mat.teutonic .shield {
+.mat .shield {
 	top: 10px; left: 6px;
 	width: 75px; height: 85px;
 	border-radius: 0 0 50% 50%;
 	filter: drop-shadow(0 0 4px white);
 }
 
-.mat.russian .shield,
-.mat.yaroslav .shield {
-	top: 6px; left: 7px;
-	width: 63px; height: 125px;
-	border-radius: 30px 30px 50% 50%;
-	filter: drop-shadow(0 0 3px white);
-}
-
-.mat.teutonic .shield.action {
-	background-image: url(images/shield_teutonic.svg);
-	filter: drop-shadow(0 0 3px white);
-}
-
-.mat.russian .shield.action, .mat.yaroslav .shield.action {
-	background-image: url(images/shield_russian.svg);
+.mat .shield.action {
+	background-image: url(images/shield.svg);
 	filter: drop-shadow(0 0 3px white);
 }
 
 .mat .forces { top: 96px; left: 66px; width: 240px; height: 96px; }
 .mat .routed { top: 200px; left: 18px; width: 236px; height: 48px; }
 .mat .assets { top: 255px; left: 24px; width: 230px; height: 96px; }
-.mat .ready_vassals { bottom: 22px; right: 22px; width: 94px; }
 .mat .mustered_vassals { bottom: 134px; right: 6px; width: 94px; }
-
-.mat.teutonic.andreas .background { background-image:url(mats.1x/mat_teutonic_andreas-fs8.png) }
-.mat.teutonic.heinrich .background { background-image:url(mats.1x/mat_teutonic_heinrich-fs8.png) }
-.mat.teutonic.hermann .background { background-image:url(mats.1x/mat_teutonic_hermann-fs8.png) }
-.mat.teutonic.knud_and_abel .background { background-image:url(mats.1x/mat_teutonic_knud_and_abel-fs8.png) }
-.mat.teutonic.rudolf .background { background-image:url(mats.1x/mat_teutonic_rudolf-fs8.png) }
-.mat.teutonic.yaroslav .background { background-image:url(mats.1x/mat_teutonic_yaroslav-fs8.png) }
-.mat.russian.aleksandr .background { background-image:url(mats.1x/mat_russian_aleksandr-fs8.png) }
-.mat.russian.andrey .background { background-image:url(mats.1x/mat_russian_andrey-fs8.png) }
-.mat.russian.domash .background { background-image:url(mats.1x/mat_russian_domash-fs8.png) }
-.mat.russian.gavrilo .background { background-image:url(mats.1x/mat_russian_gavrilo-fs8.png) }
-.mat.russian.karelians .background { background-image:url(mats.1x/mat_russian_karelians-fs8.png) }
-.mat.russian.vladislav .background { background-image:url(mats.1x/mat_russian_vladislav-fs8.png) }
-
-@media (min-resolution: 97dpi) {
-.mat.teutonic.andreas .background { background-image:url(mats.2x/mat_teutonic_andreas-fs8.png) }
-.mat.teutonic.heinrich .background { background-image:url(mats.2x/mat_teutonic_heinrich-fs8.png) }
-.mat.teutonic.hermann .background { background-image:url(mats.2x/mat_teutonic_hermann-fs8.png) }
-.mat.teutonic.knud_and_abel .background { background-image:url(mats.2x/mat_teutonic_knud_and_abel-fs8.png) }
-.mat.teutonic.rudolf .background { background-image:url(mats.2x/mat_teutonic_rudolf-fs8.png) }
-.mat.teutonic.yaroslav .background { background-image:url(mats.2x/mat_teutonic_yaroslav-fs8.png) }
-.mat.russian.aleksandr .background { background-image:url(mats.2x/mat_russian_aleksandr-fs8.png) }
-.mat.russian.andrey .background { background-image:url(mats.2x/mat_russian_andrey-fs8.png) }
-.mat.russian.domash .background { background-image:url(mats.2x/mat_russian_domash-fs8.png) }
-.mat.russian.gavrilo .background { background-image:url(mats.2x/mat_russian_gavrilo-fs8.png) }
-.mat.russian.karelians .background { background-image:url(mats.2x/mat_russian_karelians-fs8.png) }
-.mat.russian.vladislav .background { background-image:url(mats.2x/mat_russian_vladislav-fs8.png) }
-}
-
-.locale_markers > .conquered + .conquered { margin-left: -44px; margin-bottom: 13px; }
-.locale_markers > .conquered + .conquered + .conquered { margin-bottom: 26px; }
-.locale_markers > .conquered + .conquered + .conquered + .conquered { margin-bottom: 39px; }
-
-.locale_markers .siege + .siege { margin-left: -44px; margin-bottom: 13px; }
-.locale_markers .siege + .siege + .siege { margin-bottom: 26px; }
-.locale_markers .siege + .siege + .siege + .siege { margin-bottom: 39px; }
-
-/* TUCKED CARDS */
-
-.tuck_under_map {
-	margin: 0 auto 36px auto;
-	width: 1350px;
-	min-height: 260px;
-	margin-top: -130px;
-	display: grid;
-	grid-template-columns: auto auto;
-}
-
-#capabilities1, #capabilities2 {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12px;
-}
-
-#capabilities1 {
-	margin-left: 24px;
-	justify-content: start;
-}
-
-#capabilities2 {
-	margin-right: 24px;
-	justify-content: end;
-}
 
 /* ASSETS */
 
 .asset {
-	width: 42px;
-	height: 42px;
+	width: 46px;
+	height: 46px;
 	background-size: cover;
 	border: 2px solid transparent;
 	border-radius: 8px;
@@ -478,20 +336,20 @@ body.shift .mustered_vassals {
 	box-shadow: 0 0 0 1px #444, 0 0 0 4px yellow !important;
 }
 
-.asset.cart.x1 { background-image: url(images/asset_cart_x1.png); }
-.asset.cart.x2 { background-image: url(images/asset_cart_x2.png) }
-.asset.cart.x4 { background-image: url(images/asset_cart_x4.png) }
-.asset.coin.x1 { background-image: url(images/asset_coin_x1.png); }
-.asset.coin.x2 { background-image: url(images/asset_coin_x2.png) }
-.asset.coin.x3 { background-image: url(images/asset_coin_x3.png) }
-.asset.coin.x4 { background-image: url(images/asset_coin_x4.png) }
-.asset.prov.x1 { background-image: url(images/asset_prov_x1.png); }
-.asset.prov.x2 { background-image: url(images/asset_prov_x2.png) }
-.asset.prov.x3 { background-image: url(images/asset_prov_x3.png) }
-.asset.prov.x4 { background-image: url(images/asset_prov_x4.png) }
-.asset.ship.x1 { background-image: url(images/asset_ship_x1.png); }
-.asset.ship.x2 { background-image: url(images/asset_ship_x2.png) }
-.asset.ship.x4 { background-image: url(images/asset_ship_x4.png) }
+.asset.cart.x1 { background-image: url(images/cart_x1.png); }
+.asset.cart.x2 { background-image: url(images/cart_x2.png) }
+.asset.cart.x3 { background-image: url(images/cart_x3.png) }
+.asset.cart.x4 { background-image: url(images/cart_x4.png) }
+.asset.coin.x1 { background-image: url(images/coin_x1.png); }
+.asset.coin.x2 { background-image: url(images/coin_x2.png) }
+.asset.coin.x3 { background-image: url(images/coin_x3.png) }
+.asset.coin.x4 { background-image: url(images/coin_x4.png) }
+.asset.prov.x1 { background-image: url(images/prov_x1.png); }
+.asset.prov.x2 { background-image: url(images/prov_x2.png) }
+.asset.prov.x3 { background-image: url(images/prov_x3.png) }
+.asset.prov.x4 { background-image: url(images/prov_x4.png) }
+.asset.ship.x1 { background-image: url(images/ship_x1.png); }
+.asset.ship.x2 { background-image: url(images/ship_x2.png) }
 
 .marker {
 	border: 2px solid aqua;
@@ -502,64 +360,54 @@ body.shift .mustered_vassals {
 }
 
 .marker.square {
-	width: 42px;
-	height: 42px;
+	width: 46px;
+	height: 46px;
 }
 
 .marker.small {
-	width: 36px;
-	height: 36px;
+	width: 35px;
+	height: 35px;
 	border-radius: 6px;
 }
 
-.marker.rectangle {
-	width: 90px;
-	height: 42px;
-}
-
 .marker.circle {
-	width: 51px;
-	height: 51px;
-	background-size: 51px 51px;
+	width: 50px;
+	height: 50px;
+	background-size: 50px 50px;
 	border-radius: 50%;
 }
 
-.marker.turn.levy { background-image: url(images/marker_levy.png) }
-.marker.turn.campaign { background-image: url(images/marker_campaign.png) }
-.marker.storm { background-image: url(images/marker_storm.png) }
-.marker.battle { background-image: url(images/marker_battle.png) }
-.marker.conquered.teutonic { background-image: url(images/marker_conquered_teutonic.png) }
-.marker.conquered.russian { background-image: url(images/marker_conquered_russian.png) }
-.marker.ravaged.teutonic { background-image: url(images/marker_ravaged_teutonic.png) }
-.marker.ravaged.russian { background-image: url(images/marker_ravaged_russian.png) }
-.marker.siege.teutonic { background-image: url(images/marker_siege_teutonic.png) }
-.marker.siege.russian { background-image: url(images/marker_siege_russian.png) }
-.marker.enemy_lords_removed.teutonic { background-image: url(images/marker_enemy_lords_removed_teutonic.png) }
-.marker.enemy_lords_removed.russian { background-image: url(images/marker_enemy_lords_removed_russian.png) }
-.marker.victory.teutonic { background-image: url(images/marker_victory_teutonic.png) }
-.marker.victory.russian { background-image: url(images/marker_victory_russian.png) }
-.marker.victory.half.teutonic { background-image: url(images/marker_victory_half_teutonic.png) }
-.marker.victory.half.russian { background-image: url(images/marker_victory_half_russian.png) }
-.marker.pursuit.teutonic { background-image: url(images/marker_pursuit_teutonic.png) }
-.marker.pursuit.russian { background-image: url(images/marker_pursuit_russian.png) }
-.marker.castle.russian { background-image: url(images/marker_castle_russian.png) }
-.marker.castle.teutonic { background-image: url(images/marker_castle_teutonic.png) }
-.marker.walls { background-image: url(images/marker_walls.a.png) }
-.marker.moved_fought { background-image: url(images/marker_moved_fought.png) }
-.marker.feed_x2 { background-image: url(images/almoravid_marker_feed_x2.png) }
+.marker.turn.levy { background-image: url(images/levy.png) }
+.marker.turn.campaign { background-image: url(images/campaign.png) }
+.marker.battle { background-image: url(images/battle.png) }
 
-.marker.number.teutonic.n1 { background-image: url(images/marker_1_teutonic.png) }
-.marker.number.teutonic.n2 { background-image: url(images/marker_2_teutonic.png) }
-.marker.number.teutonic.n3 { background-image: url(images/marker_3_teutonic.png) }
-.marker.number.teutonic.n4 { background-image: url(images/marker_4_teutonic.png) }
-.marker.number.teutonic.n5 { background-image: url(images/marker_5_teutonic.png) }
-.marker.number.teutonic.n6 { background-image: url(images/marker_6_teutonic.png) }
-.marker.number.russian.n1 { background-image: url(images/marker_1_russian.png) }
-.marker.number.russian.n2 { background-image: url(images/marker_2_russian.png) }
-.marker.number.russian.n3 { background-image: url(images/marker_3_russian.png) }
-.marker.number.russian.n4 { background-image: url(images/marker_4_russian.png) }
-.marker.number.russian.n5 { background-image: url(images/marker_5_russian.png) }
-.marker.number.russian.n6 { background-image: url(images/marker_6_russian.png) }
+.marker.towns.york { background-image: url(images/towns_york.png) }
+.marker.cities.york { background-image: url(images/cities_york.png) }
+.marker.fortresses.york { background-image: url(images/fortresses_york.png) }
+.marker.ip.york { background-image: url(images/ip_york.png) }
+
+.marker.towns.lancaster { background-image: url(images/towns_lancaster.png) }
+.marker.cities.lancaster { background-image: url(images/cities_lancaster.png) }
+.marker.fortresses.lancaster { background-image: url(images/fortresses_lancaster.png) }
+.marker.ip.lancaster { background-image: url(images/ip_lancaster.png) }
+
+.marker.moved_fought { background-image: url(images/moved_fought.png) }
+.marker.feed_x2 { background-image: url(images/feed_x2.png) }
+.marker.feed_x3 { background-image: url(images/feed_x3.png) }
+.marker.fled { background-image: url(images/fled.png) }
+.marker.exile { background-image: url(images/exile.png) }
+.marker.exile_lancaster { background-image: url(images/exile_lancaster.png) }
+.marker.exile_york { background-image: url(images/exile_york.png) }
+.marker.exhausted { background-image: url(images/exhausted.png) }
+.marker.end { background-image: url(images/end.png) }
+.marker.depleted { background-image: url(images/depleted.png) }
+.marker.depleted { background-image: url(images/depleted.png) }
+.marker.victory_check { background-image: url(images/victory_check.png) }
+.marker.valour { background-image: url(images/valour.png) }
+.marker.retinue { background-image: url(images/retinue.png) }
+.marker.rose.york { background-image: url(images/rose_york.png) }
+.marker.rose.lancaster { background-image: url(images/rose_lancaster.png) }
+.marker.source { background-image: url(images/source.png) }
 
 /* UNITS */
 
@@ -661,18 +509,6 @@ body.shift .mustered_vassals {
 	border: 3px solid gray;
 }
 
-.box.victory {
-	border-radius: 50%;
-}
-
-.box.turn {
-	border-radius: 50%;
-}
-
-.box.calendar.end {
-	background-color: #8886;
-}
-
 .box.calendar.action {
 	border-color: white;
 	background-color: #fff6;
@@ -713,39 +549,9 @@ body.shift .mustered_vassals {
 	gap: 4px;
 }
 
-#vp2.stack:not(.half) ~ #vp1.stack:not(.half) { transform: translate(0px,-36px); }
-#vp2.stack.half ~ #vp1.stack.half { transform: translate(0px,-36px); }
-#vp2.stack.half ~ #vp1.stack:not(.half) { transform: translate(-12px,-30px); }
-#vp2.stack:not(.half) ~ #vp1.stack.half { transform: translate(12px,-30px); }
-
-.marker.victory, .marker.turn {
+.marker.turn, .marker.end, .marker.ip, .marker.towns, .marker.cities, .marker.fortresses, .marker.victory_check {
 	position: absolute;
 }
-
-/* TODO: update to match calendar track */
-
-.v0 { top: 132px; left: 2px; }
-
-.v1, .v2, .v3, .v4, .v5, .v6, .v7, .v8, .t1, .t2, .t3, .t4, .t5, .t6, .t7, .t8 { top: 46px }
-.v9, .v10, .v11, .v12, .v13, .v14, .v15, .v16, .t9, .t10, .t11, .t12, .t13, .t14, .t15, .t16 { top: 284px }
-
-.v1, .v9 { left: 44px }
-.v2, .v10 { left: 196px }
-.v3, .v11 { left: 362px }
-.v4, .v12 { left: 514px }
-.v5, .v13 { left: 680px }
-.v6, .v14 { left: 832px }
-.v7, .v15 { left: 999px }
-.v8, .v16 { left: 1151px }
-
-.t1, .t9 { left: 100px }
-.t2, .t10 { left: 252px }
-.t3, .t11 { left: 418px }
-.t4, .t12 { left: 570px }
-.t5, .t13 { left: 737px }
-.t6, .t14 { left: 888px }
-.t7, .t15 { left: 1055px }
-.t8, .t16 { left: 1207px }
 
 /* PIECES */
 
