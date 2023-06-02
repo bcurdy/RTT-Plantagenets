@@ -248,9 +248,12 @@ defloc("England", 1, "exile", "France")
 defloc("England", 1, "exile", "Scotland")
 defloc("England", 1, "exile", "Ireland")
 defloc("England", 1, "exile", "Burgundy")
+defloc("North", 1, "town", "Scarborough")
+defloc("England", 1, "fortress", "Ravenspur")
 defloc("England", 1, "sea", "English Channel")
 defloc("England", 1, "sea", "Irish Sea")
 defloc("England", 1, "sea", "North Sea")
+
 
 highway("Bamburgh, Newcastle")
 highway("Newcastle, York")
@@ -325,10 +328,10 @@ path("Chester, Harlech")
 path("Harlech, Pembroke")
 path("Pembroke, Cardiff")
 
-//road("Newcastle, Scarborough")
-//road("Scarborough, York")
-//road("York, Ravenspur")
-//road("Ravenspur, Lincoln")
+road("Newcastle, Scarborough")
+road("Scarborough, York")
+road("York, Ravenspur")
+road("Ravenspur, Lincoln")
 
 let seaports = [
 	"Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "Dover", "Hastings", "Calais", "Southampton","Dorchester","Exeter","Plymouth","Truro","Bristol","Pembroke","Harlech"
