@@ -445,6 +445,7 @@ const ui = {
 	lord_feed_x2: [],
 	cards: [],
 	boxes: {},
+	calendar: [],
 
 	plan_panel: document.getElementById("plan_panel"),
 	plan: document.getElementById("plan"),
@@ -628,7 +629,8 @@ function build_map() {
 		let y = original_boxes[name][1]
 		let w = original_boxes[name][2] - 8
 		let h = original_boxes[name][3] - 8
-		let e = ui.boxes[name] = document.createElement("div")
+		calendar_xy[i] = [ x + w / 2, y + h / 2 ]
+		let e = ui.calendar[i] = document.createElement("div")
 		e.className = "calendar box " + name
 		e.style.left = x + "px"
 		e.style.top = y + "px"
@@ -637,26 +639,7 @@ function build_map() {
 		document.getElementById("boxes").appendChild(e)
 	}
 
-	ui.calendar = [
-		document.querySelector(".calendar.box1"),
-		document.querySelector(".calendar.box2"),
-		document.querySelector(".calendar.box3"),
-		document.querySelector(".calendar.box4"),
-		document.querySelector(".calendar.box5"),
-		document.querySelector(".calendar.box6"),
-		document.querySelector(".calendar.box7"),
-		document.querySelector(".calendar.box8"),
-		document.querySelector(".calendar.box9"),
-		document.querySelector(".calendar.box10"),
-		document.querySelector(".calendar.box11"),
-		document.querySelector(".calendar.box12"),
-		document.querySelector(".calendar.box13"),
-		document.querySelector(".calendar.box14"),
-		document.querySelector(".calendar.box15"),
-		document.querySelector(".calendar.box16"),
-	]
-
-	for (let i = 0; i <= 17; ++i)
+	for (let i = 1; i <= 16; ++i)
 		register_action(ui.calendar[i], "calendar", i)
 
 	build_plan()
@@ -779,7 +762,7 @@ function layout_locale_cylinders(loc) {
 }
 
 function layout_calendar() {
-	for (let loc = 0; loc < 18; ++loc) {
+	for (let loc = 1; loc <= 16; ++loc) {
 		let [cx, cy] = calendar_xy[loc]
 		let list = calendar_layout_service[loc]
 		for (let i = 0; i < list.length; ++i) {
