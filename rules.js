@@ -228,24 +228,33 @@ const LORD_SALISBURY = find_lord("Salisbury")
 const LORD_RUTLAND = find_lord("Rutland")
 const LORD_PEMBROKE = find_lord("Pembroke")
 const LORD_DEVON = find_lord("Devon")
-const LORD_NORTHUMBERLANDY = find_lord("Northumberland")
-const LORD_GLOUCESTER = find_lord("Gloucester")
+const LORD_NORTHUMBERLAND_Y1 = find_lord("Northumberland Y1")
+const LORD_NORTHUMBERLAND_Y2 = find_lord("Northumberland Y2")
+
+const LORD_GLOUCESTER_1 = find_lord("Gloucester 1")
+const LORD_GLOUCESTER_2 = find_lord("Gloucester 2")
 const LORD_RICHARD_III = find_lord("Richard III")
 const LORD_NORFOLK = find_lord("Norfolk")
-const LORD_WARWICKY = find_lord("WarwickY")
+const LORD_WARWICK_Y = find_lord("Warwick Y")
 
-const LORD_HENRYVI = find_lord("Henry VI")
+const LORD_HENRY_VI = find_lord("Henry VI")
 const LORD_MARGARET = find_lord("Margaret")
-const LORD_SOMERSET = find_lord("Somerset")
-const LORD_EXETER = find_lord("Exeter")
+const LORD_SOMERSET_1 = find_lord("Somerset 1")
+const LORD_SOMERSET_2 = find_lord("Somerset 2")
+
+const LORD_EXETER_1 = find_lord("Exeter 1")
+const LORD_EXETER_2 = find_lord("Exeter 2")
+
 const LORD_BUCKINGHAM = find_lord("Buckingham")
 const LORD_CLARENCE = find_lord("Clarence")
-const LORD_NORTHUMBERLANDL = find_lord("Northumberland")
+const LORD_NORTHUMBERLAND_L = find_lord("Northumberland L")
 
-const LORD_JASPER_TUDOR = find_lord("Jasper Tudor")
+const LORD_JASPER_TUDOR_1 = find_lord("Jasper Tudor 1")
+const LORD_JASPER_TUDOR_2 = find_lord("Jasper Tudor 2")
+
 const LORD_HENRY_TUDOR = find_lord("Henry Tudor")
 const LORD_OXFORD = find_lord("Oxford")
-const LORD_WARWICKL = find_lord("WarwickL")
+const LORD_WARWICK_L = find_lord("Warwick L")
 
 
 
@@ -1421,13 +1430,13 @@ function setup_Ia() {
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
-	muster_lord(LORD_SOMERSET, LOC_WELLS)
+	muster_lord(LORD_SOMERSET_1, LOC_WELLS)
 
-	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLANDL, 2)
-	set_lord_cylinder_on_calendar(LORD_EXETER, 3)
+	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 2)
+	set_lord_cylinder_on_calendar(LORD_EXETER_1, 3)
 	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM, 5)
 	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
-	set_lord_cylinder_on_calendar(LORD_WARWICKY, 3)
+	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
 	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
 }
 
@@ -1435,19 +1444,19 @@ function setup_Ib() {
 	game.turn = 1 << 1
 
 	muster_lord(LORD_NORFOLK, LOC_LONDON)
-	muster_lord(LORD_WARWICKY, LOC_LONDON)
+	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
-	muster_lord(LORD_EXETER, LOC_NEWCASTLE)
-	muster_lord(LORD_SOMERSET, LOC_NEWCASTLE)
-	muster_lord(LORD_NORTHUMBERLANDL, LOC_CARLISLE)
+	muster_lord(LORD_EXETER_1, LOC_NEWCASTLE)
+	muster_lord(LORD_SOMERSET_1, LOC_NEWCASTLE)
+	muster_lord(LORD_NORTHUMBERLAND_L, LOC_CARLISLE)
 }
 
 function setup_Ic() {
 	game.turn = 1 << 1
 
-	muster_lord(LORD_WARWICKY, LOC_LONDON)
+	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LONDON)
-	muster_lord(LORD_SOMERSET, LOC_BAMBURGH)
+	muster_lord(LORD_SOMERSET_1, LOC_BAMBURGH)
 
 	set_lord_cylinder_on_calendar(LORD_HENRY_VI, 5)
 }
@@ -1458,17 +1467,17 @@ function setup_II() {
 
 	muster_lord(LORD_EDWARD_IV, LOC_LONDON)
 	muster_lord(LORD_PEMBROKE, LOC_LONDON)
-	muster_lord(LORD_WARWICKL, LOC_CALAIS)
+	muster_lord(LORD_WARWICK_L, LOC_CALAIS)
 	muster_lord(LORD_CLARENCE, LOC_YORK)
-	muster_lord(LORD_JASPER_TUDOR, LOC_HARLECH)
+	muster_lord(LORD_JASPER_TUDOR_1, LOC_HARLECH)
 
 	set_lord_cylinder_on_calendar(LORD_DEVON, 4)
-	set_lord_cylinder_on_calendar(LORD_GLOUCESTER, 9)
-	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLANDY, 9)
+	set_lord_cylinder_on_calendar(LORD_GLOUCESTER_1, 9)
+	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_Y1, 9)
 	set_lord_cylinder_on_calendar(LORD_MARGARET, 9)
-	set_lord_cylinder_on_calendar(LORD_SOMERSET, 9)
+	set_lord_cylinder_on_calendar(LORD_SOMERSET_2, 9)
 	set_lord_cylinder_on_calendar(LORD_OXFORD, 9)
-	set_lord_cylinder_on_calendar(LORD_EXETER, 9)
+	set_lord_cylinder_on_calendar(LORD_EXETER_2, 9)
 
 }
 
@@ -1477,10 +1486,10 @@ function setup_III() {
 	game.turn = 1 << 1
 
 	muster_lord(LORD_RICHARD_III, LOC_LONDON)
-	muster_lord(LORD_NORTHUMBERLANDY, LOC_CARLISLE)
+	muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
 	muster_lord(LORD_NORFOLK, LOC_ARUNDEL)
 	muster_lord(LORD_HENRY_TUDOR, LOC_FRANCE)
-	muster_lord(LORD_JASPER_TUDOR, LOC_FRANCE)
+	muster_lord(LORD_JASPER_TUDOR_2, LOC_FRANCE)
 	muster_lord(LORD_OXFORD, LOC_FRANCE)
 
 }
@@ -1492,13 +1501,13 @@ function setup_ItoIII() {
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
-	muster_lord(LORD_SOMERSET, LOC_WELLS)
+	muster_lord(LORD_SOMERSET_1, LOC_WELLS)
 
-	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLANDL, 2)
-	set_lord_cylinder_on_calendar(LORD_EXETER, 3)
+	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 2)
+	set_lord_cylinder_on_calendar(LORD_EXETER_1, 3)
 	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM, 5)
 	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
-	set_lord_cylinder_on_calendar(LORD_WARWICKY, 3)
+	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
 	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
 
 }
