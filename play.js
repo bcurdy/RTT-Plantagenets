@@ -737,11 +737,12 @@ function build_map() {
 
 	data.lords.forEach((lord, ix) => {
 		let e = ui.lord_cylinder[ix] = document.createElement("div")
-		e.className = "cylinder lord lord" + ix + " hide"
+		let name = clean_name(lord.name)
+		e.className = "cylinder lord lord_" + name + " hide"
 		register_action(e, "lord", ix)
 		register_tooltip(e, on_focus_cylinder)
 		document.getElementById("pieces").appendChild(e)
-		build_lord_mat(lord, ix, clean_name(lord.side), clean_name(lord.name))
+		build_lord_mat(lord, ix, clean_name(lord.side), name)
 	})
 
 	data.vassals.forEach((vassal, ix) => {
@@ -758,7 +759,7 @@ function build_map() {
 		let y = original_boxes[name][1]
 		let w = original_boxes[name][2] - 8
 		let h = original_boxes[name][3] - 8
-		calendar_xy[i] = [ x + w / 2, y + h / 2 ]
+		calendar_xy[i] = [ x + w, y ]
 		let e = ui.calendar[i] = document.createElement("div")
 		e.className = "calendar box " + name
 		e.style.left = x + "px"
@@ -1291,10 +1292,10 @@ function on_update() {
 	} else {
 		ui.turn.className = `marker circle turn levy`
 	}
-	ui.turn.style.left = (calendar_xy[view.turn >> 1][0] - 5) + "px"
-	ui.turn.style.top = (calendar_xy[view.turn >> 1][1] + 20) + "px"
-	ui.end.style.left = calendar_xy[view.end][0] - 5
-	ui.end.style.top = calendar_xy[view.end][1] + 20
+	ui.turn.style.left = (calendar_xy[view.turn >> 1][0] - 52) + "px"
+	ui.turn.style.top = (calendar_xy[view.turn >> 1][1] + 100) + "px"
+	ui.end.style.left = (calendar_xy[view.end][0] - 52) + "px"
+	ui.end.style.top = (calendar_xy[view.end][1] + 100) + "px"
 
 	ui.held1.textContent = `${view.held1} Held`
 	ui.held2.textContent = `${view.held2} Held`

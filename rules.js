@@ -7548,7 +7548,7 @@ exports.view = function (state, current) {
 		log: game.log,
 		reveal: 0,
 
-		scenario: (scenario_first_turn[game.scenario] << 5) + (scenario_last_turn[game.scenario]),
+		end: scenario_last_turn[game.scenario],
 		turn: game.turn,
 		events: game.events,
 		pieces: game.pieces,
