@@ -108,13 +108,22 @@ const ARRAY_FLANKS = [
 
 
 function find_card(name) {
-	return data.cards.findIndex((x) => x.name === name)
+	let ix = data.cards.findIndex((x) => x.name === name)
+	if (ix < 0)
+		throw "CANNOT FIND LORD: " + name
+	return ix
 }
 function find_lord(name) {
-	return data.lords.findIndex((x) => x.name === name)
+	let ix = data.lords.findIndex((x) => x.name === name)
+	if (ix < 0)
+		throw "CANNOT FIND LORD: " + name
+	return ix
 }
 function find_locale(name) {
-	return data.locales.findIndex((x) => x.name === name)
+	let ix = data.locales.findIndex((x) => x.name === name)
+	if (ix < 0)
+		throw "CANNOT FIND LORD: " + name
+	return ix
 }
 
 const lord_name = data.lords.map((lord) => lord.name)
@@ -303,7 +312,7 @@ const LOC_COVENTRY = find_locale("Coventry")
 const LOC_LEICESTER = find_locale("Leicester")
 const LOC_LICHFIELD = find_locale("Lichfield")
 const LOC_DERBY = find_locale("Derby")
-const LOC_NOTTINGHAM = find_locale("Notthingham")
+const LOC_NOTTINGHAM = find_locale("Nottingham")
 const LOC_WORCESTER = find_locale("Worcester")
 const LOC_CHESTER = find_locale("Chester")
 const LOC_LANCASTER = find_locale("Lancaster")
@@ -1478,7 +1487,6 @@ function setup_II() {
 	set_lord_cylinder_on_calendar(LORD_SOMERSET_2, 9)
 	set_lord_cylinder_on_calendar(LORD_OXFORD, 9)
 	set_lord_cylinder_on_calendar(LORD_EXETER_2, 9)
-
 }
 
 
