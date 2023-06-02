@@ -1391,10 +1391,25 @@ exports.setup = function (seed, scenario, options) {
 	log_h1(scenario)
 
 	switch (scenario) {
-		default:
-		case "Ia. Henry VI":
-			setup_Ia()
-			break
+	default:
+	case "Ia. Henry VI":
+		setup_Ia()
+	break
+	case "Ib. Towton":
+		setup_Ib()
+	break
+	case "Ic. Somerset's Return":
+		setup_Ic()
+	break
+	case "II. Warwicks' Rebellion" :
+		setup_II()
+	break
+	case "III. My Kingdom for a Horse":
+		setup_III()
+	break
+		case "I-III. Wars of the Roses":
+		setup_ItoIII()
+	break
 	}
 
 	return game
@@ -1405,7 +1420,7 @@ function setup_Ia() {
 
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
-	muster_lord(LORD_HENRYVI, LOC_LONDON)
+	muster_lord(LORD_HENRY_VI, LOC_LONDON)
 	muster_lord(LORD_SOMERSET, LOC_WELLS)
 
 	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLANDL, 2)
@@ -1414,6 +1429,78 @@ function setup_Ia() {
 	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
 	set_lord_cylinder_on_calendar(LORD_WARWICKY, 3)
 	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
+}
+
+function setup_Ib() {
+	game.turn = 1 << 1
+
+	muster_lord(LORD_NORFOLK, LOC_LONDON)
+	muster_lord(LORD_WARWICKY, LOC_LONDON)
+	muster_lord(LORD_MARCH, LOC_LUDLOW)
+	muster_lord(LORD_EXETER, LOC_NEWCASTLE)
+	muster_lord(LORD_SOMERSET, LOC_NEWCASTLE)
+	muster_lord(LORD_NORTHUMBERLANDL, LOC_CARLISLE)
+}
+
+function setup_Ic() {
+	game.turn = 1 << 1
+
+	muster_lord(LORD_WARWICKY, LOC_LONDON)
+	muster_lord(LORD_MARCH, LOC_LONDON)
+	muster_lord(LORD_SOMERSET, LOC_BAMBURGH)
+
+	set_lord_cylinder_on_calendar(LORD_HENRY_VI, 5)
+}
+
+
+function setup_II() {
+	game.turn = 1 << 1
+
+	muster_lord(LORD_EDWARD_IV, LOC_LONDON)
+	muster_lord(LORD_PEMBROKE, LOC_LONDON)
+	muster_lord(LORD_WARWICKL, LOC_CALAIS)
+	muster_lord(LORD_CLARENCE, LOC_YORK)
+	muster_lord(LORD_JASPER_TUDOR, LOC_HARLECH)
+
+	set_lord_cylinder_on_calendar(LORD_DEVON, 4)
+	set_lord_cylinder_on_calendar(LORD_GLOUCESTER, 9)
+	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLANDY, 9)
+	set_lord_cylinder_on_calendar(LORD_MARGARET, 9)
+	set_lord_cylinder_on_calendar(LORD_SOMERSET, 9)
+	set_lord_cylinder_on_calendar(LORD_OXFORD, 9)
+	set_lord_cylinder_on_calendar(LORD_EXETER, 9)
+
+}
+
+
+function setup_III() {
+	game.turn = 1 << 1
+
+	muster_lord(LORD_RICHARD_III, LOC_LONDON)
+	muster_lord(LORD_NORTHUMBERLANDY, LOC_CARLISLE)
+	muster_lord(LORD_NORFOLK, LOC_ARUNDEL)
+	muster_lord(LORD_HENRY_TUDOR, LOC_FRANCE)
+	muster_lord(LORD_JASPER_TUDOR, LOC_FRANCE)
+	muster_lord(LORD_OXFORD, LOC_FRANCE)
+
+}
+
+
+function setup_ItoIII() {
+	game.turn = 1 << 1
+
+	muster_lord(LORD_YORK, LOC_ELY)
+	muster_lord(LORD_MARCH, LOC_LUDLOW)
+	muster_lord(LORD_HENRY_VI, LOC_LONDON)
+	muster_lord(LORD_SOMERSET, LOC_WELLS)
+
+	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLANDL, 2)
+	set_lord_cylinder_on_calendar(LORD_EXETER, 3)
+	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM, 5)
+	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
+	set_lord_cylinder_on_calendar(LORD_WARWICKY, 3)
+	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
+
 }
 /*
 states.setup_lords = {
