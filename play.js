@@ -195,7 +195,7 @@ const LONGBOWMEN = 6
 const force_type_count = 7
 
 
-const force_action_name = [ "Retinue", "Vassal", "Mercenary", "Burgundians", "Men-at-Arms", "Militia", "Longbowmen" ]
+const force_action_name = [ "retinue", "vassal", "mercenary", "burgundians", "men_at_arms", "militia", "longbowmen" ]
 const routed_force_action_name = [ "routed_retinue", "routed_vassal", "routed_mercenary", "routed_burgundians", "routed_men_at_arms", "routed_militia", "routed_longbowmen" ]
 
 const COIN = 1
@@ -531,8 +531,6 @@ const ui = {
 	forces: [],
 	routed: [],
 	assets: [],
-	ready_vassals: [],
-	mustered_vassals: [],
 	lord_capabilities: [],
 	lord_events: [],
 	lord_moved1: [],
@@ -604,9 +602,7 @@ function build_lord_mat(lord, ix, side, name) {
 	ui.forces[ix] = build_div(bg, "forces")
 	ui.routed[ix] = build_div(bg, "routed")
 	ui.assets[ix] = build_div(bg, "assets")
-	ui.ready_vassals[ix] = build_div(bg, "ready_vassals")
-	ui.mustered_vassals[ix] = build_div(bg, "mustered_vassals")
-	ui.lord_buttons[ix] = build_div(bg, "shield")
+	ui.lord_buttons[ix] = build_div(bg, "card lord " + side + " " + name)
 	ui.lord_capabilities[ix] = build_div(mat, "capabilities")
 	ui.lord_events[ix] = build_div(mat, "events")
 	ui.lord_moved1[ix] = build_div(mat, "marker square moved_fought one hide")
@@ -995,15 +991,13 @@ function update_lord_mat(ix) {
 	if (view.reveal & (1 << ix)) {
 		ui.lord_mat[ix].classList.remove("hidden")
 		update_assets(ix, ui.assets[ix], view.pieces.assets[ix])
-		update_vassals(ui.ready_vassals[ix], ui.mustered_vassals[ix], ix)
+		// update_vassals(ui.ready_vassals[ix], ui.mustered_vassals[ix], ix)
 		update_forces(ui.forces[ix], view.pieces.forces[ix], ix, false)
 		update_forces(ui.routed[ix], view.pieces.routed[ix], ix, true)
 		ui.lord_feed_x2[ix].classList.toggle("hide", count_lord_all_forces(ix) <= 6)
 	} else {
 		ui.lord_mat[ix].classList.add("hidden")
 		ui.assets[ix].replaceChildren()
-		ui.ready_vassals[ix].replaceChildren()
-		ui.mustered_vassals[ix].replaceChildren()
 		ui.forces[ix].replaceChildren()
 		ui.routed[ix].replaceChildren()
 		ui.lord_moved1[ix].classList.add("hide")

@@ -108,7 +108,7 @@ body.Lancaster #plan_actions .york { display: none }
 }
 
 #battle_grid .grid_array {
-	width: 376px;
+	width: 375px;
 	height: 506px;
 	padding: 36px 12px 12px 12px;
 }
@@ -165,21 +165,21 @@ body.Lancaster #plan_actions .york { display: none }
 
 .mat {
 	position: relative;
-	width: 376px;
+	width: 379px;
 	height: 506px;
 	z-index: 1;
 }
 
 .mat .background {
 	position: absolute;
-	width: 372px;
-	height: 372px;
+	width: 375px;
+	height: 375px;
 	border-radius: 12px;
 	border-width: 2px;
 	border-style: solid;
+	background-image: url(images/lord_mat_75.png);
 	background-color: #d1c07e;
-	background-position: center;
-	background-size: 360px 360px;
+	background-size: 375px 375px;
 	background-repeat: no-repeat;
 	z-index: 4;
 }
@@ -252,21 +252,17 @@ body.shift #capabilities2 {
 	z-index: 200;
 }
 
-.mat .forces, .mat .routed, .mat .assets {
+.mat .forces, .mat .routed, .mat .assets, .mat .card {
 	position: absolute;
 	display: flex;
 	flex-wrap: wrap;
-	justify-content: start;
+	justify-content: center;
 	justify-items: center;
 	align-content: center;
 	align-items: center;
 	gap: 4px 6px;
 	z-index: 5;
 	//background-color: #f004;
-}
-
-.mat > .background > div {
-	//outline: 1px solid red;
 }
 
 .mat .forces {
@@ -295,27 +291,10 @@ body.shift #capabilities2 {
 	margin-top: -38px;
 }
 
-.mat .shield {
-	position: absolute;
-	background-repeat: no-repeat;
-}
-
-.mat .shield {
-	top: 10px; left: 6px;
-	width: 75px; height: 85px;
-	border-radius: 0 0 50% 50%;
-	filter: drop-shadow(0 0 4px white);
-}
-
-.mat .shield.action {
-	background-image: url(images/shield.svg);
-	filter: drop-shadow(0 0 3px white);
-}
-
-.mat .forces { top: 96px; left: 66px; width: 240px; height: 96px; }
-.mat .routed { top: 200px; left: 18px; width: 236px; height: 48px; }
-.mat .assets { top: 255px; left: 24px; width: 230px; height: 96px; }
-.mat .mustered_vassals { bottom: 134px; right: 6px; width: 94px; }
+.mat .card { top: 96px; left: 16px; }
+.mat .forces { top: 5px; left: 5px; width: 365px; height: 100px; }
+.mat .routed { top: 110px; right: 5px; width: 160px; height: 120px; }
+.mat .assets { top: 235px; right: 15px; width: 140px; height: 125px; }
 
 /* ASSETS */
 
@@ -404,17 +383,28 @@ body.shift #capabilities2 {
 .marker.depleted { background-image: url(images/depleted.png) }
 .marker.victory_check { background-image: url(images/victory_check.png) }
 .marker.valour { background-image: url(images/valour.png) }
-.marker.retinue { background-image: url(images/retinue.png) }
 .marker.rose.york { background-image: url(images/rose_york.png) }
 .marker.rose.lancaster { background-image: url(images/rose_lancaster.png) }
 .marker.source { background-image: url(images/source.png) }
+
+.unit.retinue { background-image: url(images/retinue.png) }
 
 /* UNITS */
 
 .unit {
 	background-size: contain;
 	background-repeat: no-repeat;
+	width: 43px;
+	height: 35px;
 	filter: drop-shadow(0px 2px 2px #0004);
+}
+
+.unit.retinue {
+	border: 2px solid gray;
+	width: 46px;
+	height: 46px;
+	border-radius: 8px;
+	margin: 0 2px;
 }
 
 .unit.action {
@@ -425,23 +415,11 @@ body.shift #capabilities2 {
 		drop-shadow(-2px 0px 0px white);
 }
 
-.unit.knights, .unit.sergeants, .unit.light_horse, .unit.asiatic_horse {
-	width: 30px;
-	height: 35px;
-}
-
-.unit.men_at_arms, .unit.militia, .unit.serfs {
-	width: 43px;
-	height: 35px;
-}
-
-.unit.knights { background-image: url(images/unit_knights.svg) }
-.unit.sergeants { background-image: url(images/unit_sergeants.svg) }
-.unit.light_horse { background-image: url(images/unit_light_horse.svg) }
-.unit.asiatic_horse { background-image: url(images/unit_asiatic_horse.svg) }
 .unit.men_at_arms { background-image: url(images/unit_men_at_arms.svg) }
+.unit.longbowmen { background-image: url(images/unit_longbowmen.svg) }
 .unit.militia { background-image: url(images/unit_militia.svg) }
-.unit.serfs { background-image: url(images/unit_serfs.svg) }
+.unit.mercenaries { background-image: url(images/unit_mercenaries.svg) }
+.unit.handgunners { background-image: url(images/unit_handgunners.svg) }
 
 /* CARDS */
 
@@ -460,8 +438,9 @@ body.shift #capabilities2 {
 	background-size: 186px 260px;
 	width: 186px;
 	height: 260px;
-	border-radius: 8px;
+	border-radius: 6px;
 	transition: 100ms;
+	box-shadow: 1px 1px 4px #0008;
 }
 
 .card_info {
