@@ -330,14 +330,6 @@ function is_p2_lord(lord) {
 	return lord >= first_p2_lord && lord <= last_p2_lord
 }
 
-function is_lord_besieged(lord) {
-	let besieged = pack1_get(view.pieces.besieged, lord)
-	// show sallying lords as not besieged
-	if (view.battle && view.battle.array && view.battle.reserves.includes(lord))
-		return false
-	return besieged
-}
-
 function is_lord_on_left_or_right(lord) {
 	if (view.battle.array[A1] === lord) return true
 	if (view.battle.array[A3] === lord) return true
@@ -400,18 +392,6 @@ function is_lord_on_map(lord) {
 	return loc !== NOWHERE && loc < CALENDAR
 }
 
-function is_vassal_ready(vassal) {
-	return view.pieces.vassals[vassal] === VASSAL_READY
-}
-
-function is_vassal_mustered(vassal) {
-	return view.pieces.vassals[vassal] === VASSAL_MUSTERED
-}
-
-function is_legate_selected() {
-	return player === "York" && !!view.pieces.legate_selected
-}
-
 function is_levy_phase() {
 	return (view.turn & 1) === 0
 }
@@ -439,22 +419,6 @@ function is_lord_selected(ix) {
 	return false
 }
 
-function is_town_locale(loc) {
-	return data.locales[loc].type === "town"
-}
-
-function is_bishopric(loc) {
-	return data.locales[loc].type === "bishopric"
-}
-
-function has_walls(loc) {
-	return set_has(view.pieces.walls, loc)
-}
-
-function lord_has_unrouted_units(lord) {
-	return view.pieces.forces[lord] !== 0
-}
-
 function get_lord_capability(lord, n) {
 	return view.pieces.capabilities[(lord << 1) + n]
 }
@@ -478,22 +442,6 @@ function lord_has_capability(lord, card_or_list) {
 		return false
 	}
 	return lord_has_capability_card(lord, card_or_list)
-}
-
-function attacker_has_trebuchets() {
-	if (view.battle.attacker === "York") {
-		for (let lord = first_p1_lord; lord <= last_p1_lord; ++lord) {
-			if (get_lord_locale(lord) === view.battle.where && lord_has_unrouted_units(lord)) {
-				if (lord_has_capability(lord, AOW_TEUTONIC_TREBUCHETS))
-					return true
-			}
-		}
-	}
-	return false
-}
-
-function count_siege_markers(loc) {
-	return map_get(view.pieces.sieges, loc, 0)
 }
 
 // === BUILD UI ===
@@ -670,7 +618,7 @@ function build_lord_mat(lord, ix, side, name) {
 
 function build_card(side, c) {
 	let card = ui.cards[c] = document.createElement("div")
-	card.className = `card aow ${side} ${side}_${c}`
+	card.className = `card aow ${side} c${c}`
 	register_action(card, "card", c)
 }
 
@@ -685,19 +633,19 @@ function build_plan() {
 	for (let lord = 0; lord < 24; ++lord) {
 		let side = lord < 12 ? "york" : "lancaster"
 		elt = document.createElement("div")
-		elt.className = `card ${side} cc_lord_${lord}`
+		elt.className = `card cc ${side} ${lord.id}`
 		register_action(elt, "plan", lord)
 		ui.plan_action_cards.push(elt)
 		ui.plan_actions.appendChild(elt)
 	}
 
 	ui.plan_action_pass_p1 = elt = document.createElement("div")
-	elt.className = `card york cc_pass`
+	elt.className = `card cc york pass`
 	register_action(elt, "plan", -1)
 	ui.plan_actions.appendChild(elt)
 
 	ui.plan_action_pass_p2 = elt = document.createElement("div")
-	elt.className = `card lancaster cc_pass`
+	elt.className = `card cc lancaster pass`
 	register_action(elt, "plan", -1)
 	ui.plan_actions.appendChild(elt)
 }
@@ -750,13 +698,12 @@ function build_map() {
 
 	data.lords.forEach((lord, ix) => {
 		let e = ui.lord_cylinder[ix] = document.createElement("div")
-		let name = clean_name(lord.name)
-		let side = clean_name(lord.side)
-		e.className = "cylinder lord " + side + " lord_" + name + " hide"
+		let side = lord.side.toLowerCase()
+		e.className = "cylinder " + side + " " + lord.id + " hide"
 		register_action(e, "lord", ix)
 		register_tooltip(e, on_focus_cylinder)
 		document.getElementById("pieces").appendChild(e)
-		build_lord_mat(lord, ix, clean_name(lord.side), name)
+		build_lord_mat(lord, ix, side, lord.id)
 	})
 
 	data.vassals.forEach((vassal, ix) => {
@@ -835,9 +782,9 @@ function restart_cache() {
 function update_current_card_display() {
 	if (typeof view.what === "number" && view.what >= 0) {
 		if (view.what <= first_p1_card)
-			ui.command.className = `card aow york york_${view.what}`
+			ui.command.className = `card aow york c${view.what}`
 		else
-			ui.command.className = `card aow lancaster lancaster_${view.what}`
+			ui.command.className = `card aow lancaster c${view.what}`
 	} else if ((view.turn & 1) === 0) {
 		if (player === "Lancaster")
 			ui.command.className = `card aow lancaster`
@@ -849,10 +796,10 @@ function update_current_card_display() {
 		else
 			ui.command.className = `card cc york`
 	} else {
-		if (view.command < 6)
-			ui.command.className = `card cc lancaster lord_${view.command}`
+		if (view.command < 14)
+			ui.command.className = `card cc york ${data.lords[view.command].id}`
 		else
-			ui.command.className = `card cc york lord_${view.command}`
+			ui.command.className = `card cc lancaster ${data.lords[view.command].id}`
 	}
 }
 
@@ -1083,7 +1030,6 @@ function update_lord(ix) {
 		calendar_layout_cylinder[t].push(ui.lord_cylinder[ix])
 		ui.lord_cylinder[ix].classList.remove("hide")
 	}
-	ui.lord_cylinder[ix].classList.toggle("besieged", is_lord_besieged(ix))
 	ui.lord_buttons[ix].classList.toggle("action", is_action("lord", ix))
 	ui.lord_cylinder[ix].classList.toggle("action", is_action("lord", ix))
 
@@ -1093,7 +1039,6 @@ function update_lord(ix) {
 	ui.lord_cylinder[ix].classList.toggle("command", is_lord_command(ix))
 	ui.lord_mat[ix].classList.toggle("command", is_lord_command(ix))
 
-	ui.lord_mat[ix].classList.toggle("besieged", is_lord_besieged(ix))
 	ui.lord_mat[ix].classList.toggle("ambushed", is_lord_ambushed(ix))
 }
 
@@ -1136,20 +1081,20 @@ function update_plan() {
 				let lord = view.plan[i]
 				if (lord < 0) {
 					if (player === "York")
-						ui.plan_cards[i].className = "card york cc_pass"
+						ui.plan_cards[i].className = "card cc york pass"
 					else
-						ui.plan_cards[i].className = "card lancaster cc_pass"
+						ui.plan_cards[i].className = "card cc lancaster pass"
 				} else {
-					if (lord < 6)
-						ui.plan_cards[i].className = "card york cc_lord_" + lord
+					if (lord < 14)
+						ui.plan_cards[i].className = "card cc york " + data.lords[lord].id
 					else
-						ui.plan_cards[i].className = "card lancaster cc_lord_" + lord
+						ui.plan_cards[i].className = "card cc lancaster " + data.lords[lord].id
 				}
 			} else if (is_planning && i < max_plan_length()) {
 				if (player === "York")
-					ui.plan_cards[i].className = "card york cc_back"
+					ui.plan_cards[i].className = "card cc york"
 				else
-					ui.plan_cards[i].className = "card lancaster cc_back"
+					ui.plan_cards[i].className = "card cc lancaster"
 			} else {
 				ui.plan_cards[i].className = "hide"
 			}

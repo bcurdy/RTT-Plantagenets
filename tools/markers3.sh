@@ -46,11 +46,11 @@ single fled
 single hits_lancaster
 single hits_york
 single levy
-single marker_clifford
-single marker_edward
-single marker_hastings
-single marker_stanley
-single marker_trollope
+single vassal_clifford
+single vassal_edward
+single vassal_hastings
+single vassal_thomas_stanley
+single vassal_trollope
 single moved_fought
 single prov_x1
 single prov_x2
@@ -121,11 +121,11 @@ multi "#ffffff" 6x1 numbers_lancaster \
 
 exit
 
-single marker_clifford_b
-single marker_edward_b
-single marker_hastings_b
-single marker_stanley_b
-single marker_trollope_b
+single vassal_clifford_b
+single vassal_edward_b
+single vassal_hastings_b
+single vassal_thomas_stanley_b
+single vassal_trollope_b
 
 multi '#ffffff' 4x seats_york \
 	HIRES/output/seat_york_devon.png \

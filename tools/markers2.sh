@@ -81,11 +81,11 @@ large2 38 vassal_essex
 large2 40 vassal_westmorld
 large2 47 vassal_worcester
 
-large2 6 marker_hastings
-large2 49 marker_trollope
-large2 50 marker_clifford
-large2 51 marker_edward
-large2 52 marker_stanley
+large2 6 vassal_hastings
+large2 49 vassal_trollope
+large2 50 vassal_clifford
+large2 51 vassal_edward
+large2 52 vassal_thomas_stanley
 
 large2 7 seat_lancaster_henry_vi
 large2 8 seat_lancaster_somerset

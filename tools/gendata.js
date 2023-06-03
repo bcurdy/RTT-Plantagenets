@@ -7,6 +7,10 @@ const fs = require('fs')
 function cmpnum(a,b) { return a - b }
 function cmpnum2(a,b) { return a[0] - b[0] }
 
+function clean_name(name) {
+	return name.toLowerCase().replaceAll("&", "and").replaceAll(" ", "_")
+}
+
 // :r !python3 genboxes.py
 const boxes = {
 	"0": [60,1613,48,48],
@@ -1263,6 +1267,10 @@ let vassals = []
 function vassal(service, name, seat, influence, capability) {
 	vassals.push({service, name, seat, influence, capability })
 }
+
+lords.forEach(lord => {
+	lord.id = "lord_" + clean_name(lord.name)
+})
 
 vassal(1, "Norfolk", "Arundel", 0)
 vassal(1, "Stanley", "Derby", 0)
