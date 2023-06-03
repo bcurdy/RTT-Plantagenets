@@ -1247,10 +1247,10 @@ function update_court() {
 	let rcourt = (player === "Lancaster") ? ui.court1 : ui.court2
 	tcourt.replaceChildren()
 	rcourt.replaceChildren()
-	for (let lord = 0; lord < 6; ++lord)
+	for (let lord = 14; lord < 27; ++lord)
 		if (!is_lord_in_battle(lord) && is_lord_on_map(lord))
 			tcourt.appendChild(ui.lord_mat[lord])
-	for (let lord = 6; lord < 12; ++lord)
+	for (let lord = 0; lord < 14; ++lord)
 		if (!is_lord_in_battle(lord) && is_lord_on_map(lord))
 			rcourt.appendChild(ui.lord_mat[lord])
 }
