@@ -668,11 +668,30 @@ body.shift #capabilities2 {
 .vassal.vassal_worcester { background-image: url(images/vassal_worcester.png) }
 
 .vassal.vassal_hastings { background-image: url(images/vassal_hastings.png) }
-
 .vassal.vassal_clifford { background-image: url(images/vassal_clifford.png) }
 .vassal.vassal_edward { background-image: url(images/vassal_edward.png) }
 .vassal.vassal_thomas_stanley { background-image: url(images/vassal_thomas_stanley.png) }
 .vassal.vassal_trollope { background-image: url(images/vassal_trollope.png) }
+
+.vassal.back.vassal_beaumont { background-image: url(images/vassal_beaumont_b.png) }
+.vassal.back.vassal_bonville { background-image: url(images/vassal_bonville_b.png) }
+.vassal.back.vassal_devon { background-image: url(images/vassal_devon_b.png) }
+.vassal.back.vassal_dudley { background-image: url(images/vassal_dudley_b.png) }
+.vassal.back.vassal_essex { background-image: url(images/vassal_essex_b.png) }
+.vassal.back.vassal_fauconberg { background-image: url(images/vassal_fauconberg_b.png) }
+.vassal.back.vassal_norfolk { background-image: url(images/vassal_norfolk_b.png) }
+.vassal.back.vassal_oxford { background-image: url(images/vassal_oxford_b.png) }
+.vassal.back.vassal_shrewsbury { background-image: url(images/vassal_shrewsbury_b.png) }
+.vassal.back.vassal_stanley { background-image: url(images/vassal_stanley_b.png) }
+.vassal.back.vassal_suffolk { background-image: url(images/vassal_suffolk_b.png) }
+.vassal.back.vassal_westmorld { background-image: url(images/vassal_westmorld_b.png) }
+.vassal.back.vassal_worcester { background-image: url(images/vassal_worcester_b.png) }
+
+.vassal.back.vassal_hastings { background-image: url(images/vassal_hastings_b.png) }
+.vassal.back.vassal_clifford { background-image: url(images/vassal_clifford_b.png) }
+.vassal.back.vassal_edward { background-image: url(images/vassal_edward_b.png) }
+.vassal.back.vassal_thomas_stanley { background-image: url(images/vassal_thomas_stanley_b.png) }
+.vassal.back.vassal_trollope { background-image: url(images/vassal_trollope_b.png) }
 
 /* BACKGROUND COLORS AND BORDERS */
 

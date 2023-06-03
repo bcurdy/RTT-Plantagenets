@@ -46,11 +46,6 @@ single fled
 single hits_lancaster
 single hits_york
 single levy
-single vassal_clifford
-single vassal_edward
-single vassal_hastings
-single vassal_thomas_stanley
-single vassal_trollope
 single moved_fought
 single prov_x1
 single prov_x2
@@ -103,6 +98,47 @@ single vassal_suffolk
 single vassal_westmorld
 single vassal_worcester
 
+single vassal_beaumont_b
+single vassal_bonville_b
+single vassal_devon_b
+single vassal_dudley_b
+single vassal_essex_b
+single vassal_fauconberg_b
+single vassal_norfolk_b
+single vassal_oxford_b
+single vassal_shrewsbury_b
+single vassal_stanley_b
+single vassal_suffolk_b
+single vassal_westmorld_b
+single vassal_worcester_b
+
+single vassal_beaumont_b
+single vassal_bonville_b
+single vassal_devon_b
+single vassal_dudley_b
+single vassal_essex_b
+single vassal_fauconberg_b
+single vassal_norfolk_b
+single vassal_oxford_b
+single vassal_shrewsbury_b
+single vassal_stanley_b
+single vassal_suffolk_b
+single vassal_westmorld_b
+single vassal_worcester_b
+
+
+single vassal_clifford
+single vassal_edward
+single vassal_hastings
+single vassal_thomas_stanley
+single vassal_trollope
+
+single vassal_clifford_b
+single vassal_edward_b
+single vassal_hastings_b
+single vassal_thomas_stanley_b
+single vassal_trollope_b
+
 multi "#ffffff" 6x1 numbers_york \
 	HIRES/output/number_1_york.png \
 	HIRES/output/number_2_york.png \
@@ -120,12 +156,6 @@ multi "#ffffff" 6x1 numbers_lancaster \
 	HIRES/output/number_6_lancaster.png \
 
 exit
-
-single vassal_clifford_b
-single vassal_edward_b
-single vassal_hastings_b
-single vassal_thomas_stanley_b
-single vassal_trollope_b
 
 multi '#ffffff' 4x seats_york \
 	HIRES/output/seat_york_devon.png \
