@@ -466,8 +466,8 @@ function add_spoils(type, n) {
 function get_lord_calendar(lord) {
 	if (is_lord_on_calendar(lord))
 		return get_lord_locale(lord) - CALENDAR
-	else
-		return get_lord_service(lord)
+	/*else
+		return get_lord_service(lord)*/
 }
 
 function set_lord_cylinder_on_calendar(lord, turn) {
@@ -487,9 +487,9 @@ function get_lord_locale(lord) {
 	return game.pieces.locale[lord]
 }
 
-function get_lord_service(lord) {
+/*function get_lord_service(lord) {
 	return game.pieces.service[lord]
-}
+}*/
 
 function get_lord_capability(lord, n) {
 	return game.pieces.capabilities[(lord << 1) + n]
@@ -6406,7 +6406,7 @@ function resume_battle_service() {
 	else
 		end_battle_service()
 }
-
+/*
 states.battle_service = {
 	inactive: "Service",
 	prompt() {
@@ -6426,7 +6426,7 @@ states.battle_service = {
 		set_delete(game.battle.retreated, lord)
 		resume_battle_service()
 	},
-}
+}*/
 
 function end_battle_service() {
 	goto_battle_losses_victor()
@@ -6586,12 +6586,12 @@ states.feed = {
 		game.state = "feed_lord_shared"
 	},
 	// TODO : PILLAGE
-	service_bad(lord) {
+/*	service_bad(lord) {
 		push_undo()
 		add_lord_service(lord, -1)
 		log(`Unfed L${lord} to ${get_lord_service(lord)}.`)
 		set_lord_unfed(lord, 0)
-	},
+	},*/
 	end_feed() {
 		push_undo()
 		end_feed()
@@ -6633,12 +6633,12 @@ function end_feed() {
 // === LEVY & CAMPAIGN: PAY ===
 
 function can_pay_lord(lord) {
-	if (get_lord_service(lord) > 16)
+	/*if (get_lord_service(lord) > 16)
 		return false
 	if (game.active === RUSSIANS) {
 		if (game.pieces.veche_coin > 0 && is_lord_unbesieged(lord))
 			return true
-	}
+	}*/
 	let loc = get_lord_locale(lord)
 	if (get_shared_assets(loc, COIN) > 0)
 		return true
@@ -6646,7 +6646,7 @@ function can_pay_lord(lord) {
 }
 
 function has_friendly_lord_who_may_be_paid() {
-	if (game.active === TEUTONS) {
+	if (game.active === YORK) {
 		// Open a window to play Heinrich sees the Curia.
 		if (could_play_card(EVENT_TEUTONIC_HEINRICH_SEES_THE_CURIA) && can_play_heinrich_sees_the_curia())
 			return true
@@ -6738,8 +6738,8 @@ function end_pay() {
 
 function has_friendly_lord_who_must_disband() {
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		if (is_lord_on_map(lord) && get_lord_service(lord) <= current_turn())
-			return true
+		/*if (is_lord_on_map(lord) && get_lord_service(lord) <= current_turn())
+			return true*/
 	return false
 }
 
@@ -6757,11 +6757,11 @@ function disband_lord(lord, permanently = false) {
 		log(`Removed L${lord}.`)
 		set_lord_locale(lord, NOWHERE)
 		set_lord_service(lord, NEVER)
-	} else if (get_lord_service(lord) < current_turn()) {
+	} /*else if (get_lord_service(lord) < current_turn()) {
 		log(`Disbanded L${lord} beyond Service limit.`)
 		set_lord_locale(lord, NOWHERE)
 		set_lord_service(lord, NEVER)
-	} else {
+	} */else {
 		if (is_levy_phase())
 			set_lord_cylinder_on_calendar(lord, turn + data.lords[lord].service)
 		else
@@ -6804,11 +6804,11 @@ states.disband = {
 
 		let done = true
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (is_lord_on_map(lord) && get_lord_service(lord) <= current_turn()) {
+			/*if (is_lord_on_map(lord) && get_lord_service(lord) <= current_turn()) {
 				gen_action_lord(lord)
 				gen_action_service_bad(lord)
 				done = false
-			}
+			}*/
 		}
 		if (done)
 			view.actions.end_disband = 1
