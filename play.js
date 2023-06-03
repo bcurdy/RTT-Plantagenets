@@ -398,7 +398,7 @@ function is_levy_phase() {
 
 function is_lord_in_battle(lord) {
 	if (view.battle && view.battle.array) {
-		for (let i = 0; i < 12; ++i)
+		for (let i = 0; i < 6; ++i)
 			if (view.battle.array[i] === lord)
 				return true
 		if (view.battle.reserves.includes(lord))
@@ -624,16 +624,18 @@ function build_card(side, c) {
 
 function build_plan() {
 	let elt
-	for (let i = 0; i < 6; ++i) {
+
+	for (let i = 0; i < 7; ++i) {
 		elt = document.createElement("div")
 		elt.className = "hide"
 		ui.plan_cards.push(elt)
 		ui.plan.appendChild(elt)
 	}
-	for (let lord = 0; lord < 24; ++lord) {
-		let side = lord < 12 ? "york" : "lancaster"
+
+	for (let lord = 0; lord < 28; ++lord) {
+		let side = lord < 14 ? "york" : "lancaster"
 		elt = document.createElement("div")
-		elt.className = `card cc ${side} ${lord.id}`
+		elt.className = `card cc ${side} ${data.lords[lord].id}`
 		register_action(elt, "plan", lord)
 		ui.plan_action_cards.push(elt)
 		ui.plan_actions.appendChild(elt)
@@ -1102,7 +1104,7 @@ function update_plan() {
 
 		if (is_planning) {
 			ui.plan_actions.classList.remove("hide")
-			for (let lord = 0; lord < 12; ++lord) {
+			for (let lord = 0; lord < 28; ++lord) {
 				if (is_action("plan", lord)) {
 					ui.plan_action_cards[lord].classList.add("action")
 					ui.plan_action_cards[lord].classList.remove("disabled")

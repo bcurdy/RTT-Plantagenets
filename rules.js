@@ -134,19 +134,19 @@ const vassal_count = data.vassals.length
 const first_lord = 0
 const last_lord = lord_count - 1
 
-const first_p1_locale = 0
-const last_p1_locale = 73
-const first_p2_locale = 0
-const last_p2_locale = 73
+const first_york_locale = 0
+const last_york_locale = 73
+const first_lancaster_locale = 0
+const last_lancaster_locale = 73
 const first_locale = 0
 const last_locale = data.locales.length - 1
 
 
 
-const first_p1_card = 0
-const last_p1_card = 36
-const first_p2_card = 37
-const last_p2_card = 73
+const first_york_card = 0
+const last_york_card = 36
+const first_lancaster_card = 37
+const last_lancaster_card = 73
 
 
 
@@ -429,10 +429,10 @@ function is_levy_phase() {
 
 // === GAME STATE ===
 
-const first_p1_lord = 0
-const last_p1_lord = 13
-const first_p2_lord = 14
-const last_p2_lord = 27
+const first_york_lord = 0
+const last_york_lord = 13
+const first_lancaster_lord = 14
+const last_lancaster_lord = 27
 
 let first_friendly_lord = 0
 let last_friendly_lord = 13
@@ -440,12 +440,12 @@ let first_enemy_lord = 14
 let last_enemy_lord = 27
 
 function update_aliases() {
-	if (game.active === P1) {
+	if (game.active === YORK) {
 		first_friendly_lord = 0
 		last_friendly_lord = 13
 		first_enemy_lord = 14
 		last_enemy_lord = 27
-	} else if (game.active === P2) {
+	} else if (game.active === LANCASTER) {
 		first_friendly_lord = 14
 		last_friendly_lord = 27
 		first_enemy_lord = 0
@@ -489,10 +489,10 @@ function set_active_enemy() {
 }
 
 function enemy_player() {
-	if (game.active === P1)
-		return P2
-	if (game.active === P2)
-		return P1
+	if (game.active === YORK)
+		return LANCASTER
+	if (game.active === LANCASTER)
+		return YORK
 	return null
 }
 
@@ -825,21 +825,13 @@ function is_marshal(lord) {
 function is_armored_force(type) {
 	return type === MEN_AT_ARMS || type === BURGUNDIANS || type === RETINUE || type === VASSAL || type === MERCENARIES
 }
-/*
-function is_no_event_card(c) {
-	if (c === 18 || c === 19 || c === 20)
-		return true
-	if (c === 39 || c === 40 || c === 41)
-		return true
-	return false
-}*/
 
-function is_p1_card(c) {
-	return c >= first_p1_card && c <= last_p1_card_no_event
+function is_york_card(c) {
+	return c >= first_york_card && c <= last_york_card
 }
 
-function is_p2_card(c) {
-	return c >= first_p2_card && c <= last_p2_card_no_event
+function is_lancaster_card(c) {
+	return c >= first_lancaster_card && c <= last_lancaster_card
 }
 
 function is_card_in_use(c) {
@@ -856,24 +848,22 @@ function is_card_in_use(c) {
 
 function list_deck() {
 	let deck = []
-	let first_card = (game.active === P1) ? first_p1_card : first_p2_card
-	let last_card = (game.active === P1) ? last_p1_card : last_p2_card
-		for (let c = first_card; c <= last_card; ++c)
+	let first_card = (game.active === YORK) ? first_york_card : first_lancaster_card
+	let last_card = (game.active === YORK) ? last_york_card : last_lancaster_card
+	for (let c = first_card; c <= last_card; ++c)
 		if (!is_card_in_use(c))
 			deck.push(c)
-	for (let c = last_card + 1; c <= last_card; ++c)
-		deck.push(c)
 	return deck
 }
 
 function is_friendly_card(c) {
-	if (game.active === P1)
-		return is_p1_card(c)
-	return is_p2_card(c)
+	if (game.active === YORK)
+		return is_york_card(c)
+	return is_lancaster_card(c)
 }
 
 function has_card_in_hand(c) {
-	if (game.active === P1)
+	if (game.active === YORK)
 		return set_has(game.hand1, c)
 	return set_has(game.hand2, c)
 }
@@ -932,15 +922,15 @@ function is_vassal_mustered(vassal) {
 }
 
 function is_york_lord(lord) {
-	return lord >= first_p1_lord && lord <= last_p1_lord
+	return lord >= first_york_lord && lord <= last_york_lord
 }
 
 function is_lancaster_lord(lord) {
-	return lord >= first_p2_lord && lord <= last_p2_lord
+	return lord >= first_lancaster_lord && lord <= last_lancaster_lord
 }
 
-function is_p1_lord(lord) {
-	return lord >= first_p1_lord && lord <= last_p1_lord
+function is_york_lord(lord) {
+	return lord >= first_york_lord && lord <= last_york_lord
 }
 
 function is_friendly_lord(lord) {
@@ -1000,13 +990,13 @@ function has_free_seat(lord) {
 }
 
 function has_york_lord(here) {
-	for (let lord = first_p1_lord; lord <= last_p1_lord; ++lord)
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord)
 		if (get_lord_locale(lord) === here)
 			return true
 }
 
 function has_lancaster_lord(here) {
-	for (let lord = first_p2_lord; lord <= last_p2_lord; ++lord)
+	for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; ++lord)
 		if (get_lord_locale(lord) === here)
 			return true
 }
@@ -1046,24 +1036,24 @@ function has_unbesieged_enemy_lord(loc) {
 	return false
 }
 */
-function is_p1_locale(loc) {
-	return loc >= first_p1_locale && loc <= last_p1_locale
+function is_york_locale(loc) {
+	return loc >= first_york_locale && loc <= last_york_locale
 }
 
-function is_p2_locale(loc) {
-	return loc >= first_p2_locale && loc <= last_p2_locale
+function is_lancaster_locale(loc) {
+	return loc >= first_lancaster_locale && loc <= last_lancaster_locale
 }
 // Will be used to determine friendly favour
 function is_friendly_territory(loc) {
-	if (game.active === P1)
-		return loc >= first_p1_locale && loc <= last_p1_locale
-	return loc >= first_p2_locale && loc <= last_p2_locale
+	if (game.active === YORK)
+		return loc >= first_york_locale && loc <= last_york_locale
+	return loc >= first_lancaster_locale && loc <= last_lancaster_locale
 }
 
 function is_enemy_territory(loc) {
-	if (game.active === P1)
-		return loc >= first_p2_locale && loc <= last_p2_locale
-	return loc >= first_p1_locale && loc <= last_p1_locale
+	if (game.active === YORK)
+		return loc >= first_lancaster_locale && loc <= last_lancaster_locale
+	return loc >= first_york_locale && loc <= last_york_locale
 }
 
 function is_seaport(loc) {
@@ -1125,114 +1115,7 @@ function add_exhausted_marker(loc) {
 function remove_exhausted_marker(loc) {
 	set_delete(game.pieces.ravaged, loc)
 }
-/*
-function conquer_trade_route(loc) {
-	if (game.active === RUSSIANS) {
-		if (has_conquered_marker(loc)) {
-			log(`Conquered %${loc}.`)
-			remove_conquered_marker(loc)
-		}
-	} else {
-		if (!has_conquered_marker(loc)) {
-			log(`Conquered %${loc}.`)
-			add_conquered_marker(loc)
-		}
-	}
-}
 
-
-function conquer_stronghold(loc) {
-	if (has_castle_marker(loc))
-		flip_castle(loc)
-
-	remove_all_siege_markers(loc)
-
-	if (is_enemy_territory(loc))
-		add_conquered_marker(loc)
-	else
-		remove_conquered_marker(loc)
-}
-
-function count_castles() {
-	return game.pieces.castles1.length + game.pieces.castles2.length
-}
-
-function add_friendly_castle(loc) {
-	// only P1 can add
-	set_add(game.pieces.castles1, loc)
-}
-
-function has_enemy_castle(loc) {
-	if (game.active === P1)
-		return set_has(game.pieces.castles2, loc)
-	return set_has(game.pieces.castles1, loc)
-}
-
-function has_friendly_castle(loc) {
-	if (game.active === P1)
-		return set_has(game.pieces.castles1, loc)
-	return set_has(game.pieces.castles2, loc)
-}
-
-function has_castle_marker(loc) {
-	return (
-		set_has(game.pieces.castles1, loc) ||
-		set_has(game.pieces.castles2, loc)
-	)
-}
-
-function flip_castle(loc) {
-	if (game.active === P1) {
-		set_delete(game.pieces.castles2, loc)
-		set_add(game.pieces.castles1, loc)
-	} else {
-		set_delete(game.pieces.castles1, loc)
-		set_add(game.pieces.castles2, loc)
-	}
-}
-
-
-function is_friendly_stronghold_locale(loc) {
-	if (is_stronghold(loc) || has_friendly_castle(loc))
-		return is_friendly_locale(loc)
-	return false
-} 
-function is_enemy_stronghold(loc) {
-	if (is_stronghold(loc)) {
-		if (is_enemy_territory(loc) && !has_conquered_marker(loc))
-			return true
-		if (is_friendly_territory(loc) && has_conquered_marker(loc))
-			return true
-	}
-	if (has_enemy_castle(loc))
-		return true
-	return false
-}
-
-function is_friendly_stronghold(loc) {
-	if (is_stronghold(loc)) {
-		if (is_friendly_territory(loc) && !has_conquered_marker(loc))
-			return true
-		if (is_enemy_territory(loc) && has_conquered_marker(loc))
-			return true
-	}
-	if (has_friendly_castle(loc))
-		return true
-	return false
-}
-/*
-function is_unbesieged_enemy_stronghold(loc) {
-	return is_enemy_stronghold(loc) && !has_siege_marker(loc)
-}
-
-function is_unbesieged_friendly_stronghold(loc) {
-	return is_friendly_stronghold(loc) && !has_siege_marker(loc)
-}
-
-function is_besieged_enemy_stronghold(loc) {
-	return is_enemy_stronghold(loc) && has_siege_marker(loc)
-} 
-*/
 function is_friendly_locale(loc) {
 	if (loc !== NOWHERE && loc < CALENDAR) {
 		if (has_enemy_lord(loc))
@@ -1752,7 +1635,7 @@ function prompt_shift_lord_on_calendar(boxes) {
 
 function play_held_event(c) {
 	log(`Played E${c}.`)
-	if (c >= first_p1_card && c <= last_p1_card_no_event)
+	if (c >= first_york_card && c <= last_york_card)
 		set_delete(game.hand1, c)
 	else
 		set_delete(game.hand2, c)
@@ -2430,17 +2313,6 @@ function count_mustered_lords() {
 	return n
 }
 
-function count_global_capabilities() {
-	let n = 0
-	for (let c of game.capabilities) {
-		if (game.active === P1 && c >= first_p1_card && c <= last_p1_card)
-			++n
-		if (game.active === P2 && c >= first_p2_card && c <= last_p2_card)
-			++n
-	}
-	return n
-}
-
 function goto_capability_discard() {
 
 	// Start of Campaign phase
@@ -2459,9 +2331,9 @@ states.capability_discard = {
 		if (count_global_capabilities() > count_mustered_lords()) {
 			view.prompt = "Discard Capabilities in excess of Mustered Lords."
 			for (let c of game.capabilities) {
-				if (game.active === P1 && c >= first_p1_card && c <= last_p1_card)
+				if (game.active === YORK && c >= first_york_card && c <= last_york_card)
 					gen_action_card(c)
-				if (game.active === P2 && c >= first_p2_card && c <= last_p2_card)
+				if (game.active === LANCASTER && c >= first_lancaster_card && c <= last_lancaster_card)
 					gen_action_card(c)
 			}
 		} else {
@@ -2533,56 +2405,27 @@ function goto_campaign_plan() {
 states.campaign_plan = {
 	inactive: "Plan",
 	prompt(current) {
-		let plan = current === P1 ? game.plan1 : game.plan2
-		let first = current === P1 ? first_p1_lord : first_p2_lord
-		let last = current === P1 ? last_p1_lord : last_p2_lord
-		/*let upper = plan_selected_lieutenant(first, last)*/
-		let upper = NOBODY
+		let plan = current === YORK ? game.plan1 : game.plan2
+		let first = current === YORK ? first_york_lord : first_lancaster_lord
+		let last = current === YORK ? last_york_lord : last_lancaster_lord
 		view.plan = plan
-		/*view.who = upper*/
 		view.actions.plan = []
 
-		/*if (plan.length === 0 && upper === NOBODY)
-			view.prompt = "Plan: Designate Lieutenants and build a Plan."
-		else if (plan.length === 0 && upper !== NOBODY)
-			view.prompt = `Plan: Select Lower Lord for ${lord_name[upper]}.`*/
-		/*else*/ if (plan.length === max_plan_length())
+		if (plan.length === max_plan_length())
 			view.prompt = "Plan: All done."
 		else
 			view.prompt = "Plan: Build a Plan."
 
-		if (upper === NOBODY) {
-			if (plan.length < max_plan_length()) {
-				view.actions.end_plan = 0
-				if (count_cards_in_plan(plan, NOBODY) < 3)
-					gen_action_plan(NOBODY)
-				for (let lord = first; lord <= last; ++lord) {
-					if (is_lord_on_map(lord) && count_cards_in_plan(plan, lord) < 3)
-						gen_action_plan(lord)
-				}
-			} else {
-				view.actions.end_plan = 1
+		if (plan.length < max_plan_length()) {
+			view.actions.end_plan = 0
+			if (count_cards_in_plan(plan, NOBODY) < 3)
+				gen_action_plan(NOBODY)
+			for (let lord = first; lord <= last; ++lord) {
+				if (is_lord_on_map(lord) && count_cards_in_plan(plan, lord) < 3)
+					gen_action_plan(lord)
 			}
 		} else {
-			view.actions.end_plan = 0
-		}
-
-		// Designate Lieutenants only if no plan started.
-		if (plan.length === 0) {
-			if (upper !== NOBODY)
-				gen_action_lord(upper)
-
-			for (let lord = first; lord <= last; ++lord) {
-				if (is_marshal(lord))
-					continue
-				if (upper === NOBODY) {
-					//if (plan_can_make_lieutenant(plan, lord, first, last))
-						gen_action_lord(lord)
-				} else {
-					if (get_lord_locale(upper) === get_lord_locale(lord))
-						gen_action_lord(lord)
-				}
-			}
+			view.actions.end_plan = 1
 		}
 
 		if (plan.length > 0)
@@ -2590,50 +2433,25 @@ states.campaign_plan = {
 		else
 			view.actions.undo = 0
 	},
-	/*lord(lord, current) {
-		let upper
-		if (current === P1)
-			upper = plan_selected_lieutenant(first_p1_lord, last_p1_lord)
-		else
-			upper = plan_selected_lieutenant(first_p2_lord, last_p2_lord)
-		if (lord === upper)
-			remove_lieutenant(upper)
-		else if (upper === NOBODY)
-			add_lieutenant(lord)
-		else
-			set_lower_lord(upper, lord)
-	},*/
 	plan(lord, current) {
-		if (current === P1)
+		if (current === YORK)
 			game.plan1.push(lord)
 		else
 			game.plan2.push(lord)
 	},
 	undo(_, current) {
-		if (current === P1) {
-			if (game.plan1.length > 0) {
-				game.plan1.pop()
-			} else {
-				for (let lord = first_p1_lord; lord <= last_p1_lord; ++lord)
-					if (is_upper_lord(lord))
-						remove_lieutenant(lord)
-			}
+		if (current === YORK) {
+			game.plan1.pop()
 		} else {
-			if (game.plan2.length > 0) {
-				game.plan2.pop()
-			} else {
-				for (let lord = first_p2_lord; lord <= last_p2_lord; ++lord)
-					if (is_upper_lord(lord))
-						remove_lieutenant(lord)
-			}
+			game.plan2.pop()
 		}
 	},
 	end_plan(_, current) {
 		if (game.active === BOTH) {
-			if (current === P1)
-				set_active(P2)
+			if (current === YORK)
+				set_active(LANCASTER)
 			else
-				set_active(P1)
+				set_active(YORK)
 		} else {
 			end_campaign_plan()
 		}
@@ -2683,17 +2501,17 @@ function goto_command_activation() {
 // === CAMPAIGN: ACTIONS ===
 
 function set_active_command() {
-	if (game.command >= first_p1_lord && game.command <= last_p1_lord)
-		set_active(P1)
+	if (game.command >= first_york_lord && game.command <= last_york_lord)
+		set_active(YORK)
 	else
-		set_active(P2)
+		set_active(LANCASTER)
 }
 
 function is_active_command() {
-	if (game.command >= first_p1_lord && game.command <= last_p1_lord)
-		return game.active === P1
+	if (game.command >= first_york_lord && game.command <= last_york_lord)
+		return game.active === YORK
 	else
-		return game.active === P2
+		return game.active === LANCASTER
 }
 
 function is_first_action() {
@@ -4384,9 +4202,9 @@ function could_play_card(c) {
 	}
 	if (set_has(game.events, c))
 		return false
-	if (is_p1_card(c))
+	if (is_york_card(c))
 		return game.hand1.length > 0
-	if (is_p2_card(c))
+	if (is_lancaster_card(c))
 		return game.hand2.length > 0
 	return true
 }
@@ -4556,7 +4374,7 @@ states.bridge = {
 		log(`Played E${game.what} on L${lord}.`)
 		if (!game.battle.bridge)
 			game.battle.bridge = { lord1: NOBODY, lord2: NOBODY, n1: 0, n2: 0 }
-		if (is_p1_lord(lord))
+		if (is_york_lord(lord))
 			game.battle.bridge.lord1 = lord
 		else
 			game.battle.bridge.lord2 = lord
@@ -4869,7 +4687,7 @@ function assemble_melee_forces(lord) {
 	}
 
 	if (game.battle.bridge && (game.battle.bridge.lord1 === lord || game.battle.bridge.lord2 === lord)) {
-		let n = is_p1_lord(lord) ? game.battle.bridge.n1 : game.battle.bridge.n2
+		let n = is_york_lord(lord) ? game.battle.bridge.n1 : game.battle.bridge.n2
 
 		log(`Bridge L${lord}`)
 
@@ -4911,7 +4729,7 @@ function assemble_melee_forces(lord) {
 			if (forces.men_at_arms + forces.militia + forces.serfs === 0) logi(`None`)
 		}
 
-		if (is_p1_lord(lord))
+		if (is_york_lord(lord))
 			game.battle.bridge.n1 = n
 		else
 			game.battle.bridge.n2 = n
@@ -6211,9 +6029,9 @@ function goto_battle_losses_loser() {
 	game.who = NOBODY
 	if (has_battle_losses())
 		if (game.active === P1)
-			log_h4("Teutonic Losses")
+			log_h4("Yorkist Losses")
 		else
-			log_h4("Russian Losses")
+			log_h4("Lancastrian Losses")
 	resume_battle_losses()
 }
 
@@ -6223,9 +6041,9 @@ function goto_battle_losses_victor() {
 	game.who = NOBODY
 	if (has_battle_losses())
 		if (game.active === P1)
-			log_h4("Teutonic Losses")
+			log_h4("Yorkist Losses")
 		else
-			log_h4("Russian Losses")
+			log_h4("Lancastrian Losses")
 	resume_battle_losses()
 }
 
@@ -7034,26 +6852,26 @@ states.growth = {
 
 // === END CAMPAIGN: GAME END ===
 
-function check_campaign_victory_p1() {
-	for (let lord = first_p2_lord; lord <= last_p2_lord; ++lord)
+function check_campaign_victory_york() {
+	for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; ++lord)
 		if (is_lord_on_map(lord))
 			return false
 	return true
 }
 
-function check_campaign_victory_p2() {
-	for (let lord = first_p1_lord; lord <= last_p1_lord; ++lord)
+function check_campaign_victory_lancaster() {
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord)
 		if (is_lord_on_map(lord))
 			return false
 	return true
 }
 
 function check_campaign_victory() {
-	if (check_campaign_victory_p1()) {
+	if (check_campaign_victory_york()) {
 		goto_game_over(P1, `${P1} won a Campaign Victory!`)
 		return true
 	}
-	if (check_campaign_victory_p2()) {
+	if (check_campaign_victory_lancaster()) {
 		goto_game_over(P2, `${P2} won a Campaign Victory!`)
 		return true
 	}
@@ -7072,53 +6890,10 @@ function goto_end_campaign() {
 	}
 }
 
-function count_vp1() {
-	let vp = game.pieces.elr1 << 1
-	vp += game.pieces.castles1.length << 1
-	for (let loc of game.pieces.conquered)
-		if (is_p2_locale(loc))
-			vp += data.locales[loc].vp << 1
-	for (let loc of game.pieces.ravaged)
-		if (is_p2_locale(loc))
-			vp += 1
-	return vp
-}
-
-function count_vp2() {
-	let vp = game.pieces.elr2 << 1
-	vp += game.pieces.veche_vp << 1
-	vp += game.pieces.castles2.length << 1
-	for (let loc of game.pieces.conquered)
-		if (is_p1_locale(loc))
-			vp += data.locales[loc].vp << 1
-	for (let loc of game.pieces.ravaged)
-		if (is_p1_locale(loc))
-			vp += 1
-	return vp
-}
-
 function goto_game_end() {
 	// GAME END
 	if (current_turn() === scenario_last_turn[game.scenario]) {
-		let vp1 = count_vp1()
-		let vp2 = count_vp2()
-
-		if (game.scenario === "Watland") {
-			if (vp1 < 14)
-				goto_game_over(P2, `Russians won \u2014 Teutons had less than 7 VP.`)
-			else if (vp1 < vp2 * 2)
-				goto_game_over(P2, `Russians won \u2014 Teutons had less than double Russian VP.`)
-			else
-				goto_game_over(P1, `Teutons won with ${frac(vp1)} VP vs ${frac(vp2)} VP.`)
-			return
-		}
-
-		if (vp1 > vp2)
-			goto_game_over(P1, `${P1} won with ${frac(vp1)} VP vs ${frac(vp2)} VP.`)
-		else if (vp2 > vp1)
-			goto_game_over(P2, `${P2} won with ${frac(vp2)} VP vs ${frac(vp1)} VP.`)
-		else
-			goto_game_over("Draw", "The game ended in a draw.")
+		goto_game_over("Draw", "The game ended in a draw.")
 	} else {
 		goto_plow_and_reap()
 	}
@@ -7247,7 +7022,7 @@ function goto_reset() {
 	// Remove all Serfs to the Smerdi card
 	/* NO SMERDI 
 	if (game.active === RUSSIANS) {
-		for (let lord = first_p2_lord; lord <= last_p2_lord; ++lord)
+		for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; ++lord)
 			set_lord_forces(lord, SERFS, 0)
 		if (has_global_capability(AOW_RUSSIAN_SMERDI))
 			game.pieces.smerdi = 6
@@ -7263,13 +7038,13 @@ states.reset = {
 	inactive: "Reset",
 	prompt() {
 		view.prompt = "Reset: You may discard any Arts of War cards desired."
-		if (game.active === P1) {
-			for (let c = first_p1_card; c <= last_p1_card; ++c)
+		if (game.active === YORK) {
+			for (let c = first_york_card; c <= last_york_card; ++c)
 				if (can_discard_card(c))
 					gen_action_card(c)
 		}
-		if (game.active === P2) {
-			for (let c = first_p2_card; c <= last_p2_card; ++c)
+		if (game.active === LANCASTER) {
+			for (let c = first_lancaster_card; c <= last_lancaster_card; ++c)
 				if (can_discard_card(c))
 					gen_action_card(c)
 		}
@@ -7602,13 +7377,13 @@ exports.view = function (state, current) {
 	if (!game.hidden)
 		view.reveal = -1
 
-	if (current === P1) {
+	if (current === YORK) {
 		view.hand = game.hand1
 		view.plan = game.plan1
 		if (game.hidden)
 			view.reveal |= P1_LORD_MASK
 	}
-	if (current === P2) {
+	if (current === LANCASTER) {
 		view.hand = game.hand2
 		view.plan = game.plan2
 		if (game.hidden)
