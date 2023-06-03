@@ -408,6 +408,17 @@ function current_hand() {
 	return game.hand2
 }
 
+function is_summer() {
+	return current_season() === SUMMER
+}
+function is_winter() {
+	return current_season() === WINTER
+}
+function is_spring() {
+	return current_season() === SPRING
+}
+
+
 function is_campaign_phase() {
 	return (game.turn & 1) === 1
 }
@@ -958,33 +969,13 @@ function used_seat_capability(lord, where, extra) {
 			return AOW_RUSSIAN_ARCHBISHOPRIC
 	return -1
 }*/
-/*
+
 function for_each_seat(lord, fn, repeat = false) {
 	let list = data.lords[lord].seats
 
 	for (let seat of list)
 		fn(seat)
-
-	if (is_teutonic_lord(lord)) {
-		if (has_global_capability(AOW_TEUTONIC_ORDENSBURGEN)) {
-			for (let commandery of COMMANDERIES)
-				if (repeat || !set_has(list, commandery))
-					fn(commandery)
-		}
-	}
-
-	if (is_russian_lord(lord)) {
-		if (has_global_capability(AOW_RUSSIAN_ARCHBISHOPRIC))
-			if (repeat || !set_has(list, LOC_NOVGOROD))
-				fn(LOC_NOVGOROD)
-	}
-
-	if (lord === LORD_YAROSLAV) {
-		if (has_conquered_marker(LOC_PSKOV))
-			if (repeat || !set_has(list, LOC_PSKOV))
-				fn(LOC_PSKOV)
-	}
-}*/
+}
 
 function is_lord_seat(lord, here) {
 	let result = false
@@ -1040,15 +1031,15 @@ function has_enemy_lord(loc) {
 			return true
 	return false
 }
-/*
+
 function has_unbesieged_enemy_lord(loc) {
 	for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord)
-		if (get_lord_locale(lord) === loc && is_lord_unbesieged(lord))
+		if (get_lord_locale(lord) === loc)
 			return true
 	return false
 }
 
-function has_unbesieged_friendly_lord(loc) {
+/*function has_unbesieged_friendly_lord(loc) {
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
 		if (get_lord_locale(lord) === loc && is_lord_unbesieged(lord))
 			return true
@@ -1123,7 +1114,7 @@ function remove_favour_marker(loc) {
 	set_delete(game.pieces.favour, loc)
 }
 
-function has_exhausted_marker(loc) {
+function has_ravaged_marker(loc) {
 	return set_has(game.pieces.exhausted, loc)
 }
 
@@ -1658,7 +1649,7 @@ function is_hill_in_play() {
 	return false
 }
 
-function is_famine_in_play() {
+/* function is_famine_in_play() {
 	if (game.active === TEUTONS)
 		if (is_event_in_play(EVENT_RUSSIAN_FAMINE))
 			return true
@@ -1666,7 +1657,7 @@ function is_famine_in_play() {
 		if (is_event_in_play(EVENT_TEUTONIC_FAMINE))
 			return true
 	return false
-}
+}*/
 
 function no_muster_of_or_by_lord(lord) {
 	if (lord === LORD_KNUD_ABEL)
@@ -2650,15 +2641,6 @@ states.campaign_plan = {
 }
 
 function end_campaign_plan() {
-	if (game.pieces.lieutenants.length > 0) {
-		log("Lieutenants")
-		for (let i = 0; i < game.pieces.lieutenants.length; i += 2) {
-			let upper = game.pieces.lieutenants[i]
-			let lower = game.pieces.lieutenants[i + 1]
-			logi(`L${upper} over L${lower}`)
-		}
-	}
-
 	set_active(P1)
 	goto_command_activation()
 }
@@ -2686,10 +2668,10 @@ function goto_command_activation() {
 	if (game.command === NOBODY) {
 		log_h2("Pass")
 		goto_command_activation()
-	} else if (is_lower_lord(game.command)) {
+	} /*else if (is_lower_lord(game.command)) {
 		log_h2(`L${game.command} - Pass`)
 		goto_command_activation()
-	} else if (!is_lord_on_map(game.command)) {
+	}*/ else if (!is_lord_on_map(game.command)) {
 		log_h2(`L${game.command} - Pass`)
 		goto_command_activation()
 	} else {
@@ -2729,11 +2711,11 @@ function goto_command() {
 	game.flags.first_march = 1
 
 	// 4.1.3 Lieutenants MUST take lower lord
-	game.group = [ game.command ]
+	/*game.group = [ game.command ]
 	let lower = get_lower_lord(game.command)
 	if (lower !== NOBODY)
 		set_add(game.group, lower)
-
+*/
 	resume_command()
 	update_supply_possible()
 }
@@ -2806,7 +2788,7 @@ states.command = {
 		// 4.3.2 Marshals MAY take other lords
 		if (is_marshal(game.command)) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-				if (lord !== game.command && !is_lower_lord(lord))
+				if (lord !== game.command)
 					if (get_lord_locale(lord) === here)
 						gen_action_lord(lord)
 		}
@@ -2821,8 +2803,8 @@ states.command = {
 		if (can_action_supply())
 			view.actions.supply = 1
 
-		if (can_action_siege())
-			view.actions.siege = 1
+	/*	if (can_action_siege())
+			view.actions.siege = 1 */
 		if (can_action_forage())
 			view.actions.forage = 1
 		if (can_action_ravage())
@@ -3492,11 +3474,11 @@ let _supply_cost = new Array(last_locale+1)
 let _supply_carts = new Array(last_locale+1)
 
 function is_supply_forbidden(here) {
-	if (has_unbesieged_enemy_lord(here))
+	/*if (has_unbesieged_enemy_lord(here))
 		return true
 	if (is_unbesieged_enemy_stronghold(here))
-		return true
-	if (is_friendly_territory(here) && has_conquered_marker(here))
+		return true*/
+	if (is_friendly_territory(here))
 		return true
 	return false
 }
@@ -3516,20 +3498,14 @@ function init_supply() {
 	let carts = 0
 	let ships = 0
 	let available = 2
-
-	if (season === SUMMER) {
-		carts = get_shared_assets(here, CART)
-	}
-	if (season === SUMMER || season === RASPUTITSA) {
-		ships = count_shared_ships()
-	}
-
+	carts = get_shared_assets(here, CART)
+	ships = count_shared_ships()
 	if (ships > 2)
 		ships = 2
 
-	if (is_famine_in_play())
+	/*if (is_famine_in_play())
 		available = game.flags.famine ? 0 : 1
-
+*/
 	let seats = []
 	if (available > 0) {
 		for_each_seat(game.command, seat => {
@@ -3541,13 +3517,14 @@ function init_supply() {
 
 	let seaports = []
 	if (ships > 0) {
-		if (game.active === TEUTONS)
+		if (game.active === YORK)
 			for (let port of data.seaports)
 				if (!is_supply_forbidden(port))
 					seaports.push(port)
-		if (game.active === RUSSIANS)
-			if (!is_supply_forbidden(LOC_NOVGOROD))
-				seaports.push(LOC_NOVGOROD)
+		if (game.active === LANCASTER)
+			for (let port of data.seaports)
+			if (!is_supply_forbidden(port))
+				seaports.push(port)
 	}
 	if (seaports.length === 0)
 		ships = 0
@@ -3807,16 +3784,16 @@ function can_action_forage() {
 	if (game.actions < 1)
 		return false
 
-	if (is_famine_in_play())
-		return false
+	/* if
+		return false */
 
 	let here = get_lord_locale(game.command)
 	if (has_ravaged_marker(here))
 		return false
 	if (is_summer())
 		return true
-	if (is_friendly_stronghold_locale(here)) // FIXME: simpler check?
-		return true
+//	if (is_friendly_stronghold_locale(here)) // FIXME: simpler check?
+//		return true
 	return false
 }
 
@@ -3841,8 +3818,8 @@ function has_adjacent_unbesieged_enemy_lord(loc) {
 function can_ravage_locale(loc) {
 	if (!is_enemy_territory(loc))
 		return false
-	if (has_conquered_marker(loc))
-		return false
+/*	if (has_conquered_marker(loc))
+		return false */
 	if (has_ravaged_marker(loc))
 		return false
 	if (is_friendly_locale(loc)) // faster check?
