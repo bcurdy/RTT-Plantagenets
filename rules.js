@@ -6648,8 +6648,8 @@ function can_pay_lord(lord) {
 function has_friendly_lord_who_may_be_paid() {
 	if (game.active === YORK) {
 		// Open a window to play Heinrich sees the Curia.
-		if (could_play_card(EVENT_TEUTONIC_HEINRICH_SEES_THE_CURIA) && can_play_heinrich_sees_the_curia())
-			return true
+		/*if (could_play_card(EVENT_TEUTONIC_HEINRICH_SEES_THE_CURIA) && can_play_heinrich_sees_the_curia())
+			return true*/
 	}
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
 		if (is_lord_on_map(lord) && can_pay_lord(lord))
