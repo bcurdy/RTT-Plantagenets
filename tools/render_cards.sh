@@ -8,20 +8,20 @@ mkdir -p HIRES/cards75
 mkdir -p HIRES/cards150
 mkdir -p cards.1x cards.2x
 
-# gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/aow_lancaster_%d.png "HIRES/Plantagenet-AoW-Lanc (11).pdf"
-# gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/aow_york_%d.png "HIRES/Plantagenet-AoW-York (15).pdf"
-# gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/cc_lancaster_%d.png "HIRES/PLNT_CC_Lancaster-Front-HiRes.pdf"
-# gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/cc_york_%d.png "HIRES/PLNT_CC_YORK-Front-HiRes.pdf"
-# gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/lord_lancaster_%d.png "HIRES/PLNT_LordCards_Lancaster-HiRes.pdf"
-# gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/lord_york_%d.png "HIRES/PLNT_LordCards_York-HiRes.pdf"
+gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/aow_lancaster_%d.png "HIRES/Plantagenet-AoW-Lanc (11).pdf"
+gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/aow_york_%d.png "HIRES/Plantagenet-AoW-York (15).pdf"
+gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/cc_lancaster_%d.png "HIRES/PLNT_CC_Lancaster-Front-HiRes.pdf"
+gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/cc_york_%d.png "HIRES/PLNT_CC_YORK-Front-HiRes.pdf"
+gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/lord_lancaster_%d.png "HIRES/PLNT_LordCards_Lancaster-HiRes.pdf"
+gs -dUseBleedBox -sDEVICE=png16m -r1200 -o HIRES/cards/lord_york_%d.png "HIRES/PLNT_LordCards_York-HiRes.pdf"
 
 for F in HIRES/cards/*.png
 do
 	B=$(basename $F)
 	echo $B
-	# crop to 186x261 (actual size is 187.5 x 263 - we trim 0.75 to 1 pixel off each margin)
-	convert -colorspace RGB +repage -gravity Center -crop 2976x4176+0+0 -resize 12.5% -colorspace sRGB $F HIRES/cards150/$B
-	convert -colorspace RGB +repage -gravity Center -crop 2976x4176+0+0 -resize 6.25% -colorspace sRGB $F HIRES/cards75/$B
+	# crop to 186x260 (actual size is 187.5 x 263 - we trim 0.75 to 1 pixel off each margin)
+	convert -colorspace RGB +repage -gravity Center -crop 2976x4160+0+0 -resize 12.5% -colorspace sRGB $F HIRES/cards150/$B
+	convert -colorspace RGB +repage -gravity Center -crop 2976x4160+0+0 -resize 6.25% -colorspace sRGB $F HIRES/cards75/$B
 done
 
 function mv_card {
@@ -29,11 +29,11 @@ function mv_card {
 	cp HIRES/cards75/$1.png cards.1x/$2.png
 }
 
-mv HIRES/cards75/aow_* cards.1x
-mv HIRES/cards150/aow_* cards.2x
+cp HIRES/cards75/aow_* cards.1x
+cp HIRES/cards150/aow_* cards.2x
 
-# mv HIRES/cards75/lord_* cards.1x
-# mv HIRES/cards150/lord_* cards.2x
+cp HIRES/cards75/lord_* cards.1x
+cp HIRES/cards150/lord_* cards.2x
 
 mv_card lord_york_1 lord_york_york
 mv_card lord_york_2 lord_york_march

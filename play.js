@@ -670,7 +670,7 @@ function build_lord_mat(lord, ix, side, name) {
 
 function build_card(side, c) {
 	let card = ui.cards[c] = document.createElement("div")
-	card.className = `card ${side} aow_${c}`
+	card.className = `card aow ${side} ${side}_${c}`
 	register_action(card, "card", c)
 }
 
@@ -835,24 +835,24 @@ function restart_cache() {
 function update_current_card_display() {
 	if (typeof view.what === "number" && view.what >= 0) {
 		if (view.what <= first_p1_card)
-			ui.command.className = `card york aow_${view.what}`
+			ui.command.className = `card aow york york_${view.what}`
 		else
-			ui.command.className = `card lancaster aow_${view.what}`
+			ui.command.className = `card aow lancaster lancaster_${view.what}`
 	} else if ((view.turn & 1) === 0) {
 		if (player === "Lancaster")
-			ui.command.className = `card lancaster aow_back`
+			ui.command.className = `card aow lancaster`
 		else
-			ui.command.className = `card york aow_back`
+			ui.command.className = `card aow york`
 	} else if (view.command < 0) {
 		if (player === "Lancaster")
-			ui.command.className = `card lancaster cc_back`
+			ui.command.className = `card cc lancaster`
 		else
-			ui.command.className = `card york cc_back`
+			ui.command.className = `card cc york`
 	} else {
 		if (view.command < 6)
-			ui.command.className = `card lancaster cc_lord_${view.command}`
+			ui.command.className = `card cc lancaster lord_${view.command}`
 		else
-			ui.command.className = `card york cc_lord_${view.command}`
+			ui.command.className = `card cc york lord_${view.command}`
 	}
 }
 
@@ -1424,9 +1424,9 @@ function on_update() {
 
 function on_focus_card_tip(c) {
 	if (c <= first_p1_card)
-		ui.command.className = `card york aow_${c}`
+		ui.command.className = `card aow york york_${c}`
 	else
-		ui.command.className = `card lancaster aow_${c}`
+		ui.command.className = `card aow lancaster lancaster_${c}`
 }
 
 function on_blur_card_tip() {
