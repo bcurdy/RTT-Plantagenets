@@ -134,10 +134,10 @@ const vassal_count = data.vassals.length
 const first_lord = 0
 const last_lord = lord_count - 1
 
-/*const first_p1_locale = 0
-const last_p1_locale = 23
-const first_p2_locale = 24
-const last_p2_locale = 52 */
+const first_p1_locale = 0
+const last_p1_locale = 73
+const first_p2_locale = 0
+const last_p2_locale = 73
 const first_locale = 0
 const last_locale = data.locales.length - 1
 
@@ -739,7 +739,9 @@ function count_cards_in_plan(plan, lord) {
 	return n
 }
 
-/*function is_marshal(lord) {
+/* no lord cylinder switch for Marshall but will be used later for I-III scenario
+
+function is_marshal(lord) {
 	switch (lord) {
 		case LORD_ANDREAS:
 			return true
@@ -752,7 +754,7 @@ function count_cards_in_plan(plan, lord) {
 		default:
 			return false
 	}
-}*/
+} */
 
 function is_armored_force(type) {
 	return type === MEN_AT_ARMS || type === BURGUNDIANS || type === RETINUE || type === VASSAL || type === MERCENARIES
@@ -1005,7 +1007,7 @@ function is_p1_locale(loc) {
 function is_p2_locale(loc) {
 	return loc >= first_p2_locale && loc <= last_p2_locale
 }
-/*
+// Will be used to determine friendly favour
 function is_friendly_territory(loc) {
 	if (game.active === P1)
 		return loc >= first_p1_locale && loc <= last_p1_locale
@@ -1016,7 +1018,7 @@ function is_enemy_territory(loc) {
 	if (game.active === P1)
 		return loc >= first_p2_locale && loc <= last_p2_locale
 	return loc >= first_p1_locale && loc <= last_p1_locale
-}*/
+}
 
 function is_seaport(loc) {
 	return set_has(data.seaports, loc)
@@ -1441,8 +1443,8 @@ function setup_Ia() {
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_WELLS)
 
-	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 2)
-	set_lord_cylinder_on_calendar(LORD_EXETER_1, 1)
+	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 1)
+	set_lord_cylinder_on_calendar(LORD_EXETER_1, 2)
 	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM, 4)
 	set_lord_cylinder_on_calendar(LORD_SALISBURY, 1)
 	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 2)
@@ -1511,15 +1513,15 @@ function setup_ItoIII() {
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_WELLS)
 
-	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 2)
-	set_lord_cylinder_on_calendar(LORD_EXETER_1, 3)
-	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM, 5)
-	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
-	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
-	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
+	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 1)
+	set_lord_cylinder_on_calendar(LORD_EXETER_1, 2)
+	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM,4)
+	set_lord_cylinder_on_calendar(LORD_SALISBURY, 1)
+	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 2)
+	set_lord_cylinder_on_calendar(LORD_RUTLAND, 4)
 
 }
-/*
+// setup may be used in some scenarios 
 states.setup_lords = {
 	inactive: "Set up Lords",
 	prompt() {
@@ -1549,7 +1551,7 @@ states.setup_lords = {
 		game.count = data.lords[lord].assets.transport
 	},
 
-} */
+} 
 
 
 function end_setup() {
@@ -7093,10 +7095,10 @@ function goto_plow_and_reap() {
 	let turn = current_turn()
 	end_plow_and_reap()
 }
-/*
+
 function end_plow_and_reap() {
 	goto_wastage()
-}*/
+}
 
 // === END CAMPAIGN: WASTAGE ===
 // TODO : WASTE
@@ -7116,7 +7118,7 @@ function goto_wastage() {
 	else
 		game.state = "wastage"
 }
-/* NO WASTAGE IN PLANTAGENET 
+
 function check_lord_wastage(lord) {
 	if (get_lord_assets(lord, PROV) > 1)
 		return true
@@ -7158,7 +7160,7 @@ function find_lord_with_capability_card(c) {
 		if (lord_has_capability_card(lord, c))
 			return lord
 	return NOBODY
-}*/
+}
 
 states.wastage = {
 	inactive: "Wastage",
@@ -7224,8 +7226,6 @@ function goto_reset() {
 
 states.reset = {
 	inactive: "Reset",
-	/* NO VOLUNTARY DISCARD
-	
 	prompt() {
 		view.prompt = "Reset: You may discard any Arts of War cards desired."
 		if (game.active === P1) {
@@ -7257,7 +7257,7 @@ states.reset = {
 				discard_lord_capability(lord, c)
 			}
 		}
-	},*/
+	},
 	end_discard() {
 		end_reset()
 	},
