@@ -31,8 +31,8 @@ function large {
 }
 
 function large2 {
-	large $1 ${3}_a
-	large $2 ${3}_b
+	large marker_1a_$1 ${2}
+	large marker_1b_$1 ${2}_b
 }
 
 sticker label_0
@@ -67,10 +67,49 @@ round marker_1b_130 campaign
 round marker_1a_128 exile_lancaster
 round marker_1a_132 exile_york
 
-for i in $(seq 0 52)
-do
-	large2 marker_1a_$i marker_1b_$i marker_$i
-done
+large2 0 vassal_norfolk
+large2 2 vassal_stanley
+large2 4 vassal_fauconberg
+large2 12 vassal_devon
+large2 14 vassal_suffolk
+large2 16 vassal_bonville
+large2 24 vassal_dudley
+large2 26 vassal_beaumont
+large2 28 vassal_oxford
+large2 36 vassal_shrewsbury
+large2 38 vassal_essex
+large2 40 vassal_westmorld
+large2 47 vassal_worcester
+
+large2 6 marker_hastings
+large2 49 marker_trollope
+large2 50 marker_clifford
+large2 51 marker_edward
+large2 52 marker_stanley
+
+large2 7 seat_lancaster_henry_vi
+large2 8 seat_lancaster_somerset
+large2 9 seat_lancaster_exeter
+large2 10 seat_lancaster_buckingham
+large2 11 seat_lancaster_northumberland
+large2 18 seat_lancaster_henry_tudor
+large2 19 seat_lancaster_oxford
+large2 20 seat_lancaster_clarence
+large2 21 seat_lancaster_jasper_tudor
+large2 22 seat_lancaster_margaret
+large2 23 seat_lancaster_warwick
+
+large2 30 seat_york_warwick
+large2 31 seat_york_rutland
+large2 32 seat_york_edward_iv
+large2 33 seat_york_salisbury
+large2 34 seat_york_march
+large2 35 seat_york_york
+large2 42 seat_york_norfolk
+large2 43 seat_york_northumberland
+large2 44 seat_york_devon
+large2 45 seat_york_gloucester
+large2 46 seat_york_pembroke
 
 large marker_1a_54 ip_lancaster
 large marker_1b_54 ip_york
