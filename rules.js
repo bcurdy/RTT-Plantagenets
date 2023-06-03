@@ -790,10 +790,10 @@ function list_deck() {
 	let deck = []
 	let first_card = (game.active === P1) ? first_p1_card : first_p2_card
 	let last_card = (game.active === P1) ? last_p1_card : last_p2_card
-	for (let c = first_card; c <= last_card; ++c)
+		for (let c = first_card; c <= last_card; ++c)
 		if (!is_card_in_use(c))
 			deck.push(c)
-	for (let c = last_card + 1; c <= last_card + no; ++c)
+	for (let c = last_card + 1; c <= last_card; ++c)
 		deck.push(c)
 	return deck
 }
@@ -1865,10 +1865,10 @@ states.levy_arts_of_war_first = {
 		let c = game.what[0]
 		view.arts_of_war = game.what
 		view.what = c
-		if (is_no_event_card(c)) {
+		/*if (is_no_event_card(c)) {
 			view.prompt = `Arts of War: No Capability.`
 			view.actions.discard = 1
-		} else if (data.cards[c].this_lord) {
+		} else */if (data.cards[c].this_lord) {
 			let discard = true
 			for (let lord of data.cards[c].lords) {
 				if (is_lord_on_map(lord) && !lord_already_has_capability(lord, c)) {
@@ -2261,8 +2261,8 @@ function discard_lord_capability(lord, c) {
 function can_muster_capability() {
 	let deck = list_deck()
 	for (let c of deck) {
-		if (is_no_event_card(c))
-			continue
+	/*	if (is_no_event_card(c))
+			continue*/
 		if (!data.cards[c].lords || set_has(data.cards[c].lords, game.who)) {
 			if (data.cards[c].this_lord) {
 				if (!lord_already_has_capability(game.who, c))
@@ -2283,8 +2283,8 @@ states.muster_capability = {
 		view.prompt = `Muster: Select a new Capability for ${lord_name[game.who]}.`
 		view.arts_of_war = deck
 		for (let c of deck) {
-			if (is_no_event_card(c))
-				continue
+			/*if (is_no_event_card(c))
+				continue*/
 			if (!data.cards[c].lords || set_has(data.cards[c].lords, game.who)) {
 				if (data.cards[c].this_lord) {
 					if (!lord_already_has_capability(game.who, c))
