@@ -2071,10 +2071,10 @@ states.levy_muster_lord = {
 			}
 
 			// Muster Ready Vassal Forces
-			for (let vassal of data.lords[game.who].vassals) {
+		/*	for (let vassal of data.lords[game.who].vassals) {
 				if (is_vassal_ready(vassal))
 					gen_action_vassal(vassal)
-			}
+			}*/
 
 			// Add Transport
 			if (data.lords[game.who].ships) {
