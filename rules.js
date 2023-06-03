@@ -650,8 +650,6 @@ function get_shared_assets(loc, what) {
 
 function count_lord_all_forces(lord) {
 	return (
-		get_lord_forces(lord, RETINUE) +
-		get_lord_forces(lord, VASSAL) +
 		get_lord_forces(lord, BURGUNDIANS) +
 		get_lord_forces(lord, MERCENARIES) +
 		get_lord_forces(lord, MEN_AT_ARMS) +
