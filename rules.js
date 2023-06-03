@@ -2006,7 +2006,8 @@ function end_levy_muster() {
 	if (game.active === P2)
 		goto_levy_muster()
 	else
-		goto_levy_call_to_arms()
+		//goto_levy_call_to_arms()
+		goto_levy_discard_events()
 }
 
 states.levy_muster = {
@@ -2331,14 +2332,15 @@ states.muster_capability_discard = {
 }
 
 // === LEVY: CALL TO ARMS ===
-
+/*
 function goto_levy_call_to_arms() {
 	if (game.active === YORK)
 		goto_teutonic_call_to_arms()
 	else
 		goto_russian_call_to_arms()
-}
+}*/
 
+/*
 function end_levy_call_to_arms() {
 	clear_undo()
 	clear_lords_moved()
@@ -2347,7 +2349,7 @@ function end_levy_call_to_arms() {
 		goto_levy_call_to_arms()
 	else
 		goto_levy_discard_events()
-}
+}*/
 
 function goto_levy_discard_events() {
 
@@ -2360,7 +2362,7 @@ function goto_levy_discard_events() {
 
 // === LEVY: CALL TO ARMS - PAPAL LEGATE ===
 
-function goto_teutonic_call_to_arms() {
+/*function goto_teutonic_call_to_arms() {
 	end_levy_call_to_arms()
 }
 
@@ -2368,7 +2370,7 @@ function goto_teutonic_call_to_arms() {
 
 function goto_russian_call_to_arms() {
 	end_levy_call_to_arms()
-}
+}*/
 
 // === CAMPAIGN: CAPABILITY DISCARD ===
 
@@ -2397,8 +2399,8 @@ function goto_capability_discard() {
 	if (check_campaign_victory())
 		return
 
-	if (count_global_capabilities() > count_mustered_lords())
-		game.state = "capability_discard"
+	/*if (count_global_capabilities() > count_mustered_lords())
+		game.state = "capability_discard"*/
 	else
 		end_capability_discard()
 }
@@ -2450,21 +2452,21 @@ function goto_campaign_plan() {
 	game.plan2 = []
 }
 
-function plan_has_lieutenant(first, last) {
+/*function plan_has_lieutenant(first, last) {
 	for (let lord = first; lord <= last; ++lord)
 		if (is_upper_lord(lord))
 			return true
 	return false
-}
+}*/
 
-function plan_selected_lieutenant(first, last) {
+/*function plan_selected_lieutenant(first, last) {
 	for (let lord = first; lord <= last; ++lord)
 		if (is_upper_lord(lord) && get_lower_lord(lord) === NOBODY)
 			return lord
 	return NOBODY
-}
+}*/
 
-function plan_can_make_lieutenant(plan, upper, first, last) {
+/*function plan_can_make_lieutenant(plan, upper, first, last) {
 	for (let lord = first; lord <= last; ++lord) {
 		if (!is_lord_on_map(lord))
 			continue
@@ -2478,7 +2480,7 @@ function plan_can_make_lieutenant(plan, upper, first, last) {
 			return true
 	}
 	return false
-}
+}*/
 
 states.campaign_plan = {
 	inactive: "Plan",
@@ -2486,17 +2488,17 @@ states.campaign_plan = {
 		let plan = current === P1 ? game.plan1 : game.plan2
 		let first = current === P1 ? first_p1_lord : first_p2_lord
 		let last = current === P1 ? last_p1_lord : last_p2_lord
-		let upper = plan_selected_lieutenant(first, last)
+		/*let upper = plan_selected_lieutenant(first, last)*/
 
 		view.plan = plan
-		view.who = upper
+		/*view.who = upper*/
 		view.actions.plan = []
 
-		if (plan.length === 0 && upper === NOBODY)
+		/*if (plan.length === 0 && upper === NOBODY)
 			view.prompt = "Plan: Designate Lieutenants and build a Plan."
 		else if (plan.length === 0 && upper !== NOBODY)
-			view.prompt = `Plan: Select Lower Lord for ${lord_name[upper]}.`
-		else if (plan.length === max_plan_length())
+			view.prompt = `Plan: Select Lower Lord for ${lord_name[upper]}.`*/
+		/*else*/ if (plan.length === max_plan_length())
 			view.prompt = "Plan: All done."
 		else
 			view.prompt = "Plan: Build a Plan."
@@ -2542,7 +2544,7 @@ states.campaign_plan = {
 		else
 			view.actions.undo = 0
 	},
-	lord(lord, current) {
+	/*lord(lord, current) {
 		let upper
 		if (current === P1)
 			upper = plan_selected_lieutenant(first_p1_lord, last_p1_lord)
@@ -2554,7 +2556,7 @@ states.campaign_plan = {
 			add_lieutenant(lord)
 		else
 			set_lower_lord(upper, lord)
-	},
+	},*/
 	plan(lord, current) {
 		if (current === P1)
 			game.plan1.push(lord)
