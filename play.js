@@ -209,6 +209,28 @@ const NOWHERE = -1
 const CALENDAR = 100
 
 
+const SUMMER = 0
+const SPRING = 1
+const WINTER = 2
+
+const SEASONS = [
+	WINTER,
+	SPRING,
+	SUMMER,
+	SPRING,
+	WINTER,
+	WINTER,
+	SPRING,
+	SUMMER,
+	SPRING,
+	WINTER,
+	WINTER,
+	SPRING,
+	SUMMER,
+	SPRING,
+	WINTER,
+	null
+]
 // === ACTIONS ===
 
 function is_action(action, arg) {
@@ -294,10 +316,9 @@ function current_season() {
 
 function max_plan_length() {
 	switch (current_season()) {
-	case SUMMER: return 6
-	case EARLY_WINTER: return 4
-	case LATE_WINTER: return 4
-	case RASPUTITSA: return 5
+	case SUMMER: return 7
+	case WINTER: return 4
+	case SPRING: return 6
 	}
 }
 

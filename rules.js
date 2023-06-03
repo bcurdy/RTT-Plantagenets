@@ -349,8 +349,53 @@ const NOTHING = -1
 const NEVER = -1
 const CALENDAR = 100
 
+
+const SUMMER = 0
+const SPRING = 1
+const WINTER = 2
+
+const SEASONS = [
+	WINTER,
+	SPRING,
+	SUMMER,
+	SPRING,
+	WINTER,
+	WINTER,
+	SPRING,
+	SUMMER,
+	SPRING,
+	WINTER,
+	WINTER,
+	SPRING,
+	SUMMER,
+	SPRING,
+	WINTER,
+	null
+]
+const TURN_NAME = [
+	"1 - January/February/March",
+	"2 - April/May",
+	"3 - June/July",
+	"4 - August/September/October",
+	"5 - November/December",
+	"6 - January/February/March",
+	"7 - April/May",
+	"8 - June/July",
+	"9 - August/September/October",
+	"10 - November/December",
+	"11 - January/February/March",
+	"12 - April/May",
+	"13 - June/July",
+	"14 - August/September/October",
+	"15 - November/December",
+	null,
+]
+
 function current_turn() {
 	return game.turn >> 1
+}
+function current_season() {
+	return SEASONS[game.turn >> 1]
 }
 
 function current_turn_name() {
@@ -719,12 +764,10 @@ function count_group_transport(type) {
 function max_plan_length() {
 	switch (current_season()) {
 		case SUMMER:
-			return 6
-		case EARLY_WINTER:
+			return 7
+		case WINTER:
 			return 4
-		case LATE_WINTER:
-			return 4
-		case RASPUTITSA:
+		case SPRING:
 			return 5
 	}
 }
@@ -737,22 +780,36 @@ function count_cards_in_plan(plan, lord) {
 	return n
 }
 
-/* no lord cylinder switch for Marshall but will be used later for I-III scenario
+
 
 function is_marshal(lord) {
 	switch (lord) {
-		case LORD_ANDREAS:
+		case LORD_MARGARET:
 			return true
-		case LORD_HERMANN:
-			return !is_lord_on_map(LORD_ANDREAS)
-		case LORD_ALEKSANDR:
+		case LORD_HENRY_VI:
 			return true
-		case LORD_ANDREY:
-			return !is_lord_on_map(LORD_ALEKSANDR)
+		case LORD_WARWICK_L:
+			return true
+		case LORD_SOMERSET_1:
+			return true
+		case LORD_HENRY_TUDOR:
+			return true
+		case LORD_EDWARD_IV:
+			return true
+		case LORD_GLOUCESTER_1:
+			return true		
+		case LORD_GLOUCESTER_2:
+			return true
+		case LORD_RICHARD_III:
+			return true
+		case LORD_WARWICK_Y:
+			return true
+		case LORD_YORK:
+			return true
 		default:
 			return false
 	}
-} */
+} 
 
 function is_armored_force(type) {
 	return type === MEN_AT_ARMS || type === BURGUNDIANS || type === RETINUE || type === VASSAL || type === MERCENARIES
@@ -2489,7 +2546,7 @@ states.campaign_plan = {
 		let first = current === P1 ? first_p1_lord : first_p2_lord
 		let last = current === P1 ? last_p1_lord : last_p2_lord
 		/*let upper = plan_selected_lieutenant(first, last)*/
-
+		let upper = NOBODY
 		view.plan = plan
 		/*view.who = upper*/
 		view.actions.plan = []
@@ -2525,12 +2582,10 @@ states.campaign_plan = {
 				gen_action_lord(upper)
 
 			for (let lord = first; lord <= last; ++lord) {
-				if (is_marshal(lord) || is_lord_besieged(lord))
-					continue
-				if (is_upper_lord(lord) || is_lower_lord(lord))
+				if (is_marshal(lord))
 					continue
 				if (upper === NOBODY) {
-					if (plan_can_make_lieutenant(plan, lord, first, last))
+					//if (plan_can_make_lieutenant(plan, lord, first, last))
 						gen_action_lord(lord)
 				} else {
 					if (get_lord_locale(upper) === get_lord_locale(lord))
@@ -2539,7 +2594,7 @@ states.campaign_plan = {
 			}
 		}
 
-		if (plan.length > 0 || plan_has_lieutenant(first, last))
+		if (plan.length > 0)
 			view.actions.undo = 1
 		else
 			view.actions.undo = 0
