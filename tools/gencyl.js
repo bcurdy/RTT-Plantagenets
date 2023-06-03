@@ -46,7 +46,7 @@ print_lord("images/lord_york_devon.svg", "york", "HIRES/sticker/label_12.png")
 print_lord("images/lord_york_northumberland.svg", "york", "HIRES/sticker/label_13.png")
 print_lord("images/lord_york_gloucester_silver.svg", "york", "HIRES/sticker/label_14.png")
 print_lord("images/lord_york_gloucester_gold.svg", "york", "HIRES/sticker/label_20.png")
-print_lord("images/lord_york_henry_tudor.svg", "york", "HIRES/sticker/label_21.png")
+print_lord("images/lord_york_norfolk.svg", "york", "HIRES/sticker/label_21.png")
 
 print_lord("images/lord_lancaster_henry_vi.svg", "lancaster", "HIRES/sticker/label_5.png")
 print_lord("images/lord_lancaster_somerset.svg", "lancaster", "HIRES/sticker/label_6.png")
