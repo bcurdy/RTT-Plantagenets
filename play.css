@@ -595,9 +595,9 @@ body.shift #capabilities2 {
 
 .cylinder.york.lord_devon { background-image:url(images/lord_york_devon.svg) }
 .cylinder.york.lord_edward_iv { background-image:url(images/lord_york_edward_iv.svg) }
-.cylinder.york.lord_gloucester_1 { background-image:url(images/lord_york_gloucester_silver.svg) }
-.cylinder.york.lord_gloucester_2 { background-image:url(images/lord_york_gloucester_gold.svg) }
-.cylinder.york.lord_richard_iii { background-image:url(images/lord_york_gloucester_gold.svg) }
+.cylinder.york.lord_gloucester_1 { background-image:url(images/lord_york_gloucester_1.svg) }
+.cylinder.york.lord_gloucester_2 { background-image:url(images/lord_york_gloucester_2.svg) }
+.cylinder.york.lord_richard_iii { background-image:url(images/lord_york_gloucester_2.svg) }
 .cylinder.york.lord_henry_tudor { background-image:url(images/lord_york_henry_tudor.svg) }
 .cylinder.york.lord_march { background-image:url(images/lord_york_march.svg) }
 .cylinder.york.lord_norfolk { background-image:url(images/lord_york_norfolk.svg) }
@@ -620,8 +620,8 @@ body.shift #capabilities2 {
 .cylinder.lancaster.lord_margaret { background-image:url(images/lord_lancaster_margaret.svg) }
 .cylinder.lancaster.lord_northumberland_l { background-image:url(images/lord_lancaster_northumberland.svg) }
 .cylinder.lancaster.lord_oxford { background-image:url(images/lord_lancaster_oxford.svg) }
-.cylinder.lancaster.lord_somerset_1 { background-image:url(images/lord_lancaster_somerset.svg) }
-.cylinder.lancaster.lord_somerset_2 { background-image:url(images/lord_lancaster_somerset.svg) }
+.cylinder.lancaster.lord_somerset_1 { background-image:url(images/lord_lancaster_somerset_1.svg) }
+.cylinder.lancaster.lord_somerset_2 { background-image:url(images/lord_lancaster_somerset_2.svg) }
 .cylinder.lancaster.lord_warwick_l { background-image:url(images/lord_lancaster_warwick.svg) }
 
 .vassal.vassal_beaumont { background-image: url(images/vassal_beaumont.png) }
