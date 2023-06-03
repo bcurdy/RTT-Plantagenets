@@ -1845,10 +1845,10 @@ function discard_card_event(c) {
 }
 
 function goto_levy_arts_of_war_first() {
-	if (game.active === TEUTONS)
-		log_h2("Teutonic Arts of War")
+	if (game.active === YORK)
+		log_h2("York Arts of War")
 	else
-		log_h2("Russian Arts of War")
+		log_h2("Lancaster Arts of War")
 	game.state = "levy_arts_of_war_first"
 	game.what = draw_two_cards()
 }
