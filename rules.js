@@ -1520,6 +1520,8 @@ function setup_ItoIII() {
 
 }
 // setup may be used in some scenarios 
+
+
 states.setup_lords = {
 	inactive: "Set up Lords",
 	prompt() {
@@ -1538,7 +1540,6 @@ states.setup_lords = {
 			view.actions.end_setup = 1
 		}
 	},
-	
 	lord(lord) {
 		push_undo()
 
@@ -1548,11 +1549,13 @@ states.setup_lords = {
 		game.who = lord
 		game.count = data.lords[lord].assets.transport
 	},
+	end_setup() {
+		clear_undo()
+		end_setup_lords()
+	},
+}
 
-} 
-
-
-function end_setup() {
+function end_setup_lords() {
 	clear_lords_moved()
 	set_active_enemy()
 	if (game.active === P1) {
@@ -1920,10 +1923,10 @@ function end_levy_arts_of_war_first() {
 // === LEVY: ARTS OF WAR ===
 
 function goto_levy_arts_of_war() {
-	if (game.active === TEUTONS)
-		log_h2("Teutonic Arts of War")
+	if (game.active === YORK)
+		log_h2("York Arts of War")
 	else
-		log_h2("Russian Arts of War")
+		log_h2("Lancaster Arts of War")
 	game.what = draw_two_cards()
 	resume_levy_arts_of_war()
 }
@@ -1990,10 +1993,10 @@ function end_levy_arts_of_war() {
 // === LEVY: MUSTER ===
 
 function goto_levy_muster() {
-	if (game.active === TEUTONS)
-		log_h2("Teutonic Muster")
+	if (game.active === YORK)
+		log_h2("York Muster")
 	else
-		log_h2("Russian Muster")
+		log_h2("Lancaster Muster")
 	game.state = "levy_muster"
 }
 
@@ -2330,7 +2333,7 @@ states.muster_capability_discard = {
 // === LEVY: CALL TO ARMS ===
 
 function goto_levy_call_to_arms() {
-	if (game.active === TEUTONS)
+	if (game.active === YORK)
 		goto_teutonic_call_to_arms()
 	else
 		goto_russian_call_to_arms()
@@ -7353,7 +7356,7 @@ function log_h1(msg) {
 
 function log_h2(msg) {
 	log_br()
-	if (game.active === TEUTONS)
+	if (game.active === YORK)
 		log(".h2t " + msg)
 	else
 		log(".h2r " + msg)
@@ -7362,7 +7365,7 @@ function log_h2(msg) {
 
 function log_h3(msg) {
 	log_br()
-	if (game.active === TEUTONS)
+	if (game.active === YORK)
 		log(".h3t " + msg)
 	else
 		log(".h3r " + msg)
