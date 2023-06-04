@@ -1373,12 +1373,12 @@ function setup_Ia() {
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_WELLS)
 
-	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 1)
-	set_lord_cylinder_on_calendar(LORD_EXETER_1, 2)
-	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM, 4)
-	set_lord_cylinder_on_calendar(LORD_SALISBURY, 1)
-	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 2)
-	set_lord_cylinder_on_calendar(LORD_RUTLAND, 4)
+	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 2)
+	set_lord_cylinder_on_calendar(LORD_EXETER_1, 3)
+	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM, 5)
+	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
+	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
+	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
 }
 
 function setup_Ib() {
@@ -1403,7 +1403,7 @@ function setup_Ic() {
 	muster_lord(LORD_MARCH, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_BAMBURGH)
 
-	set_lord_cylinder_on_calendar(LORD_HENRY_VI, 4)
+	set_lord_cylinder_on_calendar(LORD_HENRY_VI, 5)
 }
 
 
@@ -1425,6 +1425,7 @@ function setup_II() {
 	set_lord_cylinder_on_calendar(LORD_SOMERSET_2, 9)
 	set_lord_cylinder_on_calendar(LORD_OXFORD, 9)
 	set_lord_cylinder_on_calendar(LORD_EXETER_2, 9)
+
 }
 
 
@@ -1453,11 +1454,11 @@ function setup_ItoIII() {
 	muster_lord(LORD_SOMERSET_1, LOC_WELLS)
 
 	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 1)
-	set_lord_cylinder_on_calendar(LORD_EXETER_1, 2)
-	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM,4)
-	set_lord_cylinder_on_calendar(LORD_SALISBURY, 1)
-	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 2)
-	set_lord_cylinder_on_calendar(LORD_RUTLAND, 4)
+	set_lord_cylinder_on_calendar(LORD_EXETER_1, 3)
+	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM,5)
+	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
+	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
+	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
 
 }
 // setup may be used in some scenarios 
