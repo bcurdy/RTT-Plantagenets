@@ -1245,7 +1245,7 @@ arts_of_war_capability("L19", "Andrew Trollope", true,  ["Exeter 1", "Exeter 2",
 arts_of_war_capability("L20", "Veteran of French Wars", true, ["Exeter 1", "Exeter 2", "Somerset 1", "Somerset 2"])
 arts_of_war_capability("L21", "My Father’s Blood", true, "any")
 arts_of_war_capability("L22", "Stafford Estates", true, ["Buckingham"])
-arts_of_war_capability("L23", "Montagu", true, ["Warwick"])
+arts_of_war_capability("L23", "Montagu", true, ["Warwick L"])
 arts_of_war_capability("L24", "Married to a Neville", true, ["Clarence"])
 arts_of_war_capability("L25", "Welsh Lord", true, ["Jasper Tudor 1", "Jasper Tudor 2"])
 arts_of_war_capability("L26", "Edward", true, ["Margaret"])
