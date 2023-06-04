@@ -1,44 +1,10 @@
 "use strict"
 
-// TODO: show strikers and targets highlighting on battle mat?
-
 function toggle_pieces() {
 	document.getElementById("pieces").classList.toggle("hide")
 }
 
 // === COMMON LIBRARY ===
-
-function map_has(map, key) {
-	let a = 0
-	let b = (map.length >> 1) - 1
-	while (a <= b) {
-		let m = (a + b) >> 1
-		let x = map[m<<1]
-		if (key < x)
-			b = m - 1
-		else if (key > x)
-			a = m + 1
-		else
-			return true
-	}
-	return false
-}
-
-function map_get(map, key, missing) {
-	let a = 0
-	let b = (map.length >> 1) - 1
-	while (a <= b) {
-		let m = (a + b) >> 1
-		let x = map[m<<1]
-		if (key < x)
-			b = m - 1
-		else if (key > x)
-			a = m + 1
-		else
-			return map[(m<<1)+1]
-	}
-	return missing
-}
 
 function set_has(set, item) {
 	let a = 0
@@ -54,6 +20,20 @@ function set_has(set, item) {
 			return true
 	}
 	return false
+}
+
+function pack1_get(word, n) {
+	return (word >>> n) & 1
+}
+
+function pack2_get(word, n) {
+	n = n << 1
+	return (word >>> n) & 3
+}
+
+function pack4_get(word, n) {
+	n = n << 2
+	return (word >>> n) & 15
 }
 
 // === CONSTANTS (matching those in rules.js) ===
@@ -96,15 +76,16 @@ const LORD_HENRY_TUDOR = find_lord("Henry Tudor")
 const LORD_OXFORD = find_lord("Oxford")
 const LORD_WARWICK_L = find_lord("Warwick L")
 
-const first_p1_lord = 0
-const last_p1_lord = 13
-const first_p2_lord = 14
-const last_p2_lord = 27
+const first_york_lord = 0
+const last_york_lord = 13
+const first_lancaster_lord = 14
+const last_lancaster_lord = 27
 
-const first_p1_card = 0
-const last_p1_card = 36
-const first_p2_card = 37
-const last_p2_card = 73
+const first_york_card = 0
+const last_york_card = 36
+const first_lancaster_card = 37
+const last_lancaster_card = 73
+const last_aow_card = last_lancaster_card
 
 const Y1 = find_card("Y1")
 const Y2 = find_card("Y2")
@@ -183,7 +164,6 @@ const L36 = find_card("L36")
 const L37 = find_card("L37")
 
 const A1 = 0, A2 = 1, A3 = 2, D1 = 3, D2 = 4, D3 = 5
-
 
 const RETINUE = 0
 const VASSAL = 1
@@ -296,10 +276,6 @@ function get_locale_tip(id) {
 	return tip
 }
 
-function is_event_in_play(c) {
-	return set_has(view.events, c)
-}
-
 function on_focus_cylinder(evt) {
 	let lord = evt.target.my_id
 	let info = data.lords[lord]
@@ -322,12 +298,12 @@ function max_plan_length() {
 	}
 }
 
-function is_p1_lord(lord) {
-	return lord >= first_p1_lord && lord <= last_p1_lord
+function is_york_lord(lord) {
+	return lord >= first_york_lord && lord <= last_york_lord
 }
 
-function is_p2_lord(lord) {
-	return lord >= first_p2_lord && lord <= last_p2_lord
+function is_lancaster_lord(lord) {
+	return lord >= first_lancaster_lord && lord <= last_lancaster_lord
 }
 
 function is_lord_on_left_or_right(lord) {
@@ -343,14 +319,14 @@ function is_lord_ambushed(lord) {
 		// ambush & 2 = attacker played ambush
 		// ambush & 1 = defender played ambush
 		if (view.battle.attacker === "York") {
-			if ((view.battle.ambush & 1) && is_p1_lord(lord))
+			if ((view.battle.ambush & 1) && is_york_lord(lord))
 				return is_lord_on_left_or_right(lord)
-			if ((view.battle.ambush & 2) && is_p2_lord(lord))
+			if ((view.battle.ambush & 2) && is_lancaster_lord(lord))
 				return is_lord_on_left_or_right(lord)
 		} else {
-			if ((view.battle.ambush & 1) && is_p2_lord(lord))
+			if ((view.battle.ambush & 1) && is_lancaster_lord(lord))
 				return is_lord_on_left_or_right(lord)
-			if ((view.battle.ambush & 2) && is_p1_lord(lord))
+			if ((view.battle.ambush & 2) && is_york_lord(lord))
 				return is_lord_on_left_or_right(lord)
 		}
 	}
@@ -375,12 +351,12 @@ function count_lord_all_forces(lord) {
 	)
 }
 
-function is_p1_locale(loc) {
-	return loc >= first_p1_locale && loc <= last_p1_locale
+function is_york_locale(loc) {
+	return loc >= first_york_locale && loc <= last_york_locale
 }
 
-function is_p2_locale(loc) {
-	return loc >= first_p2_locale && loc <= last_p2_locale
+function is_lancaster_locale(loc) {
+	return loc >= first_lancaster_locale && loc <= last_lancaster_locale
 }
 
 function get_lord_locale(lord) {
@@ -557,8 +533,8 @@ const ui = {
 	hand_panel: document.getElementById("hand_panel"),
 	hand: document.getElementById("hand"),
 
-	held1: document.querySelector("#role_York .role_held"),
-	held2: document.querySelector("#role_Lancaster .role_held"),
+	held_york: document.querySelector("#role_York .role_held"),
+	held_lancaster: document.querySelector("#role_Lancaster .role_held"),
 
 	command: document.getElementById("command"),
 	turn: document.getElementById("turn"),
@@ -637,12 +613,12 @@ function build_plan() {
 		ui.plan_actions.appendChild(elt)
 	}
 
-	ui.plan_action_pass_p1 = elt = document.createElement("div")
+	ui.plan_action_pass_york = elt = document.createElement("div")
 	elt.className = `card cc york pass`
 	register_action(elt, "plan", -1)
 	ui.plan_actions.appendChild(elt)
 
-	ui.plan_action_pass_p2 = elt = document.createElement("div")
+	ui.plan_action_pass_lancaster = elt = document.createElement("div")
 	elt.className = `card cc lancaster pass`
 	register_action(elt, "plan", -1)
 	ui.plan_actions.appendChild(elt)
@@ -736,9 +712,9 @@ function build_map() {
 	for (let i = 0; i < 6; ++i)
 		register_action(ui.battle_grid_array[i], "array", i)
 
-	for (let c = first_p1_card; c <= last_p1_card; ++c)
+	for (let c = first_york_card; c <= last_york_card; ++c)
 		build_card("york", c)
-	for (let c = first_p2_card; c <= last_p2_card; ++c)
+	for (let c = first_lancaster_card; c <= last_lancaster_card; ++c)
 		build_card("lancaster", c)
 }
 
@@ -779,7 +755,7 @@ function restart_cache() {
 
 function update_current_card_display() {
 	if (typeof view.what === "number" && view.what >= 0) {
-		if (view.what <= first_p1_card)
+		if (view.what <= first_york_card)
 			ui.command.className = `card aow york c${view.what}`
 		else
 			ui.command.className = `card aow lancaster c${view.what}`
@@ -1059,7 +1035,7 @@ function update_locale(loc) {
 
 	if (set_has(view.pieces.exhausted, loc)) {
 		let cn
-		if (is_p1_locale(loc))
+		if (is_york_locale(loc))
 			cn = "marker small exhausted lancaster"
 		else
 			cn = "marker small exhausted york"
@@ -1108,15 +1084,15 @@ function update_plan() {
 				}
 			}
 			if (is_action("plan", -1)) {
-				ui.plan_action_pass_p1.classList.add("action")
-				ui.plan_action_pass_p1.classList.remove("disabled")
-				ui.plan_action_pass_p2.classList.add("action")
-				ui.plan_action_pass_p2.classList.remove("disabled")
+				ui.plan_action_pass_york.classList.add("action")
+				ui.plan_action_pass_york.classList.remove("disabled")
+				ui.plan_action_pass_lancaster.classList.add("action")
+				ui.plan_action_pass_lancaster.classList.remove("disabled")
 			} else {
-				ui.plan_action_pass_p1.classList.remove("action")
-				ui.plan_action_pass_p1.classList.add("disabled")
-				ui.plan_action_pass_p2.classList.remove("action")
-				ui.plan_action_pass_p2.classList.add("disabled")
+				ui.plan_action_pass_york.classList.remove("action")
+				ui.plan_action_pass_york.classList.add("disabled")
+				ui.plan_action_pass_lancaster.classList.remove("action")
+				ui.plan_action_pass_lancaster.classList.add("disabled")
 			}
 		} else {
 			ui.plan_actions.classList.add("hide")
@@ -1127,7 +1103,7 @@ function update_plan() {
 }
 
 function update_cards() {
-	for (let c = 0; c < 42; ++c) {
+	for (let c = 0; c < last_aow_card; ++c) {
 		let elt = ui.cards[c]
 		elt.classList.toggle("selected", c === view.what)
 		elt.classList.toggle("action", is_action("card", c))
@@ -1199,26 +1175,26 @@ function update_battle() {
 }
 
 function update_court() {
-	let tcourt_hdr = (player === "Lancaster") ? ui.court2_header : ui.court1_header
-	let rcourt_hdr = (player === "Lancaster") ? ui.court1_header : ui.court2_header
-	tcourt_hdr.textContent = "York Lords"
-	rcourt_hdr.textContent = "Lancaster Lords"
-	let tcourt = (player === "Lancaster") ? ui.court2 : ui.court1
-	let rcourt = (player === "Lancaster") ? ui.court1 : ui.court2
-	tcourt.replaceChildren()
-	rcourt.replaceChildren()
-	for (let lord = 14; lord < 27; ++lord)
+	let ycourt_hdr = (player === "Lancaster") ? ui.court2_header : ui.court1_header
+	let lcourt_hdr = (player === "Lancaster") ? ui.court1_header : ui.court2_header
+	let ycourt = (player === "Lancaster") ? ui.court2 : ui.court1
+	let lcourt = (player === "Lancaster") ? ui.court1 : ui.court2
+	ycourt_hdr.textContent = "York Lords"
+	lcourt_hdr.textContent = "Lancaster Lords"
+	ycourt.replaceChildren()
+	lcourt.replaceChildren()
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord)
 		if (!is_lord_in_battle(lord) && is_lord_on_map(lord))
-			tcourt.appendChild(ui.lord_mat[lord])
-	for (let lord = 0; lord < 14; ++lord)
+			ycourt.appendChild(ui.lord_mat[lord])
+	for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; ++lord)
 		if (!is_lord_in_battle(lord) && is_lord_on_map(lord))
-			rcourt.appendChild(ui.lord_mat[lord])
+			lcourt.appendChild(ui.lord_mat[lord])
 }
 
 function on_update() {
 	restart_cache()
 
-	for (let i = 0; i < 18; ++i) {
+	for (let i = 0; i <= 16; ++i) {
 		calendar_layout_cylinder[i] = []
 		calendar_layout_service[i] = []
 	}
@@ -1252,8 +1228,8 @@ function on_update() {
 	ui.end.style.left = (calendar_xy[view.end][0] - 52) + "px"
 	ui.end.style.top = (calendar_xy[view.end][1] + 100) + "px"
 
-	ui.held1.textContent = `${view.held1} Held`
-	ui.held2.textContent = `${view.held2} Held`
+	ui.held_york.textContent = `${view.held1} Held`
+	ui.held_lancaster.textContent = `${view.held2} Held`
 
 	update_plan()
 	update_cards()
@@ -1292,20 +1268,11 @@ function on_update() {
 	action_button("retreat", "Retreat")
 	action_button("remove", "Remove")
 	action_button("surrender", "Surrender")
-	action_button("siegeworks", "Siegeworks")
-	action_button("boats_x2", "Boats x2")
 
 	// Use all commands
-	action_button("use_legate", "Legate")
-	action_button("stonemasons", "Stonemasons")
-	action_button("stone_kremlin", "Stone Kremlin")
 	action_button("tax", "Tax")
-	action_button("siege", "Siege")
 
 	// Use one command
-	action_button("smerdi", "Smerdi")
-	action_button("storm", "Storm")
-	action_button("sally", "Sally")
 	action_button("sail", "Sail")
 	action_button("ravage", "Ravage")
 	action_button("forage", "Forage")
@@ -1313,12 +1280,9 @@ function on_update() {
 
 	// Muster & Spoils
 	action_button("take_prov", "Provender")
-	action_button("take_loot", "Loot")
 	action_button("take_coin", "Coin")
 	action_button("take_ship", "Ship")
-	action_button("take_boat", "Boat")
 	action_button("take_cart", "Cart")
-	action_button("take_sled", "Sled")
 	action_button("capability", "Capability")
 
 	// Events
@@ -1334,7 +1298,6 @@ function on_update() {
 
 	action_button("end_array", "End Array")
 	action_button("end_avoid_battle", "End Avoid Battle")
-	action_button("end_call_to_arms", "End Call to Arms")
 	action_button("end_command", "End Command")
 	action_button("end_disband", "End Disband")
 	action_button("end_discard", "End Discard")
@@ -1345,11 +1308,8 @@ function on_update() {
 	action_button("end_pay", "End Pay")
 	action_button("end_plan", "End Plan")
 	action_button("end_plow_and_reap", "End Plow and Reap")
-	action_button("end_ransom", "End Ransom")
 	action_button("end_remove", "End Remove")
-	action_button("end_reposition", "End Reposition")
 	action_button("end_sack", "End Sack")
-	action_button("end_sally", "End Sally")
 	action_button("end_setup", "End Setup")
 	action_button("end_spoils", "End Spoils")
 	action_button("end_supply", "End Supply")
@@ -1364,7 +1324,7 @@ function on_update() {
 // === LOG ===
 
 function on_focus_card_tip(c) {
-	if (c <= first_p1_card)
+	if (c <= first_york_card)
 		ui.command.className = `card aow york york_${c}`
 	else
 		ui.command.className = `card aow lancaster lancaster_${c}`
@@ -1477,20 +1437,6 @@ function on_log(text) {
 
 	p.innerHTML = text
 	return p
-}
-
-function pack1_get(word, n) {
-	return (word >>> n) & 1
-}
-
-function pack2_get(word, n) {
-	n = n << 1
-	return (word >>> n) & 3
-}
-
-function pack4_get(word, n) {
-	n = n << 2
-	return (word >>> n) & 15
 }
 
 build_map()
