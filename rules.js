@@ -1367,6 +1367,7 @@ exports.setup = function (seed, scenario, options) {
 function setup_Ia() {
 	game.turn = 1 << 1
 
+	game.active = YORK
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
@@ -1383,6 +1384,8 @@ function setup_Ia() {
 function setup_Ib() {
 	game.turn = 1 << 1
 
+
+	game.active = YORK
 	muster_lord(LORD_NORFOLK, LOC_LONDON)
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
@@ -1394,6 +1397,8 @@ function setup_Ib() {
 function setup_Ic() {
 	game.turn = 1 << 1
 
+
+	game.active = YORK
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_BAMBURGH)
@@ -1405,6 +1410,8 @@ function setup_Ic() {
 function setup_II() {
 	game.turn = 1 << 1
 
+
+	game.active = LANCASTER
 	muster_lord(LORD_EDWARD_IV, LOC_LONDON)
 	muster_lord(LORD_PEMBROKE, LOC_LONDON)
 	muster_lord(LORD_WARWICK_L, LOC_CALAIS)
@@ -1424,6 +1431,7 @@ function setup_II() {
 function setup_III() {
 	game.turn = 1 << 1
 
+	game.active = LANCASTER
 	muster_lord(LORD_RICHARD_III, LOC_LONDON)
 	muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
 	muster_lord(LORD_NORFOLK, LOC_ARUNDEL)
@@ -1437,6 +1445,8 @@ function setup_III() {
 function setup_ItoIII() {
 	game.turn = 1 << 1
 
+
+	game.active = YORK
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
