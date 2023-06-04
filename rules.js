@@ -1552,14 +1552,14 @@ function is_hill_in_play() {
 			return true
 	return false
 }*/
-
+/*
 function no_muster_of_or_by_lord(lord) {
 	if (lord === LORD_KNUD_ABEL)
 		return is_event_in_play(EVENT_RUSSIAN_VALDEMAR)
 	if (lord === LORD_ANDREAS || lord === LORD_RUDOLF)
 		return is_event_in_play(EVENT_RUSSIAN_DIETRICH_VON_GRUNINGEN)
 	return false
-}
+}*/
 
 function goto_immediate_event(c) {
 	switch (c) {
@@ -1962,10 +1962,10 @@ states.levy_muster = {
 		let done = true
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 			if (is_lord_at_friendly_locale(lord) && !get_lord_moved(lord)) {
-				if (!no_muster_of_or_by_lord(lord)) {
+				/*if (!no_muster_of_or_by_lord(lord)) {
 					gen_action_lord(lord)
 					done = false
-				}
+				}*/
 			}
 		}
 		if (done) {
@@ -2008,8 +2008,8 @@ states.levy_muster_lord = {
 		if (game.count > 0) {
 			// Roll to muster Ready Lord at Seat
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-				if (no_muster_of_or_by_lord(lord))
-					continue
+			/*	if (no_muster_of_or_by_lord(lord))
+					continue*/
 				if (is_lord_ready(lord) && has_free_seat(lord))
 					gen_action_lord(lord)
 			}
