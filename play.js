@@ -761,14 +761,14 @@ function update_current_card_display() {
 			ui.command.className = `card aow lancaster c${view.what}`
 	} else if ((view.turn & 1) === 0) {
 		if (player === "Lancaster")
-			ui.command.className = `card aow lancaster`
+			ui.command.className = `card aow lancaster back`
 		else
-			ui.command.className = `card aow york`
+			ui.command.className = `card aow york back`
 	} else if (view.command < 0) {
 		if (player === "Lancaster")
-			ui.command.className = `card cc lancaster`
+			ui.command.className = `card cc lancaster back`
 		else
-			ui.command.className = `card cc york`
+			ui.command.className = `card cc york back`
 	} else {
 		if (view.command < 14)
 			ui.command.className = `card cc york ${data.lords[view.command].id}`
@@ -1064,9 +1064,9 @@ function update_plan() {
 				}
 			} else if (is_planning && i < max_plan_length()) {
 				if (player === "York")
-					ui.plan_cards[i].className = "card cc york"
+					ui.plan_cards[i].className = "card cc york back"
 				else
-					ui.plan_cards[i].className = "card cc lancaster"
+					ui.plan_cards[i].className = "card cc lancaster back"
 			} else {
 				ui.plan_cards[i].className = "hide"
 			}
@@ -1325,9 +1325,9 @@ function on_update() {
 
 function on_focus_card_tip(c) {
 	if (c <= first_york_card)
-		ui.command.className = `card aow york york_${c}`
+		ui.command.className = `card aow york c${c}`
 	else
-		ui.command.className = `card aow lancaster lancaster_${c}`
+		ui.command.className = `card aow lancaster c${c}`
 }
 
 function on_blur_card_tip() {

@@ -15,6 +15,8 @@ header.your_turn { background-color: orange; }
 #log .h5 { text-decoration: underline; }
 
 #log .h1 { background-color: hsl(0,0%,80%); }
+#log .h2 { background-color: hsl(0,0%,80%); }
+#log .h3 { background-color: hsl(0,0%,80%); }
 
 #log div { padding-left: 20px; text-indent: -12px; }
 #log div.i { padding-left: 32px; text-indent: -12px; }
@@ -291,7 +293,7 @@ body.shift #capabilities2 {
 	margin-top: -38px;
 }
 
-.mat .card { top: 96px; left: 16px; }
+.mat .lord.card { top: 96px; left: 16px; }
 .mat .forces { top: 5px; left: 5px; width: 365px; height: 100px; }
 .mat .routed { top: 110px; right: 5px; width: 160px; height: 120px; }
 .mat .assets { top: 235px; right: 15px; width: 140px; height: 125px; }
@@ -314,21 +316,6 @@ body.shift #capabilities2 {
 .asset.selected {
 	box-shadow: 0 0 0 1px #444, 0 0 0 4px yellow !important;
 }
-
-.asset.cart.x1 { background-image: url(images/cart_x1.png); }
-.asset.cart.x2 { background-image: url(images/cart_x2.png) }
-.asset.cart.x3 { background-image: url(images/cart_x3.png) }
-.asset.cart.x4 { background-image: url(images/cart_x4.png) }
-.asset.coin.x1 { background-image: url(images/coin_x1.png); }
-.asset.coin.x2 { background-image: url(images/coin_x2.png) }
-.asset.coin.x3 { background-image: url(images/coin_x3.png) }
-.asset.coin.x4 { background-image: url(images/coin_x4.png) }
-.asset.prov.x1 { background-image: url(images/prov_x1.png); }
-.asset.prov.x2 { background-image: url(images/prov_x2.png) }
-.asset.prov.x3 { background-image: url(images/prov_x3.png) }
-.asset.prov.x4 { background-image: url(images/prov_x4.png) }
-.asset.ship.x1 { background-image: url(images/ship_x1.png); }
-.asset.ship.x2 { background-image: url(images/ship_x2.png) }
 
 .marker {
 	border: 2px solid aqua;
@@ -356,39 +343,6 @@ body.shift #capabilities2 {
 	border-radius: 50%;
 }
 
-.marker.turn.levy { background-image: url(images/levy.png) }
-.marker.turn.campaign { background-image: url(images/campaign.png) }
-.marker.battle { background-image: url(images/battle.png) }
-
-.marker.towns.york { background-image: url(images/towns_york.png) }
-.marker.cities.york { background-image: url(images/cities_york.png) }
-.marker.fortresses.york { background-image: url(images/fortresses_york.png) }
-.marker.ip.york { background-image: url(images/ip_york.png) }
-
-.marker.towns.lancaster { background-image: url(images/towns_lancaster.png) }
-.marker.cities.lancaster { background-image: url(images/cities_lancaster.png) }
-.marker.fortresses.lancaster { background-image: url(images/fortresses_lancaster.png) }
-.marker.ip.lancaster { background-image: url(images/ip_lancaster.png) }
-
-.marker.moved_fought { background-image: url(images/moved_fought.png) }
-.marker.feed_x2 { background-image: url(images/feed_x2.png) }
-.marker.feed_x3 { background-image: url(images/feed_x3.png) }
-.marker.fled { background-image: url(images/fled.png) }
-.marker.exile { background-image: url(images/exile.png) }
-.marker.exile_lancaster { background-image: url(images/exile_lancaster.png) }
-.marker.exile_york { background-image: url(images/exile_york.png) }
-.marker.exhausted { background-image: url(images/exhausted.png) }
-.marker.end { background-image: url(images/end.png) }
-.marker.depleted { background-image: url(images/depleted.png) }
-.marker.depleted { background-image: url(images/depleted.png) }
-.marker.victory_check { background-image: url(images/victory_check.png) }
-.marker.valour { background-image: url(images/valour.png) }
-.marker.rose.york { background-image: url(images/rose_york.png) }
-.marker.rose.lancaster { background-image: url(images/rose_lancaster.png) }
-.marker.source { background-image: url(images/source.png) }
-
-.unit.retinue { background-image: url(images/retinue.png) }
-
 /* UNITS */
 
 .unit {
@@ -414,12 +368,6 @@ body.shift #capabilities2 {
 		drop-shadow(0px -2px 0px white)
 		drop-shadow(-2px 0px 0px white);
 }
-
-.unit.men_at_arms { background-image: url(images/unit_men_at_arms.svg) }
-.unit.longbowmen { background-image: url(images/unit_longbowmen.svg) }
-.unit.militia { background-image: url(images/unit_militia.svg) }
-.unit.mercenaries { background-image: url(images/unit_mercenaries.svg) }
-.unit.handgunners { background-image: url(images/unit_handgunners.svg) }
 
 /* CARDS */
 
@@ -480,7 +428,7 @@ body.shift #capabilities2 {
 
 #map { background-image: url(map75.png) }
 @media (min-resolution: 97dpi) {
-#map { background-image: url(map150.png) }
+	#map { background-image: url(map150.png) }
 }
 
 .box {
@@ -571,6 +519,81 @@ body.shift #capabilities2 {
 		drop-shadow(0px -2px 0px yellow)
 		drop-shadow(-2px 0px 0px yellow);
 }
+
+/* BACKGROUND COLORS AND BORDERS */
+
+/* ULTRA-WIDE SCREEN LAYOUTS */
+
+@media (min-width: 2800px) {
+	main { display: grid; gap: 0 12px; }
+	main { grid-template-columns: 0 1350px auto 0; }
+	#sec_map { grid-row: 1; grid-column: 2 }
+	#sec_battle { grid-row: 2; grid-column: 2 }
+	#sec_lords { grid-row: 1 / 3; grid-column: 3 }
+}
+
+@media (min-width: 3200px) {
+	main { grid-template-columns: 36px 1350px auto 0; }
+}
+
+@media (min-width: 4100px) {
+	main { grid-template-columns: 0 1350px 1fr 1350px 0; }
+	#sec_map { grid-row: 1; grid-column: 2 }
+	#sec_lords { grid-row: 1; grid-column: 3 }
+	#sec_battle { grid-row: 1; grid-column: 4 }
+}
+
+/* IMAGES */
+
+.marker.turn.levy { background-image: url(images/levy.png) }
+.marker.turn.campaign { background-image: url(images/campaign.png) }
+.marker.battle { background-image: url(images/battle.png) }
+.marker.towns.york { background-image: url(images/towns_york.png) }
+.marker.cities.york { background-image: url(images/cities_york.png) }
+.marker.fortresses.york { background-image: url(images/fortresses_york.png) }
+.marker.ip.york { background-image: url(images/ip_york.png) }
+.marker.towns.lancaster { background-image: url(images/towns_lancaster.png) }
+.marker.cities.lancaster { background-image: url(images/cities_lancaster.png) }
+.marker.fortresses.lancaster { background-image: url(images/fortresses_lancaster.png) }
+.marker.ip.lancaster { background-image: url(images/ip_lancaster.png) }
+.marker.moved_fought { background-image: url(images/moved_fought.png) }
+.marker.feed_x2 { background-image: url(images/feed_x2.png) }
+.marker.feed_x3 { background-image: url(images/feed_x3.png) }
+.marker.fled { background-image: url(images/fled.png) }
+.marker.exile { background-image: url(images/exile.png) }
+.marker.exile_lancaster { background-image: url(images/exile_lancaster.png) }
+.marker.exile_york { background-image: url(images/exile_york.png) }
+.marker.exhausted { background-image: url(images/exhausted.png) }
+.marker.end { background-image: url(images/end.png) }
+.marker.depleted { background-image: url(images/depleted.png) }
+.marker.depleted { background-image: url(images/depleted.png) }
+.marker.victory_check { background-image: url(images/victory_check.png) }
+.marker.valour { background-image: url(images/valour.png) }
+.marker.rose.york { background-image: url(images/rose_york.png) }
+.marker.rose.lancaster { background-image: url(images/rose_lancaster.png) }
+.marker.source { background-image: url(images/source.png) }
+.unit.retinue { background-image: url(images/retinue.png) }
+
+.unit.men_at_arms { background-image: url(images/unit_men_at_arms.svg) }
+.unit.longbowmen { background-image: url(images/unit_longbowmen.svg) }
+.unit.militia { background-image: url(images/unit_militia.svg) }
+.unit.mercenaries { background-image: url(images/unit_mercenaries.svg) }
+.unit.handgunners { background-image: url(images/unit_handgunners.svg) }
+
+.asset.cart.x1 { background-image: url(images/cart_x1.png); }
+.asset.cart.x2 { background-image: url(images/cart_x2.png) }
+.asset.cart.x3 { background-image: url(images/cart_x3.png) }
+.asset.cart.x4 { background-image: url(images/cart_x4.png) }
+.asset.coin.x1 { background-image: url(images/coin_x1.png); }
+.asset.coin.x2 { background-image: url(images/coin_x2.png) }
+.asset.coin.x3 { background-image: url(images/coin_x3.png) }
+.asset.coin.x4 { background-image: url(images/coin_x4.png) }
+.asset.prov.x1 { background-image: url(images/prov_x1.png); }
+.asset.prov.x2 { background-image: url(images/prov_x2.png) }
+.asset.prov.x3 { background-image: url(images/prov_x3.png) }
+.asset.prov.x4 { background-image: url(images/prov_x4.png) }
+.asset.ship.x1 { background-image: url(images/ship_x1.png); }
+.asset.ship.x2 { background-image: url(images/ship_x2.png) }
 
 .cylinder.york.lord_devon { background-image:url(images/lord_york_devon.svg) }
 .cylinder.york.lord_edward_iv { background-image:url(images/lord_york_edward_iv.svg) }
@@ -672,169 +695,146 @@ body.shift #capabilities2 {
 .vassal.back.vassal_thomas_stanley { background-image: url(images/vassal_thomas_stanley_b.png) }
 .vassal.back.vassal_trollope { background-image: url(images/vassal_trollope_b.png) }
 
-/* BACKGROUND COLORS AND BORDERS */
+.card.lord.york.back { background-image: url(cards.1x/lord_york_back.png) }
+.card.lord.lord_devon { background-image: url(cards.1x/lord_york_devon.png) }
+.card.lord.lord_edward_iv { background-image: url(cards.1x/lord_york_edward_iv.png) }
+.card.lord.lord_gloucester_1 { background-image: url(cards.1x/lord_york_gloucester_1.png) }
+.card.lord.lord_gloucester_2 { background-image: url(cards.1x/lord_york_gloucester_2.png) }
+.card.lord.lord_march { background-image: url(cards.1x/lord_york_march.png) }
+.card.lord.lord_norfolk { background-image: url(cards.1x/lord_york_norfolk.png) }
+.card.lord.lord_northumberland_y1 { background-image: url(cards.1x/lord_york_northumberland_y1.png) }
+.card.lord.lord_northumberland_y2 { background-image: url(cards.1x/lord_york_northumberland_y2.png) }
+.card.lord.lord_pembroke { background-image: url(cards.1x/lord_york_pembroke.png) }
+.card.lord.lord_richard_iii { background-image: url(cards.1x/lord_york_richard_iii.png) }
+.card.lord.lord_rutland { background-image: url(cards.1x/lord_york_rutland.png) }
+.card.lord.lord_salisbury { background-image: url(cards.1x/lord_york_salisbury.png) }
+.card.lord.lord_warwick_l { background-image: url(cards.1x/lord_york_warwick_y.png) }
+.card.lord.lord_york { background-image: url(cards.1x/lord_york_york.png) }
 
-/* CARD IMAGES */
+.card.lord.lancaster.back { background-image: url(cards.1x/lord_lancaster_back.png) }
+.card.lord.lord_buckingham { background-image: url(cards.1x/lord_lancaster_buckingham.png) }
+.card.lord.lord_clarence { background-image: url(cards.1x/lord_lancaster_clarence.png) }
+.card.lord.lord_exeter_1 { background-image: url(cards.1x/lord_lancaster_exeter_1.png) }
+.card.lord.lord_exeter_2 { background-image: url(cards.1x/lord_lancaster_exeter_2.png) }
+.card.lord.lord_henry_tudor { background-image: url(cards.1x/lord_lancaster_henry_tudor.png) }
+.card.lord.lord_henry_vi { background-image: url(cards.1x/lord_lancaster_henry_vi.png) }
+.card.lord.lord_jasper_tudor_1 { background-image: url(cards.1x/lord_lancaster_jasper_tudor_1.png) }
+.card.lord.lord_jasper_tudor_2 { background-image: url(cards.1x/lord_lancaster_jasper_tudor_2.png) }
+.card.lord.lord_margaret { background-image: url(cards.1x/lord_lancaster_margaret.png) }
+.card.lord.lord_northumberland_l { background-image: url(cards.1x/lord_lancaster_northumberland_l.png) }
+.card.lord.lord_oxford { background-image: url(cards.1x/lord_lancaster_oxford.png) }
+.card.lord.lord_somerset_1 { background-image: url(cards.1x/lord_lancaster_somerset_1.png) }
+.card.lord.lord_somerset_2 { background-image: url(cards.1x/lord_lancaster_somerset_2.png) }
+.card.lord.lord_warwick_l { background-image: url(cards.1x/lord_lancaster_warwick_l.png) }
 
-.card.cc.york { background-image: url(cards.1x/cc_york_back.png) }
-.card.cc.york.lord_devon { background-image: url(cards.1x/cc_york_devon.png) }
-.card.cc.york.lord_edward_iv { background-image: url(cards.1x/cc_york_edward_iv.png) }
-.card.cc.york.lord_gloucester_1 { background-image: url(cards.1x/cc_york_gloucester.png) }
-.card.cc.york.lord_gloucester_2 { background-image: url(cards.1x/cc_york_gloucester.png) }
-.card.cc.york.lord_march { background-image: url(cards.1x/cc_york_march.png) }
-.card.cc.york.lord_norfolk { background-image: url(cards.1x/cc_york_norfolk.png) }
-.card.cc.york.lord_northumberland_y1 { background-image: url(cards.1x/cc_york_northumberland.png) }
-.card.cc.york.lord_northumberland_y2 { background-image: url(cards.1x/cc_york_northumberland.png) }
-.card.cc.york.lord_pembroke { background-image: url(cards.1x/cc_york_pembroke.png) }
-.card.cc.york.lord_richard_iii { background-image: url(cards.1x/cc_york_richard_iii.png) }
-.card.cc.york.lord_rutland { background-image: url(cards.1x/cc_york_rutland.png) }
-.card.cc.york.lord_salisbury { background-image: url(cards.1x/cc_york_salisbury.png) }
-.card.cc.york.lord_warwick_l { background-image: url(cards.1x/cc_york_warwick.png) }
-.card.cc.york.lord_york { background-image: url(cards.1x/cc_york_york.png) }
+.card.cc.york.back { background-image: url(cards.1x/cc_york_back.png) }
 .card.cc.york.pass { background-image: url(cards.1x/cc_york_pass.png) }
+.card.cc.lord_devon { background-image: url(cards.1x/cc_york_devon.png) }
+.card.cc.lord_edward_iv { background-image: url(cards.1x/cc_york_edward_iv.png) }
+.card.cc.lord_gloucester_1 { background-image: url(cards.1x/cc_york_gloucester.png) }
+.card.cc.lord_gloucester_2 { background-image: url(cards.1x/cc_york_gloucester.png) }
+.card.cc.lord_march { background-image: url(cards.1x/cc_york_march.png) }
+.card.cc.lord_norfolk { background-image: url(cards.1x/cc_york_norfolk.png) }
+.card.cc.lord_northumberland_y1 { background-image: url(cards.1x/cc_york_northumberland.png) }
+.card.cc.lord_northumberland_y2 { background-image: url(cards.1x/cc_york_northumberland.png) }
+.card.cc.lord_pembroke { background-image: url(cards.1x/cc_york_pembroke.png) }
+.card.cc.lord_richard_iii { background-image: url(cards.1x/cc_york_richard_iii.png) }
+.card.cc.lord_rutland { background-image: url(cards.1x/cc_york_rutland.png) }
+.card.cc.lord_salisbury { background-image: url(cards.1x/cc_york_salisbury.png) }
+.card.cc.lord_warwick_l { background-image: url(cards.1x/cc_york_warwick.png) }
+.card.cc.lord_york { background-image: url(cards.1x/cc_york_york.png) }
 
-.card.cc.lancaster { background-image: url(cards.1x/cc_lancaster_back.png) }
-.card.cc.lancaster.lord_buckingham { background-image: url(cards.1x/cc_lancaster_buckingham.png) }
-.card.cc.lancaster.lord_clarence { background-image: url(cards.1x/cc_lancaster_clarence.png) }
-.card.cc.lancaster.lord_exeter_1 { background-image: url(cards.1x/cc_lancaster_exeter.png) }
-.card.cc.lancaster.lord_exeter_2 { background-image: url(cards.1x/cc_lancaster_exeter.png) }
-.card.cc.lancaster.lord_henry_tudor { background-image: url(cards.1x/cc_lancaster_henry_tudor.png) }
-.card.cc.lancaster.lord_henry_vi { background-image: url(cards.1x/cc_lancaster_henry_vi.png) }
-.card.cc.lancaster.lord_jasper_tudor_1 { background-image: url(cards.1x/cc_lancaster_jasper_tudor.png) }
-.card.cc.lancaster.lord_jasper_tudor_2 { background-image: url(cards.1x/cc_lancaster_jasper_tudor.png) }
-.card.cc.lancaster.lord_margaret { background-image: url(cards.1x/cc_lancaster_margaret.png) }
-.card.cc.lancaster.lord_northumberland_l { background-image: url(cards.1x/cc_lancaster_northumberland.png) }
-.card.cc.lancaster.lord_oxford { background-image: url(cards.1x/cc_lancaster_oxford.png) }
-.card.cc.lancaster.lord_somerset_1 { background-image: url(cards.1x/cc_lancaster_somerset.png) }
-.card.cc.lancaster.lord_somerset_2 { background-image: url(cards.1x/cc_lancaster_somerset.png) }
-.card.cc.lancaster.lord_warwick_l { background-image: url(cards.1x/cc_lancaster_warwick.png) }
+.card.cc.lancaster.back { background-image: url(cards.1x/cc_lancaster_back.png) }
 .card.cc.lancaster.pass { background-image: url(cards.1x/cc_lancaster_pass.png) }
+.card.cc.lord_buckingham { background-image: url(cards.1x/cc_lancaster_buckingham.png) }
+.card.cc.lord_clarence { background-image: url(cards.1x/cc_lancaster_clarence.png) }
+.card.cc.lord_exeter_1 { background-image: url(cards.1x/cc_lancaster_exeter.png) }
+.card.cc.lord_exeter_2 { background-image: url(cards.1x/cc_lancaster_exeter.png) }
+.card.cc.lord_henry_tudor { background-image: url(cards.1x/cc_lancaster_henry_tudor.png) }
+.card.cc.lord_henry_vi { background-image: url(cards.1x/cc_lancaster_henry_vi.png) }
+.card.cc.lord_jasper_tudor_1 { background-image: url(cards.1x/cc_lancaster_jasper_tudor.png) }
+.card.cc.lord_jasper_tudor_2 { background-image: url(cards.1x/cc_lancaster_jasper_tudor.png) }
+.card.cc.lord_margaret { background-image: url(cards.1x/cc_lancaster_margaret.png) }
+.card.cc.lord_northumberland_l { background-image: url(cards.1x/cc_lancaster_northumberland.png) }
+.card.cc.lord_oxford { background-image: url(cards.1x/cc_lancaster_oxford.png) }
+.card.cc.lord_somerset_1 { background-image: url(cards.1x/cc_lancaster_somerset.png) }
+.card.cc.lord_somerset_2 { background-image: url(cards.1x/cc_lancaster_somerset.png) }
+.card.cc.lord_warwick_l { background-image: url(cards.1x/cc_lancaster_warwick.png) }
 
-.card.lord.york { background-image: url(cards.1x/lord_york_back.png) }
-.card.lord.york.lord_devon { background-image: url(cards.1x/lord_york_devon.png) }
-.card.lord.york.lord_edward_iv { background-image: url(cards.1x/lord_york_edward_iv.png) }
-.card.lord.york.lord_gloucester_1 { background-image: url(cards.1x/lord_york_gloucester_1.png) }
-.card.lord.york.lord_gloucester_2 { background-image: url(cards.1x/lord_york_gloucester_2.png) }
-.card.lord.york.lord_march { background-image: url(cards.1x/lord_york_march.png) }
-.card.lord.york.lord_norfolk { background-image: url(cards.1x/lord_york_norfolk.png) }
-.card.lord.york.lord_northumberland_y1 { background-image: url(cards.1x/lord_york_northumberland_y1.png) }
-.card.lord.york.lord_northumberland_y2 { background-image: url(cards.1x/lord_york_northumberland_y2.png) }
-.card.lord.york.lord_pembroke { background-image: url(cards.1x/lord_york_pembroke.png) }
-.card.lord.york.lord_richard_iii { background-image: url(cards.1x/lord_york_richard_iii.png) }
-.card.lord.york.lord_rutland { background-image: url(cards.1x/lord_york_rutland.png) }
-.card.lord.york.lord_salisbury { background-image: url(cards.1x/lord_york_salisbury.png) }
-.card.lord.york.lord_warwick_l { background-image: url(cards.1x/lord_york_warwick_y.png) }
-.card.lord.york.lord_york { background-image: url(cards.1x/lord_york_york.png) }
+.card.aow.york.back { background-image: url(cards.1x/aow_york_back.png) }
+.card.aow.c0 { background-image: url(cards.1x/aow_york_1.png) }
+.card.aow.c1 { background-image: url(cards.1x/aow_york_2.png) }
+.card.aow.c2 { background-image: url(cards.1x/aow_york_3.png) }
+.card.aow.c3 { background-image: url(cards.1x/aow_york_4.png) }
+.card.aow.c4 { background-image: url(cards.1x/aow_york_5.png) }
+.card.aow.c5 { background-image: url(cards.1x/aow_york_6.png) }
+.card.aow.c6 { background-image: url(cards.1x/aow_york_7.png) }
+.card.aow.c7 { background-image: url(cards.1x/aow_york_8.png) }
+.card.aow.c8 { background-image: url(cards.1x/aow_york_9.png) }
+.card.aow.c9 { background-image: url(cards.1x/aow_york_10.png) }
+.card.aow.c10 { background-image: url(cards.1x/aow_york_11.png) }
+.card.aow.c11 { background-image: url(cards.1x/aow_york_12.png) }
+.card.aow.c12 { background-image: url(cards.1x/aow_york_13.png) }
+.card.aow.c13 { background-image: url(cards.1x/aow_york_14.png) }
+.card.aow.c14 { background-image: url(cards.1x/aow_york_15.png) }
+.card.aow.c15 { background-image: url(cards.1x/aow_york_16.png) }
+.card.aow.c16 { background-image: url(cards.1x/aow_york_17.png) }
+.card.aow.c17 { background-image: url(cards.1x/aow_york_18.png) }
+.card.aow.c18 { background-image: url(cards.1x/aow_york_19.png) }
+.card.aow.c19 { background-image: url(cards.1x/aow_york_20.png) }
+.card.aow.c20 { background-image: url(cards.1x/aow_york_21.png) }
+.card.aow.c21 { background-image: url(cards.1x/aow_york_22.png) }
+.card.aow.c22 { background-image: url(cards.1x/aow_york_23.png) }
+.card.aow.c23 { background-image: url(cards.1x/aow_york_24.png) }
+.card.aow.c24 { background-image: url(cards.1x/aow_york_25.png) }
+.card.aow.c25 { background-image: url(cards.1x/aow_york_26.png) }
+.card.aow.c26 { background-image: url(cards.1x/aow_york_27.png) }
+.card.aow.c27 { background-image: url(cards.1x/aow_york_28.png) }
+.card.aow.c28 { background-image: url(cards.1x/aow_york_29.png) }
+.card.aow.c29 { background-image: url(cards.1x/aow_york_30.png) }
+.card.aow.c30 { background-image: url(cards.1x/aow_york_31.png) }
+.card.aow.c31 { background-image: url(cards.1x/aow_york_32.png) }
+.card.aow.c32 { background-image: url(cards.1x/aow_york_33.png) }
+.card.aow.c33 { background-image: url(cards.1x/aow_york_34.png) }
+.card.aow.c34 { background-image: url(cards.1x/aow_york_35.png) }
+.card.aow.c35 { background-image: url(cards.1x/aow_york_36.png) }
+.card.aow.c36 { background-image: url(cards.1x/aow_york_37.png) }
 
-.card.lord.lancaster { background-image: url(cards.1x/lord_lancaster_back.png) }
-.card.lord.lancaster.lord_buckingham { background-image: url(cards.1x/lord_lancaster_buckingham.png) }
-.card.lord.lancaster.lord_clarence { background-image: url(cards.1x/lord_lancaster_clarence.png) }
-.card.lord.lancaster.lord_exeter_1 { background-image: url(cards.1x/lord_lancaster_exeter_1.png) }
-.card.lord.lancaster.lord_exeter_2 { background-image: url(cards.1x/lord_lancaster_exeter_2.png) }
-.card.lord.lancaster.lord_henry_tudor { background-image: url(cards.1x/lord_lancaster_henry_tudor.png) }
-.card.lord.lancaster.lord_henry_vi { background-image: url(cards.1x/lord_lancaster_henry_vi.png) }
-.card.lord.lancaster.lord_jasper_tudor_1 { background-image: url(cards.1x/lord_lancaster_jasper_tudor_1.png) }
-.card.lord.lancaster.lord_jasper_tudor_2 { background-image: url(cards.1x/lord_lancaster_jasper_tudor_2.png) }
-.card.lord.lancaster.lord_margaret { background-image: url(cards.1x/lord_lancaster_margaret.png) }
-.card.lord.lancaster.lord_northumberland_l { background-image: url(cards.1x/lord_lancaster_northumberland_l.png) }
-.card.lord.lancaster.lord_oxford { background-image: url(cards.1x/lord_lancaster_oxford.png) }
-.card.lord.lancaster.lord_somerset_1 { background-image: url(cards.1x/lord_lancaster_somerset_1.png) }
-.card.lord.lancaster.lord_somerset_2 { background-image: url(cards.1x/lord_lancaster_somerset_2.png) }
-.card.lord.lancaster.lord_warwick_l { background-image: url(cards.1x/lord_lancaster_warwick_l.png) }
-
-.card.aow.york.c1 { background-image: url(cards.1x/aow_york_1.png) }
-.card.aow.york.c2 { background-image: url(cards.1x/aow_york_2.png) }
-.card.aow.york.c3 { background-image: url(cards.1x/aow_york_3.png) }
-.card.aow.york.c4 { background-image: url(cards.1x/aow_york_4.png) }
-.card.aow.york.c5 { background-image: url(cards.1x/aow_york_5.png) }
-.card.aow.york.c6 { background-image: url(cards.1x/aow_york_6.png) }
-.card.aow.york.c7 { background-image: url(cards.1x/aow_york_7.png) }
-.card.aow.york.c8 { background-image: url(cards.1x/aow_york_8.png) }
-.card.aow.york.c9 { background-image: url(cards.1x/aow_york_9.png) }
-.card.aow.york.c10 { background-image: url(cards.1x/aow_york_10.png) }
-.card.aow.york.c11 { background-image: url(cards.1x/aow_york_11.png) }
-.card.aow.york.c12 { background-image: url(cards.1x/aow_york_12.png) }
-.card.aow.york.c13 { background-image: url(cards.1x/aow_york_13.png) }
-.card.aow.york.c14 { background-image: url(cards.1x/aow_york_14.png) }
-.card.aow.york.c15 { background-image: url(cards.1x/aow_york_15.png) }
-.card.aow.york.c16 { background-image: url(cards.1x/aow_york_16.png) }
-.card.aow.york.c17 { background-image: url(cards.1x/aow_york_17.png) }
-.card.aow.york.c18 { background-image: url(cards.1x/aow_york_18.png) }
-.card.aow.york.c19 { background-image: url(cards.1x/aow_york_19.png) }
-.card.aow.york.c20 { background-image: url(cards.1x/aow_york_20.png) }
-.card.aow.york.c21 { background-image: url(cards.1x/aow_york_21.png) }
-.card.aow.york.c22 { background-image: url(cards.1x/aow_york_22.png) }
-.card.aow.york.c23 { background-image: url(cards.1x/aow_york_23.png) }
-.card.aow.york.c24 { background-image: url(cards.1x/aow_york_24.png) }
-.card.aow.york.c25 { background-image: url(cards.1x/aow_york_25.png) }
-.card.aow.york.c26 { background-image: url(cards.1x/aow_york_26.png) }
-.card.aow.york.c27 { background-image: url(cards.1x/aow_york_27.png) }
-.card.aow.york.c28 { background-image: url(cards.1x/aow_york_28.png) }
-.card.aow.york.c29 { background-image: url(cards.1x/aow_york_29.png) }
-.card.aow.york.c30 { background-image: url(cards.1x/aow_york_30.png) }
-.card.aow.york.c31 { background-image: url(cards.1x/aow_york_31.png) }
-.card.aow.york.c32 { background-image: url(cards.1x/aow_york_32.png) }
-.card.aow.york.c33 { background-image: url(cards.1x/aow_york_33.png) }
-.card.aow.york.c34 { background-image: url(cards.1x/aow_york_34.png) }
-.card.aow.york.c35 { background-image: url(cards.1x/aow_york_35.png) }
-.card.aow.york.c36 { background-image: url(cards.1x/aow_york_36.png) }
-.card.aow.york.c37 { background-image: url(cards.1x/aow_york_37.png) }
-
-.card.aow.lancaster.c1 { background-image: url(cards.1x/aow_lancaster_1.png) }
-.card.aow.lancaster.c2 { background-image: url(cards.1x/aow_lancaster_2.png) }
-.card.aow.lancaster.c3 { background-image: url(cards.1x/aow_lancaster_3.png) }
-.card.aow.lancaster.c4 { background-image: url(cards.1x/aow_lancaster_4.png) }
-.card.aow.lancaster.c5 { background-image: url(cards.1x/aow_lancaster_5.png) }
-.card.aow.lancaster.c6 { background-image: url(cards.1x/aow_lancaster_6.png) }
-.card.aow.lancaster.c7 { background-image: url(cards.1x/aow_lancaster_7.png) }
-.card.aow.lancaster.c8 { background-image: url(cards.1x/aow_lancaster_8.png) }
-.card.aow.lancaster.c9 { background-image: url(cards.1x/aow_lancaster_9.png) }
-.card.aow.lancaster.c10 { background-image: url(cards.1x/aow_lancaster_10.png) }
-.card.aow.lancaster.c11 { background-image: url(cards.1x/aow_lancaster_11.png) }
-.card.aow.lancaster.c12 { background-image: url(cards.1x/aow_lancaster_12.png) }
-.card.aow.lancaster.c13 { background-image: url(cards.1x/aow_lancaster_13.png) }
-.card.aow.lancaster.c14 { background-image: url(cards.1x/aow_lancaster_14.png) }
-.card.aow.lancaster.c15 { background-image: url(cards.1x/aow_lancaster_15.png) }
-.card.aow.lancaster.c16 { background-image: url(cards.1x/aow_lancaster_16.png) }
-.card.aow.lancaster.c17 { background-image: url(cards.1x/aow_lancaster_17.png) }
-.card.aow.lancaster.c18 { background-image: url(cards.1x/aow_lancaster_18.png) }
-.card.aow.lancaster.c19 { background-image: url(cards.1x/aow_lancaster_19.png) }
-.card.aow.lancaster.c20 { background-image: url(cards.1x/aow_lancaster_20.png) }
-.card.aow.lancaster.c21 { background-image: url(cards.1x/aow_lancaster_21.png) }
-.card.aow.lancaster.c22 { background-image: url(cards.1x/aow_lancaster_22.png) }
-.card.aow.lancaster.c23 { background-image: url(cards.1x/aow_lancaster_23.png) }
-.card.aow.lancaster.c24 { background-image: url(cards.1x/aow_lancaster_24.png) }
-.card.aow.lancaster.c25 { background-image: url(cards.1x/aow_lancaster_25.png) }
-.card.aow.lancaster.c26 { background-image: url(cards.1x/aow_lancaster_26.png) }
-.card.aow.lancaster.c27 { background-image: url(cards.1x/aow_lancaster_27.png) }
-.card.aow.lancaster.c28 { background-image: url(cards.1x/aow_lancaster_28.png) }
-.card.aow.lancaster.c29 { background-image: url(cards.1x/aow_lancaster_29.png) }
-.card.aow.lancaster.c30 { background-image: url(cards.1x/aow_lancaster_30.png) }
-.card.aow.lancaster.c31 { background-image: url(cards.1x/aow_lancaster_31.png) }
-.card.aow.lancaster.c32 { background-image: url(cards.1x/aow_lancaster_32.png) }
-.card.aow.lancaster.c33 { background-image: url(cards.1x/aow_lancaster_33.png) }
-.card.aow.lancaster.c34 { background-image: url(cards.1x/aow_lancaster_34.png) }
-.card.aow.lancaster.c35 { background-image: url(cards.1x/aow_lancaster_35.png) }
-.card.aow.lancaster.c36 { background-image: url(cards.1x/aow_lancaster_36.png) }
-.card.aow.lancaster.c37 { background-image: url(cards.1x/aow_lancaster_37.png) }
-
-/* ULTRA-WIDE SCREEN LAYOUTS */
-
-@media (min-width: 2800px) {
-	main { display: grid; gap: 0 12px; }
-	main { grid-template-columns: 0 1350px auto 0; }
-	#sec_map { grid-row: 1; grid-column: 2 }
-	#sec_battle { grid-row: 2; grid-column: 2 }
-	#sec_lords { grid-row: 1 / 3; grid-column: 3 }
-}
-
-@media (min-width: 3200px) {
-	main { grid-template-columns: 36px 1350px auto 0; }
-}
-
-@media (min-width: 4100px) {
-	main { grid-template-columns: 0 1350px 1fr 1350px 0; }
-	#sec_map { grid-row: 1; grid-column: 2 }
-	#sec_lords { grid-row: 1; grid-column: 3 }
-	#sec_battle { grid-row: 1; grid-column: 4 }
-}
+.card.aow.lancaster.back { background-image: url(cards.1x/aow_lancaster_back.png) }
+.card.aow.c37 { background-image: url(cards.1x/aow_lancaster_1.png) }
+.card.aow.c38 { background-image: url(cards.1x/aow_lancaster_2.png) }
+.card.aow.c39 { background-image: url(cards.1x/aow_lancaster_3.png) }
+.card.aow.c40 { background-image: url(cards.1x/aow_lancaster_4.png) }
+.card.aow.c41 { background-image: url(cards.1x/aow_lancaster_5.png) }
+.card.aow.c42 { background-image: url(cards.1x/aow_lancaster_6.png) }
+.card.aow.c43 { background-image: url(cards.1x/aow_lancaster_7.png) }
+.card.aow.c44 { background-image: url(cards.1x/aow_lancaster_8.png) }
+.card.aow.c45 { background-image: url(cards.1x/aow_lancaster_9.png) }
+.card.aow.c46 { background-image: url(cards.1x/aow_lancaster_10.png) }
+.card.aow.c47 { background-image: url(cards.1x/aow_lancaster_11.png) }
+.card.aow.c48 { background-image: url(cards.1x/aow_lancaster_12.png) }
+.card.aow.c49 { background-image: url(cards.1x/aow_lancaster_13.png) }
+.card.aow.c50 { background-image: url(cards.1x/aow_lancaster_14.png) }
+.card.aow.c51 { background-image: url(cards.1x/aow_lancaster_15.png) }
+.card.aow.c52 { background-image: url(cards.1x/aow_lancaster_16.png) }
+.card.aow.c53 { background-image: url(cards.1x/aow_lancaster_17.png) }
+.card.aow.c54 { background-image: url(cards.1x/aow_lancaster_18.png) }
+.card.aow.c55 { background-image: url(cards.1x/aow_lancaster_19.png) }
+.card.aow.c56 { background-image: url(cards.1x/aow_lancaster_20.png) }
+.card.aow.c57 { background-image: url(cards.1x/aow_lancaster_21.png) }
+.card.aow.c58 { background-image: url(cards.1x/aow_lancaster_22.png) }
+.card.aow.c59 { background-image: url(cards.1x/aow_lancaster_23.png) }
+.card.aow.c60 { background-image: url(cards.1x/aow_lancaster_24.png) }
+.card.aow.c61 { background-image: url(cards.1x/aow_lancaster_25.png) }
+.card.aow.c62 { background-image: url(cards.1x/aow_lancaster_26.png) }
+.card.aow.c63 { background-image: url(cards.1x/aow_lancaster_27.png) }
+.card.aow.c64 { background-image: url(cards.1x/aow_lancaster_28.png) }
+.card.aow.c65 { background-image: url(cards.1x/aow_lancaster_29.png) }
+.card.aow.c66 { background-image: url(cards.1x/aow_lancaster_30.png) }
+.card.aow.c67 { background-image: url(cards.1x/aow_lancaster_31.png) }
+.card.aow.c68 { background-image: url(cards.1x/aow_lancaster_32.png) }
+.card.aow.c69 { background-image: url(cards.1x/aow_lancaster_33.png) }
+.card.aow.c70 { background-image: url(cards.1x/aow_lancaster_34.png) }
+.card.aow.c71 { background-image: url(cards.1x/aow_lancaster_35.png) }
+.card.aow.c72 { background-image: url(cards.1x/aow_lancaster_36.png) }
+.card.aow.c73 { background-image: url(cards.1x/aow_lancaster_37.png) }
