@@ -5643,7 +5643,7 @@ function award_spoils(n) {
 	add_spoils(PROV, n)
 	add_spoils(COIN, n)
 }
-
+/*
 function goto_sack() {
 	let here = game.battle.where
 
@@ -5705,7 +5705,7 @@ states.sack = {
 
 function end_ransom_sack() {
 	resume_sack()
-}
+}*/
 
 // === ENDING THE BATTLE: WITHDRAW ===
 
@@ -6490,7 +6490,7 @@ states.feed_lord_shared = {
 }
 
 function end_feed() {
-	goto_pay()
+	end_pay()
 }
 
 // === LEVY & CAMPAIGN: PAY ===
@@ -6524,8 +6524,8 @@ function goto_pay() {
 	log_br()
 	game.state = "pay"
 	game.who = NOBODY
-	if (!has_friendly_lord_who_may_be_paid())
-		end_pay()
+	/*if (!has_friendly_lord_who_may_be_paid())
+		end_pay()*/
 }
 
 function resume_pay() {
@@ -6553,10 +6553,10 @@ states.pay = {
 
 			view.prompt = `Pay: You may Pay ${lord_name[game.who]} with Coin.`
 
-			if (game.active === RUSSIANS) {
+		/*	if (game.active === RUSSIANS) {
 				if (game.pieces.veche_coin > 0 && is_lord_unbesieged(game.who))
 					view.actions.veche_coin = 1
-			}
+			}*/
 
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 				if (get_lord_locale(lord) === here) {
@@ -6574,13 +6574,6 @@ states.pay = {
 		push_undo_without_who()
 		log(`Paid L${game.who}.`)
 		add_lord_assets(lord, COIN, -1)
-		add_lord_service(game.who, 1)
-		resume_pay()
-	},
-	veche_coin() {
-		push_undo_without_who()
-		log(`Paid L${game.who} from Veche.`)
-		game.pieces.veche_coin--
 		add_lord_service(game.who, 1)
 		resume_pay()
 	},
