@@ -54,5 +54,5 @@ flush()
 
 console.log("const boxes = {")
 for (let key in boxes)
-	console.log("\t" + key + ": " + JSON.stringify(boxes[key]) + ",")
+	console.log("\t\"" + key + "\": " + JSON.stringify(boxes[key]) + ",")
 console.log("}")
