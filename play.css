@@ -38,8 +38,8 @@ header.your_turn { background-color: orange; }
 /* PANELS */
 
 .panel {
-	min-width: 1350px;
-	max-width: 1350px;
+	min-width: 1275px;
+	max-width: 1275px;
 	margin: 12px auto 36px auto;
 	background-color: #555;
 }
@@ -384,7 +384,7 @@ body.shift #capabilities2 {
 	justify-content: center;
 	align-items: center;
 	min-height: 260px;
-	max-width: 1350px;
+	max-width: 1275px;
 	gap: 16px;
 }
 
@@ -415,8 +415,8 @@ body.shift #capabilities2 {
 /* MAP */
 
 #mapwrap {
-	width: 1350px;
-	height: 1725px;
+	width: 1275px;
+	height: 1650px;
 	box-shadow: 0px 1px 10px #0008;
 	z-index: 3;
 }
@@ -424,8 +424,8 @@ body.shift #capabilities2 {
 #map {
 	background-repeat: no-repeat;
 	background-size: cover;
-	width: 1350px;
-	height: 1725px;
+	width: 1275px;
+	height: 1650px;
 	overflow: clip;
 }
 
@@ -524,18 +524,18 @@ body.shift #capabilities2 {
 
 @media (min-width: 2800px) {
 	main { display: grid; gap: 0 12px; }
-	main { grid-template-columns: 0 1350px auto 0; }
+	main { grid-template-columns: 0 1275px auto 0; }
 	#sec_map { grid-row: 1; grid-column: 2 }
 	#sec_battle { grid-row: 2; grid-column: 2 }
 	#sec_lords { grid-row: 1 / 3; grid-column: 3 }
 }
 
 @media (min-width: 3200px) {
-	main { grid-template-columns: 36px 1350px auto 0; }
+	main { grid-template-columns: 36px 1275px auto 0; }
 }
 
 @media (min-width: 4100px) {
-	main { grid-template-columns: 0 1350px 1fr 1350px 0; }
+	main { grid-template-columns: 0 1275px 1fr 1275px 0; }
 	#sec_map { grid-row: 1; grid-column: 2 }
 	#sec_lords { grid-row: 1; grid-column: 3 }
 	#sec_battle { grid-row: 1; grid-column: 4 }
