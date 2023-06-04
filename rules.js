@@ -776,10 +776,10 @@ function max_plan_length() {
 	switch (current_season()) {
 		case SUMMER:
 			return 7
+		case SPRING:
+			return 6
 		case WINTER:
 			return 4
-		case SPRING:
-			return 5
 	}
 }
 
