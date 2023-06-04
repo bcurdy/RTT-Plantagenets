@@ -706,7 +706,7 @@ body.shift #capabilities2 {
 .card.lord.lord_richard_iii { background-image: url(cards.1x/lord_york_richard_iii.png) }
 .card.lord.lord_rutland { background-image: url(cards.1x/lord_york_rutland.png) }
 .card.lord.lord_salisbury { background-image: url(cards.1x/lord_york_salisbury.png) }
-.card.lord.lord_warwick_l { background-image: url(cards.1x/lord_york_warwick_y.png) }
+.card.lord.lord_warwick_y { background-image: url(cards.1x/lord_york_warwick_y.png) }
 .card.lord.lord_york { background-image: url(cards.1x/lord_york_york.png) }
 
 .card.lord.lancaster.back { background-image: url(cards.1x/lord_lancaster_back.png) }
@@ -739,7 +739,7 @@ body.shift #capabilities2 {
 .card.cc.lord_richard_iii { background-image: url(cards.1x/cc_york_richard_iii.png) }
 .card.cc.lord_rutland { background-image: url(cards.1x/cc_york_rutland.png) }
 .card.cc.lord_salisbury { background-image: url(cards.1x/cc_york_salisbury.png) }
-.card.cc.lord_warwick_l { background-image: url(cards.1x/cc_york_warwick.png) }
+.card.cc.lord_warwick_y { background-image: url(cards.1x/cc_york_warwick.png) }
 .card.cc.lord_york { background-image: url(cards.1x/cc_york_york.png) }
 
 .card.cc.lancaster.back { background-image: url(cards.1x/cc_lancaster_back.png) }
