@@ -252,7 +252,7 @@ cards:[
 {"name":"L20","event":"Parliament Truce","when":"hold","capability":"Veteran of French Wars","this_lord":true,"lords":[16,17,18,19]},
 {"name":"L21","event":"French Fleet","when":"this_campaign","capability":"My Father’s Blood","this_lord":true,"lords":[14,15,16,17,18,19,20,21,22,23,24,25,26,27]},
 {"name":"L22","event":"French Troops","when":"now","capability":"Stafford Estates","this_lord":true,"lords":[20]},
-{"name":"L23","event":"Warwick’s Propaganda","when":"now","capability":"Montagu","this_lord":true,"lords":[-1]},
+{"name":"L23","event":"Warwick’s Propaganda","when":"now","capability":"Montagu","this_lord":true,"lords":[27]},
 {"name":"L24","event":"Warwick’s Propaganda","when":"now","capability":"Married to a Neville","this_lord":true,"lords":[22]},
 {"name":"L25","event":"Welsh Rebellion","when":"now","capability":"Welsh Lord","this_lord":true,"lords":[23,24]},
 {"name":"L26","event":"Henry Released","when":"now","capability":"Edward","this_lord":true,"lords":[15]},
