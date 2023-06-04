@@ -15,14 +15,14 @@ function print_lord(output, side, label) {
 
 	svg.push('<linearGradient id="g">')
 	if (side === 'york') {
-		svg.push('<stop offset="0%" stop-color="#ddd"/>')
-		svg.push('<stop offset="40%" stop-color="#fff"/>')
-		svg.push('<stop offset="100%" stop-color="#ccc"/>')
+		svg.push('<stop offset="0%" stop-color="hsl(0,0%,83%)"/>')
+		svg.push('<stop offset="40%" stop-color="hsl(0,0%,93%)"/>')
+		svg.push('<stop offset="100%" stop-color="hsl(0,0%,73%)"/>')
 		bd = '#555'
 	} else {
-		svg.push('<stop offset="0%" stop-color="#d33"/>')
-		svg.push('<stop offset="40%" stop-color="#f44"/>')
-		svg.push('<stop offset="100%" stop-color="#c22"/>')
+		svg.push('<stop offset="0%" stop-color="hsl(359,85%,43%)"/>')
+		svg.push('<stop offset="40%" stop-color="hsl(359,85%,53%)"/>')
+		svg.push('<stop offset="100%" stop-color="hsl(359,85%,33%)"/>')
 		bd = '#533'
 	}
 	svg.push('</linearGradient>')

@@ -511,7 +511,7 @@ const ui = {
 	lord_events: [],
 	lord_moved1: [],
 	lord_moved2: [],
-	lord_feed_x2: [],
+	lord_feed: [],
 	cards: [],
 	calendar: [],
 
@@ -583,7 +583,7 @@ function build_lord_mat(lord, ix, side, name) {
 	ui.lord_events[ix] = build_div(mat, "events")
 	ui.lord_moved1[ix] = build_div(mat, "marker square moved_fought one hide")
 	ui.lord_moved2[ix] = build_div(mat, "marker square moved_fought two hide")
-	ui.lord_feed_x2[ix] = build_div(mat, "marker small feed_x2")
+	ui.lord_feed[ix] = build_div(mat, "marker small feed x2")
 	ui.lord_mat[ix] = mat
 	register_action(ui.lord_buttons[ix], "lord", ix)
 }
@@ -970,7 +970,7 @@ function update_lord_mat(ix) {
 		// update_vassals(ui.ready_vassals[ix], ui.mustered_vassals[ix], ix)
 		update_forces(ui.forces[ix], view.pieces.forces[ix], ix, false)
 		update_forces(ui.routed[ix], view.pieces.routed[ix], ix, true)
-		ui.lord_feed_x2[ix].classList.toggle("hide", count_lord_all_forces(ix) <= 6)
+		ui.lord_feed[ix].classList.toggle("hide", count_lord_all_forces(ix) <= 6)
 	} else {
 		ui.lord_mat[ix].classList.add("hidden")
 		ui.assets[ix].replaceChildren()
@@ -978,7 +978,7 @@ function update_lord_mat(ix) {
 		ui.routed[ix].replaceChildren()
 		ui.lord_moved1[ix].classList.add("hide")
 		ui.lord_moved2[ix].classList.add("hide")
-		ui.lord_feed_x2[ix].classList.add("hide")
+		ui.lord_feed[ix].classList.add("hide")
 	}
 	let m = get_lord_moved(ix)
 	ui.lord_moved1[ix].classList.toggle("hide", is_levy_phase() || (m !== 1 && m !== 2))
