@@ -6,8 +6,8 @@ const BOTH = "Both"
 const LANCASTER = "Lancaster"
 const YORK = "York"
 
-const P1 = LANCASTER
-const P2 = YORK
+var P1 = LANCASTER
+var P2 = YORK
 
 const HIT = [ "0", '\u2776', '\u2777', '\u2778', '\u2779', '\u277A', '\u277B' ]
 const MISS = [ "0", '\u2460', '\u2461', '\u2462', '\u2463', '\u2464', '\u2465' ]
@@ -489,10 +489,10 @@ function set_active_enemy() {
 }
 
 function enemy_player() {
-	if (game.active === YORK)
-		return LANCASTER
-	if (game.active === LANCASTER)
-		return YORK
+	if (game.active === P1)
+		return P2
+	if (game.active === P2)
+		return P1
 	return null
 }
 
@@ -707,7 +707,6 @@ function count_lord_all_forces(lord) {
 	)
 }
 
-
 function count_lord_ships(lord) {
 	let ships = get_lord_assets(lord, SHIP)
 	return ships
@@ -873,15 +872,6 @@ function is_lord_ready(lord) {
 	let loc = get_lord_locale(lord)
 	return loc >= CALENDAR && loc <= CALENDAR + (game.turn >> 1)
 }
-/*
-function is_special_vassal_available(vassal) {
-	let cap = data.vassals[vassal].capability
-	if (cap === "Crusade")
-		return has_global_capability(AOW_TEUTONIC_CRUSADE)
-	if (cap === "Steppe Warriors")
-		return has_global_capability(AOW_RUSSIAN_STEPPE_WARRIORS)
-	return true
-}*/
 
 function is_vassal_ready(vassal) {
 	return game.pieces.vassals[vassal] === VASSAL_READY
@@ -977,6 +967,13 @@ function has_friendly_lord(loc) {
 			return true
 	return false
 }
+/*
+function has_besieged_friendly_lord(loc) {
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+		if (get_lord_locale(lord) === loc && is_lord_besieged(lord))
+			return true
+	return false
+}*/
 
 function has_enemy_lord(loc) {
 	for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord)
@@ -992,6 +989,13 @@ function has_unbesieged_enemy_lord(loc) {
 	return false
 }
 
+/*function has_unbesieged_friendly_lord(loc) {
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+		if (get_lord_locale(lord) === loc && is_lord_unbesieged(lord))
+			return true
+	return false
+}
+*/
 function is_york_locale(loc) {
 	return loc >= first_york_locale && loc <= last_york_locale
 }
@@ -1107,6 +1111,15 @@ function group_has_capability(c) {
 			return true
 	return false
 }
+/*
+function count_unbesieged_friendly_lords(loc) {
+	let n = 0
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+		if (get_lord_locale(lord) === loc && is_lord_unbesieged(lord))
+			++n
+	return n
+}
+*/
 // === MAP ===
 
 function calculate_distance(start, adjacent) {
@@ -1289,32 +1302,34 @@ exports.setup = function (seed, scenario, options) {
 	switch (scenario) {
 	default:
 	case "Ia. Henry VI":
-		setup_Ia()
+		setup_Ia(P2, P1)
 	break
 	case "Ib. Towton":
-		setup_Ib()
+		setup_Ib(P2, P1)
 	break
 	case "Ic. Somerset's Return":
-		setup_Ic()
+		setup_Ic(P2, P1)
 	break
 	case "II. Warwicks' Rebellion" :
-		setup_II()
+		setup_II(P1, P2)
 	break
 	case "III. My Kingdom for a Horse":
-		setup_III()
+		setup_III(P1, P2)
 	break
 		case "I-III. Wars of the Roses":
-		setup_ItoIII()
+		setup_ItoIII(P2, P1)
 	break
 	}
 
 	return game
 }
 
-function setup_Ia() {
+function setup_Ia(first_player, second_player) {
 	game.turn = 1 << 1
 
-	game.active = YORK
+	P1 = first_player
+	P2 = second_player
+	game.active = first_player
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
@@ -1328,11 +1343,13 @@ function setup_Ia() {
 	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
 }
 
-function setup_Ib() {
+function setup_Ib(first_player, second_player) {
 	game.turn = 1 << 1
 
 
-	game.active = YORK
+	P1 = first_player
+	P2 = second_player
+	game.active = first_player
 	muster_lord(LORD_NORFOLK, LOC_LONDON)
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
@@ -1341,11 +1358,13 @@ function setup_Ib() {
 	muster_lord(LORD_NORTHUMBERLAND_L, LOC_CARLISLE)
 }
 
-function setup_Ic() {
+function setup_Ic(first_player, second_player) {
 	game.turn = 1 << 1
 
 
-	game.active = YORK
+	P1 = first_player
+	P2 = second_player
+	game.active = first_player
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_BAMBURGH)
@@ -1354,11 +1373,13 @@ function setup_Ic() {
 }
 
 
-function setup_II() {
+function setup_II(first_player, second_player) {
 	game.turn = 1 << 1
 
 
-	game.active = LANCASTER
+	P1 = first_player
+	P2 = second_player
+	game.active = first_player
 	muster_lord(LORD_EDWARD_IV, LOC_LONDON)
 	muster_lord(LORD_PEMBROKE, LOC_LONDON)
 	muster_lord(LORD_WARWICK_L, LOC_CALAIS)
@@ -1376,10 +1397,12 @@ function setup_II() {
 }
 
 
-function setup_III() {
+function setup_III(first_player, second_player) {
 	game.turn = 1 << 1
 
-	game.active = LANCASTER
+	P1 = first_player
+	P2 = second_player
+	game.active = first_player
 	muster_lord(LORD_RICHARD_III, LOC_LONDON)
 	muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
 	muster_lord(LORD_NORFOLK, LOC_ARUNDEL)
@@ -1390,11 +1413,13 @@ function setup_III() {
 }
 
 
-function setup_ItoIII() {
+function setup_ItoIII(first_player, second_player) {
 	game.turn = 1 << 1
 
 
-	game.active = YORK
+	P1 = first_player
+	P2 = second_player
+	game.active = first_player
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
@@ -6322,7 +6347,14 @@ states.pay = {
 function end_pay() {
 	// NOTE: We can combine Pay & Disband steps because disband is mandatory only.
 	game.who = NOBODY
-	goto_disband()
+	set_active_enemy()
+	if (game.active === P2) {
+		goto_pay()
+	}	
+	else
+		goto_levy_muster()
+	
+//	goto_disband()
 }
 
 // === LEVY & CAMPAIGN: DISBAND ===
