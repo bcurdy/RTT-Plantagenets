@@ -682,13 +682,6 @@ function get_lord_array_position(lord) {
 	return -1
 }
 
-/*function add_veche_vp(amount) {
-	game.pieces.veche_vp += amount
-	if (game.pieces.veche_vp < 0)
-		game.pieces.veche_vp = 0
-	if (game.pieces.veche_vp > 8)
-		game.pieces.veche_vp = 8
-}*/
 
 // === GAME STATE HELPERS ===
 
@@ -714,14 +707,6 @@ function count_lord_all_forces(lord) {
 	)
 }
 
-/*function count_lord_horses(lord) {
-	return (
-		get_lord_forces(lord, KNIGHTS) +
-		get_lord_forces(lord, SERGEANTS) +
-		get_lord_forces(lord, LIGHT_HORSE) +
-		get_lord_forces(lord, ASIATIC_HORSE)
-	)
-}*/
 
 function count_lord_ships(lord) {
 	let ships = get_lord_assets(lord, SHIP)
@@ -757,13 +742,6 @@ function count_group_forces(type) {
 		n += get_lord_forces(lord, type)
 	return n
 }
-/*
-function count_group_horses() {
-	let n = 0
-	for (let lord of game.group)
-		n += count_lord_horses(lord)
-	return n
-}*/
 
 function count_group_transport(type) {
 	let n = 0
@@ -885,14 +863,6 @@ function is_lord_on_map(lord) {
 function is_lord_in_play(lord) {
 	return get_lord_locale(lord) !== NOWHERE
 }
-/*
-function is_lord_besieged(lord) {
-	return false
-}
-
-function is_lord_unbesieged(lord) {
-	return true
-}*/
 
 function is_lord_on_calendar(lord) {
 	let loc = get_lord_locale(lord)
@@ -1007,13 +977,6 @@ function has_friendly_lord(loc) {
 			return true
 	return false
 }
-/*
-function has_besieged_friendly_lord(loc) {
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		if (get_lord_locale(lord) === loc && is_lord_besieged(lord))
-			return true
-	return false
-}*/
 
 function has_enemy_lord(loc) {
 	for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord)
@@ -1029,13 +992,6 @@ function has_unbesieged_enemy_lord(loc) {
 	return false
 }
 
-/*function has_unbesieged_friendly_lord(loc) {
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		if (get_lord_locale(lord) === loc && is_lord_unbesieged(lord))
-			return true
-	return false
-}
-*/
 function is_york_locale(loc) {
 	return loc >= first_york_locale && loc <= last_york_locale
 }
@@ -1151,15 +1107,6 @@ function group_has_capability(c) {
 			return true
 	return false
 }
-/*
-function count_unbesieged_friendly_lords(loc) {
-	let n = 0
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		if (get_lord_locale(lord) === loc && is_lord_unbesieged(lord))
-			++n
-	return n
-}
-*/
 // === MAP ===
 
 function calculate_distance(start, adjacent) {
@@ -1542,24 +1489,6 @@ function is_hill_in_play() {
 	}
 	return false
 }
-
-/* function is_famine_in_play() {
-	if (game.active === TEUTONS)
-		if (is_event_in_play(EVENT_RUSSIAN_FAMINE))
-			return true
-	if (game.active === RUSSIANS)
-		if (is_event_in_play(EVENT_TEUTONIC_FAMINE))
-			return true
-	return false
-}*/
-/*
-function no_muster_of_or_by_lord(lord) {
-	if (lord === LORD_KNUD_ABEL)
-		return is_event_in_play(EVENT_RUSSIAN_VALDEMAR)
-	if (lord === LORD_ANDREAS || lord === LORD_RUDOLF)
-		return is_event_in_play(EVENT_RUSSIAN_DIETRICH_VON_GRUNINGEN)
-	return false
-}*/
 
 function goto_immediate_event(c) {
 	switch (c) {
@@ -2204,8 +2133,6 @@ function discard_lord_capability(lord, c) {
 function can_muster_capability() {
 	let deck = list_deck()
 	for (let c of deck) {
-	/*	if (is_no_event_card(c))
-			continue*/
 		if (!data.cards[c].lords || set_has(data.cards[c].lords, game.who)) {
 			if (data.cards[c].this_lord) {
 				if (!lord_already_has_capability(game.who, c))
@@ -2226,8 +2153,6 @@ states.muster_capability = {
 		view.prompt = `Muster: Select a new Capability for ${lord_name[game.who]}.`
 		view.arts_of_war = deck
 		for (let c of deck) {
-			/*if (is_no_event_card(c))
-				continue*/
 			if (!data.cards[c].lords || set_has(data.cards[c].lords, game.who)) {
 				if (data.cards[c].this_lord) {
 					if (!lord_already_has_capability(game.who, c))
@@ -2274,24 +2199,6 @@ states.muster_capability_discard = {
 }
 
 // === LEVY: CALL TO ARMS ===
-/*
-function goto_levy_call_to_arms() {
-	if (game.active === YORK)
-		goto_teutonic_call_to_arms()
-	else
-		goto_russian_call_to_arms()
-}*/
-
-/*
-function end_levy_call_to_arms() {
-	clear_undo()
-	clear_lords_moved()
-	set_active_enemy()
-	if (game.active === P2)
-		goto_levy_call_to_arms()
-	else
-		goto_levy_discard_events()
-}*/
 
 function goto_levy_discard_events() {
 
@@ -2302,17 +2209,6 @@ function goto_levy_discard_events() {
 	goto_capability_discard()
 }
 
-// === LEVY: CALL TO ARMS - PAPAL LEGATE ===
-
-/*function goto_teutonic_call_to_arms() {
-	end_levy_call_to_arms()
-}
-
-// === LEVY: CALL TO ARMS - NOVGOROD VECHE ===
-
-function goto_russian_call_to_arms() {
-	end_levy_call_to_arms()
-}*/
 
 // === CAMPAIGN: CAPABILITY DISCARD ===
 
@@ -2382,36 +2278,6 @@ function goto_campaign_plan() {
 	game.plan1 = []
 	game.plan2 = []
 }
-
-/*function plan_has_lieutenant(first, last) {
-	for (let lord = first; lord <= last; ++lord)
-		if (is_upper_lord(lord))
-			return true
-	return false
-}*/
-
-/*function plan_selected_lieutenant(first, last) {
-	for (let lord = first; lord <= last; ++lord)
-		if (is_upper_lord(lord) && get_lower_lord(lord) === NOBODY)
-			return lord
-	return NOBODY
-}*/
-
-/*function plan_can_make_lieutenant(plan, upper, first, last) {
-	for (let lord = first; lord <= last; ++lord) {
-		if (!is_lord_on_map(lord))
-			continue
-		if (lord === upper)
-			continue
-		if (is_marshal(lord) || is_lord_besieged(lord))
-			continue
-		if (is_upper_lord(lord) || is_lower_lord(lord))
-			continue
-		if (get_lord_locale(upper) === get_lord_locale(lord))
-			return true
-	}
-	return false
-}*/
 
 states.campaign_plan = {
 	inactive: "Plan",
@@ -2497,13 +2363,12 @@ function goto_command_activation() {
 	if (game.command === NOBODY) {
 		log_h2("Pass")
 		goto_command_activation()
-	} /*else if (is_lower_lord(game.command)) {
+	}
+	else if (!is_lord_on_map(game.command)) {
 		log_h2(`L${game.command} - Pass`)
 		goto_command_activation()
-	}*/ else if (!is_lord_on_map(game.command)) {
-		log_h2(`L${game.command} - Pass`)
-		goto_command_activation()
-	} else {
+	} 
+	else {
 		log_h2(`L${game.command} at %${get_lord_locale(game.command)}`)
 		goto_command()
 	}
@@ -2538,13 +2403,6 @@ function goto_command() {
 
 	game.flags.first_action = 1
 	game.flags.first_march = 1
-
-	// 4.1.3 Lieutenants MUST take lower lord
-	/*game.group = [ game.command ]
-	let lower = get_lower_lord(game.command)
-	if (lower !== NOBODY)
-		set_add(game.group, lower)
-*/
 	resume_command()
 	update_supply_possible()
 }
@@ -3303,10 +3161,6 @@ let _supply_cost = new Array(last_locale+1)
 let _supply_carts = new Array(last_locale+1)
 
 function is_supply_forbidden(here) {
-	/*if (has_unbesieged_enemy_lord(here))
-		return true
-	if (is_unbesieged_enemy_stronghold(here))
-		return true*/
 	if (is_friendly_territory(here))
 		return true
 	return false
@@ -3332,9 +3186,6 @@ function init_supply() {
 	if (ships > 2)
 		ships = 2
 
-	/*if (is_famine_in_play())
-		available = game.flags.famine ? 0 : 1
-*/
 	let seats = []
 	if (available > 0) {
 		for_each_seat(game.command, seat => {
@@ -3647,8 +3498,6 @@ function has_adjacent_unbesieged_enemy_lord(loc) {
 function can_ravage_locale(loc) {
 	if (!is_enemy_territory(loc))
 		return false
-/*	if (has_conquered_marker(loc))
-		return false */
 	if (has_ravaged_marker(loc))
 		return false
 	if (is_friendly_locale(loc)) // faster check?
@@ -5643,70 +5492,6 @@ function award_spoils(n) {
 	add_spoils(PROV, n)
 	add_spoils(COIN, n)
 }
-/*
-function goto_sack() {
-	let here = game.battle.where
-
-	set_active_victor()
-
-	log(`${game.active} Sacked %${here}.`)
-
-	conquer_stronghold(game.battle.where)
-
-	remove_walls(game.battle.where)
-
-	if (here === LOC_NOVGOROD) {
-		if (game.pieces.veche_coin > 0) {
-			add_spoils(COIN, game.pieces.veche_coin)
-			log(`Awarded ${game.pieces.veche_coin} Coin from Veche.`)
-			game.pieces.veche_coin = 0
-		}
-		award_spoils(3)
-	}
-	else if (is_city(here))
-		award_spoils(2)
-	else if (is_fort(here))
-		award_spoils(1)
-	else if (is_bishopric(here))
-		award_spoils(2)
-	else if (is_castle(here))
-		award_spoils(1)
-
-	set_active_loser()
-	resume_sack()
-}
-
-function resume_sack() {
-	if (has_friendly_lord(game.battle.where))
-		game.state = "sack"
-	else
-		goto_battle_losses_loser()
-}
-
-states.sack = {
-	inactive: "Remove Lords",
-	prompt() {
-		let here = game.battle.where
-		view.prompt = `Sack: Remove all Lords at ${data.locales[here].name}.`
-		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-			if (get_lord_locale(lord) === here)
-				gen_action_lord(lord)
-	},
-	lord(lord) {
-		transfer_assets_except_ships(lord)
-		if (can_ransom_lord_battle(lord)) {
-			goto_ransom(lord)
-		} else {
-			disband_lord(lord, true)
-			resume_sack()
-		}
-	},
-}
-
-function end_ransom_sack() {
-	resume_sack()
-}*/
-
 // === ENDING THE BATTLE: WITHDRAW ===
 
 function withdrawal_capacity_needed(here) {
@@ -6332,21 +6117,6 @@ function has_friendly_lord_who_must_feed() {
 			return true
 	return false
 }
-/*
-function can_lord_use_hillforts(lord) {
-	return is_lord_unfed(lord) && is_lord_unbesieged(lord) && is_in_livonia(get_lord_locale(lord))
-}*/
-/*
-function can_use_hillforts() {
-	if (game.active === TEUTONS) {
-		if (has_global_capability(AOW_TEUTONIC_HILLFORTS)) {
-			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-				if (can_lord_use_hillforts(lord))
-					return true
-		}
-	}
-	return false
-}*/
 
 function goto_feed() {
 	log_br()
@@ -6370,24 +6140,6 @@ function goto_feed() {
 	}
 }
 
-/* states.hillforts = {
-	inactive: "Hillforts",
-	prompt() {
-		view.prompt = "Hillforts: Skip Feed of one Unbesieged Lord in Livonia."
-		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-			if (can_lord_use_hillforts(lord))
-				gen_action_lord(lord)
-	},
-	lord(lord) {
-		push_undo()
-		log(`C${AOW_TEUTONIC_HILLFORTS} skipped L${lord}.`)
-		feed_lord_skip(lord)
-		if (has_friendly_lord_who_must_feed())
-			game.state = "feed"
-		else
-			end_feed()
-	},
-}*/
 
 states.feed = {
 	inactive: "Feed",
@@ -6496,12 +6248,6 @@ function end_feed() {
 // === LEVY & CAMPAIGN: PAY ===
 
 function can_pay_lord(lord) {
-	/*if (get_lord_service(lord) > 16)
-		return false
-	if (game.active === RUSSIANS) {
-		if (game.pieces.veche_coin > 0 && is_lord_unbesieged(lord))
-			return true
-	}*/
 	let loc = get_lord_locale(lord)
 	if (get_shared_assets(loc, COIN) > 0)
 		return true
@@ -6509,11 +6255,6 @@ function can_pay_lord(lord) {
 }
 
 function has_friendly_lord_who_may_be_paid() {
-	if (game.active === YORK) {
-		// Open a window to play Heinrich sees the Curia.
-		/*if (could_play_card(EVENT_TEUTONIC_HEINRICH_SEES_THE_CURIA) && can_play_heinrich_sees_the_curia())
-			return true*/
-	}
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
 		if (is_lord_on_map(lord) && can_pay_lord(lord))
 			return true
@@ -6524,8 +6265,6 @@ function goto_pay() {
 	log_br()
 	game.state = "pay"
 	game.who = NOBODY
-	/*if (!has_friendly_lord_who_may_be_paid())
-		end_pay()*/
 }
 
 function resume_pay() {
@@ -6553,10 +6292,6 @@ states.pay = {
 
 			view.prompt = `Pay: You may Pay ${lord_name[game.who]} with Coin.`
 
-		/*	if (game.active === RUSSIANS) {
-				if (game.pieces.veche_coin > 0 && is_lord_unbesieged(game.who))
-					view.actions.veche_coin = 1
-			}*/
 
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 				if (get_lord_locale(lord) === here) {
@@ -6594,8 +6329,6 @@ function end_pay() {
 
 function has_friendly_lord_who_must_disband() {
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		/*if (is_lord_on_map(lord) && get_lord_service(lord) <= current_turn())
-			return true*/
 	return false
 }
 
@@ -6613,11 +6346,8 @@ function disband_lord(lord, permanently = false) {
 		log(`Removed L${lord}.`)
 		set_lord_locale(lord, NOWHERE)
 		set_lord_service(lord, NEVER)
-	} /*else if (get_lord_service(lord) < current_turn()) {
-		log(`Disbanded L${lord} beyond Service limit.`)
-		set_lord_locale(lord, NOWHERE)
-		set_lord_service(lord, NEVER)
-	} */else {
+	}
+	else {
 		if (is_levy_phase())
 			set_lord_cylinder_on_calendar(lord, turn + data.lords[lord].service)
 		else
@@ -6633,10 +6363,6 @@ function disband_lord(lord, permanently = false) {
 			game.pieces.elr2 ++
 	}
 
-	remove_lieutenant(lord)
-
-	// Smerdi - serfs go back to card
-/*	game.pieces.smerdi += get_lord_forces(lord, SERFS)*/
 
 	discard_lord_capability_n(lord, 0)
 	discard_lord_capability_n(lord, 1)
@@ -6660,11 +6386,6 @@ states.disband = {
 
 		let done = true
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			/*if (is_lord_on_map(lord) && get_lord_service(lord) <= current_turn()) {
-				gen_action_lord(lord)
-				gen_action_service_bad(lord)
-				done = false
-			}*/
 		}
 		if (done)
 			view.actions.end_disband = 1
@@ -6713,83 +6434,6 @@ function end_disband() {
 	}
 }
 
-// === LEVY & CAMPAIGN: RANSOM ===
-/*
-function enemy_has_ransom() {
-	if (game.active === TEUTONS)
-		return has_global_capability(AOW_RUSSIAN_RANSOM)
-	else
-		return has_global_capability(AOW_TEUTONIC_RANSOM)
-}
-
-function can_ransom_lord_siege(lord) {
-	return enemy_has_ransom() && has_enemy_lord(get_lord_locale(lord))
-}
-
-function has_enemy_lord_in_battle() {
-	for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord)
-		if (get_lord_moved(lord))
-			return true
-	return false
-}
-
-function can_ransom_lord_battle() {
-	return enemy_has_ransom() && has_enemy_lord_in_battle()
-}
-
-function goto_ransom(lord) {
-	clear_undo()
-	set_active_enemy()
-	push_state("ransom")
-	game.who = lord
-	game.count = data.lords[lord].service
-	if (is_teutonic_lord(lord))
-		log(`L${lord} C${AOW_RUSSIAN_RANSOM}.`)
-	else
-		log(`L${lord} C${AOW_TEUTONIC_RANSOM}.`)
-}
-
-function end_ransom() {
-	let here = get_lord_locale(game.who)
-	if (game.battle)
-		disband_lord(game.who, true)
-	else
-		disband_lord(game.who, false)
-	pop_state()
-
-	set_active_enemy()
-	switch (game.state) {
-		case "disband": return end_ransom_disband()
-		case "sack": return end_ransom_sack()
-		case "battle_remove": return end_ransom_battle_remove()
-		case "battle_losses_remove": return end_ransom_battle_losses_remove()
-	}
-}
-
-states.ransom = {
-	inactive: "Ransom",
-	prompt() {
-		if (game.active === TEUTONS)
-			view.prompt = `Ransom ${lord_name[game.who]}: Add ${game.count} Coin to a Teutonic Lord.`
-		else
-			view.prompt = `Ransom ${lord_name[game.who]}: Add ${game.count} Coin to a Russian Lord.`
-		if (game.battle) {
-			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-				if (get_lord_fought(lord))
-					gen_action_lord(lord)
-		} else {
-			let here = get_lord_locale(game.who)
-			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-				if (get_lord_locale(lord) === here)
-					gen_action_lord(lord)
-		}
-	},
-	lord(lord) {
-		add_lord_assets(lord, COIN, game.count)
-		end_ransom()
-	},
-}
-*/
 // === CAMPAIGN: REMOVE MARKERS ===
 
 function goto_remove_markers() {
@@ -7017,23 +6661,6 @@ function end_wastage() {
 
 function goto_reset() {
 	game.state = "reset"
-
-	// Unstack Lieutenants and Lower Lords 
-	/* NO LIEUTENANTS A LA NEVSKY
-		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		remove_lieutenant(lord)*/
-
-	// Remove all Serfs to the Smerdi card
-	/* NO SMERDI 
-	if (game.active === RUSSIANS) {
-		for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; ++lord)
-			set_lord_forces(lord, SERFS, 0)
-		if (has_global_capability(AOW_RUSSIAN_SMERDI))
-			game.pieces.smerdi = 6
-		else
-			game.pieces.smerdi = 0
-	}*/
-
 	// Discard "This Campaign" events from play.
 	discard_friendly_events("this_campaign")
 }
