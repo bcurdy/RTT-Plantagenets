@@ -1092,7 +1092,7 @@ function is_friendly_locale(loc) {
 			return true
 		}
 	}
-	return false
+	return true // TESTING PURPOSES NEED TO CHANGE TO FALSE
 }
 
 function can_add_transport(who, what) {
@@ -1923,11 +1923,9 @@ states.levy_muster = {
 
 		let done = true
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (is_lord_at_friendly_locale(lord) && !get_lord_moved(lord)) {
-				/*if (!no_muster_of_or_by_lord(lord)) {
+			if (is_lord_at_friendly_locale(lord) && !get_lord_moved(lord) ) {
 					gen_action_lord(lord)
 					done = false
-				}*/
 			}
 		}
 		if (done) {
