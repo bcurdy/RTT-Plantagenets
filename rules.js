@@ -6300,6 +6300,12 @@ function has_friendly_lord_who_may_be_paid() {
 
 function goto_pay() {
 	log_br()
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+			if (count_lord_all_forces(lord) >= 7)
+				set_lord_unfed(lord, 2)
+			else
+				set_lord_unfed(lord, 1)
+		}
 	game.state = "pay"
 }
 
@@ -6313,13 +6319,7 @@ states.pay = {
 	prompt() {
 		view.prompt = "Pay: You must Pay your Lord's Troops"
 		let done = true
-		prompt_held_event()
-		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-				if (count_lord_all_forces(lord) >= 7)
-					set_lord_unfed(lord, 2)
-				else
-					set_lord_unfed(lord, 1)
-			}
+
 		
 	
 		// Pay from own mat
