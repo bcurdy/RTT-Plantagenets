@@ -675,6 +675,14 @@ function feed_lord(lord) {
 		log(`Fed L${lord}.`)
 }
 
+function pay_lord(lord) {
+	// reuse "moved" flag for hunger
+	let n = get_lord_moved(lord) - 1
+	set_lord_moved(lord, n)
+	if (n === 0)
+		log(`Pay L${lord}.`)
+}
+
 function get_lord_array_position(lord) {
 	for (let p = 0; p < 12; ++p)
 		if (game.battle.array[p] === lord)
@@ -6135,6 +6143,10 @@ function can_feed_from_shared(lord) {
 	let loc = get_lord_locale(lord)
 	return get_shared_assets(loc, PROV) > 0
 }
+function can_pay_from_shared(lord) {
+	let loc = get_lord_locale(lord)
+	return get_shared_assets(loc, COIN) > 0
+}
 
 function has_friendly_lord_who_must_feed() {
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
@@ -6289,7 +6301,6 @@ function has_friendly_lord_who_may_be_paid() {
 function goto_pay() {
 	log_br()
 	game.state = "pay"
-	game.who = NOBODY
 }
 
 function resume_pay() {
@@ -6300,45 +6311,77 @@ function resume_pay() {
 states.pay = {
 	inactive: "Pay",
 	prompt() {
-		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (is_lord_on_map(lord) && can_pay_lord(lord)) {
-				prompt_select_lord(lord)
-				prompt_select_service(lord)
-			}
-		}
-
+		view.prompt = "Pay: You must Pay your Lord's Troops"
+		let done = true
 		prompt_held_event()
-
-		if (game.who === NOBODY) {
-			view.prompt = "Pay: You may Pay your Lords."
-		} else {
-
-			let here = get_lord_locale(game.who)
-
-			view.prompt = `Pay: You may Pay ${lord_name[game.who]} with Coin.`
-
-
+		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+				if (count_lord_all_forces(lord) >= 7)
+					set_lord_unfed(lord, 2)
+				else
+					set_lord_unfed(lord, 1)
+			}
+		
+	
+		// Pay from own mat
+		if (done) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-				if (get_lord_locale(lord) === here) {
-					if (get_lord_assets(lord, COIN) > 0)
+				if (is_lord_unfed(lord)) {
+					if (get_lord_assets(lord, COIN) > 0) {
 						gen_action_coin(lord)
+						done = false
+					}
 				}
 			}
 		}
 
-		view.actions.end_pay = 1
+		// Sharing
+		if (done) {
+			view.prompt = "Pay: You must Pay Lords with Shared Coin."
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+				if (is_lord_unfed(lord) && can_pay_from_shared(lord)) {
+					gen_action_lord(lord)
+					done = false
+				}
+			}
+		}
+
+		// TODO : PILLAGE 
+		// Unpaid
+		if (done) {
+			view.prompt = "Pay: You must Pillage and/or Disband."
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+				/* if (is_lord_unpaid(lord)) {
+					gen_action_pillage(lord)
+					done = false
+				} */
+			}
+		}
+
+		// All done!
+		if (done) {
+			view.prompt = "Pay: All done."
+			view.actions.end_pay = 1
+		}
 	},
-	lord: action_select_lord,
-	service: action_select_lord,
 	coin(lord) {
-		push_undo_without_who()
-		log(`Paid L${game.who}.`)
+		push_undo()
 		add_lord_assets(lord, COIN, -1)
-		add_lord_service(game.who, 1)
-		resume_pay()
+		pay_lord(lord)
 	},
+	lord(lord) {
+		push_undo()
+		game.who = lord
+		game.state = "pay_lord_shared"
+	},
+	// TODO : PILLAGE
+/*	service_bad(lord) {
+		push_undo()
+		add_lord_service(lord, -1)
+		log(`Unfed L${lord} to ${get_lord_service(lord)}.`)
+		set_lord_unfed(lord, 0)
+	},*/
 	end_pay() {
-		push_undo_without_who()
+		push_undo()
 		end_pay()
 	},
 	card: action_held_event,
