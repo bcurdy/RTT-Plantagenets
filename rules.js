@@ -6549,48 +6549,10 @@ function end_wastage() {
 // === END CAMPAIGN: RESET (DISCARD ARTS OF WAR) ===
 
 function goto_reset() {
-	game.state = "reset"
+
 	// Discard "This Campaign" events from play.
 	discard_friendly_events("this_campaign")
-}
-
-states.reset = {
-	inactive: "Reset",
-	prompt() {
-		view.prompt = "Reset: You may discard any Arts of War cards desired."
-		if (game.active === YORK) {
-			for (let c = first_york_card; c <= last_york_card; ++c)
-				if (can_discard_card(c))
-					gen_action_card(c)
-		}
-		if (game.active === LANCASTER) {
-			for (let c = first_lancaster_card; c <= last_lancaster_card; ++c)
-				if (can_discard_card(c))
-					gen_action_card(c)
-		}
-		view.actions.end_discard = 1
-	},
-	card(c) {
-		push_undo()
-		if (has_global_capability(c)) {
-			log(`Discarded C${c}.`)
-			discard_global_capability(c)
-		} else if (set_has(game.hand1, c)) {
-			log("Discarded Held card.")
-			set_delete(game.hand1, c)
-		} else if (set_has(game.hand2, c)) {
-			log("Discarded Held card.")
-			set_delete(game.hand2, c)
-		} else {
-			let lord = find_lord_with_capability_card(c)
-			if (lord !== NOBODY) {
-				discard_lord_capability(lord, c)
-			}
-		}
-	},
-	end_discard() {
-		end_reset()
-	},
+	end_reset()
 }
 
 function end_reset() {
