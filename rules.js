@@ -1994,7 +1994,7 @@ states.levy_muster_lord = {
 				view.actions.take_cart = 1
 
 			// Add Capability
-			if (can_muster_capability())
+			if (can_add_lord_capability(game.who))
 				view.actions.capability = 1
 		}
 
@@ -2082,10 +2082,7 @@ function resume_muster_lord_transport() {
 states.muster_lord_transport = {
 	inactive: "Muster",
 	prompt() {
-		if (game.state === "veliky_knyaz")
-			view.prompt = `Veliky Knyaz: Select Transport for ${lord_name[game.who]}.`
-		else
-			view.prompt = `Muster: Select Transport for ${lord_name[game.who]}.`
+		view.prompt = `Muster: Select Transport for ${lord_name[game.who]}.`
 		view.prompt += ` ${game.count} left.`
 		if (data.lords[game.who].ships) {
 			if (can_add_transport(game.who, SHIP))
@@ -2202,15 +2199,7 @@ states.muster_capability = {
 	},
 	card(c) {
 		if (data.cards[c].this_lord) {
-			if (can_add_lord_capability(game.who, c)) {
 				add_lord_capability(game.who, c)
-			} else {
-				game.what = c
-				game.state = "muster_capability_discard"
-				return
-			}
-		} else {
-			deploy_global_capability(c)
 		}
 		pop_state()
 		resume_levy_muster_lord()
@@ -2241,66 +2230,13 @@ function goto_levy_discard_events() {
 	// Discard "This Levy" events from play.
 	discard_events("this_levy")
 
-	set_active(P1)
-	goto_capability_discard()
+	goto_campaign_plan()
+
 }
 
 
 // === CAMPAIGN: CAPABILITY DISCARD ===
 
-function count_mustered_lords() {
-	let n = 0
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		if (is_lord_on_map(lord))
-			++n
-	return n
-}
-
-function goto_capability_discard() {
-
-	// Start of Campaign phase
-	if (check_campaign_victory())
-		return
-
-	/*if (count_global_capabilities() > count_mustered_lords())
-		game.state = "capability_discard"*/
-	else
-		end_capability_discard()
-}
-
-states.capability_discard = {
-	inactive: "Discard Capabilities",
-	prompt() {
-		if (count_global_capabilities() > count_mustered_lords()) {
-			view.prompt = "Discard Capabilities in excess of Mustered Lords."
-			for (let c of game.capabilities) {
-				if (game.active === YORK && c >= first_york_card && c <= last_york_card)
-					gen_action_card(c)
-				if (game.active === LANCASTER && c >= first_lancaster_card && c <= last_lancaster_card)
-					gen_action_card(c)
-			}
-		} else {
-			view.prompt = "Discard Capabilities: All done."
-			view.actions.end_discard = 1
-		}
-	},
-	card(c) {
-		push_undo()
-		discard_global_capability(c)
-	},
-	end_discard() {
-		clear_undo()
-		end_capability_discard()
-	},
-}
-
-function end_capability_discard() {
-	set_active_enemy()
-	if (game.active === P2)
-		goto_capability_discard()
-	else
-		goto_campaign_plan()
-}
 
 // === CAMPAIGN: PLAN ===
 
@@ -3046,7 +2982,8 @@ states.march_withdraw = {
 function end_march_withdraw() {
 	clear_undo()
 	set_active_enemy()
-	// TO BE USED FOR BLOCKED FORD goto_march_ambush()
+	// TO BE USED FOR BLOCKED FORD 
+	goto_march_ambush()
 }
 
 // === ACTION: MARCH - AMBUSH ===
