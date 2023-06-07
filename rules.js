@@ -2753,13 +2753,6 @@ function march_with_group_3() {
 		return
 	}
 
-	if (is_unbesieged_enemy_stronghold(here)) {
-		add_siege_marker(here)
-		spend_all_actions() // ENCAMP
-	}
-
-	if (is_trade_route(here))
-		conquer_trade_route(here)
 
 	game.march = 0
 
@@ -3053,7 +3046,7 @@ states.march_withdraw = {
 function end_march_withdraw() {
 	clear_undo()
 	set_active_enemy()
-	goto_march_ambush()
+	// TO BE USED FOR BLOCKED FORD goto_march_ambush()
 }
 
 // === ACTION: MARCH - AMBUSH ===
