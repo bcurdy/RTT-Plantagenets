@@ -2532,8 +2532,6 @@ states.command = {
 			view.actions.siege = 1 */
 		if (can_action_forage())
 			view.actions.forage = 1
-		if (can_action_ravage())
-			view.actions.ravage = 1
 		if (can_action_tax())
 			view.actions.tax = 1
 		if (can_action_sail())
@@ -2552,7 +2550,6 @@ states.command = {
 	},
 
 	forage: goto_forage,
-	ravage: goto_ravage,
 	supply: goto_supply,
 	tax: goto_tax,
 	sail: goto_sail,
@@ -3060,7 +3057,7 @@ function end_march_withdraw() {
 }
 
 // === ACTION: MARCH - AMBUSH ===
-
+/* TO BE USED FOR BLOCKED FORD
 function could_enemy_play_ambush() {
 	if (game.active === TEUTONS)
 		return could_play_card(EVENT_RUSSIAN_AMBUSH)
@@ -3108,7 +3105,7 @@ states.march_ambush = {
 		goto_spoils_after_avoid_battle()
 	},
 }
-
+*/
 // === ACTION: MARCH - DIVIDE SPOILS AFTER AVOID BATTLE ===
 
 function list_spoils() {
@@ -3514,114 +3511,6 @@ function goto_forage() {
 	resume_command()
 }
 
-// === ACTION: RAVAGE ===
-
-function has_adjacent_unbesieged_enemy_lord(loc) {
-	for (let next of data.locales[loc].adjacent)
-		if (has_unbesieged_enemy_lord(next))
-			return true
-	return false
-}
-
-function can_ravage_locale(loc) {
-	if (!is_enemy_territory(loc))
-		return false
-	if (has_ravaged_marker(loc))
-		return false
-	if (is_friendly_locale(loc)) // faster check?
-		return false
-	if (has_adjacent_unbesieged_enemy_lord(loc))
-		return game.actions >= 2
-	else
-		return game.actions >= 1
-}
-
-function can_action_ravage() {
-	if (game.actions < 1)
-		return false
-
-	let here = get_lord_locale(game.command)
-
-	if (can_ravage_locale(here))
-		return true
-
-	/*if (this_lord_has_teutonic_raiders()) {
-		for (let there of data.locales[here].adjacent_by_trackway)
-			// XXX has_enemy_lord redundant with is_friendly_locale in can_ravage_locale
-			if (can_ravage_locale(there) && !has_enemy_lord(there))
-				return true
-	}*/
-
-	/*if (this_lord_has_russian_raiders()) {
-		for (let there of data.locales[here].adjacent)
-			// XXX has_enemy_lord redundant with is_friendly_locale in can_ravage_locale
-			if (can_ravage_locale(there) && !has_enemy_lord(there))
-				return true
-	}*/
-
-	return false
-}
-
-function goto_ravage() {
-	push_undo()
-	if (this_lord_has_teutonic_raiders() || this_lord_has_russian_raiders()) {
-		game.state = "ravage"
-	} else {
-		let here = get_lord_locale(game.command)
-		ravage_location(here, here)
-	}
-}
-
-states.ravage = {
-	inactive: "Ravage",
-	prompt() {
-		view.prompt = `Ravage: Select enemy territory to Ravage.`
-
-		let here = get_lord_locale(game.command)
-
-		if (can_ravage_locale(here))
-			gen_action_locale(here)
-
-		if (this_lord_has_teutonic_raiders()) {
-			for (let there of data.locales[here].adjacent_by_trackway)
-				if (can_ravage_locale(there) && !has_enemy_lord(there))
-					gen_action_locale(there)
-		}
-
-		if (this_lord_has_russian_raiders()) {
-			for (let there of data.locales[here].adjacent)
-				if (can_ravage_locale(there) && !has_enemy_lord(there))
-					gen_action_locale(there)
-		}
-	},
-	locale(there) {
-		let here = get_lord_locale(game.command)
-		ravage_location(here, there)
-	},
-}
-
-function ravage_location(here, there) {
-	if (here !== there) {
-		if (is_teutonic_lord(game.command))
-			log(`Ravaged %${there} (C${AOW_TEUTONIC_RAIDERS}).`)
-		else
-			log(`Ravaged %${there} (C${which_lord_capability(game.command, AOW_RUSSIAN_RAIDERS)}).`)
-	} else {
-		log(`Ravaged %${there}.`)
-	}
-
-	add_ravaged_marker(there)
-	add_lord_assets(game.command, PROV, 1)
-
-	if (here !== there && game.active === TEUTONS)
-		game.flags.teutonic_raiders = 1
-
-	if (has_adjacent_unbesieged_enemy_lord(there))
-		spend_action(2)
-	else
-		spend_action(1)
-	resume_command()
-}
 
 // === ACTION: TAX ===
 
@@ -3673,13 +3562,11 @@ function drop_prov(lord) {
 	add_lord_assets(lord, PROV, -1)
 }
 
-function has_enough_available_ships_for_horses() {
+function has_enough_available_ships_for_army() {
 	let ships = count_group_ships()
-	let horses = count_group_horses()
+	let army = count_group_forces()
 
-	let needed_ships = horses
-	if (game.active === RUSSIANS)
-		needed_ships = horses * 2
+	let needed_ships = army/6
 
 	return needed_ships <= ships
 }
@@ -3698,8 +3585,8 @@ function can_action_sail() {
 	if (is_winter())
 		return false
 
-	// with enough ships to carry all the horses
-	if (!has_enough_available_ships_for_horses())
+	// with enough ships to carry all the army
+	if (!has_enough_available_ships_for_army())
 		return false
 
 	// and a valid destination
@@ -6274,7 +6161,8 @@ states.feed_lord_shared = {
 }
 
 function end_feed() {
-	end_pay()
+	
+	goto_remove_markers()
 }
 
 // === LEVY & CAMPAIGN: PAY ===
@@ -6383,6 +6271,7 @@ states.pay = {
 }
 
 function end_pay() {
+
 	// NOTE: We can combine Pay & Disband steps because disband is mandatory only.
 	game.who = NOBODY
 	set_active_enemy()
