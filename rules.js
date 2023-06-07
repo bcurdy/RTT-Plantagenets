@@ -73,14 +73,14 @@ function should_remove_Y28_event_card() {
 // unit types
 const RETINUE = 0
 const VASSAL = 1
-const MERCENARIES = 2
-const BURGUNDIANS = 3
-const MEN_AT_ARMS = 4
-const MILITIA = 5
-const LONGBOWMEN = 6
+const MEN_AT_ARMS = 2
+const LONGBOWMEN = 3
+const MILITIA = 4
+const BURGUNDIANS = 5
+const MERCENARIES = 6
 
-const FORCE_TYPE_NAME = [ "Retinue", "Vassal", "Mercenary", "Burgundians", "Men-at-Arms", "Militia", "Longbowmen" ]
-const FORCE_PROTECTION = [ 4, 4, 3, 3, 3, 1, 1 ]
+const FORCE_TYPE_NAME = [ "Retinue", "Vassal", "Men-at-Arms", "Longbowmen", "Militia", "Burgundians", "Mercenary" ]
+const FORCE_PROTECTION = [ 4, 4, 3, 1, 1, 3, 3 ]
 const FORCE_EVADE = [ 0, 0, 0, 0, 0, 0, 0 ]
 
 // asset types
@@ -1163,8 +1163,9 @@ function muster_lord_forces(lord) {
 	let info = data.lords[lord]
 	set_lord_forces(lord, RETINUE, info.forces.retinue | 0)
 	set_lord_forces(lord, MEN_AT_ARMS, info.forces.men_at_arms | 0)
-	set_lord_forces(lord, MILITIA, info.forces.militia | 0)
 	set_lord_forces(lord, LONGBOWMEN, info.forces.longbowmen | 0)
+	set_lord_forces(lord, MILITIA, info.forces.militia | 0)
+
 }
 /*
 function muster_vassal_forces(lord, vassal) {
@@ -1928,7 +1929,7 @@ states.levy_muster = {
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 			if (is_lord_at_friendly_locale(lord) && !get_lord_moved(lord) && !is_lord_on_calendar(lord)) {
 					gen_action_lord(lord)
-					done = false
+					done = true
 			}
 		}
 		if (done) {

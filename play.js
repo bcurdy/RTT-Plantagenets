@@ -175,8 +175,8 @@ const LONGBOWMEN = 6
 const force_type_count = 7
 
 
-const force_action_name = [ "retinue", "vassal", "mercenary", "burgundians", "men_at_arms", "militia", "longbowmen" ]
-const routed_force_action_name = [ "routed_retinue", "routed_vassal", "routed_mercenary", "routed_burgundians", "routed_men_at_arms", "routed_militia", "routed_longbowmen" ]
+const force_action_name = [ "retinue", "vassal", "men_at_arms", "longbowmen", "militia", "burgundians", "mercenary" ]
+const routed_force_action_name = [ "routed_retinue", "routed_vassal", "routed_men_at_arms", "routed_longbowmen", "routed_militia", "routed_burgundians", "routed_mercenary" ]
 
 const COIN = 1
 const asset_type_count = 4
