@@ -1897,6 +1897,9 @@ function end_levy_arts_of_war() {
 // === LEVY: MUSTER ===
 
 function goto_levy_muster() {
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+		clear_lords_moved()
+	}
 	if (game.active === YORK)
 		log_h2("York Muster")
 	else
@@ -1923,13 +1926,13 @@ states.levy_muster = {
 
 		let done = true
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (is_lord_at_friendly_locale(lord) && !get_lord_moved(lord) ) {
+			if (is_lord_at_friendly_locale(lord) && !get_lord_moved(lord) && !is_lord_on_calendar(lord)) {
 					gen_action_lord(lord)
 					done = false
 			}
 		}
 		if (done) {
-			view.prompt += " All done."
+			view.prompt += ""
 			view.actions.end_muster = 1
 		}
 	},
@@ -1939,7 +1942,7 @@ states.levy_muster = {
 		push_state("levy_muster_lord")
 		game.who = lord
 		game.count = data.lords[lord].lordship
-	},
+		},
 	end_muster() {
 		clear_undo()
 		end_levy_muster()
@@ -1981,10 +1984,10 @@ states.levy_muster_lord = {
 			}*/
 
 			// Add Transport
-			if (data.lords[game.who].ships) {
-				if (can_add_transport(game.who, SHIP))
-					view.actions.take_ship = 1
-			}
+			if (is_seaport(get_lord_locale(game.who)) && get_lord_assets(game.who, SHIP) < 2)
+				view.actions.take_ship = 1
+			
+		
 			if (can_add_transport(game.who, CART))
 				view.actions.take_cart = 1
 
@@ -2025,7 +2028,7 @@ states.levy_muster_lord = {
 	},
 	take_cart() {
 		push_undo()
-		add_lord_assets(game.who, CART, 1)
+		add_lord_assets(game.who, CART, 2)
 		resume_levy_muster_lord()
 	},
 
