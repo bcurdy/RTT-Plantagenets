@@ -1,5 +1,5 @@
 const data = {
-seaports:[1,5,6,15,17,19,20,21,22,24,26,35,37,51,56,57],
+seaports:[0,1,5,6,14,15,17,19,20,21,22,24,26,35,37,51,52,54,55,56,57,59,60],
 strongholds:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],
 locales:[
 {"name":"Bamburgh","type":"fortress","stronghold":1,"region":"North","ways":[[1,0]],"box":{"x":637,"y":300,"w":60,"h":45},"adjacent":[1],"adjacent_by_highway":[1],"adjacent_by_road":[],"adjacent_by_path":[],"highways":[[1,0]],"roads":[],"paths":[]},
@@ -261,7 +261,7 @@ cards:[
 {"name":"L29","event":"To wilful disobedience","when":"now","capability":"High Admiral","this_lord":true,"lords":[18,19]},
 {"name":"L30","event":"French War Loans","when":"now","capability":"Merchants","this_lord":true,"lords":[27]},
 {"name":"L31","event":"Robin’s Rebellion","when":"now","capability":"Yeomen of the Crown","this_lord":true,"lords":[15]},
-{"name":"L32","event":"Tudor Banners","when":"now","capability":"Two Roses","this_lord":true,"lords":[14,15,16,17,18,19,20,21,22,23,24,25,26,27]},
+{"name":"L32","event":"Tudor Banners","when":"now","capability":"Two Roses","this_lord":true,"lords":[25]},
 {"name":"L33","event":"Surprise Landing","when":"hold","capability":"Philibert de Chandée","this_lord":true,"lords":[25,26]},
 {"name":"L34","event":"Buckingham’s Plot","when":"this_levy","capability":"Piquiers","this_lord":true,"lords":[25,26]},
 {"name":"L35","event":"Margaret Beaufort","when":"this_levy","capability":"Thomas Stanley","this_lord":true,"lords":[23,24,25]},

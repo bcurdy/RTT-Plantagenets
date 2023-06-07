@@ -336,7 +336,7 @@ road("York, Ravenspur")
 road("Ravenspur, Lincoln")
 
 let seaports = [
-	"Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "Dover", "Hastings", "Calais", "Southampton","Dorchester","Exeter","Plymouth","Truro","Bristol","Pembroke","Harlech"
+	"Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea", "Burgundy", "Dover", "Hastings", "Calais", "France", "Arundel", "Southampton","Dorchester","Exeter","Plymouth","Truro","Bristol","Pembroke","Harlech", "Ireland", "Irish Sea"
 ].map(name => locmap[name]).sort(cmpnum)
 
 function dumplist(name, list) {
@@ -1254,7 +1254,7 @@ arts_of_war_capability("L28", "Loyal Somerset", true, ["Somerset 1", "Somerset 2
 arts_of_war_capability("L29", "High Admiral", true, ["Exeter 1", "Exeter 2"])
 arts_of_war_capability("L30", "Merchants", true, ["Warwick L"])
 arts_of_war_capability("L31", "Yeomen of the Crown", true, ["Margaret"])
-arts_of_war_capability("L32", "Two Roses", true, "any",["Henry Tudor"])
+arts_of_war_capability("L32", "Two Roses", true, ["Henry Tudor"])
 arts_of_war_capability("L33", "Philibert de Chandée", true, ["Oxford", "Henry Tudor"])
 arts_of_war_capability("L34", "Piquiers", true, ["Oxford", "Henry Tudor"])
 arts_of_war_capability("L35", "Thomas Stanley", true, ["Jasper Tudor 1", "Jasper Tudor 2", "Henry Tudor"] )
