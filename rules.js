@@ -353,22 +353,23 @@ const CALENDAR = 100
 const SUMMER = 0
 const SPRING = 1
 const WINTER = 2
+const AUTUMN = 3
 
 const SEASONS = [
 	WINTER,
 	SPRING,
 	SUMMER,
-	SPRING,
+	AUTUMN,
 	WINTER,
 	WINTER,
 	SPRING,
 	SUMMER,
-	SPRING,
+	AUTUMN,
 	WINTER,
 	WINTER,
 	SPRING,
 	SUMMER,
-	SPRING,
+	AUTUMN,
 	WINTER,
 	null
 ]
@@ -417,7 +418,9 @@ function is_winter() {
 function is_spring() {
 	return current_season() === SPRING
 }
-
+function is_autumn() {
+	return current_season() === AUTUMN
+}
 
 function is_campaign_phase() {
 	return (game.turn & 1) === 1
@@ -578,6 +581,7 @@ function lord_has_routed_units(lord) {
 function set_lord_locale(lord, locale) {
 	game.pieces.locale[lord] = locale
 }
+
 
 function shift_lord_cylinder(lord, dir) {
 	set_lord_calendar(lord, get_lord_calendar(lord) + dir)
