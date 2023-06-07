@@ -769,6 +769,8 @@ function max_plan_length() {
 			return 6
 		case WINTER:
 			return 4
+		case AUTUMN:
+			return 6
 	}
 }
 
@@ -1774,10 +1776,7 @@ states.levy_arts_of_war_first = {
 		let c = game.what[0]
 		view.arts_of_war = game.what
 		view.what = c
-		/*if (is_no_event_card(c)) {
-			view.prompt = `Arts of War: No Capability.`
-			view.actions.discard = 1
-		} else */if (data.cards[c].this_lord) {
+		if (data.cards[c].this_lord) {
 			let discard = true
 			for (let lord of data.cards[c].lords) {
 				if (is_lord_on_map(lord) && !lord_already_has_capability(lord, c)) {
@@ -1976,8 +1975,6 @@ states.levy_muster_lord = {
 		if (game.count > 0) {
 			// Roll to muster Ready Lord at Seat
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			/*	if (no_muster_of_or_by_lord(lord))
-					continue*/
 				if (is_lord_ready(lord) && has_free_seat(lord))
 					gen_action_lord(lord)
 			}
@@ -2439,6 +2436,7 @@ function is_first_march() {
 
 function goto_command() {
 	game.actions = data.lords[game.command].command
+	game.group = [ game.command ]
 
 	game.flags.first_action = 1
 	game.flags.first_march = 1
@@ -2519,6 +2517,7 @@ states.command = {
 						gen_action_lord(lord)
 		}
 
+
 		if (game.actions > 0)
 			view.actions.pass = 1
 		else
@@ -2581,7 +2580,7 @@ function format_group_move() {
 	}
 	return ""
 }
-
+/*
 function group_has_teutonic_converts() {
 	if (game.active === TEUTONS) {
 		if (is_first_march())
@@ -2591,9 +2590,10 @@ function group_has_teutonic_converts() {
 	}
 	return false
 }
+*/
 
 function prompt_march() {
-	if (game.actions > 0 || group_has_teutonic_converts()) {
+	if (game.actions > 0) {
 		let here = get_lord_locale(game.command)
 		for (let to of data.locales[here].adjacent)
 			gen_action_locale(to)
@@ -2637,15 +2637,15 @@ function march_with_group_1() {
 	let transport = count_group_transport(type)
 	let prov = count_group_assets(PROV)
 
-	if (group_has_teutonic_converts() && prov <= transport * 2)
+	if (prov <= transport)
 		return march_with_group_2()
 
-	if (prov > transport)
+	/* if (prov > transport)
 		game.state = "march_laden"
 	else
-		march_with_group_2()
+		march_with_group_2()*/
 }
-
+/*
 states.march_laden = {
 	inactive: "March",
 	prompt() {
@@ -2710,22 +2710,21 @@ states.march_laden = {
 	locale: march_with_group_2,
 	laden_march: march_with_group_2,
 }
-
+*/
 function march_with_group_2() {
 	let from = get_lord_locale(game.command)
 	let way = game.march.approach
 	let to = game.march.to
 	let transport = count_group_transport(data.ways[way].type)
 	let prov = count_group_assets(PROV)
-	let laden = prov > transport
 
-	if (group_has_teutonic_converts()) {
+	/*if (group_has_teutonic_converts()) {
 		logcap(AOW_TEUTONIC_CONVERTS)
 		spend_march_action(0)
-	}
-	else if (laden)
-		spend_march_action(2)
-	else
+	}*/
+	/*else if (laden)
+		spend_march_action(2)*/
+
 		spend_march_action(1)
 
 	if (data.ways[way].name)
@@ -2829,8 +2828,6 @@ function can_avoid_battle(to, way) {
 		return false
 	if (has_unbesieged_enemy_lord(to))
 		return false
-	if (is_unbesieged_enemy_stronghold(to))
-		return false
 	return true
 }
 
@@ -2850,13 +2847,10 @@ function goto_avoid_battle() {
 
 function resume_avoid_battle() {
 	let here = game.march.to
-	if (has_unbesieged_friendly_lord(here)) {
 		game.group = []
 		game.state = "avoid_battle"
-	} else {
-		end_avoid_battle()
 	}
-}
+
 
 states.avoid_battle = {
 	inactive: "Avoid Battle",
@@ -2867,7 +2861,7 @@ states.avoid_battle = {
 		let here = game.march.to
 
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-			if (get_lord_locale(lord) === here && !is_lower_lord(lord))
+			if (get_lord_locale(lord) === here)
 				gen_action_lord(lord)
 
 		if (game.group.length > 0) {
@@ -2881,8 +2875,6 @@ states.avoid_battle = {
 	},
 	lord(lord) {
 		set_toggle(game.group, lord)
-		if (is_upper_lord(lord))
-			set_toggle(game.group, get_lower_lord(lord))
 	},
 	locale(to) {
 		push_undo()
@@ -3017,11 +3009,8 @@ function can_withdraw(here, n) {
 
 function goto_march_withdraw() {
 	let here = game.march.to
-	if (has_unbesieged_friendly_lord(here) && can_withdraw(here, 1)) {
-		game.state = "march_withdraw"
-	} else {
 		end_march_withdraw()
-	}
+	
 }
 
 states.march_withdraw = {
@@ -3556,19 +3545,19 @@ function can_action_ravage() {
 	if (can_ravage_locale(here))
 		return true
 
-	if (this_lord_has_teutonic_raiders()) {
+	/*if (this_lord_has_teutonic_raiders()) {
 		for (let there of data.locales[here].adjacent_by_trackway)
 			// XXX has_enemy_lord redundant with is_friendly_locale in can_ravage_locale
 			if (can_ravage_locale(there) && !has_enemy_lord(there))
 				return true
-	}
+	}*/
 
-	if (this_lord_has_russian_raiders()) {
+	/*if (this_lord_has_russian_raiders()) {
 		for (let there of data.locales[here].adjacent)
 			// XXX has_enemy_lord redundant with is_friendly_locale in can_ravage_locale
 			if (can_ravage_locale(there) && !has_enemy_lord(there))
 				return true
-	}
+	}*/
 
 	return false
 }
@@ -3667,13 +3656,13 @@ function goto_tax() {
 	spend_all_actions()
 	resume_command()
 
-	if (lord_has_capability(game.command, AOW_RUSSIAN_VELIKY_KNYAZ)) {
+	/*if (lord_has_capability(game.command, AOW_RUSSIAN_VELIKY_KNYAZ)) {
 		logcap(AOW_RUSSIAN_VELIKY_KNYAZ)
 		restore_mustered_forces(game.command)
 		push_state("veliky_knyaz")
 		game.who = game.command
 		game.count = 2
-	}
+	}*/
 }
 
 states.veliky_knyaz = states.muster_lord_transport
