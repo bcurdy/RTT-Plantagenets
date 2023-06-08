@@ -439,6 +439,8 @@ const last_york_lord = 13
 const first_lancaster_lord = 14
 const last_lancaster_lord = 27
 
+
+
 let first_friendly_lord = 0
 let last_friendly_lord = 13
 let first_enemy_lord = 14
@@ -2318,7 +2320,7 @@ states.campaign_plan = {
 }
 
 function end_campaign_plan() {
-	set_active(P1)
+	set_active(P1)	
 	goto_command_activation()
 }
 
@@ -2333,14 +2335,22 @@ function goto_command_activation() {
 
 	if (check_campaign_victory())
 		return
-
+	
 	if (game.plan2.length > game.plan1.length) {
-		set_active(P2)
+		set_active(LANCASTER)
 		game.command = game.plan2.shift()
-	} else {
-		set_active(P1)
+	} else if (game.plan2.length < game.plan1.length) {
+		set_active(YORK)
 		game.command = game.plan1.shift()
 	}
+	else  {
+		set_active(P1)
+		if (P1 === "Lancaster")
+		game.command = game.plan2.shift()
+		else 
+		game.command = game.plan1.shift()
+	}
+
 
 	if (game.command === NOBODY) {
 		log_h2("Pass")
@@ -2359,10 +2369,12 @@ function goto_command_activation() {
 // === CAMPAIGN: ACTIONS ===
 
 function set_active_command() {
-	if (game.command >= first_york_lord && game.command <= last_york_lord)
-		set_active(YORK)
+	if (game.command >= first_york_lord && game.command <= last_york_lord) {
+	set_active(YORK)
+	}
 	else
-		set_active(LANCASTER)
+	set_active(LANCASTER)
+
 }
 
 function is_active_command() {
