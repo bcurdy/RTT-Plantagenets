@@ -792,23 +792,31 @@ function is_marshal(lord) {
 			return true
 		case LORD_HENRY_VI:
 			return true
-		case LORD_WARWICK_L:
-			return true
-		case LORD_SOMERSET_1:
-			return true
 		case LORD_HENRY_TUDOR:
 			return true
 		case LORD_EDWARD_IV:
 			return true
-		case LORD_GLOUCESTER_1:
-			return true		
 		case LORD_GLOUCESTER_2:
 			return true
 		case LORD_RICHARD_III:
 			return true
-		case LORD_WARWICK_Y:
-			return true
 		case LORD_YORK:
+			return true
+		default:
+			return false
+	}
+} 
+
+
+function is_lieutenant(lord) {
+	switch (lord) {
+		case LORD_WARWICK_L:
+			return true
+		case LORD_SOMERSET_1:
+			return true
+		case LORD_GLOUCESTER_1:
+			return true		
+		case LORD_WARWICK_Y:
 			return true
 		default:
 			return false
@@ -2453,6 +2461,16 @@ states.command = {
 				if (lord !== game.command)
 					if (get_lord_locale(lord) === here)
 						gen_action_lord(lord)
+		}
+
+		// Lieutenant may not take marshall
+		if (is_lieutenant(game.command)) {
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+				if (lord !== game.command)
+					if (get_lord_locale(lord) === here && !is_marshal(lord)) {
+						gen_action_lord(lord)
+					}
+						
 		}
 
 
