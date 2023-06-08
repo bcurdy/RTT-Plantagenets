@@ -356,6 +356,7 @@ const WINTER = 2
 const AUTUMN = 3
 
 const SEASONS = [
+	null,
 	WINTER,
 	SPRING,
 	SUMMER,
@@ -374,6 +375,7 @@ const SEASONS = [
 	null
 ]
 const TURN_NAME = [
+	null,
 	"1 - January/February/March",
 	"2 - April/May",
 	"3 - June/July",
@@ -2494,8 +2496,8 @@ states.command = {
 
 	lord(lord) {
 		set_toggle(game.group, lord)
-		if (is_upper_lord(lord))
-			set_toggle(game.group, get_lower_lord(lord))
+		/*if (is_upper_lord(lord))
+			set_toggle(game.group, get_lower_lord(lord))*/
 	},
 
 	card: action_held_event,

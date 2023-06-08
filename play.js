@@ -167,11 +167,13 @@ const A1 = 0, A2 = 1, A3 = 2, D1 = 3, D2 = 4, D3 = 5
 
 const RETINUE = 0
 const VASSAL = 1
-const MERCENARIES = 2
-const BURGUNDIANS = 3
-const MEN_AT_ARMS = 4
-const MILITIA = 5
-const LONGBOWMEN = 6
+
+
+const MEN_AT_ARMS = 2
+const LONGBOWMEN = 3
+const MILITIA = 4
+const BURGUNDIANS = 5
+const MERCENARIES = 6
 const force_type_count = 7
 
 
@@ -195,6 +197,7 @@ const WINTER = 2
 const AUTUMN = 3
 
 const SEASONS = [
+	null,
 	WINTER,
 	SPRING,
 	SUMMER,
