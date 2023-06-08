@@ -406,6 +406,7 @@ function current_turn_name() {
 }
 
 function current_hand() {
+	// LIKELY BUG, CHECK goto_command_activation()
 	if (game.active === P1)
 		return game.hand1
 	return game.hand2
@@ -3507,16 +3508,7 @@ function goto_tax() {
 	spend_all_actions()
 	resume_command()
 
-	/*if (lord_has_capability(game.command, AOW_RUSSIAN_VELIKY_KNYAZ)) {
-		logcap(AOW_RUSSIAN_VELIKY_KNYAZ)
-		restore_mustered_forces(game.command)
-		push_state("veliky_knyaz")
-		game.who = game.command
-		game.count = 2
-	}*/
 }
-
-states.veliky_knyaz = states.muster_lord_transport
 
 // === ACTION: SAIL ===
 
@@ -3543,9 +3535,6 @@ function can_action_sail() {
 	if (!is_seaport(here))
 		return false
 
-	// during Rasputitsa or Summer
-	if (is_winter())
-		return false
 
 	// with enough ships to carry all the army
 	if (!has_enough_available_ships_for_army())
@@ -3571,17 +3560,14 @@ states.sail = {
 
 		let here = get_lord_locale(game.command)
 		let ships = count_group_ships()
-		let horses = count_group_horses()
+	//		let horses = count_group_horses()
 		let prov = count_group_assets(PROV)
 
 		let overflow = 0
-		if (game.active === TEUTONS)
-			overflow = (horses + prov) - ships
-		if (game.active === RUSSIANS)
-			overflow = (horses * 2 + prov) - ships
+			overflow = (count_lord_all_forces(game.group) + prov) - ships
 
 		if (overflow > 0) {
-			view.prompt = `Sailing with ${ships} Ships and ${horses} Horses. Discard Loot or Provender.`
+			view.prompt = `Sailing with ${ships} Ships.`
 			// TODO: stricter greed!
 			if (prov > 0) {
 				for (let lord of game.group) {
@@ -3611,9 +3597,9 @@ states.sail = {
 			set_lord_moved(lord, 1)
 		}
 
-		if (is_trade_route(to))
+	/*	if (is_trade_route(to))
 			conquer_trade_route(to)
-
+*/
 		spend_all_actions()
 		resume_command()
 		update_supply_possible()
