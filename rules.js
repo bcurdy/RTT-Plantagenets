@@ -1565,7 +1565,7 @@ function is_hill_in_play() {
 function goto_immediate_event(c) {
 	switch (c) {
 		// This Levy / Campaign
-		case EVENT_TEUTONIC_FAMINE:
+	/*	case EVENT_TEUTONIC_FAMINE:
 		case EVENT_RUSSIAN_FAMINE:
 			set_add(game.events, c)
 			// No immediate effects
@@ -1609,7 +1609,7 @@ function goto_immediate_event(c) {
 		case EVENT_TEUTONIC_TORZHOK:
 			return goto_teutonic_event_torzhok()
 		case EVENT_RUSSIAN_TEMPEST:
-			return goto_russian_event_tempest()
+			return goto_russian_event_tempest()*/
 
 		default:
 			log("NOT IMPLEMENTED")
