@@ -1079,16 +1079,27 @@ function is_stronghold(loc) {
 	return data.locales[loc].stronghold > 0
 }
 
-function has_favour_marker(loc) {
+function has_favourl_marker(loc) {
 	return set_has(game.pieces.favour, loc)
 }
 
-function add_favour_marker(loc) {
-	set_add(game.pieces.favour, loc)
+function add_favourl_marker(loc) {
+	set_add(game.pieces.favourl, loc)
 }
 
-function remove_favour_marker(loc) {
-	set_delete(game.pieces.favour, loc)
+function remove_favourl_marker(loc) {
+	set_delete(game.pieces.favourl, loc)
+}
+function has_favoury_marker(loc) {
+	return set_has(game.pieces.favoury, loc)
+}
+	
+function add_favoury_marker(loc) {
+	set_add(game.pieces.favoury, loc)
+}
+	
+function remove_favoury_marker(loc) {
+	set_delete(game.pieces.favoury, loc)
 }
 
 function has_ravaged_marker(loc) {
@@ -1301,7 +1312,9 @@ exports.setup = function (seed, scenario, options) {
 			moved: 0,
 			vassals: Array(vassal_count).fill(VASSAL_UNAVAILABLE),
 			exhausted: [],
-			favour: [],
+			favourl:[],
+			favoury:[],
+
 		},
 
 		flags: {
@@ -1369,6 +1382,12 @@ function setup_Ia(first_player, second_player) {
 	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
 	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
 	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
+	set_add(game.pieces.favourl, LOC_LONDON)
+	set_add(game.pieces.favourl, LOC_WELLS)
+
+	set_add(game.pieces.favoury, LOC_LUDLOW)
+	set_add(game.pieces.favoury, LOC_ELY)
+
 }
 
 function setup_Ib(first_player, second_player) {
