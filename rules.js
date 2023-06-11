@@ -1118,9 +1118,9 @@ function is_friendly_locale(loc) {
 	if (loc !== NOWHERE && loc < CALENDAR) {
 		if (has_enemy_lord(loc))
 			return false
-		if (has_favour_marker(loc)) { //to add friendly favour marker later
+		/*if (has_favour_marker(loc)) { //to add friendly favour marker later
 			return true
-		}
+		}*/
 	}
 	return true // TESTING PURPOSES NEED TO CHANGE TO FALSE
 }
@@ -1857,7 +1857,7 @@ function end_levy_arts_of_war_first() {
 	if (game.active === P2)
 		goto_levy_arts_of_war_first()
 	else
-		goto_pay()
+		goto_levy_muster()
 }
 
 // === LEVY: ARTS OF WAR ===
@@ -2858,7 +2858,7 @@ states.avoid_battle = {
 		push_undo()
 
 		// Save Assets and Lords in case Ambush cancels Avoid Battle.
-		if (!game.march.ambush) {
+		/*if (!game.march.ambush) {
 			if (could_enemy_play_ambush()) {
 				// TODO: ambush object...
 				game.march.ambush = {
@@ -2867,7 +2867,7 @@ states.avoid_battle = {
 					conquered: game.pieces.conquered.slice(),
 				}
 			}
-		}
+		}*/
 
 		let from = get_lord_locale(game.command)
 		let ways = list_ways(from, to)
@@ -3045,7 +3045,7 @@ function could_enemy_play_ambush() {
 		return could_play_card(EVENT_RUSSIAN_AMBUSH)
 	else
 		return could_play_card(EVENT_TEUTONIC_AMBUSH)
-}
+}*/
 
 function goto_march_ambush() {
 	if (game.march.ambush && game.march.ambush.lords.length > 0)
@@ -3087,7 +3087,7 @@ states.march_ambush = {
 		goto_spoils_after_avoid_battle()
 	},
 }
-*/
+
 // === ACTION: MARCH - DIVIDE SPOILS AFTER AVOID BATTLE ===
 
 function list_spoils() {
@@ -3639,10 +3639,10 @@ function set_active_defender() {
 }
 
 function goto_battle() {
-	if (has_unbesieged_enemy_lord(game.march.to))
+	
 		start_battle()
-	else
-		march_with_group_3()
+	
+		// march_with_group_3()
 }
 
 function init_battle(here) {
@@ -3684,7 +3684,7 @@ function start_battle() {
 
 	// All attacking lords to reserve
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-		if (get_lord_locale(lord) === here && !is_lord_besieged(lord)) {
+		if (get_lord_locale(lord) === here) {
 			set_lord_fought(lord)
 			if (lord !== game.command)
 				set_add(game.battle.reserves, lord)
@@ -3699,13 +3699,13 @@ function start_battle() {
 
 	// All defending lords to reserve
 	for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord) {
-		if (get_lord_locale(lord) === here && !is_lord_besieged(lord)) {
+		if (get_lord_locale(lord) === here) {
 			set_lord_fought(lord)
 			set_add(game.battle.reserves, lord)
 		}
 	}
 
-	goto_relief_sally()
+	//goto_relief_sally()
 }
 
 function init_garrison(knights, men_at_arms) {
@@ -6151,7 +6151,9 @@ function has_friendly_lord_who_may_be_paid() {
 function goto_pay() {
 	log_br()
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (count_lord_all_forces(lord) >= 7)
+			if (count_lord_all_forces(lord) >= 13)
+				set_lord_unfed(lord, 3)
+			else if (count_lord_all_forces(lord) >= 7)
 				set_lord_unfed(lord, 2)
 			else
 				set_lord_unfed(lord, 1)
