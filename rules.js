@@ -928,7 +928,7 @@ function is_lord_at_friendly_locale(lord) {
 	let loc = get_lord_locale(lord)
 	return is_friendly_locale(loc)
 }
-/*
+
 function used_seat_capability(lord, where, extra) {
 	let seats = data.lords[lord].seats
 	if (extra) {
@@ -938,14 +938,8 @@ function used_seat_capability(lord, where, extra) {
 		if (set_has(seats, where))
 			return -1
 	}
-	if (is_teutonic_lord(lord))
-		if (has_global_capability(AOW_TEUTONIC_ORDENSBURGEN))
-			return AOW_TEUTONIC_ORDENSBURGEN
-	if (is_russian_lord(lord))
-		if (has_global_capability(AOW_RUSSIAN_ARCHBISHOPRIC))
-			return AOW_RUSSIAN_ARCHBISHOPRIC
 	return -1
-}*/
+}
 
 function for_each_seat(lord, fn, repeat = false) {
 	let list = data.lords[lord].seats
@@ -2038,13 +2032,13 @@ states.levy_muster_lord = {
 	lord(other) {
 		clear_undo()
 		let die = roll_die()
-		let fealty = data.lords[other].fealty
-		if (die <= fealty) {
-			log(`L${other} ${range(fealty)}: ${HIT[die]}`)
+		let influence = data.lords[game.who].influence
+		if (die <= influence) {
+			log(`L${other} ${range(influence)}: ${HIT[die]}`)
 			push_state("muster_lord_at_seat")
-			game.who = other
+			game.who = other	
 		} else {
-			log(`L${other} ${range(fealty)}: ${MISS[die]}`)
+			log(`L${other} ${range(influence)}: ${MISS[die]}`)
 			resume_levy_muster_lord()
 		}
 	},
@@ -2096,6 +2090,8 @@ states.muster_lord_at_seat = {
 			log(`L${game.who} to %${loc}.`)
 
 		// FIXME: clean up these transitions
+		// TODO : INFLUENCE FAVOURING CURRENT SIDE
+		// TODO : IF SEAT WITH ENEMY LORD GOES WITH ANY FRIENDLY SEAT
 		set_lord_moved(game.who, 1)
 		muster_lord(game.who, loc)
 		game.state = "muster_lord_transport"
@@ -6490,7 +6486,7 @@ function end_plow_and_reap() {
 // TODO : WASTE
 function goto_wastage() {
 	clear_lords_moved()
-
+	
 	let done = true
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 		if (check_lord_wastage(lord)) {
