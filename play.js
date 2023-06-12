@@ -426,23 +426,23 @@ function lord_has_capability(lord, card_or_list) {
 
 // === BUILD UI ===
 
-const original_boxes = {
-	box1: [200,34,103,163],
-	box2: [303,34,103,163],
-	box3: [406,34,99,163],
-	box4: [506,34,103,163],
-	box5: [608,34,104,163],
-	box6: [735,34,102,163],
-	box7: [837,34,102,163],
-	box8: [939,34,102,163],
-	box9: [1041,34,99,163],
-	box10: [1140,34,102,163],
-	box11: [735,258,107,155],
-	box12: [842,258,97,155],
-	box13: [939,258,102,155],
-	box14: [1041,258,114,155],
-	box15: [1154,258,93,155],
-	box16: [1247,258,65,155],
+const calendar_boxes = {
+	"box1": [204,38,100,162],
+	"box2": [306,38,100,162],
+	"box3": [408,38,100,162],
+	"box4": [510,38,100,162],
+	"box5": [612,38,100,162],
+	"box6": [734,38,100,162],
+	"box7": [836,38,100,162],
+	"box8": [938,38,100,162],
+	"box9": [1040,38,100,162],
+	"box10": [1142,38,100,162],
+	"box11": [734,260,100,162],
+	"box12": [836,260,100,162],
+	"box13": [938,260,100,162],
+	"box14": [1040,260,100,162],
+	"box15": [1142,260,100,162],
+	"box16": [938,423,310,52],
 }
 
 const track_boxes = [
@@ -694,11 +694,11 @@ function build_map() {
 
 	for (let i = 1; i <= 16; ++i) {
 		let name = "box" + i
-		let x = original_boxes[name][0]
-		let y = original_boxes[name][1]
-		let w = original_boxes[name][2] - 8
-		let h = original_boxes[name][3] - 8
-		calendar_xy[i] = [ x + w, y ]
+		let x = calendar_boxes[name][0]
+		let y = calendar_boxes[name][1]
+		let w = calendar_boxes[name][2]
+		let h = calendar_boxes[name][3]
+		calendar_xy[i] = [ x, y ]
 		let e = ui.calendar[i] = document.createElement("div")
 		e.className = "calendar box " + name
 		e.style.left = x + "px"
@@ -842,16 +842,8 @@ function layout_calendar() {
 				d = 46
 				z += 100
 			}
-			if (loc === 0) {
-				x += -6 + 46 * i
-				z = 1
-			} else if (loc === 17) {
-				x += 60 - 46 * i
-				z = 60 - i
-			} else {
-				x += (146 - 94 - 2)
-				y += (227 - 46 - 2) - i * d
-			}
+			x += 10
+			y += i * d
 			e.style.top = y + "px"
 			e.style.left = x + "px"
 			e.style.zIndex = z
@@ -860,26 +852,9 @@ function layout_calendar() {
 		list = calendar_layout_cylinder[loc]
 		for (let i = 0; i < list.length; ++i) {
 			let e = list[i]
-			let x = cx, y = cy, z = 61
-			if (loc === 0) {
-				let k = calendar_layout_service[0].length
-				if (k > 0)
-					x += k * 46 + 46 + i * 46
-				else
-					x += 0 + i * 46
-			} else if (loc === 17) {
-				let k = calendar_layout_service[17].length
-				if (k > 0)
-					x += 60 - k * 46 - i * 46
-				else
-					x += 60 + i * 46
-			} else if (loc === 1) {
-				x += 46 + (i%2) * 46 + (i/2|0) * 12
-				y += 66 + (i/2|0) * 36
-			} else {
-				x += 6 + (i%3) * 46 + (i/3|0) * 24
-				y += 66 + (i/3|0) * 36
-			}
+			let x = cx, y = cy, z = 61 + i
+			x += 10
+			y += i * 32 - 3
 			e.style.top = y + "px"
 			e.style.left = x + "px"
 			e.style.zIndex = z
@@ -1002,7 +977,7 @@ function update_lord(ix) {
 		update_lord_mat(ix)
 	} else {
 		let t = locale - 100
-		if (t > 17) t = 17
+		if (t > 16) t = 16
 		calendar_layout_cylinder[t].push(ui.lord_cylinder[ix])
 		ui.lord_cylinder[ix].classList.remove("hide")
 	}
@@ -1227,10 +1202,10 @@ function on_update() {
 	} else {
 		ui.turn.className = `marker circle turn levy`
 	}
-	ui.turn.style.left = (calendar_xy[view.turn >> 1][0] - 52) + "px"
-	ui.turn.style.top = (calendar_xy[view.turn >> 1][1] + 100) + "px"
-	ui.end.style.left = (calendar_xy[view.end][0] - 52) + "px"
-	ui.end.style.top = (calendar_xy[view.end][1] + 100) + "px"
+	ui.turn.style.left = (calendar_xy[view.turn >> 1][0] + 91 - 52) + "px"
+	ui.turn.style.top = (calendar_xy[view.turn >> 1][1] + 94) + "px"
+	ui.end.style.left = (calendar_xy[view.end][0] + 91 - 52) + "px"
+	ui.end.style.top = (calendar_xy[view.end][1] + 94) + "px"
 
 	ui.held_york.textContent = `${view.held1} Held`
 	ui.held_lancaster.textContent = `${view.held2} Held`

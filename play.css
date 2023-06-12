@@ -435,11 +435,17 @@ body.shift #capabilities2 {
 }
 
 .box {
+	box-sizing: border-box;
 	position: absolute;
 	border: 3px solid transparent;
+	border-radius: 15px 0 50% 50% / 15px 0 20px 20px;
 }
 
-.box.calendar.action {
+.box.box16 {
+	border-radius: 0
+}
+
+.box.action {
 	border-color: white;
 	background-color: #fff6;
 }

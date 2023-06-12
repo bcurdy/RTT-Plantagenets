@@ -535,7 +535,7 @@ function get_lord_calendar(lord) {
 }
 
 function set_lord_cylinder_on_calendar(lord, turn) {
-	if (turn < 0) turn = 0
+	if (turn < 1) turn = 1
 	if (turn > 16) turn = 16
 	set_lord_locale(lord, CALENDAR + turn)
 }
