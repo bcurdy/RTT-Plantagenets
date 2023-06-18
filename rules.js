@@ -3534,6 +3534,8 @@ function drop_prov(lord) {
 function has_enough_available_ships_for_army() {
 	let ships = count_group_ships()
 	let army = count_group_forces()
+	let prov = count_group_assets(PROV)
+	let cart = count_group_assets(CART)
 
 	let needed_ships = army/6
 
