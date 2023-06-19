@@ -1074,7 +1074,7 @@ function is_stronghold(loc) {
 }
 
 function has_favourl_marker(loc) {
-	return set_has(game.pieces.favour, loc)
+	return set_has(game.pieces.favourl, loc)
 }
 
 function add_favourl_marker(loc) {
@@ -3501,12 +3501,8 @@ function restore_mustered_forces(lord) {
 
 function can_action_tax() {
 	// Must use whole action
-	if (!is_first_action())
-		return false
 
 	// Must have space left to hold Coin
-	if (get_lord_assets(game.command, COIN) >= 8)
-		return false
 
 	// Must be at own seat
 	return is_lord_at_seat(game.command)
@@ -3518,9 +3514,15 @@ function goto_tax() {
 	let here = get_lord_locale(game.command)
 	log(`Taxed %${here}.`)
 
+	if (is_town(here) || is_fortress(here) || is_harlech(here))
 	add_lord_assets(game.command, COIN, 1)
+	else if (is_city(here)) 
+	add_lord_assets(game.command, COIN, 2)
+	else 
+	add_lord_assets(game.command, COIN, 3)
 
-	spend_all_actions()
+
+	spend_action(1)
 	resume_command()
 
 }
@@ -3534,8 +3536,6 @@ function drop_prov(lord) {
 function has_enough_available_ships_for_army() {
 	let ships = count_group_ships()
 	let army = count_group_forces()
-	let prov = count_group_assets(PROV)
-	let cart = count_group_assets(CART)
 
 	let needed_ships = army/6
 
