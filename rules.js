@@ -3500,9 +3500,12 @@ function restore_mustered_forces(lord) {
 }
 
 function can_action_tax() {
-	// Must use whole action
+	if (game.actions < 1)
+	return false
 
 	// Must have space left to hold Coin
+	if (get_lord_assets(game.command, COIN) >= 8)
+		return false
 
 	// Must be at own seat
 	return is_lord_at_seat(game.command)
