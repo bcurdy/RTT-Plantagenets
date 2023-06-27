@@ -6473,8 +6473,8 @@ function end_plow_and_reap() {
 // === END CAMPAIGN: WASTAGE ===
 // TODO : WASTE
 function goto_wastage() {
+	if (game.turn === 5 || game.turn === 10) {
 	clear_lords_moved()
-	
 	let done = true
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 		if (check_lord_wastage(lord)) {
@@ -6482,11 +6482,15 @@ function goto_wastage() {
 			done = false
 		}
 	}
-
 	if (done)
 		end_wastage()
 	else
 		game.state = "wastage"
+}
+	else {
+		push_undo()
+		goto_reset()
+	}
 }
 
 function check_lord_wastage(lord) {
@@ -6497,8 +6501,6 @@ function check_lord_wastage(lord) {
 	if (get_lord_assets(lord, CART) > 1)
 		return true
 	if (get_lord_assets(lord, SHIP) > 1)
-		return true
-	if (get_lord_capability(lord, 0) !== NOTHING && get_lord_capability(lord, 1) !== NOTHING)
 		return true
 	return false
 }
