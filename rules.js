@@ -1400,7 +1400,7 @@ function setup_Ib(first_player, second_player) {
 }
 
 function setup_Ic(first_player, second_player) {
-	game.turn = 1 << 1
+	game.turn = 5 << 1	
 
 
 	P1 = first_player
@@ -1474,7 +1474,7 @@ function setup_ItoIII(first_player, second_player) {
 	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
 
 }
-// setup may be used in some scenarios 
+// setup will be used in some scenarios 
 
 
 states.setup_lords = {
@@ -1482,27 +1482,10 @@ states.setup_lords = {
 	prompt() {
 		view.prompt = "Set up your Lords."
 		let done = true
-		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (is_lord_on_map(lord) && !get_lord_moved(lord)) {
-				if (data.lords[lord].assets.transport > 0) {
-					gen_action_lord(lord)
-					done = false
-				}
-			}
-		}
 		if (done) {
 			view.prompt += " All done."
 			view.actions.end_setup = 1
 		}
-	},
-	lord(lord) {
-		push_undo()
-
-		// FIXME: clean up these transitions
-		push_state("muster_lord_transport")
-		set_lord_moved(lord, 1)
-		game.who = lord
-		game.count = data.lords[lord].assets.transport
 	},
 	end_setup() {
 		clear_undo()
