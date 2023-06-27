@@ -2766,6 +2766,7 @@ function stronghold_strength(loc) {
 function stronghold_capacity(loc) {
 	return stronghold_strength(loc) - count_besieged_lords(loc)
 }
+/*
 
 function spoil_prov(lord) {
 	add_lord_assets(lord, PROV, -1)
@@ -2846,7 +2847,7 @@ states.avoid_battle = {
 					conquered: game.pieces.conquered.slice(),
 				}
 			}
-		}*/
+		}
 
 		let from = get_lord_locale(game.command)
 		let ways = list_ways(from, to)
@@ -2863,7 +2864,7 @@ states.avoid_battle = {
 		push_undo()
 		end_avoid_battle()
 	},
-}
+
 
 states.avoid_battle_way = {
 	inactive: "Avoid Battle",
@@ -2941,8 +2942,6 @@ function avoid_battle_2() {
 		set_lord_moved(lord, 1)
 	}
 
-	if (is_trade_route(to))
-		conquer_trade_route(to)
 
 	game.march.avoid_to = 0
 	game.march.avoid_way = 0
@@ -2953,7 +2952,7 @@ function end_avoid_battle() {
 	game.group = game.march.group // restore group
 	game.march.group = 0
 	goto_march_withdraw()
-}
+}*/
 
 // === ACTION: MARCH - WITHDRAW ===
 
@@ -6568,6 +6567,7 @@ states.wastage = {
 
 function end_wastage() {
 	push_undo()
+	set_active_enemy()
 	goto_reset()
 }
 
