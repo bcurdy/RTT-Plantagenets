@@ -1119,6 +1119,11 @@ function is_friendly_locale(loc) {
 	return true // TESTING PURPOSES NEED TO CHANGE TO FALSE
 }
 
+function can_add_troops(lordwho, locale) {
+	// TODO condition not exhausted
+	return true
+}
+
 function can_add_transport(who, what) {
 	return get_lord_assets(who, what) < 100
 }
@@ -1997,10 +2002,12 @@ states.levy_muster_lord = {
 			// Add Transport
 			if (is_seaport(get_lord_locale(game.who)) && get_lord_assets(game.who, SHIP) < 2)
 				view.actions.take_ship = 1
-			
 		
 			if (can_add_transport(game.who, CART))
 				view.actions.take_cart = 1
+
+			if (can_add_troops(game.who, get_lord_locale(game.who)))	
+				view.actions.levy_troops = 1
 
 			// Add Capability
 			if (can_add_lord_capability(game.who))
@@ -2040,6 +2047,35 @@ states.levy_muster_lord = {
 	take_cart() {
 		push_undo()
 		add_lord_assets(game.who, CART, 2)
+		resume_levy_muster_lord()
+	},
+	levy_troops() {
+		push_undo()
+		let info = data.lords[game.who]
+		if (is_calais(get_lord_locale(game.who))) {
+			add_lord_forces(game.who, MEN_AT_ARMS, info.forces.men_at_arms | 2)
+			add_lord_forces(game.who, LONGBOWMEN, info.forces.longbowmen | 1)
+		}
+		else if (is_london(get_lord_locale(game.who))){
+			add_lord_forces(game.who, MEN_AT_ARMS, info.forces.men_at_arms | 1)
+			add_lord_forces(game.who, LONGBOWMEN, info.forces.longbowmen | 1)
+			add_lord_forces(game.who, MILITIA, info.forces.militia | 1)
+		}
+		else if (is_harlech(get_lord_locale(game.who))) {
+			add_lord_forces(game.who, MEN_AT_ARMS, info.forces.men_at_arms | 1)
+			add_lord_forces(game.who, LONGBOWMEN, info.forces.longbowmen | 2)
+		}
+		else if (is_city(get_lord_locale(game.who))){
+			add_lord_forces(game.who, LONGBOWMEN, info.forces.longbowmen | 1)
+			add_lord_forces(game.who, MILITIA, info.forces.militia | 1)
+		}
+		else if (is_town(get_lord_locale(game.who))){
+			add_lord_forces(game.who, MILITIA, info.forces.militia | 2)
+		}
+		else {
+			add_lord_forces(game.who, MEN_AT_ARMS, info.forces.men_at_arms | 1)
+			add_lord_forces(game.who, MILITIA, info.forces.militia | 1)
+		}
 		resume_levy_muster_lord()
 	},
 
@@ -2189,7 +2225,7 @@ function can_muster_capability() {
 	}
 	return false
 }
-
+states.muster_troops
 states.muster_capability = {
 	inactive: "Muster",
 	prompt() {
@@ -2212,23 +2248,6 @@ states.muster_capability = {
 		if (data.cards[c].this_lord) {
 				add_lord_capability(game.who, c)
 		}
-		pop_state()
-		resume_levy_muster_lord()
-	},
-}
-
-states.muster_capability_discard = {
-	inactive: "Muster",
-	prompt() {
-		view.prompt = `Muster: Remove a Capability from ${lord_name[game.who]}.`
-		gen_action_card(get_lord_capability(game.who, 0))
-		gen_action_card(get_lord_capability(game.who, 1))
-	},
-	card(c) {
-		push_undo()
-		discard_lord_capability(game.who, c)
-		add_lord_capability(game.who, game.what)
-		game.what = NOTHING
 		pop_state()
 		resume_levy_muster_lord()
 	},

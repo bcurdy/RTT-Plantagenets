@@ -1262,7 +1262,9 @@ function on_update() {
 	action_button("take_coin", "Coin")
 	action_button("take_ship", "Ship")
 	action_button("take_cart", "Cart")
+	action_button("levy_troops", "Levy Troops")
 	action_button("capability", "Capability")
+
 
 	// Events
 	action_button("decline", "Decline")
