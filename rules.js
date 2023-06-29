@@ -2052,30 +2052,33 @@ states.levy_muster_lord = {
 	levy_troops() {
 		push_undo()
 		let info = data.lords[game.who]
-		if (is_calais(get_lord_locale(game.who))) {
-			add_lord_forces(game.who, MEN_AT_ARMS, info.forces.men_at_arms | 2)
-			add_lord_forces(game.who, LONGBOWMEN, info.forces.longbowmen | 1)
-		}
-		else if (is_london(get_lord_locale(game.who))){
-			add_lord_forces(game.who, MEN_AT_ARMS, info.forces.men_at_arms | 1)
-			add_lord_forces(game.who, LONGBOWMEN, info.forces.longbowmen | 1)
-			add_lord_forces(game.who, MILITIA, info.forces.militia | 1)
-		}
-		else if (is_harlech(get_lord_locale(game.who))) {
-			add_lord_forces(game.who, MEN_AT_ARMS, info.forces.men_at_arms | 1)
-			add_lord_forces(game.who, LONGBOWMEN, info.forces.longbowmen | 2)
-		}
-		else if (is_city(get_lord_locale(game.who))){
-			add_lord_forces(game.who, LONGBOWMEN, info.forces.longbowmen | 1)
-			add_lord_forces(game.who, MILITIA, info.forces.militia | 1)
-		}
-		else if (is_town(get_lord_locale(game.who))){
-			add_lord_forces(game.who, MILITIA, info.forces.militia | 2)
-		}
-		else {
-			add_lord_forces(game.who, MEN_AT_ARMS, info.forces.men_at_arms | 1)
-			add_lord_forces(game.who, MILITIA, info.forces.militia | 1)
-		}
+		let locale = data.locales[get_lord_locale(game.who)].type
+		switch(locale) {
+			case "calais": 
+				add_lord_forces(game.who, MEN_AT_ARMS, 2)
+				add_lord_forces(game.who, LONGBOWMEN,1)
+				break
+			case "london":
+				add_lord_forces(game.who, MEN_AT_ARMS, 1)
+				add_lord_forces(game.who, LONGBOWMEN, 1)
+				add_lord_forces(game.who, MILITIA, 1)
+				break
+			case "harlech":
+				add_lord_forces(game.who, MEN_AT_ARMS, 1)
+				add_lord_forces(game.who, LONGBOWMEN, 2)
+				break
+			case "city": 
+				add_lord_forces(game.who, LONGBOWMEN, 1)
+				add_lord_forces(game.who, MILITIA, 1)
+				break
+			case "town": 
+				add_lord_forces(game.who, MILITIA, 2)
+				break
+			case "fortress": 
+				add_lord_forces(game.who, MEN_AT_ARMS, 1)
+				add_lord_forces(game.who, MILITIA, 1)
+				break
+			}
 		resume_levy_muster_lord()
 	},
 
