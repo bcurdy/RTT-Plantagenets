@@ -348,6 +348,7 @@ const NOWHERE = -1
 const NOTHING = -1
 const NEVER = -1
 const CALENDAR = 100
+const TRACK = 100
 
 
 const SUMMER = 0
@@ -525,6 +526,11 @@ function add_spoils(type, n) {
 	if (!game.spoils)
 		game.spoils = [ 0, 0, 0, 0, 0, 0, 0 ]
 	game.spoils[type] += n
+}
+
+function set_item_on_track(item, track_value) {
+	if (track_value > 45) track_value = 45
+	set_lord_locale(item, TRACK + track_value)
 }
 
 function get_lord_calendar(lord) {
@@ -1381,6 +1387,7 @@ function setup_Ia(first_player, second_player) {
 	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
 	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
 	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
+	set_item_on_track()
 	set_add(game.pieces.favourl, LOC_LONDON)
 	set_add(game.pieces.favourl, LOC_WELLS)
 
@@ -3120,7 +3127,6 @@ function take_spoils(type) {
 }
 
 function take_spoils_prov() { take_spoils(PROV) }
-function take_spoils_coin() { take_spoils(COIN) }
 function take_spoils_cart() { take_spoils(CART) }
 
 function goto_spoils_after_avoid_battle() {
@@ -3496,23 +3502,18 @@ function goto_forage() {
 
 // === ACTION: TAX ===
 
-function restore_mustered_forces(lord) {
-	muster_lord_forces(lord)
-	for (let v of data.lords[lord].vassals)
-		if (is_vassal_mustered(v))
-			muster_vassal_forces(lord, v)
-}
-
 function can_action_tax() {
 	if (game.actions < 1)
 	return false
+
 
 	// Must have space left to hold Coin
 	if (get_lord_assets(game.command, COIN) >= 8)
 		return false
 
-	// Must be at own seat
+	// Must be at own seat TO BE REMOVED
 	return is_lord_at_seat(game.command)
+	// TODO : Add deplete/exhaust
 }
 
 function goto_tax() {
@@ -3527,7 +3528,7 @@ function goto_tax() {
 	add_lord_assets(game.command, COIN, 2)
 	else 
 	add_lord_assets(game.command, COIN, 3)
-
+// TODO : Add deplete/exhaust
 
 	spend_action(1)
 	resume_command()
@@ -5916,7 +5917,6 @@ states.battle_spoils = {
 	},
 	lord: action_select_lord,
 	take_prov: take_spoils_prov,
-	take_coin: take_spoils_coin,
 	take_cart: take_spoils_cart,
 	end_spoils() {
 		clear_undo()

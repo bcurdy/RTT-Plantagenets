@@ -299,6 +299,7 @@ function max_plan_length() {
 	case SUMMER: return 7
 	case WINTER: return 4
 	case SPRING: return 6
+	case AUTUMN: return 6
 	}
 }
 
@@ -445,56 +446,57 @@ const calendar_boxes = {
 	"box16": [938,423,310,52],
 }
 
-const track_boxes = [
-	[22,1575,48,48],
-	[71,1575,47,48],
-	[118,1575,46,48],
-	[165,1575,46,48],
-	[211,1575,48,48],
-	[259,1575,47,48],
-	[306,1575,48,48],
-	[354,1575,47,48],
-	[401,1575,46,48],
-	[447,1575,47,48],
-	[494,1575,49,49],
-	[543,1575,47,49],
-	[590,1575,47,49],
-	[637,1575,48,49],
-	[685,1575,46,48],
-	[731,1575,48,48],
-	[779,1575,47,48],
-	[826,1575,48,48],
-	[873,1575,46,48],
-	[920,1575,48,48],
-	[968,1575,46,49],
-	[1014,1575,48,49],
-	[1062,1575,47,49],
-	[1109,1575,48,49],
-	[1157,1575,46,49],
-	[1203,1577,49,47],
-	[1203,1530,49,47],
-	[1203,1434,49,47],
-	[1203,1388,49,46],
-	[1203,1340,49,48],
-	[1203,1292,49,48],
-	[1203,1244,49,48],
-	[1203,1198,49,46],
-	[1203,1151,49,47],
-	[1203,1104,49,47],
-	[1203,1057,49,46],
-	[1203,1010,49,47],
-	[1203,960,49,50],
-	[1203,914,47,46],
-	[1203,865,47,48],
-	[1203,819,47,46],
-	[1203,774,51,45],
-	[1203,724,51,50],
-	[1203,676,51,48],
-	[1203,630,47,46],
-]
+const track_boxes = {
+	"track0": [22,1575,48,48],
+	"track1": [71,1575,47,48],
+	"track2": [118,1575,46,48],
+	"track3": [165,1575,46,48],
+	"track4": [211,1575,48,48],
+	"track5": [259,1575,47,48],
+	"track6": [306,1575,48,48],
+	"track7": [354,1575,47,48],
+	"track8": [401,1575,46,48],
+	"track9": [447,1575,47,48],
+	"track10": [494,1575,49,49],
+	"track11": [543,1575,47,49],
+	"track12": [590,1575,47,49],
+	"track13": [637,1575,48,49],
+	"track14": [685,1575,46,48],
+	"track15": [731,1575,48,48],
+	"track16": [779,1575,47,48],
+	"track17": [826,1575,48,48],
+	"track18": [873,1575,46,48],
+	"track19": [920,1575,48,48],
+	"track20": [968,1575,46,49],
+	"track21": [1014,1575,48,49],
+	"track22": [1062,1575,47,49],
+	"track23": [1109,1575,48,49],
+	"track24": [1157,1575,46,49],
+	"track25": [1203,1577,49,47],
+	"track26": [1203,1530,49,47],
+	"track27": [1203,1488,49,46],
+	"track28": [1203,1434,49,47],
+	"track29": [1203,1388,49,46],
+	"track30": [1203,1340,49,48],
+	"track31": [1203,1292,49,48],
+	"track32": [1203,1244,49,48],
+	"track33": [1203,1198,49,46],
+	"track34": [1203,1151,49,47],
+	"track35": [1203,1104,49,47],
+	"track36": [1203,1057,49,46],
+	"track37": [1203,1010,49,47],
+	"track38": [1203,960,49,50],
+	"track39": [1203,914,47,46],
+	"track40": [1203,865,47,48],
+	"track41": [1203,819,47,46],
+	"track42": [1203,774,51,45],
+	"track43": [1203,724,51,50],
+	"track44": [1203,676,51,48],
+	"track45": [1203,630,47,46],
+}
 
-const track_xy = track_boxes.map(([x,y,w,h])=>[x+w/2,y+h/2])
 
+const track_xy = []
 const calendar_xy = []
 const locale_xy = []
 
@@ -518,6 +520,7 @@ const ui = {
 	lord_feed: [],
 	cards: [],
 	calendar: [],
+	track: [],
 
 	plan_panel: document.getElementById("plan_panel"),
 	plan: document.getElementById("plan"),
@@ -711,6 +714,25 @@ function build_map() {
 	for (let i = 1; i <= 16; ++i)
 		register_action(ui.calendar[i], "calendar", i)
 
+	for (let i = 0; i <= 45; ++i) {
+		let name = "track" + i
+		let x = track_boxes[name][0]
+		let y = track_boxes[name][1]
+		let w = track_boxes[name][2]
+		let h = track_boxes[name][3]
+		track_xy[i] = [ x, y ]
+		let e = ui.track[i] = document.createElement("div")
+		e.className = "track box " + name
+		e.style.left = x + "px"
+		e.style.top = y + "px"
+		e.style.width = w + "px"
+		e.style.height = h + "px"
+		document.getElementById("boxes").appendChild(e)
+	}
+
+	for (let i = 1; i <= 45; ++i)
+	register_action(ui.track[i], "track", i)
+
 	build_plan()
 
 	for (let i = 0; i < 6; ++i)
@@ -720,6 +742,7 @@ function build_map() {
 		build_card("york", c)
 	for (let c = first_lancaster_card; c <= last_lancaster_card; ++c)
 		build_card("lancaster", c)
+
 }
 
 // === UPDATE UI ===
@@ -861,6 +884,27 @@ function layout_calendar() {
 		}
 	}
 }
+/*
+function layout_track() {
+	for (let loc = 0; loc <= 45; ++loc) {
+		let [cx, cy] = track_xy[loc]
+		let list = track_layout[loc]
+		for (let i = 0; i < list.length; ++i) {
+			let e = list[i]
+			let x = cx, y = cy, z = 60 - i
+			let d = 46 - 24
+			if (loc === expand_track) {
+				d = 46
+				z += 100
+			}
+			x += 10
+			y += i * d
+			e.style.top = y + "px"
+			e.style.left = x + "px"
+			e.style.zIndex = z
+		}
+	}
+}*/
 
 function add_force(parent, type, lord, routed) {
 	let elt
