@@ -730,7 +730,7 @@ function build_map() {
 		document.getElementById("boxes").appendChild(e)
 	}
 
-	for (let i = 1; i <= 45; ++i)
+	for (let i = 0; i <= 45; ++i)
 	register_action(ui.track[i], "track", i)
 
 	build_plan()
