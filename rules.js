@@ -6891,9 +6891,11 @@ exports.view = function (state, current) {
 
 		end: scenario_last_turn[game.scenario],
 		turn: game.turn,
+		victory_check: game.victory_check,
 		events: game.events,
 		pieces: game.pieces,
 		battle: game.battle,
+
 
 		held1: game.hand1.length,
 		held2: game.hand2.length,

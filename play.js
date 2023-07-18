@@ -501,6 +501,7 @@ const calendar_xy = []
 const locale_xy = []
 
 let expand_calendar = -1
+let expand_track = -1
 
 const ui = {
 	locale: [],
@@ -546,6 +547,7 @@ const ui = {
 	command: document.getElementById("command"),
 	turn: document.getElementById("turn"),
 	end: document.getElementById("end"),
+	victory_check: document.getElementById("victory_check"),
 	court1_header: document.getElementById("court1_header"),
 	court2_header: document.getElementById("court2_header"),
 	court1: document.getElementById("court1"),
@@ -884,7 +886,7 @@ function layout_calendar() {
 		}
 	}
 }
-/*
+
 function layout_track() {
 	for (let loc = 0; loc <= 45; ++loc) {
 		let [cx, cy] = track_xy[loc]
@@ -904,7 +906,7 @@ function layout_track() {
 			e.style.zIndex = z
 		}
 	}
-}*/
+}
 
 function add_force(parent, type, lord, routed) {
 	let elt
@@ -1235,6 +1237,7 @@ function on_update() {
 	}
 
 	layout_calendar()
+	//layout_track()
 
 	for (let loc = 0; loc < data.locales.length; ++loc)
 		update_locale(loc)
@@ -1253,6 +1256,9 @@ function on_update() {
 
 	ui.held_york.textContent = `${view.held1} Held`
 	ui.held_lancaster.textContent = `${view.held2} Held`
+
+	ui.victory_check.style.top = (track_xy[view.victory_check]) + "px"
+	ui.victory_check.style.left = (track_xy[view.victory_check]) + "px"
 
 	update_plan()
 	update_cards()
