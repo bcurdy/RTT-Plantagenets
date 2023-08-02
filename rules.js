@@ -1300,7 +1300,13 @@ exports.setup = function (seed, scenario, options) {
 		state: "setup_lords",
 		stack: [],
 		victory_check: 0,
-
+		towny:0,
+		fortressy:0,
+		citiesy:0,
+		townl:0,
+		fortressl:0,
+		citiesl:0,
+	
 		hand1: [],
 		hand2: [],
 		plan1: [],
@@ -1378,6 +1384,12 @@ function setup_Ia(first_player, second_player) {
 	P2 = second_player
 	game.active = first_player
 	game.victory_check = 40
+	game.towny = 0
+	game.townl = 0
+	game.citiesy = 0
+	game.citiesl = 0
+	game.fortressy = 0
+	game.fortressl = 0
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
@@ -6888,6 +6900,14 @@ exports.view = function (state, current) {
 		end: scenario_last_turn[game.scenario],
 		turn: game.turn,
 		victory_check: game.victory_check,
+		townl: game.townl,
+		towny: game.townl,
+		fortressl: game.fortressl,
+		fortressy: game.fortressy,
+		citiesl: game.citiesl,
+		citiesy: game.citiesy,
+
+
 		events: game.events,
 		pieces: game.pieces,
 		battle: game.battle,

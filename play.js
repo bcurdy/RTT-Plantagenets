@@ -548,6 +548,12 @@ const ui = {
 	turn: document.getElementById("turn"),
 	end: document.getElementById("end"),
 	victory_check: document.getElementById("victory_check"),
+	fortressl: document.getElementById("fortresses_l"),
+	fortressy: document.getElementById("fortresses_y"),
+	townl: document.getElementById("towns_l"),
+	towny: document.getElementById("towns_y"),
+	citiesl: document.getElementById("cities_l"),
+	citiesy: document.getElementById("cities_y"),
 	court1_header: document.getElementById("court1_header"),
 	court2_header: document.getElementById("court2_header"),
 	court1: document.getElementById("court1"),
@@ -1259,6 +1265,24 @@ function on_update() {
 
 	ui.victory_check.style.top = (track_xy[view.victory_check][1]) + "px"
 	ui.victory_check.style.left = (track_xy[view.victory_check][0]) + "px"
+
+	ui.townl.style.top = (track_xy[view.townl][1]) + "px"
+	ui.townl.style.left = (track_xy[view.townl][0]) + "px"
+
+	ui.towny.style.top = (track_xy[view.towny][1]) + "px"
+	ui.towny.style.left = (track_xy[view.towny][0]) + "px"
+
+	ui.citiesl.style.top = (track_xy[view.citiesl][1]) + "px"
+	ui.citiesl.style.left = (track_xy[view.citiesl][0]) + "px"
+
+	ui.citiesy.style.top = (track_xy[view.citiesy][1]) + "px"
+	ui.citiesy.style.left = (track_xy[view.citiesy][0]) + "px"
+
+	ui.fortressl.style.top = (track_xy[view.fortressl][1]) + "px"
+	ui.fortressl.style.left = (track_xy[view.fortressl][0]) + "px"
+
+	ui.fortressy.style.top = (track_xy[view.fortressy][1]) + "px"
+	ui.fortressy.style.left = (track_xy[view.fortressy][0]) + "px"
 
 	update_plan()
 	update_cards()
