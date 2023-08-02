@@ -554,6 +554,10 @@ const ui = {
 	towny: document.getElementById("towns_y"),
 	citiesl: document.getElementById("cities_l"),
 	citiesy: document.getElementById("cities_y"),
+	influence_point_l: document.getElementById("ip_l"),
+	influence_point_y: document.getElementById("ip_y"),
+
+
 	court1_header: document.getElementById("court1_header"),
 	court2_header: document.getElementById("court2_header"),
 	court1: document.getElementById("court1"),
@@ -1283,6 +1287,12 @@ function on_update() {
 
 	ui.fortressy.style.top = (track_xy[view.fortressy][1]) + "px"
 	ui.fortressy.style.left = (track_xy[view.fortressy][0]) + "px"
+
+	ui.influence_point_l.style.top = (track_xy[view.influence_point_l][1]) + "px"
+	ui.influence_point_l.style.left = (track_xy[view.influence_point_l][0]) + "px"
+
+	ui.influence_point_y.style.top = (track_xy[view.influence_point_y][1]) + "px"
+	ui.influence_point_y.style.left = (track_xy[view.influence_point_y][0]) + "px"
 
 	update_plan()
 	update_cards()

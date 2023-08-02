@@ -1306,6 +1306,8 @@ exports.setup = function (seed, scenario, options) {
 		townl:0,
 		fortressl:0,
 		citiesl:0,
+		influence_point_l: 0,
+		influence_point_y: 0,
 	
 		hand1: [],
 		hand2: [],
@@ -1390,6 +1392,8 @@ function setup_Ia(first_player, second_player) {
 	game.citiesl = 0
 	game.fortressy = 0
 	game.fortressl = 0
+	game.influence_point_l = 0
+	game.influence_point_y = 0
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
@@ -6906,6 +6910,8 @@ exports.view = function (state, current) {
 		fortressy: game.fortressy,
 		citiesl: game.citiesl,
 		citiesy: game.citiesy,
+		influence_point_l: game.influence_point_l,
+		influence_point_y: game.influence_point_y,
 
 
 		events: game.events,
