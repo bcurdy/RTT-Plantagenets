@@ -1257,8 +1257,8 @@ function on_update() {
 	ui.held_york.textContent = `${view.held1} Held`
 	ui.held_lancaster.textContent = `${view.held2} Held`
 
-	ui.victory_check.style.top = (track_xy[view.victory_check]) + "px"
-	ui.victory_check.style.left = (track_xy[view.victory_check]) + "px"
+	ui.victory_check.style.top = (track_xy[view.victory_check][1]) + "px"
+	ui.victory_check.style.left = (track_xy[view.victory_check][0]) + "px"
 
 	update_plan()
 	update_cards()

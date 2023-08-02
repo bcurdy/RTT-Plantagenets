@@ -528,7 +528,7 @@ function add_spoils(type, n) {
 	game.spoils[type] += n
 }
 
-function set_item_on_track(item, track_value) {
+function set_item_on_track(item, value) {
 	if (track_value > 45) track_value = 45
 	set_lord_locale(item, TRACK + track_value)
 }
@@ -1299,6 +1299,7 @@ exports.setup = function (seed, scenario, options) {
 		active: P1,
 		state: "setup_lords",
 		stack: [],
+		victory_check: 0,
 
 		hand1: [],
 		hand2: [],
@@ -1376,6 +1377,7 @@ function setup_Ia(first_player, second_player) {
 	P1 = first_player
 	P2 = second_player
 	game.active = first_player
+	game.victory_check = 40
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
@@ -1387,12 +1389,6 @@ function setup_Ia(first_player, second_player) {
 	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
 	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
 	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
-	set_item_on_track()
-	set_add(game.pieces.favourl, LOC_LONDON)
-	set_add(game.pieces.favourl, LOC_WELLS)
-
-	set_add(game.pieces.favoury, LOC_LUDLOW)
-	set_add(game.pieces.favoury, LOC_ELY)
 
 }
 
