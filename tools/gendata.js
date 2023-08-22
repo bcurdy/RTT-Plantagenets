@@ -172,6 +172,7 @@ const boxes = {
 	"Southampton favour": [677,1371,60,48],
 	"Dorchester favour": [524,1368,58,49],
 	"Exeter favour": [342,1376,64,66],
+	"Ireland favour": [50,949,110,121],
 	"Launceston favour": [201,1354,68,60],
 	"Truro favour": [142,1445,56,53],
 	"Lichfield favour": [613,906,74,61],
@@ -300,7 +301,10 @@ var ways = []
 var highways = []
 var roads = []
 var paths = []
-
+var deplete = []
+var favour = []
+var seat = []
+var vassalbox = []
 const scale = 1
 
 
@@ -316,8 +320,57 @@ function defloc(region, stronghold, type, name) {
 	if (stronghold > 0)
 		strongholds.push(locales.length)
 	locales.push({ name, type, stronghold, region, ways: [], box: { x, y, w, h } })
-
 }
+
+function defdepleted(name) {
+	let [x, y, w, h] = boxes[name]
+	x = Math.floor(x)
+	y = Math.floor(y)
+	w = Math.ceil(w)
+	h = Math.ceil(h)
+	locmap[name] = locales.length
+	deplete.push({ name, box: { x, y, w, h } })
+}
+
+function deffavour(name) {
+	let [x, y, w, h] = boxes[name]
+	x = Math.floor(x)
+	y = Math.floor(y)
+	w = Math.ceil(w)
+	h = Math.ceil(h)
+	locmap[name] = locales.length
+	favour.push({ name, box: { x, y, w, h } })
+}
+
+function defseat(name) {
+	let [x, y, w, h] = boxes[name]
+	x = Math.floor(x)
+	y = Math.floor(y)
+	w = Math.ceil(w)
+	h = Math.ceil(h)
+	locmap[name] = locales.length
+	seat.push({ name, box: { x, y, w, h } })
+}
+function defseat(name) {
+	let [x, y, w, h] = boxes[name]
+	x = Math.floor(x)
+	y = Math.floor(y)
+	w = Math.ceil(w)
+	h = Math.ceil(h)
+	locmap[name] = locales.length
+	seat.push({ name, box: { x, y, w, h } })
+}
+
+function defvassal(name) {
+	let [x, y, w, h] = boxes[name]
+	x = Math.floor(x)
+	y = Math.floor(y)
+	w = Math.ceil(w)
+	h = Math.ceil(h)
+	locmap[name] = locales.length
+	vassalbox.push({ name, box: { x, y, w, h } })
+}
+
 function defway(type, list) {
 	let ix = ways.length
 	list = list.map(name=>locmap[name]).sort(cmpnum)
@@ -340,6 +393,8 @@ function highway(locs) { return defway('highway', locs.split(", ")) }
 function road(locs) { return defway('road', locs.split(", ")) }
 function path(locs) { return defway('path', locs.split(", ")) }
 
+
+// LOCALES
 defloc("North", 1, "fortress", "Bamburgh")
 defloc("North", 1, "city", "Newcastle")
 defloc("North", 1, "town", "Appleby")
@@ -406,6 +461,176 @@ defloc("England", 1, "sea", "English Channel")
 defloc("England", 1, "sea", "Irish Sea")
 defloc("England", 1, "sea", "North Sea")
 
+// LOCALE DEPLETION
+
+defdepleted("Bamburgh deplete")
+defdepleted("Newcastle deplete")
+defdepleted("Appleby deplete")
+defdepleted("Hexham deplete")
+defdepleted("Carlisle deplete")
+
+
+defdepleted("Harlech deplete")
+defdepleted("Pembroke deplete")
+defdepleted("Cardiff deplete")
+defdepleted("Hereford deplete")
+defdepleted("Ludlow deplete")
+defdepleted("Shrewsbury deplete")
+
+defdepleted("Salisbury deplete")
+defdepleted("Winchester deplete")
+defdepleted("Guildford deplete")
+defdepleted("Arundel deplete")
+defdepleted("Southampton deplete")
+defdepleted("Rochester deplete")
+defdepleted("Dover deplete")
+defdepleted("Canterbury deplete")
+defdepleted("Hastings deplete")
+
+defdepleted("Dorchester deplete")
+defdepleted("Exeter deplete")
+defdepleted("Plymouth deplete")
+defdepleted("Launceston deplete")
+defdepleted("Truro deplete")
+defdepleted("Wells deplete")
+defdepleted("Bristol deplete")
+defdepleted("Gloucester deplete")
+defdepleted("Oxford deplete")
+defdepleted("Newbury deplete")
+defdepleted("London deplete")
+defdepleted("St Albans deplete")
+defdepleted("Bedford deplete")
+defdepleted("Cambridge deplete")
+defdepleted("Bury St Edmunds deplete")
+defdepleted("Ipswich deplete")
+defdepleted("Norwich deplete")
+defdepleted("Lynn deplete")
+defdepleted("Ely deplete")
+defdepleted("Peterborough deplete")
+defdepleted("Northampton deplete")
+defdepleted("Coventry deplete")
+defdepleted("Leicester deplete")
+defdepleted("Lichfield deplete")
+defdepleted("Derby deplete")
+defdepleted("Nottingham deplete")
+defdepleted("Worcester deplete")
+defdepleted("Chester deplete")
+defdepleted("Lancaster deplete")
+defdepleted("Lincoln deplete")
+defdepleted("York deplete")
+defdepleted("Calais deplete")
+defdepleted("France deplete")
+defdepleted("Scotland deplete")
+defdepleted("Ireland deplete")
+defdepleted("Burgundy deplete")
+defdepleted("Scarborough deplete")
+defdepleted("Ravenspur deplete")
+
+// LOCALE FAVOUR
+
+deffavour("Bamburgh favour")
+deffavour("Newcastle favour")
+deffavour("Appleby favour")
+deffavour("Hexham favour")
+deffavour("Carlisle favour")
+
+
+deffavour("Harlech favour")
+deffavour("Pembroke favour")
+deffavour("Cardiff favour")
+deffavour("Hereford favour")
+deffavour("Ludlow favour")
+deffavour("Shrewsbury favour")
+
+deffavour("Salisbury favour")
+deffavour("Winchester favour")
+deffavour("Guildford favour")
+deffavour("Arundel favour")
+deffavour("Southampton favour")
+deffavour("Rochester favour")
+deffavour("Dover favour")
+deffavour("Canterbury favour")
+deffavour("Hastings favour")
+
+deffavour("Dorchester favour")
+deffavour("Exeter favour")
+deffavour("Plymouth favour")
+deffavour("Launceston favour")
+deffavour("Truro favour")
+deffavour("Wells favour")
+deffavour("Bristol favour")
+deffavour("Gloucester favour")
+deffavour("Oxford favour")
+deffavour("Newbury favour")
+deffavour("London favour")
+deffavour("St Albans favour")
+deffavour("Bedford favour")
+deffavour("Cambridge favour")
+deffavour("Bury St Edmunds favour")
+deffavour("Ipswich favour")
+deffavour("Norwich favour")
+deffavour("Lynn favour")
+deffavour("Ely favour")
+deffavour("Peterborough favour")
+deffavour("Northampton favour")
+deffavour("Coventry favour")
+deffavour("Leicester favour")
+deffavour("Lichfield favour")
+deffavour("Derby favour")
+deffavour("Nottingham favour")
+deffavour("Worcester favour")
+deffavour("Chester favour")
+deffavour("Lancaster favour")
+deffavour("Lincoln favour")
+deffavour("York favour")
+deffavour("Calais favour")
+deffavour("France favour")
+deffavour("Scotland favour")
+deffavour("Ireland favour")
+deffavour("Burgundy favour")
+deffavour("Scarborough favour")
+deffavour("Ravenspur favour")
+
+//LOCALE SEAT
+
+defseat("Arundel seat")
+defseat("Somerset seat")
+defseat("Pembroke seat")
+defseat("Devon seat")
+defseat("Exeter seat")
+defseat("Warwick seat")
+defseat("Rutland seat")
+defseat("Oxford seat")
+defseat("Jasper_Tudor2 seat")
+defseat("Jasper_Tudor1 seat")
+defseat("March seat")
+defseat("Northumberland seat")
+defseat("Clarence seat")
+defseat("Salisbury seat")
+defseat("Gloucester seat")
+defseat("Richard_III seat")
+defseat("Edward_IV seat")
+defseat("Henry Tudor seat")
+defseat("Margaret seat")
+defseat("Henry_VI seat")
+
+// VASSAL SEAT
+
+defvassal ("Lincoln vassal")
+defvassal("Launceston vassal")
+defvassal("Exeter vassal")
+defvassal("Arundel vassal")
+defvassal("Dover vassal")
+defvassal("Ipswich vassal")
+defvassal("St Albans vassal")
+defvassal("Oxford vassal")
+defvassal("Worcester vassal")
+defvassal("Shrewsbury vassal")
+defvassal("Leicester vassal")
+defvassal("Derby vassal")
+defvassal("Appleby vassal")
+
+//WAYS BETWEEN LOCALES
 
 highway("Bamburgh, Newcastle")
 highway("Newcastle, York")
@@ -1449,6 +1674,10 @@ dumplist("ways", ways)
 dumplist("lords", lords)
 dumplist("vassals", vassals)
 dumplist("cards", cards)
+dumplist("favour", favour)
+dumplist("deplete",deplete)
+dumplist("seat", seat)
+dumplist("vassalbox", vassalbox)
 print("}")
 print("if (typeof module !== 'undefined') module.exports = data")
 

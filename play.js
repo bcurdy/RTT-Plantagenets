@@ -680,12 +680,12 @@ function build_map() {
 
 		// Locale Markers
 		e = ui.locale_markers[ix] = document.createElement("div")
-		e.className = "locale_markers " + locale.type + " " + region
-		x = locale_xy[ix][0] - 196/2
-		y = locale_xy[ix][1] + 36
+		e.className = "locale rose favour " + locale.name
 		e.style.top = y + "px"
 		e.style.left = x + "px"
-		e.style.width = 196 + "px"
+		e.style.width = w + "px"
+		e.style.height = h + "px"
+		e.style.border = "2px solid aqua"
 		document.getElementById("pieces").appendChild(e)
 	})
 
