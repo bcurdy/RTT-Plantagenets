@@ -664,6 +664,8 @@ function build_map() {
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
 		let e
+		let small = 40
+		let offsetdeplete = 10
 
 		locale_xy[ix] = [ xc, yc ]
 
@@ -680,14 +682,46 @@ function build_map() {
 
 		// Locale Markers
 		e = ui.locale_markers[ix] = document.createElement("div")
-		e.className = "locale rose favour " + locale.name
-		e.style.top = y + "px"
-		e.style.left = x + "px"
-		e.style.width = w + "px"
-		e.style.height = h + "px"
-		e.style.border = "2px solid aqua"
+		e.className = "locale marker york rose favour " + locale.name // York to be removed - York/Lancaster 
+		e.style.top = y+h-small + "px"
+		e.style.left = x+ (w-small)/2 + "px"
+		e.style.width = small + "px"
+		e.style.height = small + "px"
+		e.style.border = "2px solid aqua" // to be changed depending on the favour marker
+		e.style.backgroundSize = small + "px"
 		document.getElementById("pieces").appendChild(e)
+
+		e = ui.locale_markers[ix] = document.createElement("div")
+		e.className = "locale marker depleted " + locale.name // Depleted to be removed - depleted/exhausted to add markers
+		e.style.top = y+h-small-offsetdeplete + "px"
+		e.style.left = offsetdeplete+x+ (w-small)/2 + "px"
+		e.style.width = small + "px"
+		e.style.height = small + "px"
+		e.style.border = "2px solid aqua"
+		e.style.backgroundSize = small + "px"
+		document.getElementById("pieces").appendChild(e)
+
+		
+		/*
+		if (locale.name == London) {
+			if {data.lords ==
+		e = ui.locale_markers[ix] = document.createElement("div")
+		e.className = "locale marker seat " + locale.name // Depleted to be removed - depleted/exhausted to add markers
+		e.style.top = y+h-small-offsetdeplete + "px"
+		e.style.left = offsetdeplete+x+ (w-small)/2 + "px"
+		e.style.width = small + "px"
+		e.style.height = small + "px"
+		e.style.border = "2px solid aqua"
+		e.style.backgroundSize = small + "px"
+		document.getElementById("pieces").appendChild(e)
+	} */
 	})
+
+
+
+
+
+
 
 	data.lords.forEach((lord, ix) => {
 		let e = ui.lord_cylinder[ix] = document.createElement("div")

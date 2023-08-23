@@ -253,6 +253,10 @@ body.shift #capabilities1,
 body.shift #capabilities2 {
 	z-index: 200;
 }
+body.shift .favour,
+body.shift .depleted {
+	display:none;
+}
 
 .mat .forces, .mat .routed, .mat .assets {
 	position: absolute;
