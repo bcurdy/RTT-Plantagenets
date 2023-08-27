@@ -523,6 +523,7 @@ const ui = {
 	calendar: [],
 	track: [],
 	seat: [],
+	vassalbox:[],
 
 	plan_panel: document.getElementById("plan_panel"),
 	plan: document.getElementById("plan"),
@@ -711,19 +712,21 @@ function build_map() {
 		let { x, y, w, h } = seat.box
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
-		let small = 45
+		let small = 46
 		locale_xy[ix] = [ xc, yc ]
-
 		e.className = "marker " + seat.name
 		e.style.position = "absolute"
 		e.style.top = y + "px"
 		e.style.left = x + "px"
-		e.style.width = 45 + "px"
-		e.style.height = 45  + "px"
+		e.style.width = 46 + "px"
+		e.style.height = 46  + "px"
 		e.style.backgroundSize = small + "px"
 		e.style.transform = "rotate(315deg)"
+		register_tooltip(e, data.seat[ix].name)
 		document.getElementById("pieces").appendChild(e)
 	})
+
+
 
 	data.lords.forEach((lord, ix) => {
 		let e = ui.lord_cylinder[ix] = document.createElement("div")
@@ -735,11 +738,22 @@ function build_map() {
 		build_lord_mat(lord, ix, side, lord.id)
 	})
 
-	data.vassals.forEach((vassal, ix) => {
-		let e = ui.vassal_service[ix] = document.createElement("div")
-		e.className = "vassal v" + ix
+	data.vassalbox.forEach((vassal, ix) => {
+		let e = ui.vassalbox[ix] = document.createElement("div")
+		let { x, y, w, h } = vassal.box
+		let xc = Math.round(x + w / 2)
+		let yc = Math.round(y + h / 2)
+		let small = 46
+		locale_xy[ix] = [ xc, yc ]
+		e.className = "marker " + vassal.name
+		e.style.position = "absolute"
+		e.style.top = y + "px"
+		e.style.left = x + "px"
+		e.style.width = 46 + "px"
+		e.style.height = 46  + "px"
+		e.style.backgroundSize = small + "px"
 		register_action(e, "vassal", ix)
-		register_tooltip(e, data.vassals[ix].name)
+		register_tooltip(e, data.vassalbox[ix].name)
 		document.getElementById("pieces").appendChild(e)
 	})
 
