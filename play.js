@@ -711,21 +711,19 @@ function build_map() {
 		let { x, y, w, h } = seat.box
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
-		let small = 54
+		let small = 50
 		locale_xy[ix] = [ xc, yc ]
 
-		e.className = seat.name
+		e.className = "marker " + seat.name
 		e.style.position = "absolute"
 		e.style.top = y + "px"
 		e.style.left = x + "px"
-		e.style.width = w + "px"
-		e.style.height = h  + "px"
-		e.style.border = "1px solid black"
+		e.style.width = 50 + "px"
+		e.style.height = 50  + "px"
 		e.style.backgroundSize = small + "px"
-		e.style.backgroundColor = "red"
+		e.style.transform = "rotate(315deg)"
 		document.getElementById("pieces").appendChild(e)
 	})
-
 
 	data.lords.forEach((lord, ix) => {
 		let e = ui.lord_cylinder[ix] = document.createElement("div")
