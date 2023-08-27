@@ -711,15 +711,15 @@ function build_map() {
 		let { x, y, w, h } = seat.box
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
-		let small = 50
+		let small = 45
 		locale_xy[ix] = [ xc, yc ]
 
 		e.className = "marker " + seat.name
 		e.style.position = "absolute"
 		e.style.top = y + "px"
 		e.style.left = x + "px"
-		e.style.width = 50 + "px"
-		e.style.height = 50  + "px"
+		e.style.width = 45 + "px"
+		e.style.height = 45  + "px"
 		e.style.backgroundSize = small + "px"
 		e.style.transform = "rotate(315deg)"
 		document.getElementById("pieces").appendChild(e)
