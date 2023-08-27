@@ -39,12 +39,12 @@
      inkscape:deskcolor="#d1d1d1"
      showgrid="true"
      inkscape:zoom="0.7681373"
-     inkscape:cx="586.48369"
-     inkscape:cy="1208.7683"
+     inkscape:cx="251.25716"
+     inkscape:cy="1001.1231"
      inkscape:window-width="1920"
-     inkscape:window-height="991"
-     inkscape:window-x="-9"
-     inkscape:window-y="-9"
+     inkscape:window-height="1057"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="g8"
      inkscape:document-rotation="0"
@@ -1995,7 +1995,7 @@
        y="465.797"
        rx="0"
        ry="0"
-       inkscape:label="Appleby vassal" />
+       inkscape:label="vassal vassal_westmorld" />
     <rect
        style="fill:#000000"
        id="rect1020"
@@ -2005,7 +2005,7 @@
        y="835.85706"
        rx="0"
        ry="0"
-       inkscape:label="Derby vassal" />
+       inkscape:label="vassal vassal_stanley" />
     <rect
        style="fill:#000000"
        id="rect1022"
@@ -2015,7 +2015,7 @@
        y="898.45428"
        rx="0"
        ry="0"
-       inkscape:label="Leicester vassal" />
+       inkscape:label="vassal vassal_dudley" />
     <rect
        style="fill:#000000"
        id="rect1024"
@@ -2025,7 +2025,7 @@
        y="880.96387"
        rx="0"
        ry="0"
-       inkscape:label="Shrewsbury vassal" />
+       inkscape:label="vassal vassal_shrewsbury" />
     <rect
        style="fill:#000000"
        id="rect1026"
@@ -2035,7 +2035,7 @@
        y="998.79395"
        rx="0"
        ry="0"
-       inkscape:label="Worcester vassal" />
+       inkscape:label="vassal vassal_worcester" />
     <rect
        style="fill:#000000"
        id="rect1028"
@@ -2045,7 +2045,7 @@
        y="1109.2596"
        rx="0"
        ry="0"
-       inkscape:label="Oxford vassal" />
+       inkscape:label="vassal vassal_oxford" />
     <rect
        style="fill:#000000"
        id="rect1030"
@@ -2055,7 +2055,7 @@
        y="1081.6432"
        rx="0"
        ry="0"
-       inkscape:label="St Albans vassal" />
+       inkscape:label="vassal vassal_essex" />
     <rect
        style="fill:#000000"
        id="rect1032"
@@ -2065,7 +2065,7 @@
        y="1019.9665"
        rx="0"
        ry="0"
-       inkscape:label="Ipswich vassal" />
+       inkscape:label="vassal vassal_suffolk" />
     <rect
        style="fill:#000000"
        id="rect1034"
@@ -2075,7 +2075,7 @@
        y="1278.6403"
        rx="0"
        ry="0"
-       inkscape:label="Dover vassal" />
+       inkscape:label="vassal vassal_fauconberg" />
     <rect
        style="fill:#000000"
        id="rect1036"
@@ -2085,7 +2085,7 @@
        y="1330.1909"
        rx="0"
        ry="0"
-       inkscape:label="Arundel vassal" />
+       inkscape:label="vassal vassal_norfolk" />
     <rect
        style="fill:#000000"
        id="rect1038"
@@ -2095,7 +2095,7 @@
        y="1380.821"
        rx="0"
        ry="0"
-       inkscape:label="Exeter vassal" />
+       inkscape:label="vassal vassal_exeter" />
     <rect
        style="fill:#000000"
        id="rect1040"
@@ -2105,7 +2105,7 @@
        y="1358.7279"
        rx="0"
        ry="0"
-       inkscape:label="Launceston vassal" />
+       inkscape:label="vassal vassal_bonville" />
     <rect
        style="fill:#000000"
        id="rect1042"
@@ -2115,7 +2115,7 @@
        y="1144.2404"
        rx="0"
        ry="0"
-       inkscape:label="Henry_VI seat" />
+       inkscape:label="seat lancaster lord_henry_vi" />
     <rect
        style="fill:#000000"
        id="rect1044"
@@ -2125,7 +2125,7 @@
        y="1144.2404"
        rx="0"
        ry="0"
-       inkscape:label="Margaret seat" />
+       inkscape:label="seat lancaster lord_margaret" />
     <rect
        style="fill:#000000"
        id="rect1046"
@@ -2135,7 +2135,7 @@
        y="1144.2404"
        rx="0"
        ry="0"
-       inkscape:label="Henry Tudor seat" />
+       inkscape:label="seat lancaster lord_henry_tudor" />
     <rect
        style="fill:#000000"
        id="rect1048"
@@ -2145,7 +2145,7 @@
        y="1169.0951"
        rx="0"
        ry="0"
-       inkscape:label="Edward_IV seat" />
+       inkscape:label="seat york lord_edward_iii" />
     <rect
        style="fill:#000000"
        id="rect1050"
@@ -2155,7 +2155,7 @@
        y="1169.0951"
        rx="0"
        ry="0"
-       inkscape:label="Richard_III seat" />
+       inkscape:label="seat york lord_gloucester_2" />
     <rect
        style="fill:#000000"
        id="rect1052"
@@ -2165,7 +2165,7 @@
        y="1061.391"
        rx="0"
        ry="0"
-       inkscape:label="Gloucester seat" />
+       inkscape:label="seat york lord_gloucester_1" />
     <rect
        style="fill:#000000"
        id="rect1054"
@@ -2175,7 +2175,7 @@
        y="616.7666"
        rx="0"
        ry="0"
-       inkscape:label="Salisbury seat" />
+       inkscape:label="seat york lord_salisbury" />
     <rect
        style="fill:#000000"
        id="rect1056"
@@ -2185,7 +2185,7 @@
        y="592.8324"
        rx="0"
        ry="0"
-       inkscape:label="Clarence seat" />
+       inkscape:label="seat lancaster lord_clarence" />
     <rect
        style="fill:#000000"
        id="rect1058"
@@ -2195,7 +2195,7 @@
        y="405.04074"
        rx="0"
        ry="0"
-       inkscape:label="Northumberland seat" />
+       inkscape:label="seat lancaster lord_northumberland_l" />
     <rect
        style="fill:#000000"
        id="rect1060"
@@ -2205,7 +2205,7 @@
        y="763.13379"
        rx="0"
        ry="0"
-       inkscape:label="Lincoln vassal" />
+       inkscape:label="vassal vassal_beaumont" />
     <rect
        style="display:none;fill:#000000"
        id="rect1062"
@@ -2215,7 +2215,7 @@
        y="958.28973"
        rx="0"
        ry="0"
-       inkscape:label="Buckingham seat" />
+       inkscape:label="seat lancaster lord_buckingham" />
     <rect
        style="fill:#000000"
        id="rect1064"
@@ -2225,7 +2225,7 @@
        y="947.24316"
        rx="0"
        ry="0"
-       inkscape:label="March seat" />
+       inkscape:label="seat york lord_march" />
     <rect
        style="fill:#000000"
        id="rect1066"
@@ -2235,7 +2235,7 @@
        y="888.32812"
        rx="0"
        ry="0"
-       inkscape:label="Jasper_Tudor1 seat" />
+       inkscape:label="seat lancaster lord_jasper_tudor_2" />
     <rect
        style="fill:#000000"
        id="rect1068"
@@ -2245,7 +2245,7 @@
        y="1066.9144"
        rx="0"
        ry="0"
-       inkscape:label="Jasper_Tudor2 seat" />
+       inkscape:label="seat lancaster lord_jasper_tudor_1" />
     <rect
        style="fill:#000000"
        id="rect1070"
@@ -2255,7 +2255,7 @@
        y="1091.7692"
        rx="0"
        ry="0"
-       inkscape:label="Oxford seat" />
+       inkscape:label="seat lancaster lord_oxford" />
     <rect
        style="fill:#000000"
        id="rect1072"
@@ -2265,7 +2265,7 @@
        y="1181.0623"
        rx="0"
        ry="0"
-       inkscape:label="Rutland seat" />
+       inkscape:label="seat york lord_rutland" />
     <rect
        style="fill:#000000"
        id="rect1074"
@@ -2275,7 +2275,7 @@
        y="1384.5032"
        rx="0"
        ry="0"
-       inkscape:label="Warwick seat" />
+       inkscape:label="seat lancaster lord_warwick_l" />
     <rect
        style="fill:#000000"
        id="rect1076"
@@ -2285,17 +2285,17 @@
        y="1390.947"
        rx="0"
        ry="0"
-       inkscape:label="Exeter seat" />
+       inkscape:label="seat lancaster lord_exeter_1" />
     <rect
        style="fill:#000000"
        id="rect1078"
        width="53.546478"
        height="55.672852"
-       x="405.04102"
-       y="1390.947"
+       x="313.22675"
+       y="1340"
        rx="0"
        ry="0"
-       inkscape:label="Devon seat" />
+       inkscape:label="seat york lord_devon" />
     <rect
        style="fill:#000000"
        id="rect1080"
@@ -2305,7 +2305,7 @@
        y="1108.339"
        rx="0"
        ry="0"
-       inkscape:label="Pembroke seat" />
+       inkscape:label="seat york lord_pembroke" />
     <rect
        style="fill:#000000"
        id="rect1082"
@@ -2315,7 +2315,7 @@
        y="1248.288"
        rx="0"
        ry="0"
-       inkscape:label="Somerset seat" />
+       inkscape:label="seat lancaster lord_somerset_1" />
     <rect
        style="fill:#000000"
        id="rect1084"
@@ -2325,6 +2325,34 @@
        y="1330.1909"
        rx="0"
        ry="0"
-       inkscape:label="Arundel seat" />
+       inkscape:label="seat york lord_norfolk" />
+    <rect
+       style="fill:#000000"
+       id="rect440"
+       width="53.546478"
+       height="55.672852"
+       x="396.75601"
+       y="405.04074"
+       rx="0"
+       ry="0"
+       inkscape:label="seat york lord_northumberland_y1" />
+    <rect
+       style="fill:#000000"
+       id="rect442"
+       width="53.546478"
+       height="55.672852"
+       x="1117.5447"
+       y="1384.5032"
+       rx="0"
+       ry="0"
+       inkscape:label="seat york lord_warwick_y" />
+    <rect
+       style="fill:#000000;fill-opacity:0.378049"
+       id="rect444"
+       width="110.18232"
+       height="121.20055"
+       x="50.145851"
+       y="946.63257"
+       inkscape:label="Ireland favour" />
   </g>
 </svg>

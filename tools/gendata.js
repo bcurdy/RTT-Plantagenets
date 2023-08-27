@@ -172,7 +172,6 @@ const boxes = {
 	"Southampton favour": [677,1371,60,48],
 	"Dorchester favour": [524,1368,58,49],
 	"Exeter favour": [342,1376,64,66],
-	"Ireland favour": [50,949,110,121],
 	"Launceston favour": [201,1354,68,60],
 	"Truro favour": [142,1445,56,53],
 	"Lichfield favour": [613,906,74,61],
@@ -251,40 +250,43 @@ const boxes = {
 	"Shrewsbury deplete": [510,855,78,69],
 	"Harlech deplete": [288,902,67,61],
 	"Plymouth deplete": [263,1407,58,50],
-	"Appleby vassal": [602,466,54,56],
-	"Derby vassal": [605,836,54,56],
-	"Leicester vassal": [704,898,54,56],
-	"Shrewsbury vassal": [453,881,54,56],
-	"Worcester vassal": [616,999,54,56],
-	"Oxford vassal": [776,1109,54,56],
-	"St Albans vassal": [955,1082,54,56],
-	"Ipswich vassal": [1156,1020,54,56],
-	"Dover vassal": [1094,1279,54,56],
-	"Arundel vassal": [850,1330,54,56],
-	"Exeter vassal": [406,1381,54,56],
-	"Launceston vassal": [146,1359,54,56],
-	"Henry_VI seat": [944,1144,54,56],
-	"Margaret seat": [944,1144,54,56],
-	"Henry Tudor seat": [944,1144,54,56],
-	"Edward_IV seat": [944,1169,54,56],
-	"Richard_III seat": [944,1169,54,56],
-	"Gloucester seat": [620,1061,54,56],
-	"Salisbury seat": [653,617,54,56],
-	"Clarence seat": [654,593,54,56],
-	"Northumberland seat": [397,405,54,56],
-	"Lincoln vassal": [726,763,54,56],
-	"Buckingham seat": [715,958,54,56],
-	"March seat": [432,947,54,56],
-	"Jasper_Tudor1 seat": [230,888,54,56],
-	"Jasper_Tudor2 seat": [147,1067,54,56],
-	"Oxford seat": [771,1092,54,56],
-	"Rutland seat": [1113,1181,54,56],
-	"Warwick seat": [1118,1385,54,56],
-	"Exeter seat": [405,1391,54,56],
-	"Devon seat": [405,1391,54,56],
-	"Pembroke seat": [145,1108,54,56],
-	"Somerset seat": [453,1248,54,56],
-	"Arundel seat": [850,1330,54,56],
+	"vassal vassal_westmorld": [602,466,54,56],
+	"vassal vassal_stanley": [605,836,54,56],
+	"vassal vassal_dudley": [704,898,54,56],
+	"vassal vassal_shrewsbury": [453,881,54,56],
+	"vassal vassal_worcester": [616,999,54,56],
+	"vassal vassal_oxford": [776,1109,54,56],
+	"vassal vassal_essex": [955,1082,54,56],
+	"vassal vassal_suffolk": [1156,1020,54,56],
+	"vassal vassal_fauconberg": [1094,1279,54,56],
+	"vassal vassal_norfolk": [850,1330,54,56],
+	"vassal vassal_exeter": [406,1381,54,56],
+	"vassal vassal_bonville": [146,1359,54,56],
+	"seat lancaster lord_henry_vi": [944,1144,54,56],
+	"seat lancaster lord_margaret": [944,1144,54,56],
+	"seat lancaster lord_henry_tudor": [944,1144,54,56],
+	"seat york lord_edward_iii": [944,1169,54,56],
+	"seat york lord_gloucester_2": [944,1169,54,56],
+	"seat york lord_gloucester_1": [620,1061,54,56],
+	"seat york lord_salisbury": [653,617,54,56],
+	"seat lancaster lord_clarence": [654,593,54,56],
+	"seat lancaster lord_northumberland_l": [397,405,54,56],
+	"vassal vassal_beaumont": [726,763,54,56],
+	"seat lancaster lord_buckingham": [715,958,54,56],
+	"seat york lord_march": [432,947,54,56],
+	"seat lancaster lord_jasper_tudor_2": [230,888,54,56],
+	"seat lancaster lord_jasper_tudor_1": [147,1067,54,56],
+	"seat lancaster lord_oxford": [771,1092,54,56],
+	"seat york lord_rutland": [1113,1181,54,56],
+	"seat lancaster lord_warwick_l": [1118,1385,54,56],
+	"seat lancaster lord_exeter_1": [405,1391,54,56],
+	"seat york lord_devon": [313,1340,54,56],
+	"seat york lord_pembroke": [145,1108,54,56],
+	"seat lancaster lord_somerset_1": [453,1248,54,56],
+	"seat york lord_norfolk": [850,1330,54,56],
+	"seat york lord_northumberland_y1": [397,405,54,56],
+	"seat york lord_warwick_y": [1118,1385,54,56],
+	"Ireland favour": [50,947,110,121],
 }
 
 
@@ -533,15 +535,12 @@ deffavour("Newcastle favour")
 deffavour("Appleby favour")
 deffavour("Hexham favour")
 deffavour("Carlisle favour")
-
-
 deffavour("Harlech favour")
 deffavour("Pembroke favour")
 deffavour("Cardiff favour")
 deffavour("Hereford favour")
 deffavour("Ludlow favour")
 deffavour("Shrewsbury favour")
-
 deffavour("Salisbury favour")
 deffavour("Winchester favour")
 deffavour("Guildford favour")
@@ -551,7 +550,6 @@ deffavour("Rochester favour")
 deffavour("Dover favour")
 deffavour("Canterbury favour")
 deffavour("Hastings favour")
-
 deffavour("Dorchester favour")
 deffavour("Exeter favour")
 deffavour("Plymouth favour")
@@ -593,42 +591,46 @@ deffavour("Ravenspur favour")
 
 //LOCALE SEAT
 
-defseat("Arundel seat")
-defseat("Somerset seat")
-defseat("Pembroke seat")
-defseat("Devon seat")
-defseat("Exeter seat")
-defseat("Warwick seat")
-defseat("Rutland seat")
-defseat("Oxford seat")
-defseat("Jasper_Tudor2 seat")
-defseat("Jasper_Tudor1 seat")
-defseat("March seat")
-defseat("Northumberland seat")
-defseat("Clarence seat")
-defseat("Salisbury seat")
-defseat("Gloucester seat")
-defseat("Richard_III seat")
-defseat("Edward_IV seat")
-defseat("Henry Tudor seat")
-defseat("Margaret seat")
-defseat("Henry_VI seat")
+defseat("seat lancaster lord_henry_vi")
+defseat("seat lancaster lord_margaret")
+defseat("seat lancaster lord_henry_tudor")
+defseat("seat york lord_edward_iii")
+defseat("seat york lord_gloucester_2")
+defseat("seat york lord_gloucester_1")
+defseat("seat york lord_salisbury")
+defseat("seat lancaster lord_clarence")
+defseat("seat lancaster lord_northumberland_l")
+defseat("seat lancaster lord_buckingham")
+defseat("seat york lord_march")
+defseat("seat lancaster lord_jasper_tudor_1")
+defseat("seat lancaster lord_jasper_tudor_2")
+defseat("seat lancaster lord_oxford")
+defseat("seat york lord_rutland")
+defseat("seat lancaster lord_warwick_l")
+defseat("seat lancaster lord_exeter_1")
+defseat("seat york lord_devon")
+defseat("seat york lord_pembroke")
+defseat("seat york lord_warwick_y")
+defseat("seat lancaster lord_somerset_1")
+defseat("seat york lord_norfolk")
+defseat("seat york lord_northumberland_y1")
+
 
 // VASSAL SEAT
 
-defvassal ("Lincoln vassal")
-defvassal("Launceston vassal")
-defvassal("Exeter vassal")
-defvassal("Arundel vassal")
-defvassal("Dover vassal")
-defvassal("Ipswich vassal")
-defvassal("St Albans vassal")
-defvassal("Oxford vassal")
-defvassal("Worcester vassal")
-defvassal("Shrewsbury vassal")
-defvassal("Leicester vassal")
-defvassal("Derby vassal")
-defvassal("Appleby vassal")
+defvassal("vassal vassal_westmorld")
+defvassal("vassal vassal_stanley")
+defvassal("vassal vassal_dudley")
+defvassal("vassal vassal_shrewsbury")
+defvassal("vassal vassal_worcester")
+defvassal("vassal vassal_oxford")
+defvassal("vassal vassal_essex")
+defvassal("vassal vassal_suffolk")
+defvassal("vassal vassal_fauconberg")
+defvassal("vassal vassal_norfolk")
+defvassal("vassal vassal_exeter")
+defvassal("vassal vassal_bonville")
+defvassal("vassal vassal_beaumont")
 
 //WAYS BETWEEN LOCALES
 
