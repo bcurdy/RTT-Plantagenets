@@ -678,28 +678,33 @@ function build_map() {
 		e.style.top = y + "px"
 		e.style.width = w + "px"
 		e.style.height = h + "px"
+		e.style.zIndex = "-10"
 		register_action(e, "locale", ix, "laden_march")
 		register_tooltip(e, get_locale_tip(ix))
 		document.getElementById("locales").appendChild(e)
 
 		// Locale Markers
 		e = ui.locale_markers[ix] = document.createElement("div")
-		e.className = "locale marker york rose favour " + locale.name // York to be removed - York/Lancaster 
+		e.className = "locale marker rose york favour " + locale.name // York to be removed - York/Lancaster 
 		e.style.top = y+h-small + "px"
 		e.style.left = x+ (w-small)/2 + "px"
 		e.style.width = small + "px"
 		e.style.height = small + "px"
-		e.style.border = "2px solid aqua" // to be changed depending on the favour marker
+		e.style.zIndex = "-20"
+		// e.style.border = "2px solid aqua" // to be changed depending on the favour marker
 		e.style.backgroundSize = small + "px"
 		document.getElementById("pieces").appendChild(e)
 
+
+		// Depleted markers
 		e = ui.locale_markers[ix] = document.createElement("div")
-		e.className = "locale marker depleted " + locale.name // Depleted to be removed - depleted/exhausted to add markers
+		e.className = "locale marker exhausted	 " + locale.name // Depleted to be removed - depleted/exhausted to add markers
 		e.style.top = y+h-small-offsetdeplete + "px"
 		e.style.left = offsetdeplete+x+ (w-small)/2 + "px"
 		e.style.width = small + "px"
 		e.style.height = small + "px"
-		e.style.border = "2px solid aqua"
+		e.style.zIndex = "-15"
+		// e.style.border = "2px solid aqua"
 		e.style.backgroundSize = small + "px"
 		document.getElementById("pieces").appendChild(e)
 	})
@@ -713,7 +718,6 @@ function build_map() {
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
 		let small = 46
-		locale_xy[ix] = [ xc, yc ]
 		e.className = "marker " + seat.name
 		e.style.position = "absolute"
 		e.style.top = y + "px"
@@ -722,11 +726,10 @@ function build_map() {
 		e.style.height = 46  + "px"
 		e.style.backgroundSize = small + "px"
 		e.style.transform = "rotate(315deg)"
+		e.style.zIndex = "-50"
 		register_tooltip(e, data.seat[ix].name)
 		document.getElementById("pieces").appendChild(e)
 	})
-
-
 
 	data.lords.forEach((lord, ix) => {
 		let e = ui.lord_cylinder[ix] = document.createElement("div")
@@ -744,7 +747,6 @@ function build_map() {
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
 		let small = 46
-		locale_xy[ix] = [ xc, yc ]
 		e.className = "marker " + vassal.name
 		e.style.position = "absolute"
 		e.style.top = y + "px"

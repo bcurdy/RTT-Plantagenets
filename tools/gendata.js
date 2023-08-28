@@ -250,18 +250,18 @@ const boxes = {
 	"Shrewsbury deplete": [510,855,78,69],
 	"Harlech deplete": [288,902,67,61],
 	"Plymouth deplete": [263,1407,58,50],
-	"vassal vassal_westmorld": [602,466,54,56],
-	"vassal vassal_stanley": [605,836,54,56],
+	"vassal vassal_westmorld": [600,470,54,56],
+	"vassal vassal_stanley": [609,840,54,56],
 	"vassal vassal_dudley": [704,898,54,56],
-	"vassal vassal_shrewsbury": [453,881,54,56],
+	"vassal vassal_shrewsbury": [455,879,54,56],
 	"vassal vassal_worcester": [616,999,54,56],
 	"vassal vassal_oxford": [776,1109,54,56],
 	"vassal vassal_essex": [955,1082,54,56],
-	"vassal vassal_suffolk": [1156,1020,54,56],
+	"vassal vassal_suffolk": [1156,1024,54,56],
 	"vassal vassal_fauconberg": [1094,1279,54,56],
 	"vassal vassal_norfolk": [850,1330,54,56],
-	"vassal vassal_exeter": [406,1381,54,56],
-	"vassal vassal_bonville": [146,1359,54,56],
+	"vassal vassal_devon": [406,1381,54,56],
+	"vassal vassal_bonville": [155,1356,54,56],
 	"seat lancaster lord_henry_vi": [944,1144,54,56],
 	"seat lancaster lord_margaret": [944,1144,54,56],
 	"seat lancaster lord_henry_tudor": [944,1144,54,56],
@@ -271,7 +271,7 @@ const boxes = {
 	"seat york lord_salisbury": [653,617,54,56],
 	"seat lancaster lord_clarence": [654,593,54,56],
 	"seat lancaster lord_northumberland_l": [397,405,54,56],
-	"vassal vassal_beaumont": [726,763,54,56],
+	"vassal vassal_beaumont": [730,765,54,56],
 	"seat lancaster lord_buckingham": [715,958,54,56],
 	"seat york lord_march": [432,947,54,56],
 	"seat lancaster lord_jasper_tudor_2": [230,888,54,56],
@@ -287,7 +287,9 @@ const boxes = {
 	"seat york lord_northumberland_y1": [397,405,54,56],
 	"seat york lord_warwick_y": [1118,1385,54,56],
 	"Ireland favour": [50,947,110,121],
+	"seat york lord_york": [904,930,54,56],
 }
+
 
 
 let data = []
@@ -614,6 +616,7 @@ defseat("seat york lord_warwick_y")
 defseat("seat lancaster lord_somerset_1")
 defseat("seat york lord_norfolk")
 defseat("seat york lord_northumberland_y1")
+defseat("seat york lord_york")
 
 
 // VASSAL SEAT
@@ -628,7 +631,7 @@ defvassal("vassal vassal_essex")
 defvassal("vassal vassal_suffolk")
 defvassal("vassal vassal_fauconberg")
 defvassal("vassal vassal_norfolk")
-defvassal("vassal vassal_exeter")
+defvassal("vassal vassal_devon")
 defvassal("vassal vassal_bonville")
 defvassal("vassal vassal_beaumont")
 

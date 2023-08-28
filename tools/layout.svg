@@ -39,12 +39,12 @@
      inkscape:deskcolor="#d1d1d1"
      showgrid="true"
      inkscape:zoom="0.7681373"
-     inkscape:cx="251.25716"
-     inkscape:cy="1001.1231"
+     inkscape:cx="464.76066"
+     inkscape:cy="793.47794"
      inkscape:window-width="1920"
-     inkscape:window-height="1057"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
      inkscape:window-maximized="1"
      inkscape:current-layer="g8"
      inkscape:document-rotation="0"
@@ -1991,8 +1991,8 @@
        id="rect1016"
        width="53.546478"
        height="55.672852"
-       x="602.03796"
-       y="465.797"
+       x="600.03796"
+       y="469.797"
        rx="0"
        ry="0"
        inkscape:label="vassal vassal_westmorld" />
@@ -2001,8 +2001,8 @@
        id="rect1020"
        width="53.546478"
        height="55.672852"
-       x="604.79962"
-       y="835.85706"
+       x="608.79962"
+       y="839.85706"
        rx="0"
        ry="0"
        inkscape:label="vassal vassal_stanley" />
@@ -2021,8 +2021,8 @@
        id="rect1024"
        width="53.546478"
        height="55.672852"
-       x="452.9093"
-       y="880.96387"
+       x="454.9093"
+       y="878.96387"
        rx="0"
        ry="0"
        inkscape:label="vassal vassal_shrewsbury" />
@@ -2062,7 +2062,7 @@
        width="53.546478"
        height="55.672852"
        x="1156.2075"
-       y="1019.9665"
+       y="1023.9665"
        rx="0"
        ry="0"
        inkscape:label="vassal vassal_suffolk" />
@@ -2095,14 +2095,14 @@
        y="1380.821"
        rx="0"
        ry="0"
-       inkscape:label="vassal vassal_exeter" />
+       inkscape:label="vassal vassal_devon" />
     <rect
        style="fill:#000000"
        id="rect1040"
        width="53.546478"
        height="55.672852"
-       x="146.3671"
-       y="1358.7279"
+       x="155.48006"
+       y="1356.1241"
        rx="0"
        ry="0"
        inkscape:label="vassal vassal_bonville" />
@@ -2201,8 +2201,8 @@
        id="rect1060"
        width="53.546478"
        height="55.672852"
-       x="726.31189"
-       y="763.13379"
+       x="730.31189"
+       y="765.13379"
        rx="0"
        ry="0"
        inkscape:label="vassal vassal_beaumont" />
@@ -2354,5 +2354,15 @@
        x="50.145851"
        y="946.63257"
        inkscape:label="Ireland favour" />
+    <rect
+       style="fill:#000000"
+       id="rect446"
+       width="53.546478"
+       height="55.672852"
+       x="904.30859"
+       y="930.31909"
+       rx="0"
+       ry="0"
+       inkscape:label="seat york lord_york" />
   </g>
 </svg>

@@ -254,7 +254,8 @@ body.shift #capabilities2 {
 	z-index: 200;
 }
 body.shift .favour,
-body.shift .depleted {
+body.shift .depleted,
+body.shift .exhausted  {
 	display:none;
 }
 

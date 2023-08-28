@@ -6081,8 +6081,8 @@ states.feed = {
 			view.prompt = "Feed: You must shift the Service of any Unfed Lords."
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 				if (is_lord_unfed(lord)) {
-					gen_action_service_bad(lord)
-					done = false
+				// TODO PILLAGE	gen_action_service_bad(lord)
+				done = true
 				}
 			}
 		}
