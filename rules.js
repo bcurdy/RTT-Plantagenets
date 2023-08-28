@@ -764,6 +764,12 @@ function count_group_forces(type) {
 		n += get_lord_forces(lord, type)
 	return n
 }
+function count_group_provender(type) {
+	let n = 0
+	for (let lord of game.group)
+		n += get_lord_provender(lord)
+	return n
+}
 
 function count_group_transport(type) {
 	let n = 0
@@ -771,6 +777,8 @@ function count_group_transport(type) {
 		n += count_lord_transport(lord, type)
 	return n
 }
+
+
 
 function max_plan_length() {
 	switch (current_season()) {
@@ -1138,6 +1146,12 @@ function count_lord_transport(lord, type) {
 	let season = current_season()
 	let n = 0
 	n += get_lord_assets(lord, CART)
+	return n
+}
+
+function get_lord_provender(lord) {
+	let n = 0
+	n += get_lord_assets(lord, PROV)
 	return n
 }
 
@@ -3555,9 +3569,8 @@ function drop_prov(lord) {
 
 function has_enough_available_ships_for_army() {
 	let ships = count_group_ships()
-	let army = count_group_forces()
-
-	let needed_ships = army/6
+	let army = count_lord_all_forces()
+	let needed_ships= army/6
 
 	return needed_ships <= ships
 }
@@ -3597,18 +3610,23 @@ states.sail = {
 
 		let here = get_lord_locale(game.command)
 		let ships = count_group_ships()
-	//		let horses = count_group_horses()
+	//	CAPABILITY SHIPS x2
+	//  CAPABILITY MOVE EVERYWHERE WITH SHIPS
 		let prov = count_group_assets(PROV)
+		let cart = count_group_assets(CART)
+		console.log (ships + " " + cart + " " + prov)
+		let needed_ships_cart = cart/2
+		let needed_ships_prov = prov/2
+		console.log (ships + " " + needed_ships_cart + " " + needed_ships_prov)
 
-		let overflow = 0
-			overflow = (count_lord_all_forces(game.group) + prov) - ships
-
-		if (overflow > 0) {
+		let overflow_prov = 0
+			overflow_prov = (prov/2 - ships)*2
+		if (overflow_prov > 0) {
 			view.prompt = `Sailing with ${ships} Ships.`
 			// TODO: stricter greed!
 			if (prov > 0) {
 				for (let lord of game.group) {
-					if (get_lord_assets(lord, PROV) > 0)
+					if (get_lord_assets(lord, prov) > 0)
 						gen_action_prov(lord)
 				}
 			}
