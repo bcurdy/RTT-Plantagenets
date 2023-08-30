@@ -3566,12 +3566,14 @@ function goto_tax() {
 function drop_prov(lord) {
 	add_lord_assets(lord, PROV, -1)
 }
+function drop_cart(lord) {
+	add_lord_assets(lord, CART, -1)
+}
 
 function has_enough_available_ships_for_army() {
 	let ships = count_group_ships()
 	let army = count_lord_all_forces()
 	let needed_ships= army/6
-
 	return needed_ships <= ships
 }
 
@@ -3614,23 +3616,15 @@ states.sail = {
 	//  CAPABILITY MOVE EVERYWHERE WITH SHIPS
 		let prov = count_group_assets(PROV)
 		let cart = count_group_assets(CART)
-		console.log (ships + " " + cart + " " + prov)
-		let needed_ships_cart = cart/2
-		let needed_ships_prov = prov/2
-		console.log (ships + " " + needed_ships_cart + " " + needed_ships_prov)
+
 
 		let overflow_prov = 0
 			overflow_prov = (prov/2 - ships)*2
-		if (overflow_prov > 0) {
-			view.prompt = `Sailing with ${ships} Ships.`
-			// TODO: stricter greed!
-			if (prov > 0) {
-				for (let lord of game.group) {
-					if (get_lord_assets(lord, prov) > 0)
-						gen_action_prov(lord)
-				}
-			}
-		} else {
+		let overflow_cart = 0
+			overflow_cart = (cart/2 - ships)*2
+
+		if (overflow_prov <= 0 && overflow_cart <= 0)
+			{
 			view.prompt = `Sail: Select a destination Seaport.`
 			for (let to of data.seaports) {
 				if (to === here)
@@ -3639,8 +3633,30 @@ states.sail = {
 					gen_action_locale(to)
 			}
 		}
+		else if (overflow_cart > 0) {
+			view.prompt = `Sailing with ${ships} Ships. Please discard ${overflow_cart} Cart`
+			if (cart > 0) {
+				for (let lord of game.group) {
+					if (get_lord_assets(lord, cart) > 0)
+						gen_action_cart(lord)
+				}
+			}
+		}
+		else if (overflow_prov > 0) {
+			view.prompt = `Sailing with ${ships} Ships. Please discard ${overflow_prov} Provender`
+			if (prov > 0) {
+				for (let lord of game.group) {
+					if (get_lord_assets(lord, prov) > 0)
+						gen_action_prov(lord)
+				}
+			}
+		} 
+
+
+
 	},
 	prov: drop_prov,
+	cart: drop_cart,
 	locale(to) {
 		push_undo()
 		log(`Sailed to %${to}${format_group_move()}.`)
