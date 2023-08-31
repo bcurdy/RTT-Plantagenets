@@ -715,9 +715,9 @@ road("Scarborough, York")
 road("York, Ravenspur")
 road("Ravenspur, Lincoln")
 
-let way_sea_1 = ["North Sea", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
-let way_sea_2 = ["Bristol","Pembroke","Harlech", "English Channel","Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich","Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro" ].map(name => locmap[name]).sort(cmpnum)
-let way_sea_3 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro","Irish Sea"].map(name => locmap[name]).sort(cmpnum)
+let way_sea_1 = ["North Sea", "English Channel", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
+let way_sea_2 = ["English Channel","North Sea", "Irish Sea", "Bristol","Pembroke","Harlech", "English Channel","Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich","Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro" ].map(name => locmap[name]).sort(cmpnum)
+let way_sea_3 = ["English Channel", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro","Irish Sea"].map(name => locmap[name]).sort(cmpnum)
 
 let way_exile_1 = ["Burgundy", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
 let way_exile_2 = ["France", "English Channel",  "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)

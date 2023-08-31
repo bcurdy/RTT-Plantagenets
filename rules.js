@@ -3612,8 +3612,8 @@ states.sail = {
 
 		let here = get_lord_locale(game.command)
 		let ships = count_group_ships()
-	//	CAPABILITY SHIPS x2
-	//  CAPABILITY MOVE EVERYWHERE WITH SHIPS
+	//	TODO CAPABILITY SHIPS x2
+	//  TODO CAPABILITY MOVE EVERYWHERE WITH SHIPS
 		let prov = count_group_assets(PROV)
 		let cart = count_group_assets(CART)
 
@@ -3625,8 +3625,37 @@ states.sail = {
 
 		if (overflow_prov <= 0 && overflow_cart <= 0) {
 			view.prompt = `Sail: Select a destination Seaport.`
-			var port = data.locales[here]		
-			for (let to of data.seaports) {
+		let from = 0
+		switch(true){
+			case data.exile_1.includes(here):
+				from = data.way_exile_1
+				break;
+			case data.exile_2.includes(here):
+				from = data.way_exile_2
+				break;
+			case data.exile_3.includes(here):
+				from = data.way_exile_3
+				break;
+			case data.sea_1.includes(here):
+				from = data.way_sea_1
+				break;
+			case data.sea_2.includes(here):
+				from = data.way_sea_2
+				break;
+			case data.sea_3.includes(here):
+				from = data.way_sea_3
+				break;
+			case data.port_1.includes(here):
+				from = data.way_port_1
+				break;
+			case data.port_2.includes(here):
+				from = data.way_port_2
+				break;
+			case data.port_3.includes(here):
+				from = data.way_port_3
+				break;								
+		}
+			for (let to of from) {
 				if (to === here)
 					continue
 				if (!has_enemy_lord(to))
