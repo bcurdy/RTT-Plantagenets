@@ -3637,7 +3637,7 @@ states.sail = {
 			view.prompt = `Sailing with ${ships} Ships. Please discard ${overflow_cart} Cart`
 			if (cart > 0) {
 				for (let lord of game.group) {
-					if (get_lord_assets(lord, cart) > 0)
+					if (get_lord_assets(lord, cart) > 0);
 						gen_action_cart(lord)
 				}
 			}
@@ -3646,7 +3646,7 @@ states.sail = {
 			view.prompt = `Sailing with ${ships} Ships. Please discard ${overflow_prov} Provender`
 			if (prov > 0) {
 				for (let lord of game.group) {
-					if (get_lord_assets(lord, prov) > 0)
+					if (get_lord_assets(lord, prov) > 0);
 						gen_action_prov(lord)
 				}
 			}
