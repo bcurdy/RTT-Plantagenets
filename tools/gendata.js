@@ -715,8 +715,35 @@ road("Scarborough, York")
 road("York, Ravenspur")
 road("Ravenspur, Lincoln")
 
+let way_sea_1 = ["North Sea", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
+let way_sea_2 = ["Bristol","Pembroke","Harlech", "English Channel","Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich","Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro" ].map(name => locmap[name]).sort(cmpnum)
+let way_sea_3 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro","Irish Sea"].map(name => locmap[name]).sort(cmpnum)
+
+let way_exile_1 = ["Burgundy", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
+let way_exile_2 = ["France", "English Channel",  "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
+let way_exile_3 = ["Ireland", "Irish Sea", "Bristol","Pembroke","Harlech"].map(name => locmap[name]).sort(cmpnum)
+
+let way_port_1 = ["Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
+let way_port_2 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro", "English Channel"].map(name => locmap[name]).sort(cmpnum)
+let way_port_3 = ["Bristol","Pembroke","Harlech", "Irish Sea"].map(name => locmap[name]).sort(cmpnum)
+
+
+
+let sea_1 = ["North Sea"].map(name => locmap[name]).sort(cmpnum)
+let sea_2 = ["English Channel"].map(name => locmap[name]).sort(cmpnum)
+let sea_3 = ["Irish Sea"].map(name => locmap[name]).sort(cmpnum)
+
+let exile_1 = ["Burgundy"].map(name => locmap[name]).sort(cmpnum)
+let exile_2 = ["France"].map(name => locmap[name]).sort(cmpnum)
+let exile_3 = ["Ireland"].map(name => locmap[name]).sort(cmpnum)
+
+let port_1 = ["Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich"].map(name => locmap[name]).sort(cmpnum)
+let port_2 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
+let port_3 = ["Bristol","Pembroke","Harlech"].map(name => locmap[name]).sort(cmpnum)
+
+
 let seaports = [
-	"Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea", "Burgundy", "Dover", "Hastings", "Calais", "France", "Arundel", "Southampton","Dorchester","Exeter","Plymouth","Truro","Bristol","Pembroke","Harlech", "Ireland", "Irish Sea"
+	"English Channel", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea", "Burgundy", "Dover", "Hastings", "Calais", "France", "Arundel", "Southampton","Dorchester","Exeter","Plymouth","Truro","Bristol","Pembroke","Harlech", "Ireland", "Irish Sea"
 ].map(name => locmap[name]).sort(cmpnum)
 
 function dumplist(name, list) {
@@ -1673,6 +1700,24 @@ vassal(0, "Hastings", "none", 0, "Hastings")
 
 print("const data = {")
 print("seaports:" + JSON.stringify(seaports) + ",")
+print("exile_1:" + JSON.stringify(exile_1) + ",")
+print("exile_2:" + JSON.stringify(exile_2) + ",")
+print("exile_3:" + JSON.stringify(exile_3) + ",")
+print("sea_1:" + JSON.stringify(sea_1) + ",")
+print("sea_2:" + JSON.stringify(sea_2) + ",")
+print("sea_3:" + JSON.stringify(sea_3) + ",")
+print("port_1:" + JSON.stringify(port_1) + ",")
+print("port_2:" + JSON.stringify(port_2) + ",")
+print("port_3:" + JSON.stringify(port_3) + ",")
+print("way_exile_1:" + JSON.stringify(way_exile_1) + ",")
+print("way_exile_2:" + JSON.stringify(way_exile_2) + ",")
+print("way_exile_3:" + JSON.stringify(way_exile_3) + ",")
+print("way_sea_1:" + JSON.stringify(way_sea_1) + ",")
+print("way_sea_2:" + JSON.stringify(way_sea_2) + ",")
+print("way_sea_3:" + JSON.stringify(way_sea_3) + ",")
+print("way_port_1:" + JSON.stringify(way_port_1) + ",")
+print("way_port_2:" + JSON.stringify(way_port_2) + ",")
+print("way_port_3:" + JSON.stringify(way_port_3) + ",")
 print("strongholds:" + JSON.stringify(strongholds) + ",")
 dumplist("locales", locales)
 dumplist("ways", ways)

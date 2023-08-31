@@ -3623,9 +3623,9 @@ states.sail = {
 		let overflow_cart = 0
 			overflow_cart = (cart/2 - ships)*2
 
-		if (overflow_prov <= 0 && overflow_cart <= 0)
-			{
+		if (overflow_prov <= 0 && overflow_cart <= 0) {
 			view.prompt = `Sail: Select a destination Seaport.`
+			var port = data.locales[here]		
 			for (let to of data.seaports) {
 				if (to === here)
 					continue
@@ -3651,9 +3651,6 @@ states.sail = {
 				}
 			}
 		} 
-
-
-
 	},
 	prov: drop_prov,
 	cart: drop_cart,
