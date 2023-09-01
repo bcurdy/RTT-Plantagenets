@@ -1110,7 +1110,7 @@ function remove_favoury_marker(loc) {
 	set_delete(game.pieces.favoury, loc)
 }
 
-function has_ravaged_marker(loc) {
+function has_exhausted_marker(loc) {
 	return set_has(game.pieces.exhausted, loc)
 }
 
@@ -1118,8 +1118,29 @@ function add_exhausted_marker(loc) {
 	set_add(game.pieces.exhausted, loc)
 }
 
+function has_depleted_marker(loc) {
+	return set_has(game.pieces.depleted, loc)
+}
+
+function add_depleted_marker(loc) {
+	set_add(game.pieces.depleted, loc)
+}
+
+function remove_depleted_marker(loc) {
+	set_delete(game.pieces.depleted, loc)
+}
+
 function remove_exhausted_marker(loc) {
-	set_delete(game.pieces.ravaged, loc)
+	set_delete(game.pieces.exhausted, loc)
+}
+function deplete_locale(loc) {
+	if (has_depleted_marker(loc)) {
+		remove_depleted_marker(loc),
+		add_exhausted_marker(loc)
+	}
+	else {
+		add_depleted_marker(loc)
+	}
 }
 
 function is_friendly_locale(loc) {
@@ -1339,6 +1360,7 @@ exports.setup = function (seed, scenario, options) {
 			capabilities: Array(lord_count << 1).fill(NOTHING),
 			moved: 0,
 			vassals: Array(vassal_count).fill(VASSAL_UNAVAILABLE),
+			depleted: [],
 			exhausted: [],
 			favourl:[],
 			favoury:[],
@@ -3502,18 +3524,10 @@ states.supply_path_way = {
 function can_action_forage() {
 	if (game.actions < 1)
 		return false
-
-	/* if
-		return false */
-
 	let here = get_lord_locale(game.command)
-	if (has_ravaged_marker(here))
+	if (has_exhausted_marker(here))
 		return false
-	if (is_summer())
-		return true
-//	if (is_friendly_stronghold_locale(here)) // FIXME: simpler check?
-//		return true
-	return false
+	return true
 }
 
 function goto_forage() {
@@ -3521,6 +3535,7 @@ function goto_forage() {
 	let here = get_lord_locale(game.command)
 	log(`Foraged at %${here}`)
 	add_lord_assets(game.command, PROV, 1)
+	deplete_locale(here)
 	spend_action(1)
 	resume_command()
 }
@@ -3531,22 +3546,21 @@ function goto_forage() {
 function can_action_tax() {
 	if (game.actions < 1)
 	return false
-
-
 	// Must have space left to hold Coin
 	if (get_lord_assets(game.command, COIN) >= 8)
 		return false
-
 	// Must be at own seat TO BE REMOVED
 	return is_lord_at_seat(game.command)
-	// TODO : Add deplete/exhaust
 }
 
 function goto_tax() {
 	push_undo()
 
 	let here = get_lord_locale(game.command)
+	
 	log(`Taxed %${here}.`)
+
+
 
 	if (is_town(here) || is_fortress(here) || is_harlech(here))
 	add_lord_assets(game.command, COIN, 1)
@@ -3554,7 +3568,7 @@ function goto_tax() {
 	add_lord_assets(game.command, COIN, 2)
 	else 
 	add_lord_assets(game.command, COIN, 3)
-// TODO : Add deplete/exhaust
+
 
 	spend_action(1)
 	resume_command()

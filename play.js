@@ -685,7 +685,7 @@ function build_map() {
 
 		// Locale Markers
 		e = ui.locale_markers[ix] = document.createElement("div")
-		e.className = "locale marker rose york favour " + locale.name // York to be removed - York/Lancaster 
+		e.className = "locale marker rose favour " + locale.name // York to be removed - York/Lancaster 
 		e.style.top = y+h-small + "px"
 		e.style.left = x+ (w-small)/2 + "px"
 		e.style.width = small + "px"
@@ -698,7 +698,7 @@ function build_map() {
 
 		// Depleted markers
 		e = ui.locale_markers[ix] = document.createElement("div")
-		e.className = "locale marker exhausted	 " + locale.name // Depleted to be removed - depleted/exhausted to add markers
+		e.className = "locale marker " + locale.name // Depleted to be removed - depleted/exhausted to add markers
 		e.style.top = y+h-small-offsetdeplete + "px"
 		e.style.left = offsetdeplete+x+ (w-small)/2 + "px"
 		e.style.width = small + "px"
@@ -1120,14 +1120,14 @@ function update_locale(loc) {
 		else
 			ui.locale_markers[loc].appendChild(get_cached_element("marker circle battle"))
 
-	if (set_has(view.pieces.exhausted, loc)) {
+	/*if (set_has(view.pieces.exhausted, loc)) {
 		let cn
 		if (is_york_locale(loc))
 			cn = "marker small exhausted lancaster"
 		else
 			cn = "marker small exhausted york"
 		ui.locale_markers[loc].appendChild(get_cached_element(cn))
-	}
+	}*/
 }
 
 function update_plan() {
