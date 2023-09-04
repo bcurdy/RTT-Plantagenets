@@ -2682,12 +2682,12 @@ function march_with_group_1() {
 	if (prov <= transport)
 		return march_with_group_2()
 
-	/* if (prov > transport)
+	 if (prov > transport)
 		game.state = "march_laden"
 	else
-		march_with_group_2()*/
+		march_with_group_2()
 }
-/*
+
 states.march_laden = {
 	inactive: "March",
 	prompt() {
@@ -2697,46 +2697,10 @@ states.march_laden = {
 		let prov = count_group_assets(PROV)
 
 		view.group = game.group
+		view.prompt = `March: Unladen.`
+	
 
-		if (prov <= transport * 2 && group_has_teutonic_converts())
-			view.prompt = `March: Converts.`
-		else if (prov > transport * 2 || (prov > transport && view.actions < 2))
-			view.prompt = `March: Hindered with ${prov} Provender, and ${transport} Transport.`
-		else if (prov > transport)
-			view.prompt = `March: Laden with ${prov} Provender, and ${transport} Transport.`
-		else
-			view.prompt = `March: Unladen.`
-
-		if (group_has_teutonic_converts()) {
-			if (prov <= transport * 2) {
-				view.actions.march = 1
-				gen_action_locale(to)
-			} else {
-				for (let lord of game.group) {
-					if (get_lord_assets(lord, PROV) > 0) {
-						view.prompt += " Discard Provender."
-						gen_action_prov(lord)
-					}
-				}
-			}
-			return
-		}
-
-		if (prov <= transport * 2) {
-			if (prov > transport) {
-				if (game.actions >= 2) {
-					view.actions.march = 1 // other button?
-					gen_action_laden_march(to)
-				} else {
-					view.prompt += " 1 action left."
-				}
-			} else {
-				view.actions.march = 1
-				gen_action_locale(to)
-			}
-		}
-
-		if (prov > transport) {
+		if (prov > transport) {	
 			for (let lord of game.group) {
 				if (prov > transport) {
 					if (get_lord_assets(lord, PROV) > 0) {
@@ -2746,13 +2710,17 @@ states.march_laden = {
 				}
 			}
 		}
+		else {
+			view.actions.march = 1
+			gen_action_locale(to)
+	} 
 	},
 	prov: drop_prov,
 	march: march_with_group_2,
 	locale: march_with_group_2,
 	laden_march: march_with_group_2,
 }
-*/
+
 function march_with_group_2() {
 	let from = get_lord_locale(game.command)
 	let way = game.march.approach
