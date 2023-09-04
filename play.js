@@ -1122,10 +1122,21 @@ function update_locale(loc) {
 			ui.locale_markers[loc].appendChild(get_cached_element("marker circle battle"))
 
 
+	if (!set_has(view.pieces.depleted,loc) && !set_has(view.pieces.exhausted,loc)) {
+		let cn
+			cn = "depleted"
+		ui.locale_markers[loc].classList.remove(cn)
+			cn = "exhausted"
+		ui.locale_markers[loc].classList.remove(cn)
+	}
+
 	if (set_has(view.pieces.depleted, loc)) {
 		let cn
 			cn = "depleted"
 		ui.locale_markers[loc].classList.add(cn)
+			cn = "exhausted"
+		ui.locale_markers[loc].classList.remove(cn)
+
 	}
 	if (set_has(view.pieces.exhausted, loc)) {
 		let cn
