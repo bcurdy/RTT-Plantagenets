@@ -2697,14 +2697,15 @@ states.march_laden = {
 		let prov = count_group_assets(PROV)
 
 		view.group = game.group
-		view.prompt = `March: Unladen.`
+		view.prompt = `March: Unladen. `
 	
 
 		if (prov > transport) {	
 			for (let lord of game.group) {
 				if (prov > transport) {
+					let overflow_prov = prov - transport
 					if (get_lord_assets(lord, PROV) > 0) {
-						view.prompt += " Discard Provender."
+						view.prompt += `Please discard ${overflow_prov} Provender`
 						gen_action_prov(lord)
 					}
 				}
