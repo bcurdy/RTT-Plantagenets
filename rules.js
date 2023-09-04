@@ -3552,7 +3552,7 @@ function drop_cart(lord) {
 
 function has_enough_available_ships_for_army() {
 	let ships = count_group_ships()
-	let army = count_lord_all_forces()
+	let army = count_lord_all_forces(game.group)
 	let needed_ships= army/6
 	return needed_ships <= ships
 }
