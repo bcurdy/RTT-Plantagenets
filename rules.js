@@ -3503,6 +3503,17 @@ function can_action_forage() {
 function goto_forage() {
 	push_undo()
 	let here = get_lord_locale(game.command)
+	for (let next of data.locales[here].adjacent)
+	if (has_enemy_lord(next)) {
+		let die = roll_die()
+		if (die <= 4) {
+			add_lord_assets(game.command, PROV, 1)
+			log(`${HIT[die]}, Successful Forage`)
+		}
+		else {
+			log(`${MISS[die]}, Forage Failure`)
+		}
+	}
 	log(`Foraged at %${here}`)
 	add_lord_assets(game.command, PROV, 1)
 	deplete_locale(here)
