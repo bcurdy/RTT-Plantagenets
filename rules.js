@@ -3526,7 +3526,7 @@ function can_action_forage() {
 	if (game.actions < 1)
 		return false
 	let here = get_lord_locale(game.command)
-	if (has_exhausted_marker(here))
+	if (has_exhausted_marker(here) || is_sea(here))
 		return false
 	return true
 }
@@ -3560,8 +3560,6 @@ function goto_tax() {
 	let here = get_lord_locale(game.command)
 	
 	log(`Taxed %${here}.`)
-
-
 
 	if (is_town(here) || is_fortress(here) || is_harlech(here))
 	add_lord_assets(game.command, COIN, 1)
@@ -3679,7 +3677,7 @@ states.sail = {
 			view.prompt = `Sailing with ${ships} Ships. Please discard ${overflow_cart} Cart`
 			if (cart > 0) {
 				for (let lord of game.group) {
-					if (get_lord_assets(lord, cart) > 0);
+					if (get_lord_assets(lord, CART) > 0)
 						gen_action_cart(lord)
 				}
 			}
@@ -3688,10 +3686,13 @@ states.sail = {
 			view.prompt = `Sailing with ${ships} Ships. Please discard ${overflow_prov} Provender`
 			if (prov > 0) {
 				for (let lord of game.group) {
-					if (get_lord_assets(lord, prov) > 0);
+					if (get_lord_assets(lord, PROV) > 0)
 						gen_action_prov(lord)
 				}
 			}
+		}
+		else {
+			view.prompt = 'ERROR'
 		} 
 	},
 	prov: drop_prov,
