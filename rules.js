@@ -1155,8 +1155,8 @@ function is_friendly_locale(loc) {
 }
 
 function can_add_troops(lordwho, locale) {
-	// TODO condition not exhausted
-	return true
+	if (has_exhausted_marker(locale)) return false
+	else return true
 }
 
 function can_add_transport(who, what) {
@@ -2108,6 +2108,7 @@ states.levy_muster_lord = {
 		push_undo()
 		let info = data.lords[game.who]
 		let locale = data.locales[get_lord_locale(game.who)].type
+		deplete_locale(get_lord_locale(game.who))
 		switch(locale) {
 			case "calais": 
 				add_lord_forces(game.who, MEN_AT_ARMS, 2)
@@ -3568,8 +3569,6 @@ function goto_tax() {
 	add_lord_assets(game.command, COIN, 2)
 	else 
 	add_lord_assets(game.command, COIN, 3)
-
-
 	spend_action(1)
 	resume_command()
 

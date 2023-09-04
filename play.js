@@ -1111,6 +1111,7 @@ function update_locale(loc) {
 	if (ui.locale_name[loc]) {
 		ui.locale_name[loc].classList.toggle("action", is_action("locale", loc) || is_action("laden_march", loc))
 	}
+	
 
 	ui.locale_markers[loc].replaceChildren()
 
@@ -1120,14 +1121,20 @@ function update_locale(loc) {
 		else
 			ui.locale_markers[loc].appendChild(get_cached_element("marker circle battle"))
 
-	/*if (set_has(view.pieces.exhausted, loc)) {
+
+	if (set_has(view.pieces.depleted, loc)) {
 		let cn
-		if (is_york_locale(loc))
-			cn = "marker small exhausted lancaster"
-		else
-			cn = "marker small exhausted york"
-		ui.locale_markers[loc].appendChild(get_cached_element(cn))
-	}*/
+			cn = "depleted"
+		ui.locale_markers[loc].classList.add(cn)
+	}
+	if (set_has(view.pieces.exhausted, loc)) {
+		let cn
+			cn = "exhausted"
+		ui.locale_markers[loc].classList.add(cn)
+			cn = "depleted"
+		ui.locale_markers[loc].classList.remove(cn)
+
+	}
 }
 
 function update_plan() {
