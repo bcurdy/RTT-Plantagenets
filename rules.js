@@ -2813,7 +2813,7 @@ function stronghold_strength(loc) {
 function stronghold_capacity(loc) {
 	return stronghold_strength(loc) - count_besieged_lords(loc)
 }
-/*
+
 
 function spoil_prov(lord) {
 	add_lord_assets(lord, PROV, -1)
@@ -2856,7 +2856,6 @@ function resume_avoid_battle() {
 		game.state = "avoid_battle"
 	}
 
-
 states.avoid_battle = {
 	inactive: "Avoid Battle",
 	prompt() {
@@ -2864,18 +2863,17 @@ states.avoid_battle = {
 		view.group = game.group
 
 		let here = game.march.to
-
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
 			if (get_lord_locale(lord) === here)
 				gen_action_lord(lord)
 
 		if (game.group.length > 0) {
-			for (let [to, way] of data.locales[here].ways) {
-				if (can_avoid_battle(to, way))
-					gen_action_locale(to)
-			}
+			for (let way of data.locales[here].ways)
+				for (let i = 1; i < way.length; ++i)
+					if (can_avoid_battle(way[0], way[i]))
+						gen_action_locale(way[0])
 		}
-
+	
 		view.actions.end_avoid_battle = 1
 	},
 	lord(lord) {
@@ -2883,18 +2881,6 @@ states.avoid_battle = {
 	},
 	locale(to) {
 		push_undo()
-
-		// Save Assets and Lords in case Ambush cancels Avoid Battle.
-		/*if (!game.march.ambush) {
-			if (could_enemy_play_ambush()) {
-				// TODO: ambush object...
-				game.march.ambush = {
-					lords: [],
-					assets: game.pieces.assets.slice(),
-					conquered: game.pieces.conquered.slice(),
-				}
-			}
-		}
 
 		let from = get_lord_locale(game.command)
 		let ways = list_ways(from, to)
@@ -2911,7 +2897,7 @@ states.avoid_battle = {
 		push_undo()
 		end_avoid_battle()
 	},
-
+}
 
 states.avoid_battle_way = {
 	inactive: "Avoid Battle",
@@ -2999,7 +2985,7 @@ function end_avoid_battle() {
 	game.group = game.march.group // restore group
 	game.march.group = 0
 	goto_march_withdraw()
-}*/
+}
 
 // === ACTION: MARCH - WITHDRAW ===
 
@@ -3064,13 +3050,6 @@ function end_march_withdraw() {
 }
 
 // === ACTION: MARCH - AMBUSH ===
-/* TO BE USED FOR BLOCKED FORD
-function could_enemy_play_ambush() {
-	if (game.active === TEUTONS)
-		return could_play_card(EVENT_RUSSIAN_AMBUSH)
-	else
-		return could_play_card(EVENT_TEUTONIC_AMBUSH)
-}*/
 
 function goto_march_ambush() {
 	if (game.march.ambush && game.march.ambush.lords.length > 0)
