@@ -3493,8 +3493,10 @@ function goto_forage() {
 			log(`${MISS[die]}, Forage Failure`)
 		}
 	}
+	else {
+		add_lord_assets(game.command, PROV, 1)
+	}
 	log(`Foraged at %${here}`)
-	add_lord_assets(game.command, PROV, 1)
 	deplete_locale(here)
 	spend_action(1)
 	resume_command()
