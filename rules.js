@@ -2610,6 +2610,47 @@ states.command = {
 	card: action_held_event,
 }
 
+// === ACTION: PARLEY ===
+
+// 1) During Levy / game.who -- Campaign / game.command
+// 2) During Levy / Can reach any locale that has a route of friendly locale (except the target stronghold)
+// Campaign / here and adjacent
+// The route can go through ports on same sea if the group has ships (note that there is one card that connect all port on all seas)
+// 3) Condition : Always parley at lord's locale if not friendly
+// 4) Not where any enemy lord, always at stronghold (not at sea or exile box)
+// 5) Not where it is already friendly
+// 6) Same port on same sea (port_1, port_2, port_3 on data.js)
+// 7) From exile, all port on same sea (exile_1 can target port_1, exile_2 can target port_2, exile_3 can target port_3)
+// 8) Cost : Levy / 1 always + 1 per way (by land or sea) -- Campaign / No cost here, 1 always + 1 due to the way
+// 9) In addition, player may chose to raise current influence rating (current influence rating = printed + caps that may change it) 
+// by 1 or 2 by spending 1 or 3 IP
+// 10) Roll a die : <= current influence rating success, => failure. 1 always success, 6 always failure. always success at no cost if campaign here
+// 11) If success, remove enemy marker if currently enemy, add your marker if there is no marker.
+// 12) If success, move the Town or City or Fortress marker one step to succeeding side if the locale just parleyed was a Town / City / Fortress
+// 13) The current influence is put back to where it was before the expenditure 
+// (he needs to pay again if he wants to improve his influence for a following parley action)
+
+// INFLUENCE CHECK = 8) and 9) and 10) Will happen a lot in the game, so a own function is best that will be modified depending on exceptions
+
+// === ACTION: LEVY VASSAL ===
+// 1) During Levy ONLY
+// 2) game.who location must be friendly and Vassal seat locale must be friendly
+// 3) there need to not be his vassal marker on the calendar (see vassal disband)
+// 4) use INFLUENCE CHECK, except that the cost is always 1 (you don't count way cost) before choosing to add extra influence to the lord
+// 5) In addition, player may chose to raise current influence rating (current influence rating = printed + caps that may change it) 
+// by 1 or 2 by spending 1 or 3 IP
+// 6) In addition, substract the left number value (data.vassals.influence) if game.who is Lancaster, add if game.who is yorkist
+// 7) Roll a die : <= current influence rating success, => failure. 1 always success, 6 always failure.
+// 8) Place one vassal marker on the lord mat
+// 9) Place the other vassal marker on the calendar box a number of turn equal to current turn + service (data.vassals.service)
+// 10) The vassals with service 0 are capabilities that will never be put on calendar, there will only be one marker on lord's mat. 
+
+// VASSAL DISBAND
+// 1) One vassal marker is placed, face down, on his seat
+// 2) The other vassal marker is placed, face down, on the calendar, a number of boxes right to current turn + 6 - service 
+// (a service 3 disbanding in turn 8 will come back turn 11)
+
+
 // === ACTION: MARCH ===
 
 function format_group_move() {
@@ -2790,307 +2831,13 @@ states.confirm_approach = {
 		view.actions.approach = 1
 	},
 	approach() {
-		goto_avoid_battle()
+		push_undo()
+		set_active_defender()
+		goto_battle()
+
 	}
 }
 
-// === ACTION: MARCH - AVOID BATTLE ===
-
-function count_besieged_lords(loc) {
-	let n = 0
-	for (let lord = first_lord; lord <= last_lord; ++lord)
-		if (get_lord_locale(lord) === loc && is_lord_besieged(lord))
-			++n
-	return n
-}
-
-function stronghold_strength(loc) {
-	if (has_castle_marker(loc))
-		return 2
-	return data.locales[loc].stronghold
-}
-
-function stronghold_capacity(loc) {
-	return stronghold_strength(loc) - count_besieged_lords(loc)
-}
-
-
-function spoil_prov(lord) {
-	add_lord_assets(lord, PROV, -1)
-	add_spoils(PROV, 1)
-}
-
-function can_any_avoid_battle() {
-        let here = game.march.to
-        for (let [to, way] of data.locales[here].ways)
-                if (can_avoid_battle(to, way))
-                        return true
-        return false
-}
-
-function can_avoid_battle(to, way) {
-	if (way === game.march.approach)
-		return false
-	if (has_unbesieged_enemy_lord(to))
-		return false
-	return true
-}
-
-function goto_avoid_battle() {
-	clear_undo()
-	set_active_enemy()
-	if (can_any_avoid_battle()) {
-		// TODO: pre-select lone lord?
-		game.march.group = game.group // save group
-		game.state = "avoid_battle"
-		game.spoils = 0
-		resume_avoid_battle()
-	} else {
-		goto_march_withdraw()
-	}
-}
-
-function resume_avoid_battle() {
-	let here = game.march.to
-		game.group = []
-		game.state = "avoid_battle"
-	}
-
-states.avoid_battle = {
-	inactive: "Avoid Battle",
-	prompt() {
-		view.prompt = "March: Select Lords and destination to Avoid Battle."
-		view.group = game.group
-
-		let here = game.march.to
-		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-			if (get_lord_locale(lord) === here)
-				gen_action_lord(lord)
-
-		if (game.group.length > 0) {
-			for (let way of data.locales[here].ways)
-				for (let i = 1; i < way.length; ++i)
-					if (can_avoid_battle(way[0], way[i]))
-						gen_action_locale(way[0])
-		}
-	
-		view.actions.end_avoid_battle = 1
-	},
-	lord(lord) {
-		set_toggle(game.group, lord)
-	},
-	locale(to) {
-		push_undo()
-
-		let from = get_lord_locale(game.command)
-		let ways = list_ways(from, to)
-		if (ways.length > 2) {
-			game.march.avoid_to = to
-			game.state = "avoid_battle_way"
-		} else {
-			game.march.avoid_to = to
-			game.march.avoid_way = ways[1]
-			avoid_battle_1()
-		}
-	},
-	end_avoid_battle() {
-		push_undo()
-		end_avoid_battle()
-	},
-}
-
-states.avoid_battle_way = {
-	inactive: "Avoid Battle",
-	prompt() {
-		view.prompt = `Avoid Battle: Select Way to destination.`
-		view.group = game.group
-		let from = game.march.to
-		let to = game.march.avoid_to
-		let ways = list_ways(from, to)
-		for (let i = 1; i < ways.length; ++i)
-			if (can_avoid_battle(to, ways[i]))
-				gen_action_way(ways[i])
-	},
-	way(way) {
-		game.march.avoid_way = way
-		avoid_battle_1()
-	},
-}
-
-function avoid_battle_1() {
-	let way = game.march.avoid_way
-	let transport = count_group_transport(data.ways[way].type)
-	let prov = count_group_assets(PROV)
-	if (prov > transport)
-		game.state = "avoid_battle_laden"
-	else
-		avoid_battle_2()
-}
-
-states.avoid_battle_laden = {
-	inactive: "Avoid Battle",
-	prompt() {
-		let to = game.march.avoid_to
-		let way = game.march.avoid_way
-		let transport = count_group_transport(data.ways[way].type)
-		let prov = count_group_assets(PROV)
-
-		if (prov > transport)
-			view.prompt = `Avoid Battle: Hindered with ${prov} Provender and ${transport} Transport.`
-		else
-			view.prompt = `Avoid Battle: Unladen.`
-		view.group = game.group
-
-		if (prov > transport) {
-			view.prompt += " Discard Provender."
-			for (let lord of game.group) {
-				if (get_lord_assets(lord, PROV) > 0)
-					gen_action_prov(lord)
-			}
-		} else {
-			gen_action_locale(to)
-			view.actions.avoid = 1
-		}
-	},
-	prov(lord) {
-		push_undo()
-		spoil_prov(lord)
-	},
-	locale(_) {
-		avoid_battle_2()
-	},
-	avoid() {
-		avoid_battle_2()
-	},
-}
-
-function avoid_battle_2() {
-	let to = game.march.avoid_to
-
-	for (let lord of game.group) {
-		log(`L${lord} Avoided Battle to %${to}.`)
-		if (game.march.ambush)
-			set_add(game.march.ambush.lords, lord)
-		set_lord_locale(lord, to)
-		set_lord_moved(lord, 1)
-	}
-
-
-	game.march.avoid_to = 0
-	game.march.avoid_way = 0
-	resume_avoid_battle()
-}
-
-function end_avoid_battle() {
-	game.group = game.march.group // restore group
-	game.march.group = 0
-	goto_march_withdraw()
-}
-
-// === ACTION: MARCH - WITHDRAW ===
-
-function can_withdraw(here, n) {
-	if (is_unbesieged_friendly_stronghold(here))
-		if (stronghold_capacity(here) >= n)
-			return true
-	return false
-}
-
-function goto_march_withdraw() {
-	let here = game.march.to
-		end_march_withdraw()
-	
-}
-
-states.march_withdraw = {
-	inactive: "Withdraw",
-	prompt() {
-		view.prompt = "March: Select Lords to Withdraw into Stronghold."
-
-		let here = get_lord_locale(game.command)
-		let capacity = stronghold_capacity(here)
-
-		if (capacity >= 1) {
-			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-				if (get_lord_locale(lord) === here && !is_lower_lord(lord) && is_lord_unbesieged(lord)) {
-					if (is_upper_lord(lord)) {
-						if (capacity >= 2)
-							gen_action_lord(lord)
-					} else {
-						gen_action_lord(lord)
-					}
-				}
-			}
-		}
-
-		view.actions.end_withdraw = 1
-	},
-	lord(lord) {
-		push_undo()
-		let lower = get_lower_lord(lord)
-
-		log(`L${lord} Withdrew.`)
-		set_lord_besieged(lord, 1)
-
-		if (lower !== NOBODY) {
-			log(`L${lower} Withdrew.`)
-			set_lord_besieged(lower, 1)
-		}
-	},
-	end_withdraw() {
-		end_march_withdraw()
-	},
-}
-
-function end_march_withdraw() {
-	clear_undo()
-	set_active_enemy()
-	// TO BE USED FOR BLOCKED FORD 
-	goto_march_ambush()
-}
-
-// === ACTION: MARCH - AMBUSH ===
-
-function goto_march_ambush() {
-	if (game.march.ambush && game.march.ambush.lords.length > 0)
-		game.state = "march_ambush"
-	else
-		goto_spoils_after_avoid_battle()
-}
-
-states.march_ambush = {
-	inactive: "Ambush",
-	prompt() {
-		view.prompt = "Avoid Battle: You may play Ambush if you have it."
-		if (has_card_in_hand(EVENT_TEUTONIC_AMBUSH))
-			gen_action_card(EVENT_TEUTONIC_AMBUSH)
-		if (has_card_in_hand(EVENT_RUSSIAN_AMBUSH))
-			gen_action_card(EVENT_RUSSIAN_AMBUSH)
-		view.actions.pass = 1
-	},
-	card(c) {
-		play_held_event(c)
-
-		// Restore assets and spoils and withdrawn lords
-		game.pieces.assets = game.march.ambush.assets
-		game.pieces.conquered = game.march.ambush.conquered
-		game.spoils = 0
-
-		// Restore lords who avoided battle
-		for (let lord of game.march.ambush.lords) {
-			set_lord_locale(lord, game.march.to)
-			set_lord_moved(lord, 0)
-		}
-
-		set_active_enemy()
-		game.march.ambush = 0
-		goto_march_withdraw()
-	},
-	pass() {
-		game.march.ambush = 0
-		goto_spoils_after_avoid_battle()
-	},
-}
 
 // === ACTION: MARCH - DIVIDE SPOILS AFTER AVOID BATTLE ===
 
@@ -3126,40 +2873,6 @@ function take_spoils(type) {
 function take_spoils_prov() { take_spoils(PROV) }
 function take_spoils_cart() { take_spoils(CART) }
 
-function goto_spoils_after_avoid_battle() {
-	if (has_any_spoils()) {
-		game.state = "spoils_after_avoid_battle"
-		if (game.group.length === 1)
-			game.who = game.group[0]
-	} else {
-		goto_battle()
-	}
-}
-
-states.spoils_after_avoid_battle = {
-	inactive: "Spoils",
-	prompt() {
-		if (has_any_spoils()) {
-			view.prompt = "Spoils: Divide " + list_spoils() + "."
-			// only moving lords get to divide the spoils
-			for (let lord of game.group)
-				prompt_select_lord(lord)
-			if (game.who !== NOBODY)
-				prompt_spoils()
-		} else {
-			view.prompt = "Spoils: All done."
-			view.actions.end_spoils = 1
-		}
-	},
-	lord: action_select_lord,
-	take_prov: take_spoils_prov,
-	end_spoils() {
-		clear_undo()
-		game.spoils = 0
-		game.who = NOBODY
-		goto_battle()
-	},
-}
 
 // === ACTION: SUPPLY (SEARCHING) ===
 
@@ -3695,7 +3408,7 @@ function goto_battle() {
 	
 		start_battle()
 	
-		// march_with_group_3()
+		//march_with_group_3()
 }
 
 function init_battle(here) {
@@ -3711,8 +3424,6 @@ function init_battle(here) {
 		fought: 0, // flag all lords who participated
 		array: [
 			-1, game.command, -1,
-			-1, -1, -1,
-			-1, -1, -1,
 			-1, -1, -1,
 		],
 		garrison: 0,
@@ -3757,8 +3468,8 @@ function start_battle() {
 			set_add(game.battle.reserves, lord)
 		}
 	}
-
-	//goto_relief_sally()
+	set_active_attacker()
+	goto_array_attacker()
 }
 
 function init_garrison(knights, men_at_arms) {
@@ -3767,12 +3478,12 @@ function init_garrison(knights, men_at_arms) {
 
 // === BATTLE: BATTLE ARRAY ===
 
-// 0) Defender decides to stand for Battle, not Avoid.
-// 1) Attacker decides which Lords will relief sally, if any.
-// 2) Attacker positions front A.
-// 3) Defender positions front D.
-// 4) Attacker positions SA.
-// 5) Defender positions reaguard RG.
+// 0) Defender decides to stand for Battle, not Exile
+// 1) Defender decides how he wants to array his lords
+// 2) Defender positions front D
+// 3) Attacker positions front A.
+// 4) Defender plays event
+// 5) ATtacker plays event
 
 function has_friendly_reserves() {
 	for (let lord of game.battle.reserves)
