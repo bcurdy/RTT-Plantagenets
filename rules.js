@@ -2623,7 +2623,9 @@ states.command = {
 // 7) Roll a die : <= current influence rating success, => failure. 1 always success, 6 always failure.
 // 8) Place one vassal marker on the lord mat
 // 9) Place the other vassal marker on the calendar box a number of turn equal to current turn + service (data.vassals.service)
-// 10) The vassals with service 0 are capabilities that will never be put on calendar, there will only be one marker on lord's mat. 
+// 10) When the turn reaches back the face down vassal, the vassal marker on the calendar dissapear and the one on the map is turned face up, ready to be mustered again
+// 11) The vassals with service 0 are capabilities that will never be put on calendar, there will only be one marker on lord's mat. 
+
 
 // VASSAL DISBAND
 // 1) One vassal marker is placed, face down, on his seat
@@ -3180,17 +3182,19 @@ function goto_forage() {
 		let die = roll_die()
 		if (die <= 4) {
 			add_lord_assets(game.command, PROV, 1)
-			log(`${HIT[die]}, Successful Forage`)
+			log(`${HIT[die]}, Foraged at %${here}`)
+			deplete_locale(here)
 		}
 		else {
 			log(`${MISS[die]}, Forage Failure`)
 		}
 	}
 	else {
+		log(`Foraged at %${here}`)
 		add_lord_assets(game.command, PROV, 1)
+		deplete_locale(here)
+
 	}
-	log(`Foraged at %${here}`)
-	deplete_locale(here)
 	spend_action(1)
 	resume_command()
 }
