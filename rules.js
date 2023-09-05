@@ -1568,7 +1568,6 @@ function is_event_in_play(c) {
 	return set_has(game.events, c)
 }
 
-
 function is_leeward_battle_line_in_play () {
 	if (is_archery_step()) {
 		if (game.active === LANCASTER)
@@ -1579,25 +1578,6 @@ function is_leeward_battle_line_in_play () {
 	return false
 }
 
-function is_marsh_in_play() {
-	if (game.battle.round <= 2) {
-		if (game.active === TEUTONS && is_event_in_play(EVENT_RUSSIAN_MARSH))
-			return true
-		if (game.active === RUSSIANS && is_event_in_play(EVENT_TEUTONIC_MARSH))
-			return true
-	}
-	return false
-}
-
-function is_hill_in_play() {
-	if (game.battle.round <= 2) {
-		if (game.active === TEUTONS && is_event_in_play(EVENT_TEUTONIC_HILL))
-			return true
-		if (game.active === RUSSIANS && is_event_in_play(EVENT_RUSSIAN_HILL))
-			return true
-	}
-	return false
-}
 
 function goto_immediate_event(c) {
 	switch (c) {
@@ -3472,10 +3452,6 @@ function start_battle() {
 	goto_array_attacker()
 }
 
-function init_garrison(knights, men_at_arms) {
-	game.battle.garrison = { knights, men_at_arms }
-}
-
 // === BATTLE: BATTLE ARRAY ===
 
 // 0) Defender decides to stand for Battle, not Exile
@@ -3723,7 +3699,7 @@ function has_lords_in_battle() {
 }
 
 function can_play_battle_events() {
-	if (game.active === TEUTONS) {
+	/*if (game.active === TEUTONS) {
 		if (could_play_card(EVENT_TEUTONIC_AMBUSH))
 			return true
 		if (is_defender()) {
@@ -3761,7 +3737,7 @@ function can_play_battle_events() {
 		if (could_play_card(EVENT_TEUTONIC_FIELD_ORGAN))
 			if (has_lords_in_battle())
 				return true
-	}
+	}*/
 
 	return false
 }
@@ -4133,10 +4109,8 @@ const battle_defending_positions = [ D1, D2, D3 ]
 const battle_attacking_positions = [ A1, A2, A3 ]
 
 const battle_steps = [
-	{ name: "Defending Archery", hits: count_archery_hits, xhits: count_archery_xhits },
-	{ name: "Attacking Archery", hits: count_archery_hits, xhits: count_archery_xhits },
-	{ name: "Defending Horse", hits: count_horse_hits, xhits: count_zero_hits },
-	{ name: "Attacking Horse", hits: count_horse_hits, xhits: count_zero_hits },
+	{ name: "Defending Archery", hits: count_archery_hits },
+	{ name: "Attacking Archery", hits: count_archery_hits },
 	{ name: "Defending Foot", hits: count_foot_hits, xhits: count_zero_hits },
 	{ name: "Attacking Foot", hits: count_foot_hits, xhits: count_zero_hits },
 ]
@@ -4145,121 +4119,27 @@ function count_zero_hits(_) {
 	return 0
 }
 
-function count_archery_xhits(lord) {
-	let xhits = 0
-	if (lord_has_capability(lord, AOW_TEUTONIC_BALISTARII) || lord_has_capability(lord, AOW_RUSSIAN_STRELTSY))
-		xhits += get_lord_forces(lord, MEN_AT_ARMS)
-	if (is_hill_in_play())
-		return xhits << 1
-	return xhits
-}
-
 function count_archery_hits(lord) {
 	let hits = 0
-	if (!is_marsh_in_play()) {
-		if (lord_has_capability(lord, AOW_RUSSIAN_LUCHNIKI)) {
-			hits += get_lord_forces(lord, LIGHT_HORSE)
-			hits += get_lord_forces(lord, MILITIA)
-		}
-		hits += get_lord_forces(lord, ASIATIC_HORSE)
-	} else {
-		if (lord_has_capability(lord, AOW_RUSSIAN_LUCHNIKI)) {
-			hits += get_lord_forces(lord, MILITIA)
-		}
-	}
-	if (is_hill_in_play())
-		return hits << 1
+	hits += get_lord_forces(lord, LONGBOWMEN)
+	hits += get_lord_forces(lord, MILITIA)
+	
 	return hits
 }
 
 function count_melee_hits(lord) {
-	return count_horse_hits(lord) + count_foot_hits(lord)
+	return count_foot_hits(lord)
 }
 
 function assemble_melee_forces(lord) {
 	let forces = {
-		knights: get_lord_forces(lord, KNIGHTS),
-		sergeants: get_lord_forces(lord, SERGEANTS),
-		light_horse: get_lord_forces(lord, LIGHT_HORSE),
+		retinue: get_lord_forces(lord, RETINUE),
 		men_at_arms: get_lord_forces(lord, MEN_AT_ARMS),
 		militia: get_lord_forces(lord, MILITIA),
-		serfs: get_lord_forces(lord, SERFS),
+		burgundians: get_lord_forces(lord, BURGUNDIANS),
+		mercenaries: get_lord_forces(lord, MERCENARIES),
 	}
-
-	if (is_marsh_in_play()) {
-		forces.knights = 0
-		forces.sergeants = 0
-		forces.light_horse = 0
-	}
-
-	if (game.battle.bridge && (game.battle.bridge.lord1 === lord || game.battle.bridge.lord2 === lord)) {
-		let n = is_york_lord(lord) ? game.battle.bridge.n1 : game.battle.bridge.n2
-
-		log(`Bridge L${lord}`)
-
-		if (is_horse_step()) {
-			// Pick at most 1 LH if there are any Foot (for +1/2 rounding benefit)
-			if (forces.men_at_arms + forces.militia + forces.serfs > 0 && forces.light_horse > 1)
-				forces.light_horse = 1
-
-			if (forces.knights >= n)
-				forces.knights = n
-			n -= forces.knights
-			if (forces.sergeants >= n)
-				forces.sergeants = n
-			n -= forces.sergeants
-			if (forces.light_horse >= n)
-				forces.light_horse = n
-			n -= forces.light_horse
-
-			if (forces.knights > 0) logi(`${forces.knights} Knights`)
-			if (forces.sergeants > 0) logi(`${forces.sergeants} Sergeants`)
-			if (forces.light_horse > 0) logi(`${forces.light_horse} Light Horse`)
-			if (forces.knights + forces.sergeants + forces.light_horse === 0) logi(`None`)
-		}
-
-		if (is_foot_step()) {
-			if (forces.men_at_arms >= n)
-				forces.men_at_arms = n
-			n -= forces.men_at_arms
-			if (forces.militia >= n)
-				forces.militia = n
-			n -= forces.militia
-			if (forces.serfs >= n)
-				forces.serfs = n
-			n -= forces.serfs
-
-			if (forces.men_at_arms > 0) logi(`${forces.men_at_arms} Men-at-Arms`)
-			if (forces.militia > 0) logi(`${forces.militia} Militia`)
-			if (forces.serfs > 0) logi(`${forces.serfs} Serfs`)
-			if (forces.men_at_arms + forces.militia + forces.serfs === 0) logi(`None`)
-		}
-
-		if (is_york_lord(lord))
-			game.battle.bridge.n1 = n
-		else
-			game.battle.bridge.n2 = n
-	}
-
 	return forces
-}
-
-function count_horse_hits(lord) {
-	let hits = 0
-	if (!is_marsh_in_play()) {
-		let forces = assemble_melee_forces(lord)
-
-		hits += forces.knights << 2
-		hits += forces.sergeants << 1
-		hits += forces.light_horse
-
-		if (game.battle.field_organ === lord && game.battle.round === 1) {
-			log(`E${EVENT_TEUTONIC_FIELD_ORGAN} L${lord}.`)
-			hits += forces.knights << 1
-			hits += forces.sergeants << 1
-		}
-	}
-	return hits
 }
 
 function count_foot_hits(lord) {
@@ -4267,24 +4147,9 @@ function count_foot_hits(lord) {
 	let hits = 0
 	hits += forces.men_at_arms << 1
 	hits += forces.militia
-	hits += forces.serfs
+	hits += forces.burgundians
+	hits += forces.mercenaries
 	return hits
-}
-
-function count_garrison_xhits() {
-	if (is_archery_step())
-		return game.battle.garrison.men_at_arms
-	return 0
-}
-
-function count_garrison_hits() {
-	if (is_melee_step())
-		return (game.battle.garrison.knights << 1) + (game.battle.garrison.men_at_arms << 1)
-	return 0
-}
-
-function count_lord_xhits(lord) {
-	return battle_steps[game.battle.step].xhits(lord)
 }
 
 function count_lord_hits(lord) {
@@ -4353,7 +4218,7 @@ function did_not_concede() {
 }
 
 function has_strike(pos) {
-	return game.battle.ah[pos] + game.battle.ahx[pos] > 0
+	return game.battle.ah[pos] > 0
 }
 
 function current_strike_positions() {
@@ -4389,7 +4254,7 @@ function find_strike_target(S) {
 }
 
 function has_strike_target(S) {
-	if (is_attacker_step() && has_garrison())
+	if (is_attacker_step())
 		return true
 	if (S === A1 || S === A2 || S === A3)
 		return filled(D1) || filled(D2) || filled(D3)
@@ -4398,7 +4263,7 @@ function has_strike_target(S) {
 }
 
 function has_no_strike_targets() {
-	if (is_defender_step() && has_garrison())
+	if (is_defender_step())
 		if (has_strike_target(D2))
 			return false
 	for (let striker of game.battle.strikers)
@@ -4408,11 +4273,11 @@ function has_no_strike_targets() {
 }
 
 function has_no_strikers_and_strike_targets() {
-	if (is_defender_step() && has_garrison()) {
-		if (is_archery_step() && game.battle.garrison.men_at_arms > 0)
+	if (is_defender_step()) {
+		if (is_archery_step())
 			if (has_strike_target(D2))
 				return false
-		if (is_melee_step() && game.battle.garrison.men_at_arms + game.battle.garrison.knights > 0)
+		if (is_melee_step())
 			if (has_strike_target(D2))
 				return false
 	}
@@ -4570,47 +4435,16 @@ function goto_strike() {
 
 	log_h5(battle_steps[game.battle.step].name)
 
-	// Once per Archery and once per Melee.
-	if (game.battle.step === 0 || game.battle.step === 2) {
-		game.battle.warrior_monks = 0
-		for (let p = 0; p < 12; ++p) {
-			let lord = game.battle.array[p]
-			if (lord !== NOBODY && lord_has_capability(lord, AOW_TEUTONIC_WARRIOR_MONKS))
-				game.battle.warrior_monks |= 1 << lord
-		}
-	}
-
-	if (is_marsh_in_play()) {
-		if (game.active === TEUTONS)
-			logevent(EVENT_RUSSIAN_MARSH)
-		else
-			logevent(EVENT_TEUTONIC_MARSH)
-	}
-
-	if (is_archery_step() && is_hill_in_play()) {
-		if (game.active === TEUTONS)
-			logevent(EVENT_TEUTONIC_HILL)
-		else
-			logevent(EVENT_RUSSIAN_HILL)
-	}
-
 	// Generate hits
 	game.battle.ah = [ 0, 0, 0, 0, 0, 0 ]
-	game.battle.ahx = [ 0, 0, 0, 0, 0, 0 ]
 
 	for (let pos of current_strike_positions()) {
 		let lord = get_battle_array(pos)
 		if (lord !== NOBODY) {
 			let hits = count_lord_hits(lord)
-			let xhits = count_lord_xhits(lord)
 
 			game.battle.ah[pos] = hits
-			game.battle.ahx[pos] = xhits
 
-			if (xhits > 2)
-				log(`L${lord} ${frac(xhits)} Crossbow Hits.`)
-			else if (xhits > 0)
-				log(`L${lord} ${frac(xhits)} Crossbow Hit.`)
 			if (hits > 2)
 				log(`L${lord} ${frac(hits)} Hits.`)
 			else if (hits > 0)
@@ -4703,11 +4537,6 @@ states.strike_group = {
 	},
 	prompt() {
 		view.prompt = `${format_strike_step()}: Strike.`
-		if (has_garrison_strike()) {
-			view.actions.garrison = 1
-			if (!has_strike(D2))
-				view.prompt = `${format_strike_step()}: Strike with Garrison.`
-		}
 		for (let pos of current_strike_positions())
 			if (has_strike(pos))
 				gen_action_lord(game.battle.array[pos])
@@ -4733,10 +4562,9 @@ function goto_strike_total_hits() {
 
 	// Total hits
 	for (let pos of game.battle.strikers) {
-		if (game.battle.ah[pos] + game.battle.ahx[pos] > 0) {
+		if (game.battle.ah[pos]) {
 			slist.push(lord_name[game.battle.array[pos]])
 			hits += game.battle.ah[pos]
-			xhits += game.battle.ahx[pos]
 		}
 	}
 
@@ -4820,18 +4648,16 @@ function goto_assign_left_right() {
 function end_assign_hits() {
 	for (let pos of game.battle.strikers) {
 		game.battle.ah[pos] = 0
-		game.battle.ahx[pos] = 0
 	}
 	game.who = NOBODY
 	game.battle.strikers = 0
 	game.battle.hits = 0
-	game.battle.xhits = 0
 	set_active_enemy()
 	resume_strike()
 }
 
 function for_each_target(fn) {
-	if (is_defender_step() && has_garrison()) {
+	if (is_defender_step()) {
 		if (filled(A2))
 			fn(game.battle.array[A2])
 		return
@@ -4854,54 +4680,20 @@ function for_each_target(fn) {
 			fn(game.battle.array[flanker])
 }
 
-function prompt_hit_armored_forces() {
-	let has_armored = false
-	for_each_target(lord => {
-		if (get_lord_forces(lord, KNIGHTS) > 0) {
-			gen_action_knights(lord)
-			has_armored = true
-		}
-		if (get_lord_forces(lord, SERGEANTS) > 0) {
-			gen_action_sergeants(lord)
-			has_armored = true
-		}
-		if (get_lord_forces(lord, MEN_AT_ARMS) > 0) {
-			gen_action_men_at_arms(lord)
-			has_armored = true
-		}
-	})
-	return has_armored
-}
-
-function prompt_hit_unarmored_forces() {
-	for_each_target(lord => {
-		if (get_lord_forces(lord, LIGHT_HORSE) > 0)
-			gen_action_light_horse(lord)
-		if (get_lord_forces(lord, ASIATIC_HORSE) > 0)
-			gen_action_asiatic_horse(lord)
-		if (get_lord_forces(lord, MILITIA) > 0)
-			gen_action_militia(lord)
-		if (get_lord_forces(lord, SERFS) > 0)
-			gen_action_serfs(lord)
-	})
-}
-
 function prompt_hit_forces() {
 	for_each_target(lord => {
-		if (get_lord_forces(lord, KNIGHTS) > 0)
-			gen_action_knights(lord)
-		if (get_lord_forces(lord, SERGEANTS) > 0)
-			gen_action_sergeants(lord)
-		if (get_lord_forces(lord, LIGHT_HORSE) > 0)
-			gen_action_light_horse(lord)
-		if (get_lord_forces(lord, ASIATIC_HORSE) > 0)
-			gen_action_asiatic_horse(lord)
+		if (get_lord_forces(lord, RETINUE) > 0)
+			gen_action_retinue(lord)
 		if (get_lord_forces(lord, MEN_AT_ARMS) > 0)
 			gen_action_men_at_arms(lord)
+		if (get_lord_forces(lord, LONGBOWMEN) > 0)
+			gen_action_longbowmen(lord)
 		if (get_lord_forces(lord, MILITIA) > 0)
 			gen_action_militia(lord)
-		if (get_lord_forces(lord, SERFS) > 0)
-			gen_action_serfs(lord)
+		if (get_lord_forces(lord, BURGUNDIANS) > 0)
+			gen_action_burgundians(lord)
+		if (get_lord_forces(lord, MERCENARIES) > 0)
+			gen_action_mercenaries(lord)
 	})
 }
 
@@ -4916,26 +4708,23 @@ states.assign_hits = {
 
 		prompt_hit_forces()
 	},
-	knights(lord) {
-		action_assign_hits(lord, KNIGHTS)
-	},
-	sergeants(lord) {
-		action_assign_hits(lord, SERGEANTS)
-	},
-	light_horse(lord) {
-		action_assign_hits(lord, LIGHT_HORSE)
-	},
-	asiatic_horse(lord) {
-		action_assign_hits(lord, ASIATIC_HORSE)
+	retinue(lord) {
+		action_assign_hits(lord, RETINUE)
 	},
 	men_at_arms(lord) {
 		action_assign_hits(lord, MEN_AT_ARMS)
 	},
+	longbowmen(lord) {
+		action_assign_hits(lord, LONGBOWMEN)
+	},
 	militia(lord) {
 		action_assign_hits(lord, MILITIA)
 	},
-	serfs(lord) {
-		action_assign_hits(lord, SERFS)
+	burgundians(lord) {
+		action_assign_hits(lord, BURGUNDIANS)
+	},
+	mercenaries(lord) {
+		action_assign_hits(lord, MERCENARIES)
 	},
 }
 
@@ -4961,35 +4750,8 @@ function rout_lord(lord) {
 }
 
 function rout_unit(lord, type) {
-	if (lord === GARRISON) {
-		if (type === KNIGHTS)
-			game.battle.garrison.knights--
-		if (type === MEN_AT_ARMS)
-			game.battle.garrison.men_at_arms--
-		if (game.battle.garrison.knights + game.battle.garrison.men_at_arms === 0) {
-			log("Garrison Routed.")
-			game.battle.garrison = 0
-		}
-	} else {
 		add_lord_forces(lord, type, -1)
 		add_lord_routed_forces(lord, type, 1)
-	}
-}
-
-function remove_serf(lord) {
-	add_lord_forces(lord, SERFS, -1)
-	game.pieces.smerdi++
-}
-
-function use_warrior_monks(lord, type) {
-	if (type === KNIGHTS) {
-		let bit = 1 << lord
-		if (game.battle.warrior_monks & bit) {
-			game.battle.warrior_monks ^= bit
-			return true
-		}
-	}
-	return false
 }
 
 function which_lord_capability(lord, list) {
@@ -5017,40 +4779,18 @@ function action_assign_hits(lord, type) {
 
 	if (game.who !== lord) {
 		game.who = lord
-		if (lord === GARRISON)
-			log("Garrison")
-		else
-			log(`L${lord}`)
+		log(`L${lord}`)
 	}
 
 	let extra = ""
-
-	let crossbow = 0
-	if (is_armored_force(type) && game.battle.xhits > 0) {
-		extra += " (-2\xa0Crossbow)"
-		crossbow = 2
-	}
-
-	if (type === SERGEANTS || type === MEN_AT_ARMS) {
-		if (lord_has_capability(lord, AOW_TEUTONIC_HALBBRUDER)) {
-			extra += ` (+1\xa0C${which_lord_capability(lord, AOW_TEUTONIC_HALBBRUDER)})`
-			protection += 1
-		}
-	}
 
 	// Evade only in Battle Melee steps
 	if (evade > 0 && is_melee_step()) {
 		if (assign_hit_roll(FORCE_TYPE_NAME[type], evade, extra))
 			rout_unit(lord, type)
 	} else if (protection > 0) {
-		if (assign_hit_roll(FORCE_TYPE_NAME[type], protection - crossbow, extra)) {
-			if (use_warrior_monks(lord, type)) {
-				let monks = which_lord_capability(lord, AOW_TEUTONIC_WARRIOR_MONKS)
-				if (assign_hit_roll(`C${monks}`, protection - crossbow, extra))
-					rout_unit(lord, type)
-			} else {
-				rout_unit(lord, type)
-			}
+		if (assign_hit_roll(FORCE_TYPE_NAME[type], protection, extra)) {
+			rout_unit(lord, type)
 		}
 	} else {
 		logi(`${FORCE_TYPE_NAME[type]} removed`)
@@ -5530,20 +5270,18 @@ states.battle_losses = {
 		view.prompt = "Losses: Determine the fate of your Routed units."
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 			if (is_lord_on_map(lord) && lord_has_routed_units(lord)) {
-				if (get_lord_routed_forces(lord, KNIGHTS) > 0)
-					gen_action_routed_knights(lord)
-				if (get_lord_routed_forces(lord, SERGEANTS) > 0)
-					gen_action_routed_sergeants(lord)
-				if (get_lord_routed_forces(lord, LIGHT_HORSE) > 0)
-					gen_action_routed_light_horse(lord)
-				if (get_lord_routed_forces(lord, ASIATIC_HORSE) > 0)
-					gen_action_routed_asiatic_horse(lord)
+				if (get_lord_routed_forces(lord, RETINUE) > 0)
+					gen_action_retinue(lord)
 				if (get_lord_routed_forces(lord, MEN_AT_ARMS) > 0)
 					gen_action_routed_men_at_arms(lord)
 				if (get_lord_routed_forces(lord, MILITIA) > 0)
 					gen_action_routed_militia(lord)
-				if (get_lord_routed_forces(lord, SERFS) > 0)
-					gen_action_routed_serfs(lord)
+				if (get_lord_routed_forces(lord, LONGBOWMEN) > 0)
+					gen_action_routed_longbowmen(lord)
+				if (get_lord_routed_forces(lord, BURGUNDIANS) > 0)
+					gen_action_routed_burgundians(lord)
+				if (get_lord_routed_forces(lord, MERCENARIES) > 0)
+					gen_action_routed_mercenaries(lord)
 			}
 		}
 	},
@@ -6579,20 +6317,20 @@ function gen_action_ship(lord) {
 	gen_action("ship", lord)
 }
 
-function gen_action_knights(lord) {
-	gen_action("knights", lord)
+function gen_action_mercenaries(lord) {
+	gen_action("mercenaries", lord)
 }
 
-function gen_action_sergeants(lord) {
-	gen_action("sergeants", lord)
+function gen_action_burgundians(lord) {
+	gen_action("burgundians", lord)
 }
 
-function gen_action_light_horse(lord) {
-	gen_action("light_horse", lord)
+function gen_action_longbowmen(lord) {
+	gen_action("longbowmen", lord)
 }
 
-function gen_action_asiatic_horse(lord) {
-	gen_action("asiatic_horse", lord)
+function gen_action_retinue(lord) {
+	gen_action("retinue", lord)
 }
 
 function gen_action_men_at_arms(lord) {
@@ -6601,10 +6339,6 @@ function gen_action_men_at_arms(lord) {
 
 function gen_action_militia(lord) {
 	gen_action("militia", lord)
-}
-
-function gen_action_serfs(lord) {
-	gen_action("serfs", lord)
 }
 
 function gen_action_routed_knights(lord) {
