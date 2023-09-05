@@ -2494,19 +2494,6 @@ function end_command() {
 	goto_feed()
 }
 
-function this_lord_has_russian_druzhina() {
-	if (game.active === RUSSIANS)
-		if (lord_has_capability(game.command, AOW_RUSSIAN_DRUZHINA))
-			return get_lord_forces(game.command, KNIGHTS) > 0
-	return false
-}
-
-function this_lord_has_house_of_suzdal() {
-	if (game.active === RUSSIANS)
-		if (lord_has_capability(game.command, AOW_RUSSIAN_HOUSE_OF_SUZDAL))
-			return is_lord_on_map(LORD_ALEKSANDR) && is_lord_on_map(LORD_ANDREY)
-	return false
-}
 
 states.command = {
 	inactive: "Command",
@@ -3174,11 +3161,17 @@ function can_action_forage() {
 	return true
 }
 
+function has_adjacent_enemy(loc) {
+	for (let next of data.locales[loc].adjacent)
+		if (has_unbesieged_enemy_lord(next))
+			return true
+	return false
+}
+
 function goto_forage() {
 	push_undo()
 	let here = get_lord_locale(game.command)
-	for (let next of data.locales[here].adjacent)
-	if (has_enemy_lord(next)) {
+	if (has_adjacent_enemy(here)) {
 		let die = roll_die()
 		if (die <= 4) {
 			add_lord_assets(game.command, PROV, 1)
@@ -3190,10 +3183,9 @@ function goto_forage() {
 		}
 	}
 	else {
-		log(`Foraged at %${here}`)
 		add_lord_assets(game.command, PROV, 1)
+		log(`Foraged at %${here}`)
 		deplete_locale(here)
-
 	}
 	spend_action(1)
 	resume_command()
