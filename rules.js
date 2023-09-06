@@ -1369,7 +1369,8 @@ exports.setup = function (seed, scenario, options) {
 
 		flags: {
 			first_action: 0,
-			first_march: 0,
+			first_march_highway: 0,
+			second_march_highway: 0,
 		},
 
 		command: NOBODY,
@@ -2445,8 +2446,11 @@ function is_first_action() {
 	return game.flags.first_action
 }
 
-function is_first_march() {
-	return game.flags.first_march
+function is_first_march_highway() {
+	return game.flags.first_march_highway
+}
+function is_second_march_highway() {
+	return game.flags.second_march_highway
 }
 
 function goto_command() {
@@ -2454,7 +2458,9 @@ function goto_command() {
 	game.group = [ game.command ]
 
 	game.flags.first_action = 1
-	game.flags.first_march = 1
+	game.flags.first_march_highway = 1
+	game.flags.first_second_highway = 0
+
 	resume_command()
 	update_supply_possible()
 }
@@ -2470,13 +2476,15 @@ function spend_action(cost) {
 
 function spend_march_action(cost) {
 	game.flags.first_action = 0
-	game.flags.first_march = 0
+	game.flags.first_march_highway = 0
+	game.flags.second_march_highway = 0
 	game.actions -= cost
 }
 
 function spend_all_actions() {
 	game.flags.first_action = 0
-	game.flags.first_march = 0
+	game.flags.first_march_highway = 0
+	game.flags.second_march_highway = 0
 	game.actions = 0
 }
 
@@ -2486,7 +2494,8 @@ function end_command() {
 	game.group = 0
 
 	game.flags.first_action = 0
-	game.flags.first_march = 0
+	game.flags.first_march_highway = 0
+	game.flags.second_march_highway = 0
 	game.flags.famine = 0
 
 	// NOTE: Feed currently acting side first for expedience.
@@ -2631,18 +2640,6 @@ function format_group_move() {
 	return ""
 }
 
-/*
-function group_has_teutonic_converts() {
-	if (game.active === TEUTONS) {
-		if (is_first_march())
-			if (group_has_capability(AOW_TEUTONIC_CONVERTS))
-				if (count_group_forces(LIGHT_HORSE) > 0)
-					return true
-	}
-	return false
-}
-*/
-
 function prompt_march() {
 	if (game.actions > 0) {
 		let here = get_lord_locale(game.command)
@@ -2713,15 +2710,9 @@ function march_with_group_2() {
 	let to = game.march.to
 	let transport = count_group_transport(data.ways[way].type)
 	let prov = count_group_assets(PROV)
+	let ways = list_ways(from, to)
 
-	/*if (group_has_teutonic_converts()) {
-		logcap(AOW_TEUTONIC_CONVERTS)
 		spend_march_action(0)
-	}*/
-	/*else if (laden)
-		spend_march_action(2)*/
-
-		spend_march_action(1)
 
 	if (data.ways[way].name)
 		log(`Marched to %${to} via W${way}${format_group_move()}.`)

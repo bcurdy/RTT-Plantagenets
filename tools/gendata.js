@@ -659,7 +659,12 @@ highway("Exeter, Wells")
 highway("Winchester, Salisbury")
 highway("Salisbury, Wells")
 highway("Cambridge, Ely")
+highway("Northampton, Bedford")
 
+
+road("Gloucester, Cardiff")
+road("Newbury, Oxford")
+road("Rochester, Hastings")
 road("Hexham, Carlisle")
 road("Hexham, Newcastle")
 road("Appleby, Carlisle")
