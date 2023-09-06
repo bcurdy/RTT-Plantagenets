@@ -2539,15 +2539,13 @@ states.command = {
 
 		if (can_action_supply())
 			view.actions.supply = 1
-
-	/*	if (can_action_siege())
-			view.actions.siege = 1 */
 		if (can_action_forage())
 			view.actions.forage = 1
 		if (can_action_tax())
 			view.actions.tax = 1
 		if (can_action_sail())
 			view.actions.sail = 1
+		// PARLEY ACTION
 	},
 
 	pass() {
@@ -2632,6 +2630,7 @@ function format_group_move() {
 	}
 	return ""
 }
+
 /*
 function group_has_teutonic_converts() {
 	if (game.active === TEUTONS) {
@@ -2656,37 +2655,13 @@ function goto_march(to) {
 	push_undo()
 	let from = get_lord_locale(game.command)
 	let ways = list_ways(from, to)
-	if (ways.length > 2) {
-		game.march = { from, to, approach: -1, avoid: -1 }
-		game.state = "march_way"
-	} else {
-		game.march = { from, to, approach: ways[1], avoid: -1 }
-		march_with_group_1()
-	}
-}
-
-states.march_way = {
-	inactive: "March",
-	prompt() {
-		view.prompt = `March: Select Way.`
-		view.group = game.group
-		let from = game.march.from
-		let to = game.march.to
-		let ways = list_ways(from, to)
-		for (let i = 1; i < ways.length; ++i)
-			gen_action_way(ways[i])
-	},
-	way(way) {
-		game.march.approach = way
-		march_with_group_1()
-	},
+	game.march = { from, to, approach: ways[1], avoid: -1 }
+	march_with_group_1()
+	
 }
 
 function march_with_group_1() {
-	let way = game.march.approach
-	let type = data.ways[way].type
-
-	let transport = count_group_transport(type)
+	let transport = count_group_assets(CART)
 	let prov = count_group_assets(PROV)
 
 	if (prov <= transport)
@@ -2703,7 +2678,7 @@ states.march_laden = {
 	prompt() {
 		let to = game.march.to
 		let way = game.march.approach
-		let transport = count_group_transport(data.ways[way].type)
+		let transport = count_group_assets(CART)
 		let prov = count_group_assets(PROV)
 
 		view.group = game.group
@@ -3357,10 +3332,6 @@ states.sail = {
 			set_lord_locale(lord, to)
 			set_lord_moved(lord, 1)
 		}
-
-	/*	if (is_trade_route(to))
-			conquer_trade_route(to)
-*/
 		spend_all_actions()
 		resume_command()
 		update_supply_possible()
