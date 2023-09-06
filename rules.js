@@ -1370,7 +1370,6 @@ exports.setup = function (seed, scenario, options) {
 		flags: {
 			first_action: 0,
 			first_march_highway: 0,
-			second_march_highway: 0,
 		},
 
 		command: NOBODY,
@@ -2447,10 +2446,10 @@ function is_first_action() {
 }
 
 function is_first_march_highway() {
-	return game.flags.first_march_highway
-}
-function is_second_march_highway() {
-	return game.flags.second_march_highway
+	if (game.flags.first_march_highway === 1) 
+		return true
+	else 
+		return false
 }
 
 function goto_command() {
@@ -2458,8 +2457,7 @@ function goto_command() {
 	game.group = [ game.command ]
 
 	game.flags.first_action = 1
-	game.flags.first_march_highway = 1
-	game.flags.first_second_highway = 0
+	game.flags.first_march_highway = 0
 
 	resume_command()
 	update_supply_possible()
@@ -2477,14 +2475,12 @@ function spend_action(cost) {
 function spend_march_action(cost) {
 	game.flags.first_action = 0
 	game.flags.first_march_highway = 0
-	game.flags.second_march_highway = 0
 	game.actions -= cost
 }
 
 function spend_all_actions() {
 	game.flags.first_action = 0
 	game.flags.first_march_highway = 0
-	game.flags.second_march_highway = 0
 	game.actions = 0
 }
 
@@ -2495,7 +2491,6 @@ function end_command() {
 
 	game.flags.first_action = 0
 	game.flags.first_march_highway = 0
-	game.flags.second_march_highway = 0
 	game.flags.famine = 0
 
 	// NOTE: Feed currently acting side first for expedience.
@@ -2544,7 +2539,7 @@ states.command = {
 		else
 			view.actions.end_command = 1
 
-		prompt_march()
+		prompt_march() 
 
 		if (can_action_supply())
 			view.actions.supply = 1
@@ -2639,14 +2634,24 @@ function format_group_move() {
 	}
 	return ""
 }
-
 function prompt_march() {
+	let from = get_lord_locale(game.command);
+	
 	if (game.actions > 0) {
-		let here = get_lord_locale(game.command)
-		for (let to of data.locales[here].adjacent)
-			gen_action_locale(to)
+	  for (let to of data.locales[from].adjacent) {
+		gen_action_locale(to);
+	  }
 	}
+	else if (game.actions === 0 && is_first_march_highway()) {
+	  for (let to of data.locales[from].adjacent_by_highway) {
+		gen_action_locale(to);
+		}
+	}
+
+	//TODO MARCH PATH
 }
+
+
 
 function goto_march(to) {
 	push_undo()
@@ -2708,11 +2713,21 @@ function march_with_group_2() {
 	let from = get_lord_locale(game.command)
 	let way = game.march.approach
 	let to = game.march.to
-	let transport = count_group_transport(data.ways[way].type)
+	let transport = count_group_assets(data.ways[way].type)
 	let prov = count_group_assets(PROV)
 	let ways = list_ways(from, to)
 
+
+	if (data.ways[way].type === 'highway' && is_first_march_highway()) {
 		spend_march_action(0)
+	}
+	else if (data.ways[way].type === 'highway') {
+		spend_march_action(1)
+		game.flags.first_march_highway = 1
+	}
+	else if (data.ways[way].type === 'path') {
+		spend_all_actions()
+	}
 
 	if (data.ways[way].name)
 		log(`Marched to %${to} via W${way}${format_group_move()}.`)
@@ -3224,6 +3239,11 @@ function can_action_sail() {
 		if (to !== here && !has_enemy_lord(to))
 			return true
 
+	return false
+}
+
+function can_march_path() {
+	if (!is_first_action())
 	return false
 }
 
