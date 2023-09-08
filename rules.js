@@ -1433,7 +1433,7 @@ function setup_Ia(first_player, second_player) {
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
-	muster_lord(LORD_SOMERSET_1, LOC_WELLS)
+	muster_lord(LORD_SOMERSET_1, LOC_LONDON)
 
 	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 2)
 	set_lord_cylinder_on_calendar(LORD_EXETER_1, 3)
