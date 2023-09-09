@@ -2725,6 +2725,9 @@ function march_with_group_2() {
 		spend_march_action(1)
 		game.flags.first_march_highway = 1
 	}
+	else if (data.ways[way].type === 'road') {
+		spend_march_action(1)
+	}
 	else if (data.ways[way].type === 'path') {
 		spend_all_actions()
 	}
