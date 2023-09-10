@@ -1055,6 +1055,10 @@ function is_seaport(loc) {
 	return set_has(data.seaports, loc)
 }
 
+function is_exile(loc) {
+	return data.locales[loc].type === "exile"
+}
+
 function is_city(loc) {
 	return data.locales[loc].type === "city"
 }
@@ -2549,7 +2553,6 @@ states.command = {
 			view.actions.tax = 1
 		if (can_action_sail())
 			view.actions.sail = 1
-		// PARLEY ACTION
 	},
 
 	pass() {
@@ -2562,6 +2565,7 @@ states.command = {
 		push_undo()
 		end_command()
 	},
+
 
 	forage: goto_forage,
 	supply: goto_supply,
@@ -2635,10 +2639,17 @@ function format_group_move() {
 	return ""
 }
 function prompt_march() {
-	let from = get_lord_locale(game.command);
-	
+	let from = get_lord_locale(game.command); 
+	if (is_first_action())
+	for (let to of data.locales[from].adjacent_by_path) {
+		gen_action_locale(to);
+	  }
+
 	if (game.actions > 0) {
-	  for (let to of data.locales[from].adjacent) {
+	  for (let to of data.locales[from].adjacent_by_road) {
+		gen_action_locale(to);
+	  }
+	  for (let to of data.locales[from].adjacent_by_highway) {
 		gen_action_locale(to);
 	  }
 	}
@@ -2647,8 +2658,6 @@ function prompt_march() {
 		gen_action_locale(to);
 		}
 	}
-
-	//TODO MARCH PATH
 }
 
 
@@ -2741,6 +2750,8 @@ function march_with_group_2() {
 		set_lord_locale(lord, to)
 		set_lord_moved(lord, 1)
 	}
+
+	// TODO : Intercept
 
 	if (has_unbesieged_enemy_lord(to)) {
 		goto_confirm_approach()
@@ -6248,10 +6259,6 @@ function gen_action_way(way) {
 
 function gen_action_locale(locale) {
 	gen_action("locale", locale)
-}
-
-function gen_action_laden_march(locale) {
-	gen_action("laden_march", locale)
 }
 
 function gen_action_lord(lord) {
