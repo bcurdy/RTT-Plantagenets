@@ -1478,6 +1478,15 @@ function setup_Ia(first_player, second_player) {
 	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
 
 	add_favourl_marker(LOC_LONDON)
+	add_favourl_marker(LOC_WELLS)
+	add_favourl_marker(LOC_SCOTLAND)
+	add_favourl_marker(LOC_FRANCE)
+
+	add_favoury_marker(LOC_ELY)
+	add_favoury_marker(LOC_LUDLOW)
+	add_favoury_marker(LOC_BURGUNDY)
+	add_favoury_marker(LOC_IRELAND)
+
 
 }
 
@@ -1494,6 +1503,34 @@ function setup_Ib(first_player, second_player) {
 	muster_lord(LORD_EXETER_1, LOC_NEWCASTLE)
 	muster_lord(LORD_SOMERSET_1, LOC_NEWCASTLE)
 	muster_lord(LORD_NORTHUMBERLAND_L, LOC_CARLISLE)
+
+	add_favourl_marker(LOC_ST_ALBANS)
+	add_favourl_marker(LOC_SCARBOROUGH)
+	add_favourl_marker(LOC_NEWCASTLE)
+	add_favourl_marker(LOC_BAMBURGH)
+	add_favourl_marker(LOC_HEXHAM)
+	add_favourl_marker(LOC_APPLEBY)
+	add_favourl_marker(LOC_CARLISLE)
+	add_favourl_marker(LOC_SCOTLAND)
+	add_favourl_marker(LOC_FRANCE)
+
+
+	add_favoury_marker(LOC_LONDON)
+	add_favoury_marker(LOC_CALAIS)
+	add_favoury_marker(LOC_GLOUCESTER)
+	add_favoury_marker(LOC_HEREFORD)
+	add_favoury_marker(LOC_OXFORD)
+	add_favoury_marker(LOC_SALISBURY)
+	add_favoury_marker(LOC_WINCHESTER)
+	add_favoury_marker(LOC_GUILDFORD)
+	add_favoury_marker(LOC_ARUNDEL)
+	add_favoury_marker(LOC_HASTINGS)
+	add_favoury_marker(LOC_DOVER)
+	add_favoury_marker(LOC_ROCHESTER)
+	add_favoury_marker(LOC_CANTERBURY)
+	add_favoury_marker(LOC_SOUTHAMPTON)
+	add_favoury_marker(LOC_BURGUNDY)
+	add_favoury_marker(LOC_IRELAND)
 }
 
 function setup_Ic(first_player, second_player) {
@@ -1508,6 +1545,38 @@ function setup_Ic(first_player, second_player) {
 	muster_lord(LORD_SOMERSET_1, LOC_BAMBURGH)
 
 	set_lord_cylinder_on_calendar(LORD_HENRY_VI, 5)
+
+
+	add_favourl_marker(LOC_SCARBOROUGH)
+	add_favourl_marker(LOC_NEWCASTLE)
+	add_favourl_marker(LOC_BAMBURGH)
+	add_favourl_marker(LOC_HEXHAM)
+	add_favourl_marker(LOC_APPLEBY)
+	add_favourl_marker(LOC_CARLISLE)
+	add_favourl_marker(LOC_HARLECH)
+	add_favourl_marker(LOC_PEMBROKE)
+	add_favourl_marker(LOC_CARDIFF)
+	add_favourl_marker(LOC_CHESTER)
+	add_favourl_marker(LOC_LANCASTER)
+	add_favourl_marker(LOC_SCOTLAND)
+	add_favourl_marker(LOC_FRANCE)
+
+	add_favoury_marker(LOC_LONDON)
+	add_favoury_marker(LOC_CALAIS)
+	add_favoury_marker(LOC_LUDLOW)
+	add_favoury_marker(LOC_HEREFORD)
+	add_favoury_marker(LOC_SALISBURY)
+	add_favoury_marker(LOC_WINCHESTER)
+	add_favoury_marker(LOC_GUILDFORD)
+	add_favoury_marker(LOC_ARUNDEL)
+	add_favoury_marker(LOC_HASTINGS)
+	add_favoury_marker(LOC_DOVER)
+	add_favoury_marker(LOC_ROCHESTER)
+	add_favoury_marker(LOC_CANTERBURY)
+	add_favoury_marker(LOC_SOUTHAMPTON)
+	add_favoury_marker(LOC_BURGUNDY)
+	add_favoury_marker(LOC_IRELAND)
+
 }
 
 
@@ -1532,6 +1601,22 @@ function setup_II(first_player, second_player) {
 	set_lord_cylinder_on_calendar(LORD_OXFORD, 9)
 	set_lord_cylinder_on_calendar(LORD_EXETER_2, 9)
 
+
+	add_favourl_marker(LOC_CALAIS)
+	add_favourl_marker(LOC_YORK)
+	add_favourl_marker(LOC_HARLECH)
+	add_favourl_marker(LOC_COVENTRY)
+	add_favourl_marker(LOC_WELLS)
+	add_favourl_marker(LOC_FRANCE)
+
+	add_favoury_marker(LOC_LONDON)
+	add_favoury_marker(LOC_ELY)
+	add_favoury_marker(LOC_LUDLOW)
+	add_favoury_marker(LOC_CARLISLE)
+	add_favoury_marker(LOC_PEMBROKE)
+	add_favoury_marker(LOC_EXETER)
+	add_favoury_marker(LOC_BURGUNDY)
+
 }
 
 
@@ -1548,6 +1633,18 @@ function setup_III(first_player, second_player) {
 	muster_lord(LORD_JASPER_TUDOR_2, LOC_FRANCE)
 	muster_lord(LORD_OXFORD, LOC_FRANCE)
 
+	add_favourl_marker(LOC_FRANCE)
+	add_favourl_marker(LOC_OXFORD)
+	add_favourl_marker(LOC_HARLECH)
+	add_favourl_marker(LOC_PEMBROKE)
+
+	add_favoury_marker(LOC_BURGUNDY)
+	add_favoury_marker(LOC_LONDON)
+	add_favoury_marker(LOC_CALAIS)
+	add_favoury_marker(LOC_CARLISLE)
+	add_favoury_marker(LOC_ARUNDEL)
+	add_favoury_marker(LOC_YORK)
+	add_favoury_marker(LOC_GLOUCESTER)
 }
 
 
