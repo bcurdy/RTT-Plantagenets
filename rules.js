@@ -1086,6 +1086,30 @@ function is_london(loc) {
 function is_harlech(loc) {
 	return data.locales[loc].type === "harlech"
 }
+function is_favour_friendly(loc, side) {
+	if (has_favoury_marker(loc) && side === "YORK")
+	return true
+	else if (has_favourl_marker(loc) && side === "LANCASTER")
+	return true
+	else 
+	return false
+}
+
+function is_favour_enemy(loc, side) {
+	if (has_favoury_marker(loc) && side === "LANCASTER")
+	return true
+	else if (has_favourl_marker(loc) && side === "YORK")
+	return true
+	else 
+	return false
+}
+
+function is_favour_neutral(loc) {
+	if (!has_favoury_marker(loc) && !has_favourl_marker(loc))
+	return true
+	else
+	return false
+}
 
 function is_stronghold(loc) {
 	return data.locales[loc].stronghold > 0
@@ -1102,6 +1126,7 @@ function add_favourl_marker(loc) {
 function remove_favourl_marker(loc) {
 	set_delete(game.pieces.favourl, loc)
 }
+
 function has_favoury_marker(loc) {
 	return set_has(game.pieces.favoury, loc)
 }
@@ -1112,6 +1137,12 @@ function add_favoury_marker(loc) {
 	
 function remove_favoury_marker(loc) {
 	set_delete(game.pieces.favoury, loc)
+}
+function parley_locale(loc, side) {
+	if (is_favour_friendly(loc, side))
+	set_delete(game.pieces.favoury, loc)
+	set_delete(game.pieces.favourl, loc)
+
 }
 
 function has_exhausted_marker(loc) {
@@ -1445,6 +1476,8 @@ function setup_Ia(first_player, second_player) {
 	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
 	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
 	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
+
+	add_favourl_marker(LOC_LONDON)
 
 }
 

@@ -507,6 +507,7 @@ const ui = {
 	locale: [],
 	locale_name: [],
 	locale_markers: [],
+	locale_markers_rose: [],
 	lord_cylinder: [],
 	lord_mat: [],
 	lord_buttons: [],
@@ -684,8 +685,8 @@ function build_map() {
 		document.getElementById("locales").appendChild(e)
 
 		// Locale Markers
-		e = ui.locale_markers[ix] = document.createElement("div")
-		e.className = "locale marker rose favour " + locale.name // York to be removed - York/Lancaster 
+		e = ui.locale_markers_rose[ix] = document.createElement("div")
+		e.className = "locale marker rose favour " + locale.name //  York/Lancaster to add favour
 		e.style.top = y+h-small + "px"
 		e.style.left = x+ (w-small)/2 + "px"
 		e.style.width = small + "px"
@@ -698,7 +699,7 @@ function build_map() {
 
 		// Depleted markers
 		e = ui.locale_markers[ix] = document.createElement("div")
-		e.className = "locale marker " + locale.name // Depleted to be removed - depleted/exhausted to add markers
+		e.className = "locale marker " + locale.name // depleted or exhausted to add markers
 		e.style.top = y+h-small-offsetdeplete + "px"
 		e.style.left = offsetdeplete+x+ (w-small)/2 + "px"
 		e.style.width = small + "px"
@@ -1121,7 +1122,7 @@ function update_locale(loc) {
 		else
 			ui.locale_markers[loc].appendChild(get_cached_element("marker circle battle"))
 
-
+	//DEPLETED/EXHAUSTED
 	if (!set_has(view.pieces.depleted,loc) && !set_has(view.pieces.exhausted,loc)) {
 		let cn
 			cn = "depleted"
@@ -1145,6 +1146,24 @@ function update_locale(loc) {
 			cn = "depleted"
 		ui.locale_markers[loc].classList.remove(cn)
 
+	}
+
+	// FAVOUR MARKERS
+
+	if (set_has(view.pieces.favourl,loc)) {
+		let cn
+			cn = "lancaster"
+		ui.locale_markers_rose[loc].classList.add(cn)
+			cn = "york"
+		ui.locale_markers_rose[loc].classList.remove(cn)
+	}
+
+	if (set_has(view.pieces.favoury,loc)) {
+		let cn
+			cn = "york"
+		ui.locale_markers_rose[loc].classList.add(cn)
+			cn = "lancaster"
+		ui.locale_markers_rose[loc].classList.remove(cn)
 	}
 }
 
