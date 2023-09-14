@@ -519,6 +519,8 @@ const ui = {
 	lord_events: [],
 	lord_moved1: [],
 	lord_moved2: [],
+	lord_fled: [],
+	lord_valour: [],
 	lord_feed: [],
 	cards: [],
 	calendar: [],
@@ -605,6 +607,8 @@ function build_lord_mat(lord, ix, side, name) {
 	ui.lord_events[ix] = build_div(mat, "events")
 	ui.lord_moved1[ix] = build_div(mat, "marker square moved_fought one hide")
 	ui.lord_moved2[ix] = build_div(mat, "marker square moved_fought two hide")
+	ui.lord_fled[ix] = build_div(mat, "marker square fled hide")
+	ui.lord_valour[ix] = build_div(mat, "valour_area")
 	ui.lord_feed[ix] = build_div(mat, "marker small feed x2")
 	ui.lord_mat[ix] = mat
 	register_action(ui.lord_buttons[ix], "lord", ix)
@@ -1031,6 +1035,23 @@ function update_assets(id, parent, assets) {
 	}
 }
 
+function add_valour(parent, lord) {
+	let elt
+	if (is_action("valour", lord))
+		elt = get_cached_element("action marker small valour", "valour", lord)
+	else
+		elt = get_cached_element("marker valour small")
+	parent.appendChild(elt)
+}
+
+function update_valour(lord, parent, battle) {
+	if (!battle) return
+	parent.replaceChildren()
+	for (let i = 0; i < battle.valour[lord]; i++) {
+		add_valour(parent, lord)
+	}
+
+}
 function update_vassals(ready_parent, mustered_parent, lord_ix) {
 	/* TODO: vassals currently with lord
 	for (let v of data.lords[lord_ix].vassals) {
@@ -1071,6 +1092,8 @@ function update_lord_mat(ix) {
 	let m = get_lord_moved(ix)
 	ui.lord_moved1[ix].classList.toggle("hide", is_levy_phase() || (m !== 1 && m !== 2))
 	ui.lord_moved2[ix].classList.toggle("hide", is_levy_phase() || (m !== 2))
+	ui.lord_fled[ix].classList.toggle("hide", view.battle === 0 || !view.battle.fled.includes(ix))
+	update_valour(ix, ui.lord_valour[ix], view.battle)
 }
 
 function update_lord(ix) {

@@ -238,7 +238,7 @@ body.Lancaster #plan_actions .york { display: none }
 	display: none;
 }
 
-.mat .moved_fought, .mat .feed {
+.mat .moved_fought, .mat .feed, .mat .fled, .mat .valour {
 	position: absolute;
 	z-index: 5;
 }
@@ -246,6 +246,9 @@ body.Lancaster #plan_actions .york { display: none }
 .mat .feed { right: 8px; top: 135px; }
 .mat .moved_fought.one { right: 72px; top: 12px; }
 .mat .moved_fought.two { right: 66px; top: 6px; }
+.mat .fled { right: 20px; top: 5px; }
+
+.mat .valour_area {left: 100px; top: 250px; width: 80px; height: 80px; }
 
 body.shift .capabilities,
 body.shift .events,
@@ -259,7 +262,7 @@ body.shift .exhausted  {
 	display:none;
 }
 
-.mat .forces, .mat .routed, .mat .assets {
+.mat .forces, .mat .routed, .mat .assets, .mat .valour_area {
 	position: absolute;
 	display: flex;
 	flex-wrap: wrap;
