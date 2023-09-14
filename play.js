@@ -87,6 +87,9 @@ const first_lancaster_card = 37
 const last_lancaster_card = 73
 const last_aow_card = last_lancaster_card
 
+const first_locale = 0
+const last_locale = data.locales.length - 1
+
 const Y1 = find_card("Y1")
 const Y2 = find_card("Y2")
 const Y3 = find_card("Y3")
@@ -167,8 +170,6 @@ const A1 = 0, A2 = 1, A3 = 2, D1 = 3, D2 = 4, D3 = 5
 
 const RETINUE = 0
 const VASSAL = 1
-
-
 const MEN_AT_ARMS = 2
 const LONGBOWMEN = 3
 const MILITIA = 4
@@ -190,6 +191,9 @@ const VASSAL_MUSTERED = 2
 const NOWHERE = -1
 const CALENDAR = 100
 
+const TOWN = "town"
+const CITY = "city"
+const FORTRESS = "fortress"
 
 const SUMMER = 0
 const SPRING = 1
@@ -354,6 +358,21 @@ function count_lord_all_forces(lord) {
 		get_lord_forces(lord, MILITIA) +
 		get_lord_forces(lord, LONGBOWMEN)
 	)
+}
+
+function count_favour(type) {
+	let n = 0
+	for (let x = first_locale; x < last_locale; x++) {
+		if (data.locales[x].type !== type)
+			continue
+
+		if (view.pieces.favourl.includes(x))
+			n += 1
+		if (view.pieces.favoury.includes(x))
+			n -= 1
+	}
+
+	return n;
 }
 
 function is_york_locale(loc) {
@@ -553,14 +572,10 @@ const ui = {
 	turn: document.getElementById("turn"),
 	end: document.getElementById("end"),
 	victory_check: document.getElementById("victory_check"),
-	fortressl: document.getElementById("fortresses_l"),
-	fortressy: document.getElementById("fortresses_y"),
-	townl: document.getElementById("towns_l"),
-	towny: document.getElementById("towns_y"),
-	citiesl: document.getElementById("cities_l"),
-	citiesy: document.getElementById("cities_y"),
-	influence_point_l: document.getElementById("ip_l"),
-	influence_point_y: document.getElementById("ip_y"),
+	fortress: document.getElementById("fortresses"),
+	town: document.getElementById("towns"),
+	cities: document.getElementById("cities"),
+	influence: document.getElementById("ip"),
 
 
 	court1_header: document.getElementById("court1_header"),
@@ -1382,29 +1397,29 @@ function on_update() {
 	ui.victory_check.style.top = (track_xy[view.victory_check][1]) + "px"
 	ui.victory_check.style.left = (track_xy[view.victory_check][0]) + "px"
 
-	ui.townl.style.top = (track_xy[view.townl][1]) + "px"
-	ui.townl.style.left = (track_xy[view.townl][0]) + "px"
+	let town = count_favour(TOWN)
+	ui.town.style.top = (track_xy[Math.abs(town)][1]) + "px"
+	ui.town.style.left = (track_xy[Math.abs(town)][0]) + "px"
+	ui.town.classList.toggle("york", town < 0)
+	ui.town.classList.toggle("lancaster", town >= 0)
 
-	ui.towny.style.top = (track_xy[view.towny][1]) + "px"
-	ui.towny.style.left = (track_xy[view.towny][0]) + "px"
+	let cities = count_favour(CITY)
+	ui.cities.style.top = (track_xy[Math.abs(cities)][1]) + "px"
+	ui.cities.style.left = (track_xy[Math.abs(cities)][0]) + "px"
+	ui.cities.classList.toggle("york", cities < 0)
+	ui.cities.classList.toggle("lancaster", cities >= 0)
 
-	ui.citiesl.style.top = (track_xy[view.citiesl][1]) + "px"
-	ui.citiesl.style.left = (track_xy[view.citiesl][0]) + "px"
+	let fortress = count_favour(FORTRESS)
+	ui.fortress.style.top = (track_xy[Math.abs(fortress)][1]) + "px"
+	ui.fortress.style.left = (track_xy[Math.abs(fortress)][0]) + "px"
+	ui.fortress.classList.toggle("york", fortress < 0)
+	ui.fortress.classList.toggle("lancaster", fortress >= 0)
 
-	ui.citiesy.style.top = (track_xy[view.citiesy][1]) + "px"
-	ui.citiesy.style.left = (track_xy[view.citiesy][0]) + "px"
+	ui.influence.style.top = (track_xy[Math.abs(view.influence)][1]) + "px"
+	ui.influence.style.left = (track_xy[Math.abs(view.influence)][0]) + "px"
+	ui.influence.classList.toggle("york", view.influence < 0)
+	ui.influence.classList.toggle("lancaster", view.influences >= 0)
 
-	ui.fortressl.style.top = (track_xy[view.fortressl][1]) + "px"
-	ui.fortressl.style.left = (track_xy[view.fortressl][0]) + "px"
-
-	ui.fortressy.style.top = (track_xy[view.fortressy][1]) + "px"
-	ui.fortressy.style.left = (track_xy[view.fortressy][0]) + "px"
-
-	ui.influence_point_l.style.top = (track_xy[view.influence_point_l][1]) + "px"
-	ui.influence_point_l.style.left = (track_xy[view.influence_point_l][0]) + "px"
-
-	ui.influence_point_y.style.top = (track_xy[view.influence_point_y][1]) + "px"
-	ui.influence_point_y.style.left = (track_xy[view.influence_point_y][0]) + "px"
 
 	update_plan()
 	update_cards()

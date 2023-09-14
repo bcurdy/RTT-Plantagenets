@@ -1211,6 +1211,30 @@ function group_has_capability(c) {
 			return true
 	return false
 }
+
+function reduce_influence(amt) {
+	if (game.active === YORK)
+		reduce_york_influence(amt)
+	else
+		reduce_lancaster_influence(amt)
+}
+
+function reduce_york_influence(amt) {
+	game.influence += amt
+}
+
+function increase_york_influence(amt) {
+	game.influence -= amt
+}
+
+function reduce_lancaster_influence(amt) {
+	game.influence -= amt
+}
+
+function increase_lancaster_influnce(amt) {
+	game.influence += amt
+}
+
 /*
 function count_unbesieged_friendly_lords(loc) {
 	let n = 0
@@ -1357,14 +1381,7 @@ exports.setup = function (seed, scenario, options) {
 		state: "setup_lords",
 		stack: [],
 		victory_check: 0,
-		towny:0,
-		fortressy:0,
-		citiesy:0,
-		townl:0,
-		fortressl:0,
-		citiesl:0,
-		influence_point_l: 0,
-		influence_point_y: 0,
+		influence: 0,
 	
 		hand1: [],
 		hand2: [],
@@ -1444,14 +1461,7 @@ function setup_Ia(first_player, second_player) {
 	P2 = second_player
 	game.active = first_player
 	game.victory_check = 40
-	game.towny = 0
-	game.townl = 0
-	game.citiesy = 0
-	game.citiesl = 0
-	game.fortressy = 0
-	game.fortressl = 0
-	game.influence_point_l = 0
-	game.influence_point_y = 0
+	game.influence = 0
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
@@ -4666,7 +4676,7 @@ function goto_battle_influence() {
 			.map(l => data.lords[l].influence)
 			.reduce((p, c) => p+c,0)
 	
-//		reduce_influence(influence)	
+		reduce_influence(influence)	
 		goto_battle_spoils()
 	} else {
 		goto_death_or_disband()
@@ -5793,14 +5803,7 @@ exports.view = function (state, current) {
 		end: scenario_last_turn[game.scenario],
 		turn: game.turn,
 		victory_check: game.victory_check,
-		townl: game.townl,
-		towny: game.townl,
-		fortressl: game.fortressl,
-		fortressy: game.fortressy,
-		citiesl: game.citiesl,
-		citiesy: game.citiesy,
-		influence_point_l: game.influence_point_l,
-		influence_point_y: game.influence_point_y,
+		influence: game.influence,
 
 
 		events: game.events,
