@@ -1517,7 +1517,9 @@ function setup_Ia() {
 	add_favoury_marker(LOC_BURGUNDY)
 	add_favoury_marker(LOC_IRELAND)
 
-
+	muster_lord(LORD_RUTLAND, LOC_IRELAND)
+	add_favoury_marker(LOC_PEMBROKE)
+	
 }
 
 function setup_Ib() {
@@ -2631,7 +2633,6 @@ function goto_command() {
 	game.flags.first_march_highway = 0
 
 	resume_command()
-	update_supply_possible()
 }
 
 function resume_command() {
@@ -3165,7 +3166,6 @@ function march_with_group_3() {
 		game.march = 0
 		spend_all_actions()
 		resume_command()
-		update_supply_possible()
 		return
 	}
 
@@ -3173,7 +3173,6 @@ function march_with_group_3() {
 	game.march = 0
 
 	resume_command()
-	update_supply_possible()
 }
 
 function goto_confirm_approach() {
@@ -3242,19 +3241,19 @@ function supply_adjacent(here, lord) {
 
 // === ACTION: SUPPLY ===
 
+function supply_accept(loc, carts, ships) {
+	return !is_exile(loc.locale) 
+		&& is_friendly_locale(loc.locale) 
+		&& !has_enemy_lord(loc.locale) 
+		&& (!has_exhausted_marker(loc.locale)|| (ships > 0 && is_seaport(loc.locale)) )
+		&& (carts >= loc.distance)
+
+}
+
 function find_supply_sources(lord, carts, ships) {
 
-
 	let search = map_search(lord, 
-		(loc) => {
-			return !is_exile(loc.locale) 
-					&& is_friendly_locale(loc.locale) 
-					&& !has_enemy_lord(loc.locale) 
-					&& (!has_depleted_marker(loc.locale)|| (ships > 0 && is_seaport(loc.locale)) )
-					&& (carts <= loc.distance)
-
-	}, supply_adjacent, false)
-
+		(loc) => supply_accept(loc, carts, ships), supply_adjacent, false)
 
 	let results = []
 	for (let loc of search)
@@ -3263,11 +3262,7 @@ function find_supply_sources(lord, carts, ships) {
 	
 }
 
-function update_supply_possible() {
-	if (game.actions < 1) {
-		game.supply = 0
-		return
-	}
+function init_supply() {
 	let here = get_lord_locale(game.command)
 	let carts = get_shared_assets(here, CART)
 	let ships = get_shared_assets(here, SHIP)
@@ -3286,17 +3281,24 @@ function can_action_supply() {
 }
 
 function can_supply() {
-	return game.supply !== 0 && Array.isArray(game.supply.sources) && game.supply.sources.length > 0
+	let here = get_lord_locale(game.command)
+	let carts = get_shared_assets(here, CART)
+	let ships = get_shared_assets(here, SHIP)
+
+	let search = map_search(game.command, (loc) => supply_accept(loc, carts, ships), supply_adjacent, false)
+
+	return search.next().done !== true
 }
 
 function goto_supply() {
 	push_undo()
 	log(`Supplied`)
 	game.state = "supply_source"
+	init_supply()
 }
 
 function get_supply_from_source(source){
-	if (has_depleted_marker(source)) return 0
+	if (has_exhausted_marker(source)) return 0
 
 	if (source === LOC_LONDON || source === LOC_CALAIS) {
 		return 3
@@ -3309,12 +3311,6 @@ function get_supply_from_source(source){
 states.supply_source = {
 	inactive: "Supply",
 	prompt() {
-		if (!can_supply()) {
-			view.prompt = "Supply: No valid Supply Sources."
-			view.action.done = 1
-			return
-		}
-
 		view.prompt = "Supply: Select Supply Source."
 
 		let list = []
@@ -3339,7 +3335,8 @@ states.supply_source = {
 			if (is_seaport(source))
 				sea_supply = game.supply.ships
 
-			supply = Math.min(get_supply_from_source(source), Math.floor(game.supply.carts/source_item.distance))
+			if (!is_exile(get_lord_locale(game.command)))
+				supply = Math.min(get_supply_from_source(source), Math.floor(game.supply.carts/source_item.distance))
 
 			if (supply > 0 && sea_supply === 0) {
 				logi(`Stronghold at %${source}`)
@@ -3362,7 +3359,7 @@ states.supply_source = {
 function end_supply() {
 	spend_action(1)
 	resume_command()
-	update_supply_possible()
+	game.supply = 0
 }
 
 function goto_select_supply_type(supply, sea_supply) {
@@ -3384,9 +3381,9 @@ states.select_supply_type = {
 		gen_action("port", game.what)
 	},
 	stronghold(supply) {
-		logi(`Stronghold at %${gane.where}`)
+		logi(`Stronghold at %${game.where}`)
 		add_lord_assets(game.command, PROV, supply)
-		deplete_locale(source)
+		deplete_locale(game.where)
 		end_select_supply_type()
 	},
 	port(sea_supply) {
@@ -3610,7 +3607,6 @@ states.sail = {
 		}
 		spend_all_actions()
 		resume_command()
-		update_supply_possible()
 	},
 }
 

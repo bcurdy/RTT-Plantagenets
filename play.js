@@ -1493,6 +1493,9 @@ function on_update() {
 	action_button("spend1", "Spend 1 Influence")
 	action_button("spend3", "Spend 3 Influence")
 
+	// Supply
+	action_button("stronghold", "Stronghold")
+	action_button("port", "Port")
 
 	// Events
 	action_button("decline", "Decline")
