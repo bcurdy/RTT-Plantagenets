@@ -2640,6 +2640,7 @@ function resume_command() {
 
 function spend_action(cost) {
 	game.flags.first_action = 0
+	game.flags.first_march_highway = 0
 	game.actions -= cost
 }
 
