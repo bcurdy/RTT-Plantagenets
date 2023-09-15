@@ -1187,6 +1187,14 @@ function update_locale(loc) {
 	}
 
 	// FAVOUR MARKERS
+	if (!set_has(view.pieces.favourl,loc) && !set_has(view.pieces.favoury,loc)) {
+		let cn
+			cn = "lancaster"
+		ui.locale_markers_rose[loc].classList.remove(cn)
+			cn = "york"
+		ui.locale_markers_rose[loc].classList.remove(cn)
+	}
+
 
 	if (set_has(view.pieces.favourl,loc)) {
 		let cn
@@ -1203,6 +1211,7 @@ function update_locale(loc) {
 			cn = "lancaster"
 		ui.locale_markers_rose[loc].classList.remove(cn)
 	}
+
 }
 
 function update_plan() {
