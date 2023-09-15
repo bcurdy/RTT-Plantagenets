@@ -1418,7 +1418,7 @@ function on_update() {
 	ui.influence.style.top = (track_xy[Math.abs(view.influence)][1]) + "px"
 	ui.influence.style.left = (track_xy[Math.abs(view.influence)][0]) + "px"
 	ui.influence.classList.toggle("york", view.influence < 0)
-	ui.influence.classList.toggle("lancaster", view.influences >= 0)
+	ui.influence.classList.toggle("lancaster", view.influence >= 0)
 
 
 	update_plan()
@@ -1460,13 +1460,15 @@ function on_update() {
 	action_button("surrender", "Surrender")
 
 	// Use all commands
-	action_button("tax", "Tax")
+
 
 	// Use one command
 	action_button("sail", "Sail")
-	action_button("ravage", "Ravage")
+	action_button("parley", "Parley")
 	action_button("forage", "Forage")
 	action_button("supply", "Supply")
+	action_button("tax", "Tax")
+
 
 	// Muster & Spoils
 	action_button("take_prov", "Provender")
@@ -1475,6 +1477,12 @@ function on_update() {
 	action_button("take_cart", "Cart")
 	action_button("levy_troops", "Levy Troops")
 	action_button("capability", "Capability")
+
+
+	// Parley
+	action_button("check", "Influence Check")
+	action_button("spend1", "Spend 1 Influence")
+	action_button("spend3", "Spend 3 Influence")
 
 
 	// Events

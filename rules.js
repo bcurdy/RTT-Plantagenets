@@ -458,6 +458,8 @@ function update_aliases() {
 		first_enemy_lord = -1
 		last_enemy_lord = -1
 	}
+	P1 = game.rebel
+	P2 = game.crown
 }
 
 function load_state(state) {
@@ -1074,18 +1076,18 @@ function is_harlech(loc) {
 	return data.locales[loc].type === "harlech"
 }
 function is_favour_friendly(loc, side) {
-	if (has_favoury_marker(loc) && side === "YORK")
+	if (has_favoury_marker(loc) && side === YORK)
 	return true
-	else if (has_favourl_marker(loc) && side === "LANCASTER")
+	else if (has_favourl_marker(loc) && side === LANCASTER)
 	return true
 	else 
 	return false
 }
 
 function is_favour_enemy(loc, side) {
-	if (has_favoury_marker(loc) && side === "LANCASTER")
+	if (has_favoury_marker(loc) && side === LANCASTER)
 	return true
-	else if (has_favourl_marker(loc) && side === "YORK")
+	else if (has_favourl_marker(loc) && side === YORK)
 	return true
 	else 
 	return false
@@ -1406,6 +1408,8 @@ exports.setup = function (seed, scenario, options) {
 		undo: [],
 
 		active: P1,
+		rebel: null,
+		crown: null,
 		state: "setup_lords",
 		stack: [],
 		victory_check: 0,
@@ -1461,34 +1465,34 @@ exports.setup = function (seed, scenario, options) {
 	switch (scenario) {
 	default:
 	case "Ia. Henry VI":
-		setup_Ia(P2, P1)
+		setup_Ia()
 	break
 	case "Ib. Towton":
-		setup_Ib(P2, P1)
+		setup_Ib()
 	break
 	case "Ic. Somerset's Return":
-		setup_Ic(P2, P1)
+		setup_Ic()
 	break
 	case "II. Warwicks' Rebellion" :
-		setup_II(P1, P2)
+		setup_II()
 	break
 	case "III. My Kingdom for a Horse":
-		setup_III(P1, P2)
+		setup_III()
 	break
 		case "I-III. Wars of the Roses":
-		setup_ItoIII(P2, P1)
+		setup_ItoIII()
 	break
 	}
 
 	return game
 }
 
-function setup_Ia(first_player, second_player) {
+function setup_Ia() {
 	game.turn = 1 << 1
 
-	P1 = first_player
-	P2 = second_player
-	game.active = first_player
+	game.rebel = YORK
+	game.crown = LANCASTER
+	game.active = YORK
 	game.victory_check = 40
 	game.influence = 0
 	muster_lord(LORD_YORK, LOC_ELY)
@@ -1516,13 +1520,13 @@ function setup_Ia(first_player, second_player) {
 
 }
 
-function setup_Ib(first_player, second_player) {
+function setup_Ib() {
 	game.turn = 1 << 1
 
 
-	P1 = first_player
-	P2 = second_player
-	game.active = first_player
+	game.rebel = YORK
+	game.crown = LANCASTER
+	game.active = YORK
 	muster_lord(LORD_NORFOLK, LOC_LONDON)
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
@@ -1559,13 +1563,13 @@ function setup_Ib(first_player, second_player) {
 	add_favoury_marker(LOC_IRELAND)
 }
 
-function setup_Ic(first_player, second_player) {
+function setup_Ic() {
 	game.turn = 5 << 1	
 
 
-	P1 = first_player
-	P2 = second_player
-	game.active = first_player
+	game.rebel = YORK
+	game.crown = LANCASTER
+	game.active = YORK
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_BAMBURGH)
@@ -1606,13 +1610,13 @@ function setup_Ic(first_player, second_player) {
 }
 
 
-function setup_II(first_player, second_player) {
+function setup_II() {
 	game.turn = 1 << 1
 
 
-	P1 = first_player
-	P2 = second_player
-	game.active = first_player
+	game.rebel = LANCASTER
+	game.crown = YORK
+	game.active = LANCASTER
 	muster_lord(LORD_EDWARD_IV, LOC_LONDON)
 	muster_lord(LORD_PEMBROKE, LOC_LONDON)
 	muster_lord(LORD_WARWICK_L, LOC_CALAIS)
@@ -1646,12 +1650,12 @@ function setup_II(first_player, second_player) {
 }
 
 
-function setup_III(first_player, second_player) {
+function setup_III() {
 	game.turn = 1 << 1
 
-	P1 = first_player
-	P2 = second_player
-	game.active = first_player
+	game.rebel = LANCASTER
+	game.crown = YORK
+	game.active = LANCASTER
 	muster_lord(LORD_RICHARD_III, LOC_LONDON)
 	muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
 	muster_lord(LORD_NORFOLK, LOC_ARUNDEL)
@@ -1674,13 +1678,13 @@ function setup_III(first_player, second_player) {
 }
 
 
-function setup_ItoIII(first_player, second_player) {
+function setup_ItoIII() {
 	game.turn = 1 << 1
 
 
-	P1 = first_player
-	P2 = second_player
-	game.active = first_player
+	game.rebel = YORK
+	game.crown = LANCASTER
+	game.active = YORK
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
@@ -2767,12 +2771,34 @@ function end_infllunce_check() {
 	game.check = 0
 }
 
-function do_influence_check() {
-	reduce_influence(game.check.reduce((p,c) => p+c.cost, 0))
-	let rating = game.check.reduce((p,c) => p+c.modifier, 0)
-	let roll = roll_die()
+function count_influence_score() {
+	let score = game.check.reduce((p,c) => p+c.modifier, 0)
+	if (score > 5)
+		score = 5
+	if (score < 1)
+		score = 1
 
-	return {success: roll <= rating, rating: rating, roll: roll}
+	return score
+}
+
+function count_influence_cost() {
+	return game.check.reduce((p,c) => p+c.cost, 0)
+}
+
+function do_influence_check() {
+	reduce_influence(count_influence_cost())
+	let rating = count_influence_score()
+	let roll = roll_die()
+	let success
+
+	if (roll === 1)
+		success = true
+	else if (roll === 6)
+		success = false
+	else
+		success = roll <= rating
+
+	return {success: success, rating: rating, roll: roll}
 }
 
 function add_influence_check_modifier_1() {
@@ -2784,6 +2810,11 @@ function add_influence_check_modifier_2() {
 }
 
 function add_influence_check_distance(distance) {
+	let idx = game.check.findIndex(i => i.source === "distance")
+
+	if (idx !== NOTHING)
+		game.check.splice(idx, 1)
+
 	game.check.push({cost: distance, modifier: 0, source: "distance"})
 }
 
@@ -2792,7 +2823,11 @@ function prompt_influence_check() {
 		gen_action("spend1")
 		gen_action("spend3")
 	}
+	if (game.where !== NOWHERE)
+		gen_action_locale(game.where)
 	view.actions.check = 1
+
+	view.prompt += `Cost: ${count_influence_cost()} - Range (${range(count_influence_score())})`
 }
 
 
@@ -2819,26 +2854,30 @@ function prompt_influence_check() {
 // INFLUENCE CHECK = 8) and 9) and 10) Will happen a lot in the game, so a own function is best that will be modified depending on exceptions
 
 function command_parley_accept(loc) {
-	return !is_exile(here) && !is_friendly_locale(loc.locale) && !has_enemy_lord(loc.locale) && loc.distance <= 1
+	return !is_exile(loc.locale) && !is_friendly_locale(loc.locale) && !has_enemy_lord(loc.locale) && loc.distance <= 1
 }
 
 function can_action_parley_command() {
-	let targets = find_parley_targets(game.command, command_parley_accept, parley_adjacent)
+	if (game.actions <= 0) return false
+	let targets = map_search(game.command, command_parley_accept, parley_adjacent)
 
-	return targets.next().done !== true
+	let res = targets.next()
+	return res.done !== true
 }
 
 function levy_parley_accept(loc) {
-	return !is_exile(here) && !is_friendly_locale(loc.locale) && !has_enemy_lord(loc.locale)
+	return !is_exile(loc.locale) && !is_friendly_locale(loc.locale) && !has_enemy_lord(loc.locale)
 }
 
 function can_action_parley_levy() {
-	let targets = find_parley_targets(game.command, levy_parley_accept, parley_adjacent)
+	if (game.count <= 0) return false
+
+	let targets = map_search(game.who, levy_parley_accept, parley_adjacent)
 
 	return targets.next().done !== true
 }
 
-function parley_adjacent(here) {
+function parley_adjacent(here, lord) {
 	let seaports = []
 	if (is_seaport(here) && get_lord_assets(lord, SHIP) > 0 ) {
 		if (data.port_1.includes(here)) seaports = data.port_1
@@ -2858,7 +2897,7 @@ function find_ports_from_exile(here) {
 
 function find_parley_targets(lord, acceptfn, adjacentfn) {
 	let results = []
-	for (let loc in map_search(lord, acceptfn, adjacentfn))
+	for (let loc of map_search(lord, acceptfn, adjacentfn))
 		results.push(loc)
 	return results
 }
@@ -2883,7 +2922,7 @@ function* map_search(lord, acceptfn, adjacentfn) {
 		if (is_friendly_locale(loc.locale)) {
 			let distance = loc.distance + 1
 			locales = locales.concat(
-							adjacentfn(loc.locale)
+							adjacentfn(loc.locale, lord)
 								.filter(l => !seen.includes(l))
 								.filter(l => !locales.some((r) => r.locale === l))
 								.map(x => {return {locale: x, distance: distance }})
@@ -2895,13 +2934,20 @@ function* map_search(lord, acceptfn, adjacentfn) {
 function goto_parley(lord, from) {
 	push_undo()
 	push_state("parley")
+
+	init_influence_check(lord, 0)
 	if (from === "levy")
 		game.what = find_parley_targets(lord, levy_parley_accept, parley_adjacent)
 	else
 		game.what = find_parley_targets(lord, command_parley_accept, parley_adjacent)
 
-	game.where = NOWHERE
-	init_influence_check(lord, 0)
+	if (game.what.length === 1) {
+		game.where = game.what[0].locale
+		add_influence_check_distance(game.what[0].distance)
+
+	} else {
+		game.where = NOWHERE
+	}
 }
 
 function end_parley() {
@@ -2923,24 +2969,24 @@ states.parley = {
 	prompt() {
 		view.prompt = "Parley: Choose a Locale to Parley."
 		if (game.where === NOTHING) {
-			for (let loc in game.what)
+			for (let loc of game.what)
 				gen_action_locale(loc.locale)
 		} else {
+			view.prompt = "Parley: "
 			prompt_influence_check()
 		}
 
 	},
 	locale(loc) {
 		game.where = loc
+		for (let loc of game.what) {
+			if (loc.locale === game.where)
+				add_influence_check_distance(loc.distance)
+		}		
 	},
 	spend1:add_influence_check_modifier_1,
 	spend3:add_influence_check_modifier_2,
 	check() {
-		for (let loc in game.what) {
-			if (loc.locale === game.where)
-				add_influence_check_distance(loc.distance)
-		}
-
 		let results = do_influence_check()
 
 		log(`Attempt to Parley with %${game.where} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
