@@ -4573,10 +4573,10 @@ states.spend_valour = {
 	},
 	valour() {
 		spend_valour(game.who)
+		log(`Reroll:`)
 		if (assign_hit_roll(get_force_name(game.who, game.what), FORCE_PROTECTION[game.what], "")) {
-			if (get_lord_remaining_valour(game.who) === 0) {
-				finish_action_assign_hits(game.who)
-			}
+			rout_unit(game.who, game.what)
+			finish_action_assign_hits(game.who)
 		} else {
 			finish_action_assign_hits(game.who)
 		}
