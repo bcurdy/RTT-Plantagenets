@@ -2900,7 +2900,7 @@ function find_parley_targets(lord, acceptfn, adjacentfn) {
 	return results
 }
 
-function* map_search(lord, acceptfn, adjacentfn) {
+function* map_search(lord, acceptfn, adjacentfn, prune=true) {
 	let here = get_lord_locale(lord)
 	let locales = [{locale:here, distance: 0}]
 	
@@ -2915,7 +2915,8 @@ function* map_search(lord, acceptfn, adjacentfn) {
 
 		if (acceptfn(loc)) {
 			yield loc
-			continue
+			if (prune)
+				continue
 		}
 		if (is_friendly_locale(loc.locale)) {
 			let distance = loc.distance + 1
@@ -3229,168 +3230,80 @@ function take_spoils_cart() { take_spoils(CART) }
 
 // === ACTION: SUPPLY (SEARCHING) ===
 
-let _supply_stop = new Array(last_locale+1)
-let _supply_reached = new Array(last_locale+1)
-
-let _supply_seen = new Array(last_locale+1).fill(0)
-let _supply_cost = new Array(last_locale+1)
-let _supply_carts = new Array(last_locale+1)
-
-function is_supply_forbidden(here) {
-	if (is_friendly_territory(here))
-		return true
-	return false
-}
-
-function init_supply_forbidden() {
-	for (let here = 0; here <= last_locale; ++here) {
-		if (is_supply_forbidden(here))
-			_supply_stop[here] = 1
-		else
-			_supply_stop[here] = 0
+function supply_adjacent(here, lord) {
+	let lord_loc = get_lord_locale(lord)
+	if (is_exile(here) && get_lord_assets(lord, SHIP) > 0) {
+		return find_ports_from_exile(here)
+	} else if (is_exile(lord_loc) && lord_loc !== here) {
+		return []
 	}
-}
-
-function init_supply() {
-	let season = current_season()
-	let here = get_lord_locale(game.command)
-	let carts = 0
-	let ships = 0
-	let available = 2
-	carts = get_shared_assets(here, CART)
-	ships = count_shared_ships()
-	if (ships > 2)
-		ships = 2
-
-	let seats = []
-	if (available > 0) {
-		for_each_seat(game.command, seat => {
-			if (!is_supply_forbidden(seat))
-				seats.push(seat)
-		}, true)
-		available = Math.min(seats.length, available)
-	}
-
-	let seaports = []
-	if (ships > 0) {
-		if (game.active === YORK)
-			for (let port of data.seaports)
-				if (!is_supply_forbidden(port))
-					seaports.push(port)
-		if (game.active === LANCASTER)
-			for (let port of data.seaports)
-			if (!is_supply_forbidden(port))
-				seaports.push(port)
-	}
-	if (seaports.length === 0)
-		ships = 0
-
-	game.supply = { seats, seaports, available, carts, ships }
-}
-
-function search_supply(start, carts, exit) {
-	if (_supply_stop[start])
-		return 0
-	_supply_reached[start] = 1
-	_supply_cost[start] = 0
-	if (exit && set_has(exit, start))
-		return 1
-	if (carts === 0)
-		return 0
-	let queue = [ start ]
-	while (queue.length > 0) {
-		let item = queue.shift()
-		let here = item & 63
-		let used = item >> 6
-		if (used + 1 <= carts) {
-			for (let next of data.locales[here].adjacent) {
-				if (!_supply_reached[next] && !_supply_stop[next]) {
-					if (exit && set_has(exit, next))
-						return 1
-					_supply_reached[next] = 1
-					_supply_cost[next] = used + 1
-					if (used + 1 < carts)
-						queue.push(next | ((used + 1) << 6))
-				}
-			}
-		}
-	}
-	return 0
+	return data.locales[here].adjacent
 }
 
 // === ACTION: SUPPLY ===
+
+function find_supply_sources(lord, carts, ships) {
+
+
+	let search = map_search(lord, 
+		(loc) => {
+			return !is_exile(loc.locale) 
+					&& is_friendly_locale(loc.locale) 
+					&& !has_enemy_lord(loc.locale) 
+					&& (!has_depleted_marker(loc.locale)|| (ships > 0 && is_seaport(loc.locale)) )
+					&& (carts <= loc.distance)
+
+	}, supply_adjacent, false)
+
+
+	let results = []
+	for (let loc of search)
+		results.push(loc)
+	return results
+	
+}
 
 function update_supply_possible() {
 	if (game.actions < 1) {
 		game.supply = 0
 		return
 	}
+	let here = get_lord_locale(game.command)
+	let carts = get_shared_assets(here, CART)
+	let ships = get_shared_assets(here, SHIP)
 
-	update_supply_possible_pass()
-}
-
-function update_supply_possible_pass() {
-	init_supply()
-	init_supply_forbidden()
-	_supply_reached.fill(0)
-	let sources = []
-	for (let loc of game.supply.seats)
-		set_add(sources, loc)
-	for (let loc of game.supply.seaports)
-		set_add(sources, loc)
-	game.supply = search_supply(get_lord_locale(game.command), game.supply.carts, sources)
-}
-
-function search_supply_cost() {
-	init_supply_forbidden()
-	_supply_reached.fill(0)
-	search_supply(get_lord_locale(game.command), game.supply.carts, null)
+	game.supply = {
+			sources: find_supply_sources(game.command, carts, ships),
+			carts: carts,
+			ships: ships
+	}
 }
 
 function can_action_supply() {
 	if (game.actions < 1)
 		return false
-	return !!game.supply
+	return can_supply()
 }
 
 function can_supply() {
-	if (game.supply.available > 0 && game.supply.seats.length > 0)
-		return true
-	if (game.supply.ships > 0 && game.supply.seaports.length > 0)
-		return true
-	return false
+	return game.supply !== 0 && Array.isArray(game.supply.sources) && game.supply.sources.length > 0
 }
 
 function goto_supply() {
 	push_undo()
-
-	if (is_famine_in_play() && !game.flags.famine) {
-		if (game.active === TEUTONS)
-			logevent(EVENT_RUSSIAN_FAMINE)
-		else
-			logevent(EVENT_TEUTONIC_FAMINE)
-	}
-
 	log(`Supplied`)
-	init_supply()
-	resume_supply()
 	game.state = "supply_source"
 }
 
-function resume_supply() {
-	if (game.supply.available + game.supply.ships === 0) {
-		game.supply.seats = []
-		game.supply.seaports = []
-	} else {
-		search_supply_cost()
-		game.supply.seats = game.supply.seats.filter(loc => _supply_reached[loc])
-		game.supply.seaports = game.supply.seaports.filter(loc => _supply_reached[loc])
-	}
+function get_supply_from_source(source){
+	if (has_depleted_marker(source)) return 0
 
-	if (can_supply())
-		game.state = "supply_source"
-	else
-		end_supply()
+	if (source === LOC_LONDON || source === LOC_CALAIS) {
+		return 3
+	} else if (is_city(source)) {
+		return 2
+	} 
+	return 1
 }
 
 states.supply_source = {
@@ -3398,10 +3311,11 @@ states.supply_source = {
 	prompt() {
 		if (!can_supply()) {
 			view.prompt = "Supply: No valid Supply Sources."
+			view.action.done = 1
 			return
 		}
 
-		view.prompt = "Supply: Select Supply Source and Route."
+		view.prompt = "Supply: Select Supply Source."
 
 		let list = []
 		if (game.supply.carts > 0)
@@ -3412,126 +3326,74 @@ states.supply_source = {
 		if (list.length > 0)
 			view.prompt += " " + list.join(", ") + "."
 
-		if (game.supply.available > 0)
-			for (let source of game.supply.seats)
-				gen_action_locale(source)
-		if (game.supply.ships > 0)
-			for (let source of game.supply.seaports)
-				gen_action_locale(source)
-		view.actions.end_supply = 1
+		if (game.supply.sources.length > 0)
+			game.supply.sources.forEach(l => gen_action_locale(l.locale))
+
 	},
 	locale(source) {
-		if (game.supply.available > 0 && game.supply.seats.includes(source)) {
-			array_remove_item(game.supply.seats, source)
+		let source_item = game.supply.sources.find(s => s.locale === source)
+		if (source_item !== undefined) {
+			let supply = 0
+			let sea_supply = 0
 
-			let cap = used_seat_capability(game.command, source, game.supply.seats)
-			if (cap >= 0)
-				logi(`Seat at %${source} (C${cap})`)
-			else
-				logi(`Seat at %${source}`)
+			if (is_seaport(source))
+				sea_supply = game.supply.ships
 
-			game.supply.available--
-			if (is_famine_in_play())
-				game.flags.famine = 1
-		} else {
-			logi(`Seaport at %${source}`)
-			game.supply.ships--
+			supply = Math.min(get_supply_from_source(source), Math.floor(game.supply.carts/source_item.distance))
+
+			if (supply > 0 && sea_supply === 0) {
+				logi(`Stronghold at %${source}`)
+				add_lord_assets(game.command, PROV, supply)
+				deplete_locale(source)
+			} else if (sea_supply > 0 && supply === 0) {
+				logi(`Seaport at %${source}`)
+				add_lord_assets(game.command, PROV, sea_supply)
+			} else {
+				game.where = source
+				goto_select_supply_type(supply, sea_supply)
+				return
+			}
+
 		}
-
-		add_lord_assets(game.command, PROV, 1)
-
-		spend_supply_transport(source)
-	},
-	end_supply: end_supply,
+		end_supply()
+	}
 }
 
 function end_supply() {
 	spend_action(1)
 	resume_command()
-	game.supply = 1 // supply is possible!
+	update_supply_possible()
 }
 
-function spend_supply_transport(source) {
-	if (source === get_lord_locale(game.command)) {
-		resume_supply()
-		return
-	}
-
-	search_supply_cost()
-	game.supply.carts -= _supply_cost[source]
-	resume_supply()
+function goto_select_supply_type(supply, sea_supply) {
+	push_state("select_supply_type")
+	game.count = supply
+	game.what = sea_supply
 }
 
-states.supply_path = {
+function end_select_supply_type() {
+	pop_state()
+	end_supply()
+}
+
+states.select_supply_type = {
 	inactive: "Supply",
 	prompt() {
-		view.prompt = "Supply: Trace Route to Supply Source."
-		view.supply = [ game.supply.here, game.supply.end ]
-		if (game.supply.carts > 0)
-			view.prompt += ` ${game.supply.carts} cart`
-		for (let i = 0; i < game.supply.path.length; i += 2) {
-			let wayloc = game.supply.path[i]
-			gen_action_locale(wayloc >> 8)
-		}
+		view.prompt = `Supply: ${game.count} from Stronghold or ${game.what} from Port?`
+		gen_action("stronghold", game.count)
+		gen_action("port", game.what)
 	},
-	locale(next) {
-		let useloc = -1
-		let useway = -1
-		let twoway = false
-		for (let i = 0; i < game.supply.path.length; i += 2) {
-			let wayloc = game.supply.path[i]
-			let way = wayloc & 255
-			let loc = wayloc >> 8
-			if (loc === next) {
-				if (useloc < 0) {
-					useloc = loc
-					useway = way
-				} else {
-					twoway = true
-				}
-			}
-		}
-		if (twoway) {
-			game.state = "supply_path_way"
-			game.supply.next = next
-		} else {
-			walk_supply_path_way(next, useway)
-		}
+	stronghold(supply) {
+		logi(`Stronghold at %${gane.where}`)
+		add_lord_assets(game.command, PROV, supply)
+		deplete_locale(source)
+		end_select_supply_type()
 	},
+	port(sea_supply) {
+		logi(`Seaport at %${game.where}`)
+		add_lord_assets(game.command, PROV, sea_supply)
+		end_select_supply_type()
 }
-
-function walk_supply_path_way(next, way) {
-	let type = data.ways[way].type
-	game.supply.carts--
-	game.supply.here = next
-	game.supply.path = map_get(game.supply.path, (next << 8) | way)
-	if (game.supply.path === 0)
-		resume_supply()
-	else
-		// Auto-pick path if only one choice.
-		if (AUTOWALK && game.supply.path.length === 2)
-			walk_supply_path_way(game.supply.path[0] >> 8, game.supply.path[0] & 255)
-}
-
-states.supply_path_way = {
-	inactive: "Supply",
-	prompt() {
-		view.prompt = "Supply: Trace path to supply source."
-		view.supply = [ game.supply.here, game.supply.end ]
-		if (game.supply.carts > 0)
-			view.prompt += ` ${game.supply.carts} cart`
-		for (let i = 0; i < game.supply.path.length; i += 2) {
-			let wayloc = game.supply.path[i]
-			let way = wayloc & 255
-			let loc = wayloc >> 8
-			if (loc === game.supply.next)
-				gen_action_way(way)
-		}
-	},
-	way(way) {
-		game.state = "supply_path"
-		walk_supply_path_way(game.supply.next, way)
-	},
 }
 
 // === ACTION: FORAGE ===
