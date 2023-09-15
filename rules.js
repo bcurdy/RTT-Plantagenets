@@ -1169,11 +1169,11 @@ function is_friendly_locale(loc) {
 	if (loc !== NOWHERE && loc < CALENDAR) {
 		if (has_enemy_lord(loc))
 			return false
-		/*if (has_favour_marker(loc)) { //to add friendly favour marker later
+		if (is_favour_friendly(loc, game.active)) { //to add friendly favour marker later
 			return true
-		}*/
+		}
 	}
-	return true // TESTING PURPOSES NEED TO CHANGE TO FALSE
+	return false // TESTING PURPOSES NEED TO CHANGE TO FALSE
 }
 
 function can_add_troops(lordwho, locale) {
@@ -1233,6 +1233,34 @@ function reduce_lancaster_influence(amt) {
 
 function increase_lancaster_influnce(amt) {
 	game.influence += amt
+}
+
+function shift_favor_away(loc) {
+	if (game.active === YORK)
+		shift_favor_toward_lancaster(loc)
+	else
+		shift_favor_toward_york(loc)
+}
+
+function shift_favor_toward(loc) {
+	if (game.active === YORK)
+		shift_favor_toward_york(loc)
+	else
+		shift_favor_toward_lancaster(loc)
+}
+
+function shift_favor_toward_york(loc) {
+	if (has_favourl_marker(loc))
+		remove_favourl_marker(loc)
+	else
+		add_favoury_marker(loc)
+}
+
+function shift_favor_toward_lancaster(loc) {
+	if (has_favoury_marker(loc))
+		remove_favoury_marker(loc)
+	else
+		add_favourl_marker(loc)
 }
 
 /*
@@ -1423,6 +1451,7 @@ exports.setup = function (seed, scenario, options) {
 		march: 0,
 		battle: 0,
 		spoils: 0,
+		parley: 0,
 	}
 
 	update_aliases()
@@ -2178,6 +2207,9 @@ states.levy_muster_lord = {
 			// Add Capability
 			if (can_add_lord_capability(game.who))
 				view.actions.capability = 1
+
+			if (can_action_parley_levy())
+				view.actions.parley = 1				
 		}
 
 		view.actions.done = 1
@@ -2252,6 +2284,10 @@ states.levy_muster_lord = {
 	capability() {
 		push_undo()
 		push_state("muster_capability")
+	},
+
+	parley() {
+		goto_parley(game.who, "levy")
 	},
 
 	done() {
@@ -2680,6 +2716,8 @@ states.command = {
 			view.actions.tax = 1
 		if (can_action_sail())
 			view.actions.sail = 1
+		if (can_action_parley_command())
+			view.actions.parley = 1
 	},
 
 	pass() {
@@ -2708,7 +2746,55 @@ states.command = {
 	},
 
 	card: action_held_event,
+
+	parley() {
+		goto_parley(game.command, "command")
+	},
 }
+
+// === INFLUENCE CHECKS ===
+
+function init_influence_check(lord, base_cost) {
+	game.check = []
+
+	if (base_cost > 0) {
+		game.check.push({cost:base_cost, modifier: 0, source: "base"})
+	}
+	game.check.push({cost: 0, modifier: data.lords[lord].influence, source: "lord"})
+}
+
+function end_infllunce_check() {
+	game.check = 0
+}
+
+function do_influence_check() {
+	reduce_influence(game.check.reduce((p,c) => p+c.cost, 0))
+	let rating = game.check.reduce((p,c) => p+c.modifier, 0)
+	let roll = roll_die()
+
+	return {success: roll <= rating, rating: rating, roll: roll}
+}
+
+function add_influence_check_modifier_1() {
+	game.check.push({cost: 1, modifier: 1, source: "add"})
+}
+
+function add_influence_check_modifier_2() {
+	game.check.push({cost: 3, modifier: 2, source: "add"})
+}
+
+function add_influence_check_distance(distance) {
+	game.check.push({cost: distance, modifier: 0, source: "distance"})
+}
+
+function prompt_influence_check() {
+	if (!game.check.some(c => c.source === "add")) {
+		gen_action("spend1")
+		gen_action("spend3")
+	}
+	view.actions.check = 1
+}
+
 
 // === ACTION: PARLEY ===
 
@@ -2731,6 +2817,141 @@ states.command = {
 // (he needs to pay again if he wants to improve his influence for a following parley action)
 
 // INFLUENCE CHECK = 8) and 9) and 10) Will happen a lot in the game, so a own function is best that will be modified depending on exceptions
+
+function command_parley_accept(loc) {
+	return !is_exile(here) && !is_friendly_locale(loc.locale) && !has_enemy_lord(loc.locale) && loc.distance <= 1
+}
+
+function can_action_parley_command() {
+	let targets = find_parley_targets(game.command, command_parley_accept, parley_adjacent)
+
+	return targets.next().done !== true
+}
+
+function levy_parley_accept(loc) {
+	return !is_exile(here) && !is_friendly_locale(loc.locale) && !has_enemy_lord(loc.locale)
+}
+
+function can_action_parley_levy() {
+	let targets = find_parley_targets(game.command, levy_parley_accept, parley_adjacent)
+
+	return targets.next().done !== true
+}
+
+function parley_adjacent(here) {
+	let seaports = []
+	if (is_seaport(here) && get_lord_assets(lord, SHIP) > 0 ) {
+		if (data.port_1.includes(here)) seaports = data.port_1
+		if (data.port_2.includes(here)) seaports = data.port_2
+		if (data.port_3.includes(here)) seaports = data.port_3
+	} else if (is_exile(here) && get_lord_assets(lord, SHIP) > 0) {
+		return find_ports_from_exile(here)
+	}
+	return data.locales[here].adjacent.concat(seaports)
+}
+
+function find_ports_from_exile(here) {
+	if (data.exile_1.includes(here)) return data.port_1
+	if (data.exile_2.includes(here)) return data.port_2
+	if (data.exile_3.includes(here)) return data.port_3
+}
+
+function find_parley_targets(lord, acceptfn, adjacentfn) {
+	let results = []
+	for (let loc in map_search(lord, acceptfn, adjacentfn))
+		results.push(loc)
+	return results
+}
+
+function* map_search(lord, acceptfn, adjacentfn) {
+	let here = get_lord_locale(lord)
+	let locales = [{locale:here, distance: 0}]
+	
+	let seen = []
+
+		while (true) {
+		if (locales.length === 0)
+			return
+
+		let loc = locales.shift()
+		seen.push(loc.locale)
+
+		if (acceptfn(loc)) {
+			yield loc
+			continue
+		}
+		if (is_friendly_locale(loc.locale)) {
+			let distance = loc.distance + 1
+			locales = locales.concat(
+							adjacentfn(loc.locale)
+								.filter(l => !seen.includes(l))
+								.filter(l => !locales.some((r) => r.locale === l))
+								.map(x => {return {locale: x, distance: distance }})
+							)
+		}
+	}
+}
+
+function goto_parley(lord, from) {
+	push_undo()
+	push_state("parley")
+	if (from === "levy")
+		game.what = find_parley_targets(lord, levy_parley_accept, parley_adjacent)
+	else
+		game.what = find_parley_targets(lord, command_parley_accept, parley_adjacent)
+
+	game.where = NOWHERE
+	init_influence_check(lord, 0)
+}
+
+function end_parley() {
+	clear_undo()
+	pop_state()
+	game.where = NOWHERE
+	game.what = NOTHING
+	end_infllunce_check()
+	if (game.state === "command") {
+		spend_action(1)
+		resume_command()
+	} else {
+		resume_levy_muster_lord()
+	}
+}
+
+states.parley = {
+	inactive: "Parley",
+	prompt() {
+		view.prompt = "Parley: Choose a Locale to Parley."
+		if (game.where === NOTHING) {
+			for (let loc in game.what)
+				gen_action_locale(loc.locale)
+		} else {
+			prompt_influence_check()
+		}
+
+	},
+	locale(loc) {
+		game.where = loc
+	},
+	spend1:add_influence_check_modifier_1,
+	spend3:add_influence_check_modifier_2,
+	check() {
+		for (let loc in game.what) {
+			if (loc.locale === game.where)
+				add_influence_check_distance(loc.distance)
+		}
+
+		let results = do_influence_check()
+
+		log(`Attempt to Parley with %${game.where} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		
+		if (results.success) {
+			shift_favor_toward(game.where)
+		}
+		end_parley()
+	}
+}
+
 
 // === ACTION: LEVY VASSAL ===
 // 1) During Levy ONLY
