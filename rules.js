@@ -2759,16 +2759,13 @@ states.command = {
 
 // === INFLUENCE CHECKS ===
 
-function init_influence_check(lord, base_cost) {
+function init_influence_check(lord) {
 	game.check = []
-
-	if (base_cost > 0) {
-		game.check.push({cost:base_cost, modifier: 0, source: "base"})
-	}
+	game.check.push({cost:1, modifier: 0, source: "base"})
 	game.check.push({cost: 0, modifier: data.lords[lord].influence, source: "lord"})
 }
 
-function end_infllunce_check() {
+function end_influence_check() {
 	game.check = 0
 }
 
@@ -2936,13 +2933,17 @@ function goto_parley(lord, from) {
 	push_undo()
 	push_state("parley")
 
-	init_influence_check(lord, 0)
+	init_influence_check(lord)
 	if (from === "levy")
 		game.what = find_parley_targets(lord, levy_parley_accept, parley_adjacent)
 	else
 		game.what = find_parley_targets(lord, command_parley_accept, parley_adjacent)
 
-	if (game.what.length === 1) {
+	if (game.what.length === 1 && is_campaign_phase() && get_lord_locale(lord) === game.what[0].locale) {
+		// Campaign phase, and current location is no cost, and always successful.
+		shift_favor_toward(game.what[0].locale)
+		end_parley()
+	} else if (game.what.length === 1) {
 		game.where = game.what[0].locale
 		add_influence_check_distance(game.what[0].distance)
 
@@ -2956,7 +2957,7 @@ function end_parley() {
 	pop_state()
 	game.where = NOWHERE
 	game.what = NOTHING
-	end_infllunce_check()
+	end_influence_check()
 	if (game.state === "command") {
 		spend_action(1)
 		resume_command()
