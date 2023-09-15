@@ -1516,9 +1516,6 @@ function setup_Ia() {
 	add_favoury_marker(LOC_LUDLOW)
 	add_favoury_marker(LOC_BURGUNDY)
 	add_favoury_marker(LOC_IRELAND)
-
-	muster_lord(LORD_RUTLAND, LOC_IRELAND)
-	add_favoury_marker(LOC_PEMBROKE)
 	
 }
 
