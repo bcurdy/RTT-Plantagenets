@@ -3374,18 +3374,18 @@ states.select_supply_type = {
 	inactive: "Supply",
 	prompt() {
 		view.prompt = `Supply: ${game.count} from Stronghold or ${game.what} from Port?`
-		gen_action("stronghold", game.count)
-		gen_action("port", game.what)
+		view.actions.stronghold = 1
+		view.actions.port = 1
 	},
-	stronghold(supply) {
+	stronghold() {
 		logi(`Stronghold at %${game.where}`)
-		add_lord_assets(game.command, PROV, supply)
+		add_lord_assets(game.command, PROV, game.count)
 		deplete_locale(game.where)
 		end_select_supply_type()
 	},
-	port(sea_supply) {
+	port() {
 		logi(`Seaport at %${game.where}`)
-		add_lord_assets(game.command, PROV, sea_supply)
+		add_lord_assets(game.command, PROV, game.what)
 		end_select_supply_type()
 }
 }
