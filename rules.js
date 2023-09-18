@@ -1667,6 +1667,8 @@ function setup_Ib() {
 	game.rebel = YORK
 	game.crown = LANCASTER
 	game.active = YORK
+	game.victory_check = 45
+	game.influence = 0
 	muster_lord(LORD_NORFOLK, LOC_LONDON)
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
@@ -1710,6 +1712,8 @@ function setup_Ic() {
 	game.rebel = YORK
 	game.crown = LANCASTER
 	game.active = YORK
+	game.victory_check = 45
+	game.influence = 6
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_BAMBURGH)
@@ -1889,14 +1893,91 @@ function is_escape_ship_in_play(){
 }
 
 
-function goto_immediate_event(c) {
+function goto_immediate_event(c) {	
 	switch (c) {
 		// This Levy / Campaign
-	/*	case EVENT_TEUTONIC_FAMINE:
-		case EVENT_RUSSIAN_FAMINE:
+		// No immediate effect
+		case EVENT_LANCASTER_BE_SENT_FOR:
 			set_add(game.events, c)
-			// No immediate effects
 			return end_immediate_event()
+		case EVENT_LANCASTER_SEAMANSHIP:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_LANCASTER_FORCED_MARCHES:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_LANCASTER_RISING_WAGES:
+			set_add(game.events, c)
+			return end_immediate_event()			
+		case EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_LANCASTER_PARLIAMENT_VOTES:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_LANCASTER_FRENCH_FLEET:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_LANCASTER_BUCKINGHAMS_PLOT:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_LANCASTER_MARGARET_BEAUFORT:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_LANCASTER_THE_EARL_OF_RICHMOND:
+			set_add(game.events, c)
+			return end_immediate_event()
+
+		case EVENT_YORK_JACK_CADE:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_SEAMANSHIP:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_EXILE_PACT:
+			set_add(game.events, c)
+			return end_immediate_event()			
+		case EVENT_YORK_RICHARD_OF_YORK:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_THE_COMMONS:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_SUCCESSION:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_LOYALTY_AND_TRUST:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_OWAIN_GLYNDWR:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_GLOUCESTER_AS_HEIR:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_DORSET:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_THE_KINGS_NAME:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_EDWARD_V:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST:
+			set_add(game.events, c)
+			return end_immediate_event()
+		case EVENT_YORK_PRIVY_COUNCIL:
+			set_add(game.events, c)
+			return end_immediate_event()
+			
+		// Immediate effect
 		case EVENT_RUSSIAN_DEATH_OF_THE_POPE:
 			set_add(game.events, c)
 			return goto_russian_event_death_of_the_pope()
@@ -1906,11 +1987,6 @@ function goto_immediate_event(c) {
 		case EVENT_RUSSIAN_DIETRICH_VON_GRUNINGEN:
 			set_add(game.events, c)
 			return goto_russian_event_dietrich()
-
-		// Add to capabilities...
-		case EVENT_TEUTONIC_POPE_GREGORY:
-			deploy_global_capability(c)
-			return goto_teutonic_event_pope_gregory()*/
 
 		// Discard - Immediate Events
 		case EVENT_LANCASTER_SCOTS:
