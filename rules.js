@@ -1881,6 +1881,12 @@ function is_leeward_battle_line_in_play () {
 	}
 	return false
 }
+function is_escape_ship_in_play(){
+	if (game.active === LANCASTER)
+		return is_event_in_play(EVENT_LANCASTER_ESCAPE_SHIP)
+	if (game.active === YORK)
+		return is_event_in_play(EVENT_YORK_ESCAPE_SHIP)
+}
 
 
 function goto_immediate_event(c) {
@@ -1904,34 +1910,48 @@ function goto_immediate_event(c) {
 		// Add to capabilities...
 		case EVENT_TEUTONIC_POPE_GREGORY:
 			deploy_global_capability(c)
-			return goto_teutonic_event_pope_gregory()
+			return goto_teutonic_event_pope_gregory()*/
 
-		// Discard
-		case EVENT_TEUTONIC_GRAND_PRINCE:
-			return goto_teutonic_event_grand_prince()
-		case EVENT_TEUTONIC_KHAN_BATY:
-			return goto_teutonic_event_khan_baty()
-		case EVENT_TEUTONIC_SWEDISH_CRUSADE:
-			return goto_teutonic_event_swedish_crusade()
-		case EVENT_RUSSIAN_OSILIAN_REVOLT:
-			return goto_russian_event_osilian_revolt()
-		case EVENT_RUSSIAN_BATU_KHAN:
-			return goto_russian_event_batu_khan()
-		case EVENT_RUSSIAN_PRUSSIAN_REVOLT:
-			return goto_russian_event_prussian_revolt()
-		case EVENT_TEUTONIC_BOUNTIFUL_HARVEST:
-			return goto_event_bountiful_harvest()
-		case EVENT_RUSSIAN_BOUNTIFUL_HARVEST:
-			return goto_event_bountiful_harvest()
-		case EVENT_TEUTONIC_MINDAUGAS:
-			return goto_teutonic_event_mindaugas()
-		case EVENT_RUSSIAN_MINDAUGAS:
-			return goto_russian_event_mindaugas()
-		case EVENT_TEUTONIC_TORZHOK:
-			return goto_teutonic_event_torzhok()
-		case EVENT_RUSSIAN_TEMPEST:
-			return goto_russian_event_tempest()*/
-
+		// Discard - Immediate Events
+		case EVENT_LANCASTER_SCOTS:
+			return goto_lancaster_event_scots()
+		case EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT:
+			return goto_lancaster_event_henry_pressures_parliament()
+		case EVENT_LANCASTER_HENRYS_PROCLAMATION:
+			return goto_lancaster_event_henrys_proclamation()
+		case EVENT_LANCASTER_FRENCH_TROOPS:
+			return goto_lancaster_event_french_troops()
+		case EVENT_LANCASTER_WARWICKS_PROPAGANDA:
+			return goto_lancaster_event_warwicks_propaganda()
+		case EVENT_LANCASTER_WELSH_REBELLION:
+			return goto_lancaster_event_welsh_rebellion()
+		case EVENT_LANCASTER_HENRY_RELEASED:
+			return goto_lancaster_event_henry_released()
+		case EVENT_LANCASTER_LUNIVERSELLE_ARAGNE:
+			return goto_lancaster_event_luniverselle_aragne()
+		case EVENT_LANCASTER_TO_WILFUL_DISOBEDIANCE:
+			return goto_lancaster_event_to_wilful_disobediance()
+		case EVENT_LANCASTER_FRENCH_WAR_LOANS:
+			return goto_lancaster_event_french_war_loans()
+		case EVENT_LANCASTER_ROBINS_REBELLION:
+			return goto_lancaster_event_robins_rebellion()
+		case EVENT_LANCASTER_TUDOR_BANNERS:
+			return goto_lancaster_event_tudor_banners()
+		case EVENT_YORK_TAX_COLLECTORS:
+			return goto_york_event_tax_collectors()
+		case EVENT_YORK_LONDON_FOR_YORK:
+			return goto_york_event_london_for_york()
+		case EVENT_YORK_SHEWOLF_OF_FRANCE:
+			return goto_york_event_shewolf_of_france()
+		case EVENT_YORK_SIR_RICHARD_LEIGH:
+			return goto_york_event_sir_richard_leigh()
+		case EVENT_YORK_CHARLES_THE_BOLD:
+			return goto_york_event_charles_the_bold()
+		case EVENT_YORK_YORKIST_NORTH:
+			return goto_york_event_yorkist_north()
+		case EVENT_YORK_EARL_RIVERS:
+			return goto_york_event_earl_rivers()
+			
 		default:
 			log("NOT IMPLEMENTED")
 			return end_immediate_event()
