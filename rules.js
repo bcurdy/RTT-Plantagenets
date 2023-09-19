@@ -342,15 +342,15 @@ const VASSAL_FAUCONBERG = find_vassal('Fauconberg')
 const VASSAL_NORFOLK = find_vassal('Norfolk')
 const VASSAL_OXFORD = find_vassal('Oxford')
 const VASSAL_SHREWSBURY = find_vassal('Shrewsbury')
-const VASSAL_STANLEY1 = find_vassal('Stanley1')
+const VASSAL_STANLEY = find_vassal('Stanley')
 const VASSAL_SUFFOLK = find_vassal('Suffolk')
-const VASSAL_WESTMORLD = find_vassal('Westmorld')
+const VASSAL_WESTMORLAND = find_vassal('Westmoreland')
 const VASSAL_WORCESTER = find_vassal('Worcester')
 const VASSAL_CLIFFORD = find_vassal('Clifford')
 const VASSAL_EDWARD = find_vassal('Edward')
 const VASSAL_HASTINGS = find_vassal('Hastings')
 const VASSAL_MONTAGU = find_vassal('Montagu')
-const VASSAL_STANLEY2 = find_vassal('Stanley2')
+const VASSAL_THOMAS_STANLEY = find_vassal('Thomas Stanley')
 const VASSAL_TROLLOPE = find_vassal('Trollope')
 
 const AOW_LANCASTER_CULVERINS_AND_FALCONETS = [ L1, L2 ] // TODO
@@ -502,8 +502,8 @@ const EVENT_YORK_PATRICK_DE_LA_MOTE = Y37 // TODO
 
 // Check all push/clear_undo
 
-const VASSAL_UNAVAILABLE = -1
-const VASSAL_READY = -2
+const VASSAL_UNAVAILABLE = 201
+const VASSAL_READY = 200
 //const VASSAL_MUSTERED = -3
 
 const NOBODY = -1
@@ -1103,23 +1103,23 @@ function setup_vassals(excludes = []) {
 	for (let x = first_vassal; x < last_vassal; x++) {
 		if (!excludes.includes(x) && data.vassals[x].capability === undefined) {
 			set_vassal_ready(x)
-			set_vassal_on_map(data.vassals[x].seat[0])
+			set_vassal_on_map(x, data.vassals[x].seat[0])
 		}
 	}
 }
 
 function set_vassal_on_map(vassal, loc) {
-	game.pieces.vassal[vassal] = pack8_set(game.pieces.vassal[vassal], 1, loc)
+	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 1, loc)
 }
 
 function get_vassal_locale(vassal) {
-	return pack8_get(game.pieces.vassal[vassal], 1)
+	return pack8_get(game.pieces.vassals[vassal], 1)
 }
 
 function get_vassals_with_lord(lord) {
 	let results = []
 	for (let x = first_vassal; x < last_vassal; x++) {
-		if (pack8_get(game.pieces.vassal[x], 0) === lord) {
+		if (pack8_get(game.pieces.vassals[x], 0) === lord) {
 			results.push(x)
 		}
 	}
@@ -1128,19 +1128,19 @@ function get_vassals_with_lord(lord) {
 }
 
 function set_vassal_ready(vassal) {
-	game.pieces.vassal[vassal] = pack8_set(game.pieces.vassals[vassal], 0, VASSAL_READY)
+	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 0, VASSAL_READY)
 }
 
 function set_vassal_on_calendar(vassal, turn) {
-	game.pieces.vassal[vassal] = pack8_set(game.pieces.vassal[vassal], 1, turn + CALENDAR)
+	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 1, turn + CALENDAR)
 }
 
 function set_vassal_with_lord(vassal, lord) {
-	game.pieces.vassal[vassal] = pack8_set(game.pieces.vassal[vassal], 0, lord)
+	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 0, lord)
 }
 
 function set_vassal_unavailable(vassal) {
-	game.pieces.vassal[vassal] = pack8_set(game.pieces.vassals[vassal], 0, VASSAL_UNAVAILABLE)
+	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 0, VASSAL_UNAVAILABLE)
 }
 
 function muster_vassal(vassal, lord) {
@@ -1167,7 +1167,7 @@ function get_ready_vassals() {
 	let results = []
 
 	for (let x = first_vassal; x < last_vassal; x++) {
-		if (is_vassal_ready(x) && favor.includes(x)) {
+		if (is_vassal_ready(x) && favor.includes(data.vassals[x].seat[0])) {
 			results.push(x)
 		}
 	}
@@ -1184,7 +1184,7 @@ function is_vassal_ready(vassal) {
 }
 
 function is_vassal_mustered(vassal) {
-	return pack8_get(game.pieces.vassals[vassal]) >= 0
+	return pack8_get(game.pieces.vassals[vassal]) < VASSAL_READY
 }
 
 function is_york_lord(lord) {
@@ -5882,6 +5882,7 @@ function end_pay_lords() {
 states.pay_lords = {
 	inactive: "Pay Lords",
 	prompt() {
+		view.prompt = "Pay Lords in Influence or Disband them."
 		prompt_held_event()
 		let done = true
 
@@ -5909,7 +5910,7 @@ states.pay_lords = {
 		game.who = NOBODY
 	},
 	pay() {
-		reduce_influence(is_exile_box(get_lord_locale(game.who)) ? 2 : 1)
+		reduce_influence(is_exile(get_lord_locale(game.who)) ? 2 : 1)
 		set_lord_moved(game.who, 0)
 		game.who = NOBODY
 	},
@@ -6654,12 +6655,12 @@ function pack4_set(word, n, x) {
 }
 
 function pack8_get(word, n) {
-	n = n << 4
+	n = n << 3
 	return (word >>> n) & 255
 }
 
 function pack8_set(word, n, x) {
-	n = n << 4
+	n = n << 3
 	return (word & ~(255 << n)) | (x << n)
 }
 

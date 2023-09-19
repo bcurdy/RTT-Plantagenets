@@ -37,7 +37,7 @@ function pack4_get(word, n) {
 }
 
 function pack8_get(word, n) {
-	n = n << 4
+	n = n << 3
 	return (word >>> n) & 255
 }
 
@@ -195,8 +195,8 @@ const asset_type_count = 4
 const asset_action_name = [ "prov", "coin", "cart", "ship" ]
 const asset_type_x34 = [ 1, 1, 1, 0]
 
-const VASSAL_UNAVAILABLE = -1
-const VASSAL_READY = -2
+const VASSAL_UNAVAILABLE = 201
+const VASSAL_READY = 200
 const NOWHERE = -1
 const CALENDAR = 100
 
@@ -395,13 +395,13 @@ function is_vassal_unavailable(vassal) {
 
 
 function get_vassal_locale(vassal) {
-	return pack8_get(view.pieces.vassal[vassal], 1)
+	return pack8_get(view.pieces.vassals[vassal], 1)
 }
 
 function get_vassals_with_lord(lord) {
 	let results = []
 	for (let x = first_vassal; x < last_vassal; x++) {
-		if (pack8_get(view.pieces.vassal[x], 0) === lord) {
+		if (pack8_get(view.pieces.vassals[x], 0) === lord) {
 			results.push(x)
 		}
 	}
@@ -564,7 +564,7 @@ const ui = {
 	lord_cylinder: [],
 	lord_mat: [],
 	lord_buttons: [],
-	vassal_service: [],
+	map_vassals: [],
 	forces: [],
 	routed: [],
 	assets: [],
@@ -801,7 +801,7 @@ function build_map() {
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
 		let small = 46
-		e.className = "marker " + vassal.name
+		e.className = "hide marker " + vassal.name
 		e.style.position = "absolute"
 		e.style.top = y + "px"
 		e.style.left = x + "px"
@@ -810,7 +810,22 @@ function build_map() {
 		e.style.backgroundSize = small + "px"
 		register_action(e, "vassal", ix)
 		register_tooltip(e, data.vassalbox[ix].name)
-		e.classList.toggle("hide", !is_vassal_ready(ix))
+//		e.classList.toggle("hide", !is_vassal_ready(ix))
+		document.getElementById("pieces").appendChild(e)
+	})
+
+	data.vassals.forEach((vassal, ix) => {
+		let e = ui.map_vassals[ix] = document.createElement("div")
+		e.className = "hide marker square " + vassal.name
+		e.style.position = "absolute"
+		e.style.width = 46 + "px"
+		e.style.height = 46  + "px"
+		e.style.backgroundSize = 46 + "px"
+
+		register_action(e, "vassal", ix)
+		register_tooltip(e, data.vassals[ix].name)
+
+//		e.classList.toggle("hide", is_vassal_ready(ix))
 		document.getElementById("pieces").appendChild(e)
 	})
 
@@ -935,11 +950,9 @@ function layout_locale_cylinders(loc) {
 		if (!is_upper)
 			++n
 
-	let wrap = 3
+	let wrap = 2
 	switch (data.locales[loc].type) {
-	case "region": wrap = 2; break
-	case "town": wrap = 2; break
-	case "novgorod": wrap = 4; break
+	case "london": wrap = 3; break
 	}
 
 	let m = Math.floor((n-1) / wrap)
@@ -1123,31 +1136,11 @@ function update_valour(lord, parent, battle) {
 	}
 
 }
-function update_vassals(ready_parent, mustered_parent, lord_ix) {
-	/* TODO: vassals currently with lord
-	for (let v of data.lords[lord_ix].vassals) {
-		let e = ui.vassal_service[v]
-		if (is_vassal_ready(v)) {
-			e.classList.remove("hide")
-			ready_parent.appendChild(e)
-		}
-		else if (is_vassal_mustered(v)) {
-			e.classList.remove("hide")
-			mustered_parent.appendChild(e)
-		}
-		else {
-			e.classList.add("hide")
-		}
-		e.classList.toggle("action", is_action("vassal", v))
-	}
-	*/
-}
 
 function update_lord_mat(ix) {
 	if (view.reveal & (1 << ix)) {
 		ui.lord_mat[ix].classList.remove("hidden")
 		update_assets(ix, ui.assets[ix], view.pieces.assets[ix])
-		// update_vassals(ui.ready_vassals[ix], ui.mustered_vassals[ix], ix)
 		update_forces(ui.forces[ix], view.pieces.forces[ix], ix, false)
 		update_forces(ui.routed[ix], view.pieces.routed[ix], ix, true)
 		ui.lord_feed[ix].classList.toggle("hide", count_lord_all_forces(ix) <= 6)
@@ -1418,18 +1411,23 @@ function update_court() {
 			lcourt.appendChild(ui.lord_mat[lord])
 }
 
-function update_calendar_vassals() {
-	for (let v in data.vassals) {
+function update_vassals() {
+	for (let v = first_vassal; v < last_vassal; v++) {
 		let info = data.vassals[v]
-		let e = ui.map_vassals[v]
-		e.classList.add("hide")
 		if (!is_vassal_ready(v) && get_vassal_locale(v) !== 0) {
-			calendar_layout_vassal[get_vassal_locale(v) - CALENDAR] = e 
+			let e = ui.map_vassals[v]
+			e.classList.add("hide")
+			calendar_layout_vassal[get_vassal_locale(v) - CALENDAR].push(e) 
 			e.classList.remove("hide")
 			e.classList.toggle("action", is_action("vassal", v))
 			e.classList.add("vassal" + clean_name(info.name))
 			e.classList.add("back", is_vassal_unavailable(v))
-		} 
+		} else if (is_vassal_ready(v)) {
+			let e = ui.vassalbox[v]
+			e.classList.remove("hide")
+			e.classList.toggle("action", is_action("vassal", v))
+			e.classList.add("vassal" + clean_name(info.name))
+		}
 	}
 }
 
@@ -1453,7 +1451,7 @@ function on_update() {
 		}
 	}
 
-	update_calendar_vassals()
+	update_vassals()
 	layout_calendar()
 	//layout_track()
 
@@ -1568,6 +1566,11 @@ function on_update() {
 	// Supply
 	action_button("stronghold", "Stronghold")
 	action_button("port", "Port")
+
+	// Pay or Disband
+	action_button("pay", "Pay")
+	action_button("disband", "Disband")
+
 
 	// Events
 	action_button("decline", "Decline")
