@@ -25,6 +25,7 @@ header.your_turn { background-color: orange; }
 #log .card_tip { font-style: italic; }
 #log .card_tip:hover { text-decoration: underline; }
 #log .lord_tip:hover { cursor: pointer; text-decoration: underline; }
+#log .lord_vassal:hover { cursor: pointer; text-decoration: underline; }
 #log .locale_tip:hover { cursor: pointer; text-decoration: underline; }
 
 .action {

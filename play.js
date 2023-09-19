@@ -36,6 +36,12 @@ function pack4_get(word, n) {
 	return (word >>> n) & 15
 }
 
+function pack8_get(word, n) {
+	n = n << 4
+	return (word >>> n) & 255
+}
+
+
 // === CONSTANTS (matching those in rules.js) ===
 
 function find_lord(name) { return data.lords.findIndex((x) => x.name === name) }
@@ -89,6 +95,9 @@ const last_aow_card = last_lancaster_card
 
 const first_locale = 0
 const last_locale = data.locales.length - 1
+
+const first_vassal = 0
+const last_vassal = data.vassals.length - 1
 
 const Y1 = find_card("Y1")
 const Y2 = find_card("Y2")
@@ -186,8 +195,8 @@ const asset_type_count = 4
 const asset_action_name = [ "prov", "coin", "cart", "ship" ]
 const asset_type_x34 = [ 1, 1, 1, 0]
 
-const VASSAL_READY = 1
-const VASSAL_MUSTERED = 2
+const VASSAL_UNAVAILABLE = -1
+const VASSAL_READY = -2
 const NOWHERE = -1
 const CALENDAR = 100
 
@@ -373,6 +382,31 @@ function count_favour(type) {
 	}
 
 	return n;
+}
+
+function is_vassal_ready(vassal) {
+	return pack8_get(view.pieces.vassals[vassal], 0) === VASSAL_READY
+}
+
+
+function is_vassal_unavailable(vassal) {
+	return view.pieces.vassals[vassal] === VASSAL_UNAVAILABLE
+}
+
+
+function get_vassal_locale(vassal) {
+	return pack8_get(view.pieces.vassal[vassal], 1)
+}
+
+function get_vassals_with_lord(lord) {
+	let results = []
+	for (let x = first_vassal; x < last_vassal; x++) {
+		if (pack8_get(view.pieces.vassal[x], 0) === lord) {
+			results.push(x)
+		}
+	}
+
+	return results
 }
 
 function is_york_locale(loc) {
@@ -596,7 +630,7 @@ const ui = {
 }
 
 let locale_layout = []
-let calendar_layout_service = []
+let calendar_layout_vassal = []
 let calendar_layout_cylinder = []
 
 function clean_name(name) {
@@ -776,6 +810,7 @@ function build_map() {
 		e.style.backgroundSize = small + "px"
 		register_action(e, "vassal", ix)
 		register_tooltip(e, data.vassalbox[ix].name)
+		e.classList.toggle("hide", !is_vassal_ready(ix))
 		document.getElementById("pieces").appendChild(e)
 	})
 
@@ -940,7 +975,7 @@ function layout_locale_cylinders(loc) {
 function layout_calendar() {
 	for (let loc = 1; loc <= 16; ++loc) {
 		let [cx, cy] = calendar_xy[loc]
-		let list = calendar_layout_service[loc]
+		let list = calendar_layout_vassal[loc]
 		for (let i = 0; i < list.length; ++i) {
 			let e = list[i]
 			let x = cx, y = cy, z = 60 - i
@@ -990,6 +1025,22 @@ function layout_track() {
 	}
 }
 
+function add_vassal(parent, vassal, lord, routed) {
+	let elt
+	if (routed) {
+		if (is_action(routed_force_action_name[VASSAL], lord))
+			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " " + data.vassals[vassal].name, routed_force_action_name[VASSAL], lord)
+		else
+			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " " + data.vassals[vassal].name, routed_force_action_name[VASSAL], lord)	
+	} else {
+		if (is_action(routed_force_action_name[VASSAL], lord))
+			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " " + data.vassals[vassal].name, force_action_name[VASSAL], lord)
+		else
+			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " " + data.vassals[vassal].name, force_action_name[VASSAL], lord)	
+	}
+	parent.appendChild(elt)
+}
+
 function add_force(parent, type, lord, routed) {
 	let elt
 	if (routed) {
@@ -1018,9 +1069,14 @@ function add_asset(parent, type, n, lord) {
 function update_forces(parent, forces, lord_ix, routed) {
 	parent.replaceChildren()
 	for (let i = 0; i < force_type_count; ++i) {
-		let n = pack4_get(forces, i)
-		for (let k = 0; k < n; ++k) {
-			add_force(parent, i, lord_ix, routed)
+		if (i === VASSAL) {
+			get_vassals_with_lord(lord_ix)
+				.forEach(v => add_vassal(v, parent))
+		} else {
+			let n = pack4_get(forces, i)
+			for (let k = 0; k < n; ++k) {
+				add_force(parent, i, lord_ix, routed)
+			}	
 		}
 	}
 }
@@ -1362,12 +1418,27 @@ function update_court() {
 			lcourt.appendChild(ui.lord_mat[lord])
 }
 
+function update_calendar_vassals() {
+	for (let v in data.vassals) {
+		let info = data.vassals[v]
+		let e = ui.map_vassals[v]
+		e.classList.add("hide")
+		if (!is_vassal_ready(v) && get_vassal_locale(v) !== 0) {
+			calendar_layout_vassal[get_vassal_locale(v) - CALENDAR] = e 
+			e.classList.remove("hide")
+			e.classList.toggle("action", is_action("vassal", v))
+			e.classList.add("vassal" + clean_name(info.name))
+			e.classList.add("back", is_vassal_unavailable(v))
+		} 
+	}
+}
+
 function on_update() {
 	restart_cache()
 
 	for (let i = 0; i <= 16; ++i) {
 		calendar_layout_cylinder[i] = []
-		calendar_layout_service[i] = []
+		calendar_layout_vassal[i] = []
 	}
 
 	for (let i = 0; i < data.locales.length; ++i)
@@ -1382,6 +1453,7 @@ function on_update() {
 		}
 	}
 
+	update_calendar_vassals()
 	layout_calendar()
 	//layout_track()
 
@@ -1588,6 +1660,11 @@ function sub_lord_name(match, p1) {
 	return `<span class="lord_tip" onclick="on_click_lord_tip(${x})">${n}</span>`
 }
 
+function sub_vassal_name(match, x) {
+	let n = data.vassals[x].name
+	return `<span class="vassal_tip" >${n}</span>`
+}
+
 function on_log(text) {
 	let p = document.createElement("div")
 
@@ -1609,6 +1686,7 @@ function on_log(text) {
 	text = text.replace(/E(\d+)/g, sub_card_event)
 	text = text.replace(/L(\d+)/g, sub_lord_name)
 	text = text.replace(/%(\d+)/g, sub_locale_name)
+	text = text.replace(/V(\d+)/g, sub_vassal_name)
 
 	if (text.match(/^\.h1/)) {
 		text = text.substring(4)
