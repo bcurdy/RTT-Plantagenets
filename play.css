@@ -373,6 +373,15 @@ body.shift .exhausted  {
 	margin: 0 2px;
 }
 
+.unit.vassal {
+	border: 2px solid #d1cfa1;
+	width: 46px;
+	height: 46px;
+	border-radius: 8px;
+	margin: 0 2px;
+}
+
+
 .unit.action {
 	filter:
 		drop-shadow(2px 0px 0px white)
@@ -909,3 +918,10 @@ body.shift .exhausted  {
 .marker.vassal.vassal_edward { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
 .marker.vassal.vassal_thomas_stanley { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
 .marker.vassal.vassal_trollope { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
+.unit.vassal { background-color: hsl(58,34%,73%); border-color: hsl(58,34%,83%) hsl(58,34%,63%) hsl(58,34%,63%) hsl(58,34%,83%); box-shadow: 0 0 0 1px hsl(58,34%,24%), 0px 1px 4px #0008; }
+.unit.vassal.back { background-color: hsl(57,48%,75%); border-color: hsl(57,48%,85%) hsl(57,48%,65%) hsl(57,48%,65%) hsl(57,48%,85%); box-shadow: 0 0 0 1px hsl(57,48%,25%), 0px 1px 4px #0008; }
+.unit.vassal.vassal_hastings { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%), 0px 1px 4px #0008; }
+.unit.vassal.vassal_clifford { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
+.unit.vassal.vassal_edward { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
+.unit.vassal.vassal_thomas_stanley { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
+.unit.vassal.vassal_trollope { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }

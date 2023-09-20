@@ -265,7 +265,8 @@ const boxes = {
 	"seat lancaster lord_henry_vi": [944,1144,54,56],
 	"seat lancaster lord_margaret": [944,1144,54,56],
 	"seat lancaster lord_henry_tudor": [944,1144,54,56],
-	"seat york lord_edward_iii": [944,1169,54,56],
+	"seat york lord_richard_iii": [944,1169,54,56],
+	"seat york lord_edward_iv": [944,1169,54,56],
 	"seat york lord_gloucester_2": [944,1169,54,56],
 	"seat york lord_gloucester_1": [620,1061,54,56],
 	"seat york lord_salisbury": [653,617,54,56],
@@ -280,11 +281,14 @@ const boxes = {
 	"seat york lord_rutland": [1113,1181,54,56],
 	"seat lancaster lord_warwick_l": [1118,1385,54,56],
 	"seat lancaster lord_exeter_1": [405,1391,54,56],
+	"seat lancaster lord_exeter_2": [405,1391,54,56],
 	"seat york lord_devon": [313,1340,54,56],
 	"seat york lord_pembroke": [145,1108,54,56],
 	"seat lancaster lord_somerset_1": [453,1248,54,56],
+	"seat lancaster lord_somerset_2": [453,1248,54,56],
 	"seat york lord_norfolk": [850,1330,54,56],
 	"seat york lord_northumberland_y1": [397,405,54,56],
+	"seat york lord_northumberland_y2": [397,405,54,56],
 	"seat york lord_warwick_y": [1118,1385,54,56],
 	"Ireland favour": [50,947,110,121],
 	"seat york lord_york": [904,930,54,56],
@@ -346,15 +350,6 @@ function deffavour(name) {
 	favour.push({ name, box: { x, y, w, h } })
 }
 
-function defseat(name) {
-	let [x, y, w, h] = boxes[name]
-	x = Math.floor(x)
-	y = Math.floor(y)
-	w = Math.ceil(w)
-	h = Math.ceil(h)
-	locmap[name] = locales.length
-	seat.push({ name, box: { x, y, w, h } })
-}
 function defseat(name) {
 	let [x, y, w, h] = boxes[name]
 	x = Math.floor(x)
@@ -592,31 +587,34 @@ deffavour("Scarborough favour")
 deffavour("Ravenspur favour")
 
 //LOCALE SEAT
-
+defseat("seat york lord_york")
+defseat("seat york lord_march")
+defseat("seat york lord_edward_iv")
+defseat("seat york lord_salisbury")
+defseat("seat york lord_rutland")
+defseat("seat york lord_pembroke")
+defseat("seat york lord_devon")
+defseat("seat york lord_northumberland_y1")
+defseat("seat york lord_northumberland_y2")
+defseat("seat york lord_gloucester_1")
+defseat("seat york lord_gloucester_2")
+defseat("seat york lord_richard_iii")
+defseat("seat york lord_norfolk")
+defseat("seat york lord_warwick_y")
 defseat("seat lancaster lord_henry_vi")
 defseat("seat lancaster lord_margaret")
-defseat("seat lancaster lord_henry_tudor")
-defseat("seat york lord_edward_iii")
-defseat("seat york lord_gloucester_2")
-defseat("seat york lord_gloucester_1")
-defseat("seat york lord_salisbury")
-defseat("seat lancaster lord_clarence")
-defseat("seat lancaster lord_northumberland_l")
+defseat("seat lancaster lord_somerset_1")
+defseat("seat lancaster lord_somerset_2")
+defseat("seat lancaster lord_exeter_1")
+defseat("seat lancaster lord_exeter_2")
 defseat("seat lancaster lord_buckingham")
-defseat("seat york lord_march")
+defseat("seat lancaster lord_northumberland_l")
+defseat("seat lancaster lord_clarence")
 defseat("seat lancaster lord_jasper_tudor_1")
 defseat("seat lancaster lord_jasper_tudor_2")
+defseat("seat lancaster lord_henry_tudor")
 defseat("seat lancaster lord_oxford")
-defseat("seat york lord_rutland")
 defseat("seat lancaster lord_warwick_l")
-defseat("seat lancaster lord_exeter_1")
-defseat("seat york lord_devon")
-defseat("seat york lord_pembroke")
-defseat("seat york lord_warwick_y")
-defseat("seat lancaster lord_somerset_1")
-defseat("seat york lord_norfolk")
-defseat("seat york lord_northumberland_y1")
-defseat("seat york lord_york")
 
 
 // VASSAL SEAT

@@ -1127,6 +1127,10 @@ function get_vassals_with_lord(lord) {
 	return results
 }
 
+function get_lord_with_vassal(vassal) {
+	return pack8_get(game.pieces.vassals[vassal], 0)
+}
+
 function set_vassal_ready(vassal) {
 	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 0, VASSAL_READY)
 }
@@ -1240,13 +1244,16 @@ function is_lord_at_seat(lord) {
 	return is_lord_seat(lord, get_lord_locale(lord))
 }
 
-function has_free_seat(lord) {
-	let result = false
-	for_each_seat(lord, seat => {
-		if (!result && is_friendly_locale(seat))
-			result = true
-	})
-	return result
+function has_local_to_muster(lord) {
+	if (!has_enemy_lord(data.lords[lord].seats[0]))
+		return true
+
+	for (let l = first_friendly_lord; l <= last_friendly_lord; l++) {
+		if (is_lord_on_map(l) && is_friendly_locale(get_lord_locale(l)))
+			return true
+	}
+
+	return false
 }
 
 function has_york_lord(here) {
@@ -1618,7 +1625,7 @@ function muster_lord(lord, locale) {
 	set_lord_assets(lord, COIN, info.assets.coin | 0)
 
 	set_lord_assets(lord, CART, info.assets.cart | 0)
-	set_lord_assets(lord, SHIP, info.assets.ship | 0)
+	set_lord_assets(lord, SHIP, info.ship | 0)
 
 	muster_lord_forces(lord)
 }
@@ -2550,7 +2557,7 @@ states.levy_muster_lord = {
 		if (game.count > 0) {
 			// Roll to muster Ready Lord at Seat
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-				if (is_lord_ready(lord) && has_free_seat(lord))
+				if (is_lord_ready(lord) && has_local_to_muster(lord))
 					gen_action_lord(lord)
 			}
 
@@ -2586,21 +2593,12 @@ states.levy_muster_lord = {
 
 	lord(other) {
 		clear_undo()
-		let die = roll_die()
-		let influence = data.lords[game.who].influence
-		if (die <= influence) {
-			log(`L${other} ${range(influence)}: ${HIT[die]}`)
-			push_state("muster_lord_at_seat")
-			game.who = other	
-		} else {
-			log(`L${other} ${range(influence)}: ${MISS[die]}`)
-			resume_levy_muster_lord()
-		}
+		goto_levy_muster_lord_attempt(other)
 	},
 
 	vassal(vassal) {
 		push_undo()
-		goto_muster_vassal(vassal)
+		goto_levy_muster_vassal(vassal)
 	},
 
 	take_ship() {
@@ -2667,11 +2665,23 @@ states.levy_muster_lord = {
 states.muster_lord_at_seat = {
 	inactive: "Muster",
 	prompt() {
-		view.prompt = `Muster: Select Seat for ${lord_name[game.who]}.`
-		for_each_seat(game.who, seat => {
-			if (is_friendly_locale(seat))
+		view.prompt = `Muster: Select Locale for ${lord_name[game.who]}.`
+		let found = false
+
+		let seat = data.lords[game.who].seats[0]
+			if (!has_enemy_lord(seat)) {
 				gen_action_locale(seat)
-		})
+				found = true
+			}
+
+		if (!found) {
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
+				if (is_lord_on_map(lord) && is_friendly_locale(data.lords[lord].seats[0])) {
+					gen_action_locale(data.lords[lord].seats[0])
+				}
+			}
+		}
+		
 	},
 	locale(loc) {
 		push_undo()
@@ -2687,43 +2697,55 @@ states.muster_lord_at_seat = {
 		// TODO : IF SEAT WITH ENEMY LORD GOES WITH ANY FRIENDLY SEAT
 		set_lord_moved(game.who, 1)
 		muster_lord(game.who, loc)
-		game.state = "muster_lord_transport"
-		game.count = data.lords[game.who].assets.transport | 0
-		resume_muster_lord_transport()
-	},
-}
-
-function resume_muster_lord_transport() {
-	if (game.count === 0)
-		pop_state()
-	if (game.state === "levy_muster_lord")
-		resume_levy_muster_lord()
-}
-
-states.muster_lord_transport = {
-	inactive: "Muster",
-	prompt() {
-		view.prompt = `Muster: Select Transport for ${lord_name[game.who]}.`
-		view.prompt += ` ${game.count} left.`
-		if (data.lords[game.who].ships) {
-			if (can_add_transport(game.who, SHIP))
-				view.actions.take_ship = 1
+		if (game.active === YORK) {
+			add_favoury_marker(loc)
+			remove_favourl_marker(loc)
+		} else {
+			add_favourl_marker(loc)
+			remove_favoury_marker(loc)
 		}
-		if (can_add_transport(game.who, CART))
-			view.actions.take_cart = 1
+		end_muster_lord_at_seat()
 	},
-	take_ship() {
-		push_undo()
-		add_lord_assets(game.who, SHIP, 1)
-		--game.count
-		resume_muster_lord_transport()
+}
+
+function goto_levy_muster_lord_attempt(lord) {
+	game.what = lord
+	push_state("levy_muster_lord_attempt")
+	init_influence_check(game.who)
+}
+
+function end_levy_muster_lord_attempt() {
+	pop_state()
+	clear_undo()
+	end_influence_check()
+	resume_levy_muster_lord()
+}
+
+states.levy_muster_lord_attempt = {
+	inactive: "Levy Lord",
+	prompt() {
+		view.prompt = `Levy Lord ${lord_name[game.what]}. `
+
+		prompt_influence_check()
 	},
-	take_cart() {
-		push_undo()
-		add_lord_assets(game.who, CART, 1)
-		--game.count
-		resume_muster_lord_transport()
-	},
+	spend1:add_influence_check_modifier_1,
+	spend3:add_influence_check_modifier_2,
+	check() {
+		let results = do_influence_check()
+		log(`Attempt to levy L${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		
+		if (results.success) {
+			push_state("muster_lord_at_seat")
+			game.who = game.what			
+		} else {
+			end_levy_muster_lord_attempt()
+		}
+	}
+}
+
+function end_muster_lord_at_seat() {
+	pop_state()
+	end_levy_muster_lord_attempt()
 }
 
 function lord_has_capability_card(lord, c) {
@@ -3421,23 +3443,24 @@ states.parley = {
 // 2) The other vassal marker is placed, face down, on the calendar, a number of boxes right to current turn + 6 - service 
 // (a service 3 disbanding in turn 8 will come back turn 11)
 
-function goto_muster_vassal(vassal) {
+function goto_levy_muster_vassal(vassal) {
 	game.what = vassal
-	push_state("levy_vassal")
+	push_state("levy_muster_vassal")
 	init_influence_check(game.who)
 	game.check.push({cost: 0, modifier: data.vassals[vassal].influence * (game.active === LANCASTER? -1 : 1), source: "vassal"})
 }
 
-function end_muster_vassal() {
+function end_levy_muster_vassal() {
 	pop_state()
+	clear_undo()
 	end_influence_check()
 	resume_levy_muster_lord()
 }
 
-states.levy_vassal = {
+states.levy_muster_vassal = {
 	inactive: "Levy Vassal",
 	prompt() {
-		view.prompt = `Levy Vassal V${game.what}. `
+		view.prompt = `Levy Vassal ${data.vassals[game.what].name}. `
 
 		prompt_influence_check()
 	},
@@ -3447,10 +3470,10 @@ states.levy_vassal = {
 		let results = do_influence_check()
 		log(`Attempt to levy V${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		
-		if (success) {
-			muster_vassal(game.who, game.what)
+		if (results.success) {
+			muster_vassal(game.what, game.who)
 		}
-		end_muster_vassal()
+		end_levy_muster_vassal()
 	}
 }
 
@@ -5107,7 +5130,7 @@ function will_lord_rout(lord) {
 	return false
 }
 
-function rout_unit(lord, type) {
+function rout_unit(lord, type, special) {
 	if (type === VASSAL) {
 		rout_vassal(lord, special)
 	} else {
@@ -5178,13 +5201,15 @@ function action_assign_hits(lord, type, special) {
 	let protection = check_protection_capabilities(FORCE_PROTECTION[type])
 	let extra = ""
 
-	if (assign_hit_roll(get_force_name(lord, type), protection, extra)) {
+	if (assign_hit_roll(get_force_name(lord, type, special), protection, extra)) {
 		if (get_lord_remaining_valour(lord) > 0) {
 			game.state = "spend_valour"
 			game.what = type
+			if (game.what === VASSAL)
+				game.where = special
 
 		} else {
-			rout_unit(lord, type)
+			rout_unit(lord, type, special)
 			finish_action_assign_hits(lord)
 		}
 	} else {
@@ -5211,12 +5236,12 @@ function finish_action_assign_hits(lord) {
 states.spend_valour = {
 	inactive: "Spend Valour",
 	prompt() {
-		view.prompt = `Spend Valour: Reroll Hit on ${get_force_name(game.who, game.what)}?`
+		view.prompt = `Spend Valour: Reroll Hit on ${get_force_name(game.who, game.what, game.where)}?`
 		gen_action("valour", game.who)
 		view.actions.pass = 1
 	},
 	pass() {
-		rout_unit(game.who, game.what)
+		rout_unit(game.who, game.what, game.where)
 		finish_action_assign_hits(game.who)
 	},
 	valour() {
@@ -5857,6 +5882,7 @@ function has_friendly_lord_who_must_pay_troops() {
 }
 
 function goto_pay_lords() {
+	clear_undo()
 	for (let lord = first_friendly_lord; lord < last_friendly_lord; lord++) {
 		if (is_lord_on_map(lord))
 			set_lord_unfed(lord, 1)
@@ -5906,10 +5932,12 @@ states.pay_lords = {
 		game.who = lord
 	},
 	disband() {
+		push_undo()
 		disband_lord(game.who)
 		game.who = NOBODY
 	},
 	pay() {
+		push_undo()
 		reduce_influence(is_exile(get_lord_locale(game.who)) ? 2 : 1)
 		set_lord_moved(game.who, 0)
 		game.who = NOBODY
@@ -5921,6 +5949,7 @@ states.pay_lords = {
 
 
 function goto_pay_vassals() {
+	clear_undo()
 	let vassal_to_pay = false
 
 	for (let v = first_vassal; v < last_vassal; v++) {
@@ -5973,11 +6002,13 @@ states.pay_vassals = {
 		game.what = v
 	},
 	pay() {
+		push_undo()
 		pay_vassal(game.what)
 		reduce_influence(1)
 		game.what = NOBODY
 	},
 	disband() {
+		push_undo()
 		disband_vassal(game.what)
 		game.what = NOBODY
 	},

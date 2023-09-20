@@ -390,7 +390,7 @@ function is_vassal_ready(vassal) {
 
 
 function is_vassal_unavailable(vassal) {
-	return view.pieces.vassals[vassal] === VASSAL_UNAVAILABLE
+	return pack8_get(view.pieces.vassals[vassal], 0) === VASSAL_UNAVAILABLE
 }
 
 
@@ -801,7 +801,7 @@ function build_map() {
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
 		let small = 46
-		e.className = "hide marker " + vassal.name
+		e.className = "hide unit " + vassal.name
 		e.style.position = "absolute"
 		e.style.top = y + "px"
 		e.style.left = x + "px"
@@ -810,13 +810,12 @@ function build_map() {
 		e.style.backgroundSize = small + "px"
 		register_action(e, "vassal", ix)
 		register_tooltip(e, data.vassalbox[ix].name)
-//		e.classList.toggle("hide", !is_vassal_ready(ix))
 		document.getElementById("pieces").appendChild(e)
 	})
 
 	data.vassals.forEach((vassal, ix) => {
 		let e = ui.map_vassals[ix] = document.createElement("div")
-		e.className = "hide marker square " + vassal.name
+		e.className = "hide marker square vassal vassal_" + clean_name(vassal.name)
 		e.style.position = "absolute"
 		e.style.width = 46 + "px"
 		e.style.height = 46  + "px"
@@ -825,7 +824,6 @@ function build_map() {
 		register_action(e, "vassal", ix)
 		register_tooltip(e, data.vassals[ix].name)
 
-//		e.classList.toggle("hide", is_vassal_ready(ix))
 		document.getElementById("pieces").appendChild(e)
 	})
 
@@ -1041,15 +1039,15 @@ function layout_track() {
 function add_vassal(parent, vassal, lord, routed) {
 	let elt
 	if (routed) {
-		if (is_action(routed_force_action_name[VASSAL], lord))
-			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " " + data.vassals[vassal].name, routed_force_action_name[VASSAL], lord)
+		if (is_action(routed_force_action_name[VASSAL], vassal))
+			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), routed_force_action_name[VASSAL], vassal)
 		else
-			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " " + data.vassals[vassal].name, routed_force_action_name[VASSAL], lord)	
+			elt = get_cached_element("unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), routed_force_action_name[VASSAL], vassal)	
 	} else {
-		if (is_action(routed_force_action_name[VASSAL], lord))
-			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " " + data.vassals[vassal].name, force_action_name[VASSAL], lord)
+		if (is_action(force_action_name[VASSAL], vassal))
+			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), force_action_name[VASSAL], vassal)
 		else
-			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " " + data.vassals[vassal].name, force_action_name[VASSAL], lord)	
+			elt = get_cached_element("unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), force_action_name[VASSAL], vassal)	
 	}
 	parent.appendChild(elt)
 }
@@ -1084,7 +1082,8 @@ function update_forces(parent, forces, lord_ix, routed) {
 	for (let i = 0; i < force_type_count; ++i) {
 		if (i === VASSAL) {
 			get_vassals_with_lord(lord_ix)
-				.forEach(v => add_vassal(v, parent))
+				.filter(v => (view.battle === 0 && routed === false) || (view.battle !== 0 && view.battle.routed_vassals[lord_ix].includes(v) === routed))
+				.forEach(v => add_vassal(parent, v, lord_ix, routed))
 		} else {
 			let n = pack4_get(forces, i)
 			for (let k = 0; k < n; ++k) {
@@ -1268,7 +1267,7 @@ function update_plan() {
 		let is_planning = view.actions && view.actions.plan
 
 		ui.plan_panel.classList.remove("hide")
-		for (let i = 0; i < 6; ++i) {
+		for (let i = 0; i < 7; ++i) {
 			if (i < view.plan.length) {
 				let lord = view.plan[i]
 				if (lord < 0) {
@@ -1420,8 +1419,8 @@ function update_vassals() {
 			calendar_layout_vassal[get_vassal_locale(v) - CALENDAR].push(e) 
 			e.classList.remove("hide")
 			e.classList.toggle("action", is_action("vassal", v))
-			e.classList.add("vassal" + clean_name(info.name))
-			e.classList.add("back", is_vassal_unavailable(v))
+			e.classList.toggle("back", is_vassal_unavailable(v))
+			ui.vassalbox[v].classList.add("hide")
 		} else if (is_vassal_ready(v)) {
 			let e = ui.vassalbox[v]
 			e.classList.remove("hide")
