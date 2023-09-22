@@ -3117,11 +3117,11 @@ function can_action_parley_levy() {
 
 function parley_adjacent(here, lord) {
 	let seaports = []
-	if (is_seaport(here) && get_lord_assets(lord, SHIP) > 0 ) {
+	if (is_seaport(here) && get_shared_assets(lord, SHIP) > 0 ) {
 		if (data.port_1.includes(here)) seaports = data.port_1
 		if (data.port_2.includes(here)) seaports = data.port_2
 		if (data.port_3.includes(here)) seaports = data.port_3
-	} else if (is_exile(here) && get_lord_assets(lord, SHIP) > 0) {
+	} else if (is_exile(here) && get_shared_assets(lord, SHIP) > 0) {
 		return find_ports_from_exile(here)
 	}
 	return data.locales[here].adjacent.concat(seaports)
