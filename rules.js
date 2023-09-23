@@ -3534,32 +3534,28 @@ function find_parley_targets(lord, acceptfn, adjacentfn) {
 	return results
 }
 
-function* map_search(lord, acceptfn, adjacentfn, prune=true) {
-	let here = get_lord_locale(lord)
-	let locales = [{locale:here, distance: 0}]
+function* map_search(lord, acceptfn, adjacentfn, prune = true) {
+	let start = get_lord_locale(lord)
+	let queue = [ { locale: start, distance: 0 } ]
+	let seen = [ start ]
 
-	let seen = []
+	while (queue.length > 0) {
+		let item = queue.shift()
 
-	while (true) {
-		if (locales.length === 0)
-			return
-
-		let loc = locales.shift()
-		seen.push(loc.locale)
-
-		if (acceptfn(loc)) {
-			yield loc
+		if (acceptfn(item)) {
+			yield item
 			if (prune)
 				continue
 		}
-		if (is_friendly_locale(loc.locale)) {
-			let distance = loc.distance + 1
-			locales = locales.concat(
-							adjacentfn(loc.locale, lord)
-								.filter(l => !seen.includes(l))
-								.filter(l => !locales.some((r) => r.locale === l))
-								.map(x => {return {locale: x, distance: distance }})
-							)
+
+		if (is_friendly_locale(item.locale)) {
+			let distance = item.distance + 1
+			for (let next of adjacentfn(item.locale, lord)) {
+				if (!set_has(seen, next)) {
+					set_add(seen, next)
+					queue.push({ locale: next, distance })
+				}
+			}
 		}
 	}
 }
