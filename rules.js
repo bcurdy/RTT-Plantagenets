@@ -330,10 +330,10 @@ const AOW_LANCASTER_HERALDS = L4 // TODO
 const AOW_LANCASTER_CHURCH_BLESSINGS = L5
 const AOW_LANCASTER_GREAT_SHIPS = L6 // TODO
 const AOW_LANCASTER_HARBINGERS = L7
-const AOW_LANCASTER_HAY_WAINS = L8 // TODO
+const AOW_LANCASTER_HAY_WAINS = L8 
 const AOW_LANCASTER_QUARTERMASTERS = L9
 const AOW_LANCASTER_CHAMBERLAINS = L10 // TODO
-const AOW_LANCASTER_IN_THE_NAME_OF_THE_KING = L11 // TODO
+const AOW_LANCASTER_IN_THE_NAME_OF_THE_KING = L11
 const AOW_LANCASTER_COMMISION_OF_ARRAY = L12 // TODO
 const AOW_LANCASTER_EXPERT_COUNSELLORS = L13
 const AOW_LANCASTER_PERCYS_POWER = L14 // TODO
@@ -346,7 +346,7 @@ const AOW_LANCASTER_VETERAN_OF_FRENCH_WARS = L20
 const AOW_LANCASTER_MY_FATHERS_BLOOD = L21 // TODO VASSAL LEVY ONLY
 const AOW_LANCASTER_STAFFORD_ESTATES = L22 // TODO
 const AOW_LANCASTER_MONTAGU = L23 // TODO VASSAL LEVY ONLY 
-const AOW_LANCASTER_MARRIED_TO_A_NEVILLE = L24 // TODO
+const AOW_LANCASTER_MARRIED_TO_A_NEVILLE = L24
 const AOW_LANCASTER_WELSH_LORD = L25 // TODO
 const AOW_LANCASTER_EDWARD = L26 // TODO VASSAL ONLY
 const AOW_LANCASTER_BARDED_HORSE = L27 // TODO
@@ -843,10 +843,16 @@ function roll_die() {
 }
 
 function get_shared_assets(loc, what) {
+	let m = 0
 	let n = 0
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {	
 		if (get_lord_locale(lord) === loc)
 			n += get_lord_assets(lord, what)
+			if ((game.state === 'supply_source') && lord_has_capability(lord, AOW_LANCASTER_HAY_WAINS) && what === CART) {
+				m = get_lord_assets(lord, CART)
+				n += m
+			}
+		}
 	return n
 }
 
@@ -882,9 +888,14 @@ function count_group_ships() {
 }
 
 function count_group_assets(type) {
+	let m = 0
 	let n = 0
-	for (let lord of game.group)
+	for (let lord of game.group) {
 		n += get_lord_assets(lord, type)
+		if ((game.state === 'command' || game.state === 'march_laden') && lord_has_capability(lord, AOW_LANCASTER_HAY_WAINS) && type === CART)
+			m = get_lord_assets(lord, CART)
+			n += m
+		}
 	return n
 }
 
@@ -1897,7 +1908,7 @@ function goto_immediate_event(c) {
 	switch (c) {
 		// This Levy / Campaign
 		// No immediate effect
-		case EVENT_LANCASTER_BE_SENT_FOR:
+		/*case EVENT_LANCASTER_BE_SENT_FOR:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_LANCASTER_SEAMANSHIP:
@@ -1976,7 +1987,7 @@ function goto_immediate_event(c) {
 		case EVENT_YORK_PRIVY_COUNCIL:
 			set_add(game.events, c)
 			return end_immediate_event()
-			
+			*/
 		// Immediate effect
 	/*	case EVENT_RUSSIAN_DEATH_OF_THE_POPE:
 			set_add(game.events, c)
@@ -1991,7 +2002,7 @@ function goto_immediate_event(c) {
 			*/
 
 		// Discard - Immediate Events
-		case EVENT_LANCASTER_SCOTS:
+		/*case EVENT_LANCASTER_SCOTS:
 			return goto_lancaster_event_scots()
 		case EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT:
 			return goto_lancaster_event_henry_pressures_parliament()
@@ -2029,7 +2040,7 @@ function goto_immediate_event(c) {
 			return goto_york_event_yorkist_north()
 		case EVENT_YORK_EARL_RIVERS:
 			return goto_york_event_earl_rivers()
-			
+			*/
 		default:
 			log("NOT IMPLEMENTED")
 			return end_immediate_event()
@@ -3010,11 +3021,20 @@ function end_influence_check() {
 }
 
 function count_influence_score() {
+	let here = get_lord_locale(game.group)
 	let score = game.check.reduce((p,c) => p+c.modifier, 0)
+	if (game.state === "parley" && lord_has_capability(game.group, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
+		score += 1
+	if (get_lord_locale(LORD_MARGARET) === here && lord_has_capability(game.group,AOW_LANCASTER_LOYAL_SOMERSET))
+		score += 1
+	if (get_lord_locale(LORD_WARWICK_L) === here && lord_has_capability(game.group,AOW_LANCASTER_MARRIED_TO_A_NEVILLE) && is_friendly_locale(here))
+		score +=2
+
 	if (score > 5)
 		score = 5
 	if (score < 1)
 		score = 1
+
 
 	return score
 }
@@ -3117,11 +3137,11 @@ function can_action_parley_levy() {
 
 function parley_adjacent(here, lord) {
 	let seaports = []
-	if (is_seaport(here) && get_shared_assets(lord, SHIP) > 0 ) {
+	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0 ) {
 		if (data.port_1.includes(here)) seaports = data.port_1
 		if (data.port_2.includes(here)) seaports = data.port_2
 		if (data.port_3.includes(here)) seaports = data.port_3
-	} else if (is_exile(here) && get_shared_assets(lord, SHIP) > 0) {
+	} else if (is_exile(here) && get_shared_assets(here, SHIP) > 0) {
 		return find_ports_from_exile(here)
 	}
 	return data.locales[here].adjacent.concat(seaports)
@@ -3311,7 +3331,6 @@ function goto_march(to) {
 function march_with_group_1() {
 	let transport = count_group_assets(CART)
 	let prov = count_group_assets(PROV)
-
 	if (prov <= transport)
 		return march_with_group_2()
 
@@ -3334,11 +3353,11 @@ states.march_laden = {
 	
 
 		if (prov > transport) {	
-			for (let lord of game.group) {
+			let overflow_prov = prov - transport
+			view.prompt += `Please discard ${overflow_prov} Provender`
+			for (let lord of game.group) {	
 				if (prov > transport) {
-					let overflow_prov = prov - transport
 					if (get_lord_assets(lord, PROV) > 0) {
-						view.prompt += `Please discard ${overflow_prov} Provender`
 						gen_action_prov(lord)
 					}
 				}
@@ -3470,7 +3489,7 @@ function take_spoils_cart() { take_spoils(CART) }
 
 function supply_adjacent(here, lord) {
 	let lord_loc = get_lord_locale(lord)
-	if (is_exile(here) && get_lord_assets(lord, SHIP) > 0) {
+	if (is_exile(here) && get_shared_assets(here, SHIP) > 0) {
 		return find_ports_from_exile(here)
 	} else if (is_exile(lord_loc) && lord_loc !== here) {
 		return []
@@ -3576,7 +3595,7 @@ states.supply_source = {
 			if (!is_exile(get_lord_locale(game.command)))
 				supply = Math.min(get_supply_from_source(source), Math.floor(game.supply.carts/source_item.distance))
 			
-			if (lord_has_capability(AOW_LANCASTER_HARBINGERS) || lord_has_capability(AOW_YORK_HARBINGERS)) {
+			if (lord_has_capability(game.command, AOW_LANCASTER_HARBINGERS) || lord_has_capability(game.command, AOW_YORK_HARBINGERS)) {
 				supply = supply * 2
 				sea_supply = sea_supply * 2
 			}
@@ -5372,15 +5391,14 @@ function goto_feed() {
 	log_br()
 
 	// Count how much food each lord needs
+	let n = 0
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 		if (get_lord_moved(lord)) {
-			if (count_lord_all_forces(lord) >= 7)
-				set_lord_unfed(lord, 2)
-			else
-				set_lord_unfed(lord, 1)
-		} else {
-			set_lord_unfed(lord, 0)
+			n = Math.ceil(count_lord_all_forces(lord)/6)
+			set_lord_unfed(lord, n)
 		}
+		else
+			set_lord_unfed(lord, 0)
 	}
 
 	if (has_friendly_lord_who_must_feed()) {
@@ -5514,6 +5532,7 @@ function has_friendly_lord_who_may_be_paid() {
 
 function goto_pay() {
 	log_br()
+	let n = 0
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 		if (game.active === LANCASTER && is_lord_on_map(lord) && lord_has_capability(LORD_NORTHUMBERLAND_L, AOW_YORK_PERCYS_POWER) && data.locales[get_lord_locale(LORD_NORTHUMBERLAND_L)].region === "North" && data.locales[get_lord_locale(lord)].region === "North") {
 			set_lord_unfed(lord, 0)
@@ -5525,7 +5544,7 @@ function goto_pay() {
 	}
 	game.state = "pay"
 }
-
+ 
 function resume_pay() {
 	if (!can_pay_lord(game.who))
 		game.who = NOBODY
@@ -5536,8 +5555,6 @@ states.pay = {
 	prompt() {
 		view.prompt = "Pay: You must Pay your Lord's Troops"
 		let done = true
-
-		
 	
 		// Pay from own mat
 		if (done) {
