@@ -5515,13 +5515,14 @@ function has_friendly_lord_who_may_be_paid() {
 function goto_pay() {
 	log_br()
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (count_lord_all_forces(lord) >= 13)
-				set_lord_unfed(lord, 3)
-			else if (count_lord_all_forces(lord) >= 7)
-				set_lord_unfed(lord, 2)
-			else
-				set_lord_unfed(lord, 1)
+		if (game.active === LANCASTER && is_lord_on_map(lord) && lord_has_capability(LORD_NORTHUMBERLAND_L, AOW_YORK_PERCYS_POWER) && data.locales[get_lord_locale(LORD_NORTHUMBERLAND_L)].region === "North" && data.locales[get_lord_locale(lord)].region === "North") {
+			set_lord_unfed(lord, 0)
 		}
+		else {
+			n = Math.ceil(count_lord_all_forces(lord)/6)
+			set_lord_unfed(lord, n)
+		}
+	}
 	game.state = "pay"
 }
 
