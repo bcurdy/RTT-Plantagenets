@@ -336,7 +336,7 @@ const AOW_LANCASTER_CHAMBERLAINS = L10 // TODO
 const AOW_LANCASTER_IN_THE_NAME_OF_THE_KING = L11
 const AOW_LANCASTER_COMMISION_OF_ARRAY = L12 // TODO
 const AOW_LANCASTER_EXPERT_COUNSELLORS = L13
-const AOW_LANCASTER_PERCYS_POWER = L14 // TODO
+const AOW_LANCASTER_PERCYS_POWER = L14
 const AOW_LANCASTER_KINGS_PARLEY = L15 // TODO
 const AOW_LANCASTER_NORTHMEN = L16 // TODO
 const AOW_LANCASTER_MARGARET = L17 // TODO
@@ -348,9 +348,9 @@ const AOW_LANCASTER_STAFFORD_ESTATES = L22 // TODO
 const AOW_LANCASTER_MONTAGU = L23 // TODO VASSAL LEVY ONLY 
 const AOW_LANCASTER_MARRIED_TO_A_NEVILLE = L24
 const AOW_LANCASTER_WELSH_LORD = L25 // TODO
-const AOW_LANCASTER_EDWARD = L26 // TODO VASSAL ONLY
+const AOW_LANCASTER_EDWARD = L26 // TODO VASSAL LEVY ONLY
 const AOW_LANCASTER_BARDED_HORSE = L27 // TODO
-const AOW_LANCASTER_LOYAL_SOMERSET = L28 // TODO INFLUENCE ONLY 
+const AOW_LANCASTER_LOYAL_SOMERSET = L28 
 const AOW_LANCASTER_HIGH_ADMIRAL = L29
 const AOW_LANCASTER_MERCHANTS = L30 // TODO
 const AOW_LANCASTER_YEOMEN_OF_THE_CROWN = L31 // TODO
@@ -358,28 +358,28 @@ const AOW_LANCASTER_TWO_ROSES = L32 // TODO
 const AOW_LANCASTER_PHILIBERT_DE_CHANDEE = L33 // TODO
 const AOW_LANCASTER_PIQUIERS = L34 // TODO
 const AOW_LANCASTER_THOMAS_STANLEY = L35 // TODO
-const AOW_LANCASTER_CHEVALIERS = L36 // TODO
+const AOW_LANCASTER_CHEVALIERS = L36
 const AOW_LANCASTER_MADAME_LA_GRANDE = L37 // TODO
 
 const AOW_YORK_CULVERINS_AND_FALCONETS = [ Y1, Y2 ] // TODO
 const AOW_YORK_MUSTERD_MY_SOLDIERS = Y3 // TODO
 const AOW_YORK_WE_DONE_DEEDS_OF_CHARITY = Y4 // TODO
-const AOW_YORK_THOMAS_BOURCHIER = Y5 // TODO
+const AOW_YORK_THOMAS_BOURCHIER = Y5
 const AOW_YORK_GREAT_SHIPS = Y6 // TODO
 const AOW_YORK_HARBINGERS = Y7
 const AOW_YORK_ENGLAND_IS_MY_HOME = Y8 // TODO
 const AOW_YORK_BARRICADES = Y9
 const AOW_YORK_AGITATORS = Y10 // TODO
-const AOW_YORK_YORKISTS_NEVER_WAIT = Y11 // TODO
+const AOW_YORK_YORKISTS_NEVER_WAIT = Y11
 const AOW_YORK_SOLDIERS_OF_FORTUNE = Y12 // TODO
-const AOW_YORK_SCOURERS = Y13 // TODO
+const AOW_YORK_SCOURERS = Y13
 const AOW_YORK_BURGUNDIANS = [ Y14, Y23 ] // TODO
 const AOW_YORK_NAVAL_BLOCKADE = Y15 // TODO
 const AOW_YORK_BELOVED_WARWICK = Y16 // TODO
 const AOW_YORK_ALICE_MONTAGU = Y17 // TODO
 const AOW_YORK_IRISHMEN = Y18 // TODO
 const AOW_YORK_WELSHMEN = Y19 // TODO
-const AOW_YORK_YORKS_FAVOURED_SON = Y20 // TODO
+const AOW_YORK_YORKS_FAVOURED_SON = Y20 
 const AOW_YORK_SOUTHERNERS = Y21 // TODO
 const AOW_YORK_FAIR_ARBITER = Y22 // TODO
 const AOW_YORK_HASTINGS = Y24 // TODO
@@ -388,8 +388,8 @@ const AOW_YORK_FALLEN_BROTHER = Y26 // TODO
 const AOW_YORK_PERCYS_NORTH1 = Y27 // TODO
 const AOW_YORK_FIRST_SON = Y28 // TODO
 const AOW_YORK_STAFFORD_BRANCH = Y29 // TODO
-const AOW_YORK_CAPTAIN = Y30 // TODO
-const AOW_YORK_WOODWILLES = Y31 // TODO
+const AOW_YORK_CAPTAIN = Y30
+const AOW_YORK_WOODWILLES = Y31
 const AOW_YORK_FINAL_CHARGE = Y32 // TODO
 const AOW_YORK_BLOODY_THOU_ART = Y33 // TODO
 const AOW_YORK_SO_WISE_SO_YOUNG = Y34 // TODO
@@ -919,6 +919,12 @@ function count_group_transport(type) {
 	return n
 }
 
+function count_group_lords() {
+	let n = 0
+	for (let lord of game.group)
+		n += 1
+	return n
+}
 
 
 function max_plan_length() {
@@ -2505,7 +2511,7 @@ states.levy_muster_lord = {
 		push_undo()
 		let info = data.lords[game.who]
 		let locale = data.locales[get_lord_locale(game.who)].type
-		if (!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS))
+		if (!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS) && !lord_has_capability(game.who, AOW_YORK_WOODWILLES))
 		deplete_locale(get_lord_locale(game.who))
 
 		switch(locale) {
@@ -2877,6 +2883,11 @@ function is_first_march_highway() {
 
 function goto_command() {
 	game.actions = data.lords[game.command].command
+	if (lord_has_capability(game.command, AOW_YORK_THOMAS_BOURCHIER) && is_city(get_lord_locale(game.command)))
+	game.actions += 1
+	if (lord_has_capability(game.command, AOW_YORK_YORKS_FAVOURED_SON))
+	game.actions += 1
+
 	game.group = [ game.command ]
 
 	game.flags.first_action = 1
@@ -2921,6 +2932,20 @@ function end_command() {
 	goto_feed()
 }
 
+function other_marshal_or_lieutenant(lord, loc) {
+	let here = loc
+	let n = 0
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+		if (lord !== game.command) {
+			if (get_lord_locale(lord) === here && (is_marshal(lord) || is_lieutenant(lord)))
+				n += 1
+		}
+	if (n === 0)
+		return false 
+	else
+		return true
+}
+
 
 states.command = {
 	inactive: "Command",
@@ -2939,7 +2964,7 @@ states.command = {
 		prompt_held_event()
 
 		// 4.3.2 Marshals MAY take other lords
-		if (is_marshal(game.command)) {
+		if (is_marshal(game.command) || (lord_has_capability(game.command, AOW_YORK_CAPTAIN) && !other_marshal_or_lieutenant(game.command, here))) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
 				if (lord !== game.command)
 					if (get_lord_locale(lord) === here)
@@ -3009,6 +3034,20 @@ states.command = {
 }
 
 // === INFLUENCE CHECKS ===
+function influence_capabilities(lord, score) {
+	let here = get_lord_locale(game.group)
+	if (game.state === "parley" && lord_has_capability(game.group, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
+		score += 1
+	if (get_lord_locale(LORD_MARGARET) === here && lord_has_capability(game.group,AOW_LANCASTER_LOYAL_SOMERSET))
+		score += 1
+	if (lord_has_capability(lord, AOW_YORK_YORKS_FAVOURED_SON))
+		score += 1
+	if (get_lord_locale(LORD_WARWICK_L) === here && lord_has_capability(game.group,AOW_LANCASTER_MARRIED_TO_A_NEVILLE) && is_friendly_locale(here))
+		score += 2
+
+	return score
+}
+
 
 function init_influence_check(lord) {
 	game.check = []
@@ -3023,13 +3062,7 @@ function end_influence_check() {
 function count_influence_score() {
 	let here = get_lord_locale(game.group)
 	let score = game.check.reduce((p,c) => p+c.modifier, 0)
-	if (game.state === "parley" && lord_has_capability(game.group, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
-		score += 1
-	if (get_lord_locale(LORD_MARGARET) === here && lord_has_capability(game.group,AOW_LANCASTER_LOYAL_SOMERSET))
-		score += 1
-	if (get_lord_locale(LORD_WARWICK_L) === here && lord_has_capability(game.group,AOW_LANCASTER_MARRIED_TO_A_NEVILLE) && is_friendly_locale(here))
-		score +=2
-
+	score = influence_capabilities(game.group, score)
 	if (score > 5)
 		score = 5
 	if (score < 1)
@@ -3311,8 +3344,14 @@ function prompt_march() {
 	  }
 	}
 	else if (game.actions === 0 && is_first_march_highway()) {
-	  for (let to of data.locales[from].adjacent_by_highway) {
-		gen_action_locale(to);
+	 	 for (let to of data.locales[from].adjacent_by_highway) {
+			gen_action_locale(to);
+		}
+	}
+	
+	if (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT) && game.actions === 0 && is_first_march_highway() && count_group_lords() === 1) {
+		for (let to of data.locales[from].adjacent_by_road) {
+			gen_action_locale(to)
 		}
 	}
 }
@@ -3383,7 +3422,7 @@ function march_with_group_2() {
 	let ways = list_ways(from, to)
 
 
-	if (data.ways[way].type === 'highway' && is_first_march_highway()) {
+	if (data.ways[way].type === 'highway' && is_first_march_highway() || (is_first_march_highway() && data.ways[way].type === 'road' && count_group_lords() === 1)) {
 		spend_march_action(0)
 	}
 	else if (data.ways[way].type === 'highway') {
@@ -3392,6 +3431,9 @@ function march_with_group_2() {
 	}
 	else if (data.ways[way].type === 'road') {
 		spend_march_action(1)
+		if (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT) && count_group_lords() === 1)
+		game.flags.first_march_highway = 1
+
 	}
 	else if (data.ways[way].type === 'path') {
 		spend_all_actions()
@@ -3676,7 +3718,7 @@ function has_adjacent_enemy(loc) {
 function goto_forage() {
 	push_undo()
 	let here = get_lord_locale(game.command)
-	if (has_adjacent_enemy(here)) {
+	if (!has_adjacent_enemy(here) && is_neutral_locale(here)) {
 		let die = roll_die()
 		if (die <= 4) {
 			add_lord_assets(game.command, PROV, 1)
@@ -3687,11 +3729,29 @@ function goto_forage() {
 			log(`${MISS[die]}, Forage Failure`)
 		}
 	}
+
+	else if (has_adjacent_enemy(here) || is_favour_enemy(here)) {
+		let die = roll_die()
+		if (die <= 3) {
+			add_lord_assets(game.command, PROV, 1)
+			log(`${HIT[die]}, Foraged at %${here}`)
+			deplete_locale(here)
+		}
+		else {
+			log(`${MISS[die]}, Forage Failure`)
+		}
+	}
+
 	else {
 		add_lord_assets(game.command, PROV, 1)
 		log(`Foraged at %${here}`)
 		deplete_locale(here)
 	}
+	if (lord_has_capability(game.command, AOW_YORK_SCOURERS)) {
+		add_lord_assets(game.command, PROV, 1)
+		log(`1 Extra Provender (Scourers)`)
+	}
+
 	spend_action(1)
 	resume_command()
 }
@@ -3969,7 +4029,7 @@ function start_battle() {
 			set_add(game.battle.reserves, lord)
 			if (lord_has_capability(lord, AOW_LANCASTER_EXPERT_COUNSELLORS) || lord_has_capability(lord, AOW_LANCASTER_VETERAN_OF_FRENCH_WARS))
 				game.battle.valour[lord] = data.lords[lord].valour + 2
-			else if (lord_has_capability(lord, AOW_LANCASTER_ANDREW_TROLLOPE || lord_has_capability(lord, AOW_LANCASTER_MY_FATHERS_BLOOD)) || lord_has_capability(lord, AOW_LANCASTER_EDWARD) || (lord_has_capability(lord, AOW_LANCASTER_MARGARET) && get_lord_locale(LORD_MARGARET) === here))
+			else if (lord_has_capability(lord, AOW_LANCASTER_ANDREW_TROLLOPE || lord_has_capability(lord, AOW_LANCASTER_MY_FATHERS_BLOOD)) || lord_has_capability(lord, AOW_LANCASTER_EDWARD) || (lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET) && get_lord_locale(LORD_MARGARET) === here))
 				game.battle.valour[lord] = data.lords[lord].valour + 1
 			else 
 				game.battle.valour[lord] = data.lords[lord].valour
@@ -4479,7 +4539,10 @@ function count_melee_hits(lord) {
 	let hits = 0
 	hits += /*retinue*/ 3 << 1
 	//hits += get_vassals_with_lord(lord).length << 2
-	hits += get_lord_forces(lord, MEN_AT_ARMS) << 1
+	if (lord_has_capability(lord, AOW_LANCASTER_CHEVALIERS))
+		hits += get_lord_forces(lord, MEN_AT_ARMS) << 2
+	else
+		hits += get_lord_forces(lord, MEN_AT_ARMS) << 1
 	hits += get_lord_forces(lord, MILITIA) 
 	hits += get_lord_forces(lord, MERCENARIES) 
 	hits += get_lord_forces(lord, BURGUNDIANS) << 1 
@@ -4940,35 +5003,39 @@ function spend_valour(lord) {
 	game.battle.valour[lord] = game.battle.valour[lord] - 1
 }
 
-function action_assign_hits(lord, type, special) {
-	let protection = FORCE_PROTECTION[type]
-
-	if (type === MEN_AT_ARMS) {
-		if (lord_has_capability(lord, AOW_LANCASTER_CHURCH_BLESSINGS)) {
+function check_protection_capabilities(protection) {
+	if (game.what === MEN_AT_ARMS) {
+		if (lord_has_capability(game.who, AOW_LANCASTER_CHURCH_BLESSINGS)) {
 			protection += 1
 		}
 	}
-	if (type === RETINUE) {
-		if (lord_has_capability(lord, AOW_LANCASTER_MONTAGU))
+	if (game.what === RETINUE) {
+		if (lord_has_capability(game.who, AOW_LANCASTER_MONTAGU))
 			protection += 1
 	}
 
-	if (type === MEN_AT_ARMS) {
-		if (lord_has_capability(lord, AOW_YORK_BARRICADES) && has_favoury_marker(here))
+	if (game.what === MEN_AT_ARMS) {
+		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_favoury_marker(here))
 			protection += 1
 	}
-	if (type === MILITIA || type === LONGBOWMEN) {
-		if (lord_has_capability(lord, AOW_YORK_BARRICADES) && has_favoury_marker(here))
+	if (game.what === MEN_AT_ARMS) {
+		if (lord_has_capability(game.who, AOW_LANCASTER_CHEVALIERS) && is_archery_step()) {
+			protection -= 1
+		}
+	}
+ 	if (game.what === MILITIA || game.what === LONGBOWMEN) {
+		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_favoury_marker(here))
 			protection += 1
 	}
+	return protection
+}
 
-
-
+function action_assign_hits(lord, type, special) {
 	if (game.who !== lord) {
 		game.who = lord
 		log(`L${lord}`)
 	}
-
+	let protection = check_protection_capabilities(FORCE_PROTECTION[type])
 	let extra = ""
 
 	if (assign_hit_roll(get_force_name(lord, type), protection, extra)) {
@@ -5013,9 +5080,11 @@ states.spend_valour = {
 		finish_action_assign_hits(game.who)
 	},
 	valour() {
+		let protection = check_protection_capabilities(FORCE_PROTECTION[game.what])
+		
 		spend_valour(game.who)
 		log(`Reroll:`)
-		if (assign_hit_roll(get_force_name(game.who, game.what), FORCE_PROTECTION[game.what], "")) {
+		if (assign_hit_roll(get_force_name(game.who, game.what), protection, "")) {
 			rout_unit(game.who, game.what)
 			finish_action_assign_hits(game.who)
 		} else {
