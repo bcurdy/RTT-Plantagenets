@@ -3992,32 +3992,131 @@ function goto_forage() {
 
 // === ACTION: TAX ===
 
+function get_possible_taxable_locales(lord) {
+	let locales = []
+	// Own seat
+	locales.push(data.lords[lord].seats[0])
+	// vassal seats
+	locales = locales.concat(get_vassals_with_lord(lord).map(v => data.vassals[v].seat[0]))
+	// London
+	locales.push(LOC_LONDON)
+	// Calais
+	locales.push(LOC_CALAIS)
+	// Harlech
+	locales.push(LOC_HARLECH)
+
+	return locales
+		.filter(is_friendly_locale)
+		.filter(l => !has_exhausted_marker(l))
+}
+
+function tax_accept(loc, possibles) {
+	return !is_exile(loc.locale) 
+		&& is_friendly_locale(loc.locale) 
+		&& !has_enemy_lord(loc.locale) 
+		&& possibles.includes(loc.locale)
+}
+
+function tax_adjacent(here, lord) {
+	let seaports = []
+	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0 ) {
+		if (data.port_1.includes(here)) seaports = data.port_1
+		if (data.port_2.includes(here)) seaports = data.port_2
+		if (data.port_3.includes(here)) seaports = data.port_3
+	} else if (is_exile(here) && get_shared_assets(here, SHIP) > 0) {
+		return find_ports_from_exile(here)
+	}
+	return data.locales[here].adjacent.concat(seaports)
+}
+
 function can_action_tax() {
 	if (game.actions < 1)
 	return false
-	// Must have space left to hold Coin
-	if (get_lord_assets(game.command, COIN) >= 8)
-		return false
-	// Must be at own seat TO BE REMOVED
-	return is_lord_at_seat(game.command)
+
+	let possibles = get_possible_taxable_locales(game.command)
+
+	let targets = map_search(game.command, (l) => tax_accept(l, possibles), tax_adjacent, false)
+
+	return targets.next().done !== true
+
+}
+
+function get_taxable_locales(lord) {
+	let possibles = get_possible_taxable_locales(game.command)
+
+	let results = []
+	let targets = map_search(game.command, (l) => tax_accept(l, possibles), tax_adjacent, false)
+
+	for (let loc of targets)
+		results.push(loc)
+
+	return results
 }
 
 function goto_tax() {
 	push_undo()
+	push_state("tax")
+	init_influence_check(game.command)
+	game.where = NOWHERE
 
-	let here = get_lord_locale(game.command)
-	
-	log(`Taxed %${here}.`)
+}
 
-	if (is_town(here) || is_fortress(here) || is_harlech(here))
-	add_lord_assets(game.command, COIN, 1)
-	else if (is_city(here)) 
-	add_lord_assets(game.command, COIN, 2)
-	else 
-	add_lord_assets(game.command, COIN, 3)
+function end_tax() {
+	pop_state()
+	game.where = NOWHERE
+	clear_undo()
 	spend_action(1)
 	resume_command()
+}
 
+function get_tax_amount(loc) {
+	if (loc === LOC_LONDON || loc === LOC_CALAIS)
+		return 3
+
+	if (is_city(loc))
+		return 2
+
+	return 1
+}
+
+states.tax = {
+	inactive: "Tax",
+	prompt() {
+		view.prompt = "Tax: Select the location to tax."
+		
+		if (game.where === NOWHERE) {
+			get_taxable_locales(game.command).forEach(l => gen_action_locale(l.locale))
+		} else {
+			view.prompt = `Tax: Attempting to tax ${data.locales[game.where].name}. `
+			prompt_influence_check()
+		}
+	},
+	locale(loc) {
+		game.where = loc
+		if (loc === data.lords[game.command].seats[0]) {
+			// Auto succeed without influence check at Lords seat.
+			deplete_locale(game.where)
+
+			log(`Taxed %${game.where}.`)
+			add_lord_assets(game.command, COIN, get_tax_amount(game.where))		
+			end_tax()		
+		}
+	},
+	spend1:add_influence_check_modifier_1,
+	spend3:add_influence_check_modifier_2,
+	check() {
+		let results = do_influence_check()
+
+		if (results.success) {
+			deplete_locale(game.where)
+
+			log(`Taxed %${game.where}.`)
+			add_lord_assets(game.command, COIN, get_tax_amount(game.where))	
+		} else {
+			log(`Tax of %${game.where} failed.`)
+		}
+		end_tax()
+	}
 }
 
 // === ACTION: SAIL ===

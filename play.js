@@ -426,6 +426,15 @@ function is_lord_on_map(lord) {
 	return loc !== NOWHERE && loc < CALENDAR
 }
 
+function is_lord_in_game(lord) {
+	return get_lord_locale(lord) !== NOWHERE
+}
+
+function is_lord_on_calendar(lord) {
+	let loc = get_lord_locale(lord)
+	return loc >= CALENDAR
+}
+
 function is_levy_phase() {
 	return (view.turn & 1) === 0
 }
@@ -772,7 +781,7 @@ function build_map() {
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
 		let small = 46
-		e.className = "marker " + seat.name
+		e.className = "hide marker " + seat.name
 		e.style.position = "absolute"
 		e.style.top = y + "px"
 		e.style.left = x + "px"
@@ -1186,6 +1195,9 @@ function update_lord(ix) {
 	ui.lord_mat[ix].classList.toggle("command", is_lord_command(ix))
 
 	ui.lord_mat[ix].classList.toggle("ambushed", is_lord_ambushed(ix))
+
+	ui.seat[ix].classList.toggle("hide", !is_lord_in_game(ix))
+
 }
 
 function update_locale(loc) {
