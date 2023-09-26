@@ -27,7 +27,7 @@ function range(x) {
 	case 3: return "1-3"
 	case 4: return "1-4"
 	case 5: return "1-5"
-	case 6: return "1-6"
+	case 6: return "Automatic success"
 	}
 }
 
@@ -370,23 +370,23 @@ const AOW_LANCASTER_KINGS_PARLEY = L15 // TODO
 const AOW_LANCASTER_NORTHMEN = L16 // TODO
 const AOW_LANCASTER_MARGARET = L17 // TODO
 const AOW_LANCASTER_COUNCIL_MEMBER = L18 // TODO
-const AOW_LANCASTER_ANDREW_TROLLOPE = L19 // TODO VASSAL LEVY ONLY 
+const AOW_LANCASTER_ANDREW_TROLLOPE = L19
 const AOW_LANCASTER_VETERAN_OF_FRENCH_WARS = L20 
-const AOW_LANCASTER_MY_FATHERS_BLOOD = L21 // TODO VASSAL LEVY ONLY
+const AOW_LANCASTER_MY_FATHERS_BLOOD = L21
 const AOW_LANCASTER_STAFFORD_ESTATES = L22 // TODO
-const AOW_LANCASTER_MONTAGU = L23 // TODO VASSAL LEVY ONLY 
+const AOW_LANCASTER_MONTAGU = L23 
 const AOW_LANCASTER_MARRIED_TO_A_NEVILLE = L24
 const AOW_LANCASTER_WELSH_LORD = L25 // TODO
-const AOW_LANCASTER_EDWARD = L26 // TODO VASSAL LEVY ONLY
-const AOW_LANCASTER_BARDED_HORSE = L27 // TODO
+const AOW_LANCASTER_EDWARD = L26 
+const AOW_LANCASTER_BARDED_HORSE = L27
 const AOW_LANCASTER_LOYAL_SOMERSET = L28 
 const AOW_LANCASTER_HIGH_ADMIRAL = L29
 const AOW_LANCASTER_MERCHANTS = L30 // TODO
 const AOW_LANCASTER_YEOMEN_OF_THE_CROWN = L31 // TODO
-const AOW_LANCASTER_TWO_ROSES = L32 // TODO
+const AOW_LANCASTER_TWO_ROSES = L32 
 const AOW_LANCASTER_PHILIBERT_DE_CHANDEE = L33 // TODO
 const AOW_LANCASTER_PIQUIERS = L34 // TODO
-const AOW_LANCASTER_THOMAS_STANLEY = L35 // TODO
+const AOW_LANCASTER_THOMAS_STANLEY = L35
 const AOW_LANCASTER_CHEVALIERS = L36
 const AOW_LANCASTER_MADAME_LA_GRANDE = L37 // TODO
 
@@ -405,15 +405,15 @@ const AOW_YORK_SCOURERS = Y13
 const AOW_YORK_BURGUNDIANS = [ Y14, Y23 ] // TODO
 const AOW_YORK_NAVAL_BLOCKADE = Y15 // TODO
 const AOW_YORK_BELOVED_WARWICK = Y16 // TODO
-const AOW_YORK_ALICE_MONTAGU = Y17 // TODO
+const AOW_YORK_ALICE_MONTAGU = Y17 
 const AOW_YORK_IRISHMEN = Y18 // TODO
 const AOW_YORK_WELSHMEN = Y19 // TODO
 const AOW_YORK_YORKS_FAVOURED_SON = Y20 
 const AOW_YORK_SOUTHERNERS = Y21 // TODO
-const AOW_YORK_FAIR_ARBITER = Y22 // TODO
-const AOW_YORK_HASTINGS = Y24 // TODO
+const AOW_YORK_FAIR_ARBITER = Y22 
+const AOW_YORK_HASTINGS = Y24
 const AOW_YORK_PEMBROKE = Y25 // TODO
-const AOW_YORK_FALLEN_BROTHER = Y26 // TODO
+const AOW_YORK_FALLEN_BROTHER = Y26
 const AOW_YORK_PERCYS_NORTH1 = Y27 // TODO
 const AOW_YORK_FIRST_SON = Y28 // TODO
 const AOW_YORK_STAFFORD_BRANCH = Y29 // TODO
@@ -1149,7 +1149,9 @@ function set_vassal_unavailable(vassal) {
 
 function muster_vassal(vassal, lord) {
 	set_vassal_with_lord(vassal, lord)
-	if (data.vassals[vassal].service !== 0)
+	if (data.vassals[vassal].service !== 0 && lord_has_capability(lord, AOW_YORK_ALICE_MONTAGU))
+		set_vassal_on_calendar(vassal, current_turn() + (6 - data.vassals[vassal].service) + 1)
+	else if (data.vassals[vassal].service !== 0)
 		set_vassal_on_calendar(vassal, current_turn() + (6 - data.vassals[vassal].service))
 }
 
@@ -1700,6 +1702,7 @@ exports.setup = function (seed, scenario, options) {
 		flags: {
 			first_action: 0,
 			first_march_highway: 0,
+			free_levy: 0,
 		},
 
 		command: NOBODY,
@@ -2323,6 +2326,48 @@ function action_shift_cylinder_lordship() {
 
 // === CAPABILITIES ===
 
+
+function capability_muster_effects(lord, c) {
+		if (c ===  AOW_LANCASTER_MONTAGU) 
+			muster_vassal(VASSAL_MONTAGU, game.who)
+		
+		if (c === AOW_LANCASTER_MY_FATHERS_BLOOD)
+			muster_vassal(VASSAL_CLIFFORD, game.who)
+		
+		if (c === AOW_LANCASTER_ANDREW_TROLLOPE)
+			muster_vassal(VASSAL_TROLLOPE, game.who)
+
+		if (c === AOW_LANCASTER_EDWARD)
+			muster_vassal(VASSAL_EDWARD, game.who)
+	
+		if (c === AOW_LANCASTER_THOMAS_STANLEY) {
+			muster_vassal(VASSAL_THOMAS_STANLEY, game.who)
+			game.flags.free_levy = 1
+		}
+
+		if (c === AOW_YORK_HASTINGS) {
+			add_lord_forces(game.who, MEN_AT_ARMS, 2)
+			muster_vassal(VASSAL_HASTINGS, game.who)
+		}
+		if (c === AOW_YORK_FAIR_ARBITER && (is_friendly_locale(get_lord_locale(LORD_SALISBURY)))) {
+			game.count +=1
+		}
+		if (c === AOW_YORK_FALLEN_BROTHER && !is_lord_in_play(LORD_CLARENCE)) {
+			game.count +=1
+		}
+}
+
+function lordship_effects(lord) {
+		if (is_friendly_locale(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_FAIR_ARBITER))
+			game.count +=1
+
+		if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
+			game.count +=1
+
+
+}
+
+
 // === LEVY: ARTS OF WAR (FIRST TURN) ===
 
 function draw_two_cards() {
@@ -2382,6 +2427,7 @@ states.levy_arts_of_war_first = {
 		let c = game.what.shift()
 		log(`${game.active} deployed Capability.`)
 		add_lord_capability(lord, c)
+		capability_muster_effects(game.who, c)
 		resume_levy_arts_of_war_first()
 	},
 	deploy() {
@@ -2485,11 +2531,14 @@ function end_levy_arts_of_war() {
 function goto_levy_muster() {
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 		clear_lords_moved()
-	}
+		if (lord_has_capability(lord, AOW_LANCASTER_THOMAS_STANLEY ))
+			game.flags.free_levy = 1
+		}
 	if (game.active === YORK)
 		log_h2("York Muster")
 	else
 		log_h2("Lancaster Muster")
+
 	game.state = "levy_muster"
 }
 
@@ -2512,7 +2561,7 @@ states.levy_muster = {
 
 		let done = true
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (is_lord_at_friendly_locale(lord) && !get_lord_moved(lord) && !is_lord_on_calendar(lord)) {
+			if (is_lord_at_friendly_locale(lord) && !is_lord_on_calendar(lord) && (!get_lord_moved(lord) || game.flags.free_levy === 1)) {
 					gen_action_lord(lord)
 					done = true
 			}
@@ -2528,6 +2577,7 @@ states.levy_muster = {
 		push_state("levy_muster_lord")
 		game.who = lord
 		game.count = data.lords[lord].lordship
+		lordship_effects(lord)
 		},
 	end_muster() {
 		clear_undo()
@@ -2538,7 +2588,8 @@ states.levy_muster = {
 
 function resume_levy_muster_lord() {
 	--game.count
-	if (game.count === 0) {
+
+	if (game.count === 0 && game.flags.free_levy === 0 && (can_add_troops(game.who, get_lord_locale(game.who)))) {
 		set_lord_moved(game.who, 1)
 		pop_state()
 	}
@@ -2584,6 +2635,10 @@ states.levy_muster_lord = {
 
 			if (can_action_parley_levy())
 				view.actions.parley = 1				
+		}
+
+		if (game.count === 0 && game.flags.free_levy === 1 && (can_add_troops(game.who, get_lord_locale(game.who)))) {
+			view.actions.levy_troops = 1
 		}
 
 		view.actions.done = 1
@@ -2644,6 +2699,12 @@ states.levy_muster_lord = {
 				add_lord_forces(game.who, MILITIA, 1)
 				break
 			}
+
+		if (game.flags.free_levy === 1) {
+			++game.count
+			game.flags.free_levy = 0
+		}
+		
 		resume_levy_muster_lord()
 	},
 
@@ -2843,6 +2904,7 @@ states.muster_capability = {
 	card(c) {
 		if (data.cards[c].this_lord) {
 				add_lord_capability(game.who, c)
+				capability_muster_effects(game.who, c)
 		}
 		pop_state()
 		resume_levy_muster_lord()
@@ -3015,6 +3077,8 @@ function goto_command() {
 	game.actions += 1
 	if (lord_has_capability(game.command, AOW_YORK_YORKS_FAVOURED_SON))
 	game.actions += 1
+	if (lord_has_capability(game.command, AOW_YORK_HASTINGS))
+	game.actions += 1
 
 	game.group = [ game.command ]
 
@@ -3172,6 +3236,10 @@ function influence_capabilities(lord, score) {
 		score += 1
 	if (get_lord_locale(LORD_WARWICK_L) === here && lord_has_capability(game.group,AOW_LANCASTER_MARRIED_TO_A_NEVILLE) && is_friendly_locale(here))
 		score += 2
+	if (is_friendly_locale(here) && lord_has_capability(lord, AOW_YORK_FAIR_ARBITER))
+		score += 1
+	if (lord_has_capability(AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
+		score += 2
 
 	return score
 }
@@ -3191,11 +3259,13 @@ function count_influence_score() {
 	let here = get_lord_locale(game.group)
 	let score = game.check.reduce((p,c) => p+c.modifier, 0)
 	score = influence_capabilities(game.group, score)
+	
 	if (score > 5)
 		score = 5
 	if (score < 1)
 		score = 1
-
+	if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES))
+		score = 6
 
 	return score
 }
@@ -3238,6 +3308,8 @@ function add_influence_check_distance(distance) {
 }
 
 function prompt_influence_check() {
+
+	
 	if (!game.check.some(c => c.source === "add")) {
 		gen_action("spend1")
 		gen_action("spend3")
@@ -3456,23 +3528,26 @@ function end_levy_muster_vassal() {
 	end_influence_check()
 	resume_levy_muster_lord()
 }
-
 states.levy_muster_vassal = {
 	inactive: "Levy Vassal",
 	prompt() {
 		view.prompt = `Levy Vassal ${data.vassals[game.what].name}. `
-
 		prompt_influence_check()
 	},
 	spend1:add_influence_check_modifier_1,
 	spend3:add_influence_check_modifier_2,
 	check() {
 		let results = do_influence_check()
-		log(`Attempt to levy V${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
-		
+		if (score < 6) {
+			log(`Attempt to levy V${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		}
+		else {
+			log(`Automatic Success`)
+		}
 		if (results.success) {
 			muster_vassal(game.what, game.who)
 		}
+	
 		end_levy_muster_vassal()
 	}
 }
@@ -4002,9 +4077,9 @@ states.sail = {
 
 		let here = get_lord_locale(game.command)
 		let ships = count_group_ships()
-	//	TODO CAPABILITY SHIPS x2
 		let prov = count_group_assets(PROV)
 		let cart = count_group_assets(CART)
+		
 
 
 		let overflow_prov = 0
@@ -5176,6 +5251,14 @@ function check_protection_capabilities(protection) {
 		if (lord_has_capability(game.who, AOW_LANCASTER_MONTAGU))
 			protection += 1
 	}
+	if ((game.what === RETINUE || game.what === VASSAL) && is_archery_step()) {
+		if (lord_has_capability(game.who, AOW_LANCASTER_BARDED_HORSE))
+			protection -=1
+	}
+	if ((game.what === RETINUE || game.what === VASSAL) && is_melee_step()) {
+		if (lord_has_capability(game.who, AOW_LANCASTER_BARDED_HORSE))
+			protection +=1
+	}
 
 	if (game.what === MEN_AT_ARMS) {
 		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_favoury_marker(here))
@@ -6302,21 +6385,25 @@ function end_reset() {
 	if (game.active === P2)
 		goto_plow_and_reap()
 	else
-		goto_advance_campaign()
+		tides_of_war()
 }
 
 // === END CAMPAIGN: RESET (ADVANCE CAMPAIGN) ===
+
+function tides_of_war() {
+	goto_advance_campaign()
+}
+
+states.tides_of_war = {
+	inactive:"Tides of War"
+}
+
 
 function goto_advance_campaign() {
 	game.turn++
 
 	log_h1("Levy " + current_turn_name())
-
-	// First turns of late winter
-	if (current_turn() === 5 || current_turn() === 13)
-		goto_discard_crusade_late_winter()
-	else
-		goto_levy_arts_of_war()
+	goto_levy_arts_of_war()
 }
 
 // === GAME OVER ===
