@@ -367,13 +367,13 @@ const AOW_LANCASTER_COMMISION_OF_ARRAY = L12 // TODO
 const AOW_LANCASTER_EXPERT_COUNSELLORS = L13
 const AOW_LANCASTER_PERCYS_POWER = L14
 const AOW_LANCASTER_KINGS_PARLEY = L15 // TODO
-const AOW_LANCASTER_NORTHMEN = L16 // TODO
+const AOW_LANCASTER_NORTHMEN = L16
 const AOW_LANCASTER_MARGARET = L17 // TODO
 const AOW_LANCASTER_COUNCIL_MEMBER = L18 // TODO
 const AOW_LANCASTER_ANDREW_TROLLOPE = L19
 const AOW_LANCASTER_VETERAN_OF_FRENCH_WARS = L20 
 const AOW_LANCASTER_MY_FATHERS_BLOOD = L21
-const AOW_LANCASTER_STAFFORD_ESTATES = L22 // TODO
+const AOW_LANCASTER_STAFFORD_ESTATES = L22
 const AOW_LANCASTER_MONTAGU = L23 
 const AOW_LANCASTER_MARRIED_TO_A_NEVILLE = L24
 const AOW_LANCASTER_WELSH_LORD = L25 // TODO
@@ -407,9 +407,9 @@ const AOW_YORK_NAVAL_BLOCKADE = Y15 // TODO
 const AOW_YORK_BELOVED_WARWICK = Y16 // TODO
 const AOW_YORK_ALICE_MONTAGU = Y17 
 const AOW_YORK_IRISHMEN = Y18 // TODO
-const AOW_YORK_WELSHMEN = Y19 // TODO
+const AOW_YORK_WELSHMEN = Y19
 const AOW_YORK_YORKS_FAVOURED_SON = Y20 
-const AOW_YORK_SOUTHERNERS = Y21 // TODO
+const AOW_YORK_SOUTHERNERS = Y21
 const AOW_YORK_FAIR_ARBITER = Y22 
 const AOW_YORK_HASTINGS = Y24
 const AOW_YORK_PEMBROKE = Y25 // TODO
@@ -421,7 +421,7 @@ const AOW_YORK_CAPTAIN = Y30
 const AOW_YORK_WOODWILLES = Y31
 const AOW_YORK_FINAL_CHARGE = Y32 // TODO
 const AOW_YORK_BLOODY_THOU_ART = Y33 // TODO
-const AOW_YORK_SO_WISE_SO_YOUNG = Y34 // TODO
+const AOW_YORK_SO_WISE_SO_YOUNG = Y34
 const AOW_YORK_KINGDOM_UNITED = Y35 // TODO
 const AOW_YORK_VANGUARD = Y36 // TODO
 const AOW_YORK_PERCYS_NORTH2 = Y37 // TODO
@@ -1627,7 +1627,7 @@ function muster_lord(lord, locale) {
 	set_lord_assets(lord, COIN, info.assets.coin | 0)
 
 	set_lord_assets(lord, CART, info.assets.cart | 0)
-	set_lord_assets(lord, SHIP, info.ship | 0)
+	set_lord_assets(lord, SHIP, info.ships | 0)
 
 	muster_lord_forces(lord)
 }
@@ -3830,15 +3830,45 @@ function goto_supply() {
 }
 
 function get_supply_from_source(source){
-	if (has_exhausted_marker(source)) return 0
+	let prov = 0
+
+	if (has_exhausted_marker(source)) return prov
+
+	if ((game.command === LORD_DEVON && (game.where === LOC_EXETER || game.where === LOC_LAUNCESTON || game.where === LOC_PLYMOUTH || game.where === LOC_WELLS || game.where === LOC_DOCHESTER)))
+		prov += 1
 
 	if (source === LOC_LONDON || source === LOC_CALAIS) {
-		return 3
+		prov += 3
+		return prov
 	} else if (is_city(source)) {
-		return 2
+		prov += 2
+		return prov
 	} 
-	return 1
+	prov +=1
+	return prov
 }
+
+function get_supply_from_source(source) {
+	let prov = 0;
+  
+	if (has_exhausted_marker(source)) {
+	  return prov;
+	}
+  
+	if ((game.command === LORD_DEVON && (game.where === LOC_EXETER || game.where === LOC_LAUNCESTON || game.where === LOC_PLYMOUTH || game.where === LOC_WELLS || game.where === LOC_DOCHESTER))) {
+	  prov += 1;
+	}
+  
+	if (source === LOC_LONDON || source === LOC_CALAIS) {
+	  prov += 3;
+	} else if (is_city(source)) {
+	  prov += 2;
+	}
+  
+	prov += 1;
+	return prov;
+  }
+  
 
 states.supply_source = {
 	inactive: "Supply",
@@ -4106,12 +4136,20 @@ states.tax = {
 	spend3:add_influence_check_modifier_2,
 	check() {
 		let results = do_influence_check()
+		if ((game.command === LORD_GLOUCESTER_1 || game.command === LORD_GLOUCESTER_2) && (lord_has_capability(LORD_GLOUCESTER_1, AOW_YORK_SO_WISE_SO_YOUNG) || lord_has_capability(LORD_GLOUCESTER_2, AOW_YORK_SO_WISE_SO_YOUNG)))
+			add_lord_assets(game.command, COIN, 1)	
+
 
 		if (results.success) {
 			deplete_locale(game.where)
 
+
 			log(`Taxed %${game.where}.`)
 			add_lord_assets(game.command, COIN, get_tax_amount(game.where))	
+
+			if ((game.command === LORD_DEVON && (game.where === LOC_EXETER || game.where === LOC_LAUNCESTON || game.where === LOC_PLYMOUTH || game.where === LOC_WELLS || game.where === LOC_DOCHESTER)))
+				add_lord_assets(game.command, COIN, 1)	
+			
 		} else {
 			log(`Tax of %${game.where} failed.`)
 		}
@@ -6487,14 +6525,105 @@ function end_reset() {
 		tides_of_war()
 }
 
-// === END CAMPAIGN: RESET (ADVANCE CAMPAIGN) ===
+// === END CAMPAIGN: TIDES OF WAR ===
+function tides_calc(){
+	let domy = 0
+	let doml = 0
+	let domnl = 0
+	let domny = 0
+	let domsl = 0
+	let domsy = 0
+	let domwl = 0
+	let domwy = 0
+	let x = 0
 
-function tides_of_war() {
-	goto_advance_campaign()
+	for (let loc of data.locales) {
+		x++
+		if (loc.region === "North") {
+			if (has_favourl_marker(x)) {
+				domnl += 1
+			}
+			if (has_favoury_marker(x))
+				domny += 1
+		}
+		if (loc.region === "South") {
+			if (has_favourl_marker(x)) {
+				domsl += 1
+			}
+			if (has_favoury_marker(x))
+				domsy += 1
+		}
+		if (loc.region === "Wales") {
+			if (has_favourl_marker(x)) {
+				domwl += 1
+			}
+			if (has_favoury_marker(x))
+				domwy += 1
+		}
+		if (loc.region === "London") {
+			if (has_favourl_marker(x))
+				doml = 2
+
+			if (has_favoury_marker(x))
+				domy = 2
+		}
+
+		if (loc.region === "Calais") {
+			if (has_favourl_marker(x))
+				doml = 2
+
+			if (has_favoury_marker(x))
+				domy = 2
+		}
+
+		if (loc.region === "Harlech") {
+			if (has_favourl_marker(x))
+				doml = 1
+
+			if (has_favoury_marker(x))
+				domy = 1
+		}
+	}
+	if (domnl >= 3 && lord_has_capability(LORD_NORTHUMBERLAND_L, AOW_LANCASTER_NORTHMEN))
+		doml += 2
+
+	if (domnl === 6)
+		doml += 2
+
+	if (domny === 6)
+		domy += 2
+
+	if (domsy >= 5 && (lord_has_capability(LORD_MARCH, AOW_YORK_SOUTHERNERS) || lord_has_capability(LORD_RUTLAND, AOW_YORK_SOUTHERNERS) || lord_has_capability(LORD_YORK, AOW_YORK_SOUTHERNERS)))
+		domy += 2
+
+	if (doml === 9)
+		doml += 2
+
+	if (domy === 9)
+		domy += 2
+		
+	if (domwl >= 3 && (lord_has_capability(LORD_MARCH, AOW_YORK_WELSHMEN) || lord_has_capability(LORD_YORK, AOW_YORK_WELSHMEN)))
+		doml += 2
+
+	if (domwl === 5)
+		doml += 2
+
+	if (domwy === 5)
+		domy += 2
 }
 
-states.tides_of_war = {
-	inactive:"Tides of War"
+
+
+function tides_of_war() {
+
+	if (lord_has_capability(LORD_BUCKINGHAM, AOW_LANCASTER_STAFFORD_ESTATES)) {
+		add_lord_assets(LORD_BUCKINGHAM, COIN, 1)	
+		add_lord_assets(LORD_BUCKINGHAM, PROV, 1)	
+
+	}
+
+	tides_calc()
+	goto_advance_campaign()
 }
 
 
