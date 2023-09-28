@@ -6103,7 +6103,7 @@ function has_friendly_lord_who_must_pay_troops() {
 
 function goto_pay_lords() {
 	clear_undo()
-	for (let lord = first_friendly_lord; lord < last_friendly_lord; lord++) {
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
 		if (is_lord_on_map(lord))
 			set_lord_unfed(lord, 1)
 	}
@@ -6133,7 +6133,7 @@ states.pay_lords = {
 		let done = true
 
 		if (game.who === NOBODY) {
-			for (let lord = first_friendly_lord; lord < last_friendly_lord; lord++) {
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
 				if (is_lord_on_map(lord) && is_lord_unfed(lord)) {
 					gen_action_lord(lord)
 					done = false
