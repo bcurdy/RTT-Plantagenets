@@ -542,6 +542,13 @@ body.shift .exhausted  {
 		drop-shadow(-2px 0px 0px yellow);
 }
 
+.cylinder > .exile {
+	width: 100%;
+	height: 100%;
+	background-image: url(images/exile.png);
+	opacity: 20%;
+}
+
 /* BACKGROUND COLORS AND BORDERS */
 
 /* ULTRA-WIDE SCREEN LAYOUTS */

@@ -925,10 +925,10 @@ function count_group_ships() {
 	return n
 }
 
-function count_group_assets(type) {
+function count_group_assets(type, group = game.group) {
 	let m = 0
 	let n = 0
-	for (let lord of game.group) {
+	for (let lord of group) {
 		n += get_lord_assets(lord, type)
 		if ((game.state === 'command' || game.state === 'march_laden') && lord_has_capability(lord, AOW_LANCASTER_HAY_WAINS) && type === CART)
 			m = get_lord_assets(lord, CART)
@@ -950,10 +950,14 @@ function count_group_provender(type) {
 	return n
 }
 
-function count_group_transport(type) {
+function count_lord_transport(lord) {
+	return get_lord_assets(lord, CART)
+}
+
+function count_group_transport(group = game.group) {
 	let n = 0
-	for (let lord of game.group)
-		n += count_lord_transport(lord, type)
+	for (let lord of group)
+		n += count_lord_transport(lord)
 	return n
 }
 
@@ -1696,7 +1700,7 @@ exports.setup = function (seed, scenario, options) {
 			exhausted: [],
 			favourl:[],
 			favoury:[],
-
+			in_exile:0,
 		},
 
 		flags: {
@@ -1708,6 +1712,7 @@ exports.setup = function (seed, scenario, options) {
 		command: NOBODY,
 		actions: 0,
 		group: 0,
+		intercept_group: 0,
 		who: NOBODY,
 		where: NOWHERE,
 		what: NOTHING,
@@ -3685,13 +3690,7 @@ function march_with_group_2() {
 		set_lord_moved(lord, 1)
 	}
 
-	// TODO : Intercept
-
-	if (has_unbesieged_enemy_lord(to)) {
-		goto_confirm_approach()
-	} else {
-		march_with_group_3()
-	}
+	goto_intercept()
 }
 
 function march_with_group_3() {
@@ -3708,23 +3707,240 @@ function march_with_group_3() {
 	resume_command()
 }
 
-function goto_confirm_approach() {
-	game.state = "confirm_approach"
+
+// === Interception ===
+
+function find_way(loc1, loc2) {
+	for (let way of data.ways) {
+		if (way.locales.includes(loc1) && way.locales.includes(loc2)) {
+			return way
+		}
+	}
+	return null
 }
 
-states.confirm_approach = {
-	inactive: "March",
+function goto_intercept() {
+	clear_undo()
+	let here = get_lord_locale(game.command)
+	for (let loc of data.locales[here].adjacent) {
+		let way = find_way(here, loc)
+		if (has_enemy_lord(loc) && way !== null && way.type !== "path") {
+			game.state = "intercept"
+			set_active_enemy()
+			game.intercept_group = []
+			game.who = NOBODY
+			return
+		}
+	}
+
+	goto_exiles()
+}
+
+function end_intercept() {
+	game.intercept_group = 0
+	set_active_enemy()
+	goto_exiles()
+}
+
+states.intercept = {
+	inactive: "Intercept",
 	prompt() {
-		view.prompt = `March: Confirm Approach to enemy Lord.`
-		view.group = game.group
-		view.actions.approach = 1
+		let to = get_lord_locale(game.command)
+
+		view.prompt = ``
+		if (game.who === NOBODY) {
+			for (let loc of data.locales[to].adjacent) {
+				let way = find_way(to, loc)
+				if (way !== null && way.type !== "path") {
+					get_lords_in_locale(loc)
+						.filter(is_friendly_lord)
+						.forEach(gen_action_lord)
+				}
+			}
+		} else {
+			gen_action_lord(game.who)
+			if (is_marshal(game.who) || is_lieutenant(game.who)) {
+				for (let l = first_friendly_lord; l <= last_friendly_lord; l++) {
+					if (get_lord_locale(l) === get_lord_locale(game.who) && !is_marshal(l)) {
+						gen_action_lord(l)
+					}
+				}
+			}
+	
+			view.actions.intercept = 1
+		}
+
+		view.actions.pass = 1
 	},
-	approach() {
-		push_undo()
-		goto_battle()
+	lord(lord) {
+		if (game.who === NOBODY) {
+			game.who = lord
+			set_toggle(game.intercept_group, lord)
+		} else if (lord === game.who) {
+			game.who = NOBODY
+			game.intercept_group = []
+		} else {
+			set_toggle(game.intercept_group, lord)
+		}
+	},
+	pass() {
+		end_intercept()
+	},
+	intercept() {
+		let valour = data.lords[game.who].valour
+		let roll = roll_die()
+		let success = roll <= valour
+		log(`Intercept ${success ? "Succeeded." : "Failed."} (${range(valour)}): ${success ? HIT[roll] : MISS[roll]}`)
+
+		if (success) {
+			goto_intercept_march()
+		} else {
+			end_intercept()
+		}
 
 	}
 }
+
+function goto_intercept_march() {
+	if (count_group_transport(game.intercept_group) >= count_group_assets(PROV, game.intercept_group)) {
+		game.intercept_group
+			.forEach(l => {
+				set_lord_locale(get_lord_locale(game.command))
+				set_lord_moved(l, 1)
+			})
+		end_intercept_march()
+	} else {
+		game.state = "intercept_march"
+	}
+}
+
+function end_intercept_march() {
+	// successfully intercepted by here.  Make sure to clear out actions
+	spend_all_actions()
+	goto_intercept_exiles()
+}
+
+states.intercept_march = {
+	inactive: "Intercept",
+	prompt() {
+		let to = game.march.to
+		let transport = count_group_transport(game.intercept_group)
+		let prov = count_group_assets(PROV, game.intercept_group)
+
+		view.group = game.intercept_group
+
+		view.prompt = `Intercept: Unladen.`
+
+		if (prov > transport) {
+			view.prompt = `Intercept: Hindered with ${prov} Provender, and ${transport} Transport.`
+			for (let lord of game.intercept_group) {
+				if (get_lord_assets(lord, PROV) > 0) {
+					view.prompt += " Discard Provender."
+					gen_action_prov(lord)
+				}
+			}
+		} else {
+			view.actions.intercept = 1
+			gen_action_locale(to)
+		}
+
+	},
+	prov: drop_prov,
+	intercept: end_intercept_march,
+	locale: end_intercept_march,
+}
+
+function is_enemy_lord(lord) {
+	return lord >= first_enemy_lord && lord <= last_enemy_lord
+}
+
+function get_lords_in_locale(loc) {
+	let results = []
+	for (let x = first_lord; x <= last_lord; x++) {
+		if (get_lord_locale(x) === loc)
+			results.push(x)
+	}
+	return results
+}
+
+function goto_intercept_exiles() {
+	let here = get_lord_locale(game.command)
+	if (get_lords_in_locale(here)
+		.filter(is_enemy_lord)
+		.some(l => !game.group.includes(l))) {
+		game.state = "intercept_exiles"
+		set_active_enemy()
+	} else {
+		end_intercept()
+	}
+}
+
+function end_intercept_exiles() {
+	set_active_enemy()
+	end_intercept()
+}
+
+states.intercept_exiles = {
+	inactive: "Intercept Exiles",
+	prompt() {
+		prompt_exiles(get_lords_in_locale(game.command)
+						.filter(is_friendly_lord)
+						.filter(l => !game.group.includes(l)))
+	},
+	lord:exile_lord,
+	done() {
+		end_intercept_exiles()
+	}
+}
+ // === Exile ===
+
+function prompt_exiles(lords) {
+	view.prompt = "Select Lords to go into Exile."	
+	lords.forEach(gen_action_lord)
+	view.actions.done = 1
+}
+
+function goto_exiles() {
+	let here = get_lord_locale(game.command)
+
+	if (has_enemy_lord(here)) {
+		game.state = "exiles"
+		set_active_enemy()
+	} else {
+		march_with_group_3()
+	}
+}
+
+states.exiles = {
+	inactive: "Exiles",
+	prompt() {
+		prompt_exiles(get_lords_in_locale(get_lord_locale(game.command))
+						.filter(is_friendly_lord))
+	},
+	lord:exile_lord,
+	done() {
+		set_active_enemy()
+		goto_battle()
+	}
+}
+
+function set_lord_in_exile(lord) {
+	game.pieces.in_exile = pack1_set(game.pieces.in_exile, lord, 1)
+}
+
+function get_lord_in_exile(lord) {
+	pack1_get(game.pieces.in_exile, lord)
+}
+
+function exile_lord(lord) {
+	set_lord_in_exile(lord)
+	disband_lord(lord)
+}
+
+function remove_lord_from_exile(lord) {
+	game.pieces.in_exile = pack1_set(game.pieces.in_exile, lord, 0)
+}
+
 
 
 // === ACTION: MARCH - DIVIDE SPOILS AFTER AVOID BATTLE ===
@@ -6189,8 +6405,7 @@ function end_pay_vassals() {
 	set_active_enemy()
 
 	if (game.active === P1) {
-		//goto_muster_exiles()
-		goto_ready_vassals()
+		goto_muster_exiles()
 	} else {
 		goto_pay_vassals()
 	}
@@ -6247,6 +6462,73 @@ function goto_ready_vassals() {
 
 	goto_levy_muster()
 }
+
+function goto_muster_exiles() {
+
+	for (let x = first_friendly_lord; x <= last_friendly_lord; x++) {
+		if (get_lord_locale(x) === current_turn() + CALENDAR && get_lord_in_exile(x)) {
+			game.state = "muster_exiles"
+			return
+		}
+	}
+	end_muster_exiles()
+}
+
+function end_muster_exiles() {
+	set_active_enemy()
+
+	if (game.active === P1) {
+		if (!check_disband_victory()) {
+			goto_ready_vassals()
+		}
+	} else {
+		goto_muster_exiles()
+	}
+}
+
+states.muster_exiles = {
+	inactive: "Muster Exiles",
+	prompt() {
+		view.prompt = "Muster Exiled Lords."
+		let done = true
+
+		if (game.who === NOBODY) {
+			for (let x = first_friendly_lord; x <= last_friendly_lord; x++) {
+				if (get_lord_locale(x) === current_turn() + CALENDAR && get_lord_in_exile(x)) {
+					gen_action_lord(x)
+					done = false
+				}
+			}
+		} else {
+			gen_action_locale(get_valid_exile_box(game.who))
+		}
+
+		if (done) {
+			view.actions.done = true
+		}
+	},
+	lord(lord) {
+		game.who = lord
+	},
+	locale(loc) {
+		muster_lord_in_exile(game.who, loc)
+		game.who = NOBODY
+	},
+	done() {
+		end_muster_exiles()
+	}
+}
+
+function muster_lord_in_exile(lord, exile_box) {
+	remove_lord_from_exile(lord)
+	muster_lord(lord, exile_box)
+}
+
+ function get_valid_exile_box() {
+ 	return [LOC_BURGUNDY, LOC_FRANCE, LOC_IRELAND, LOC_SCOTLAND]
+ 		.filter(l => has_favour_in_locale(game.active, l))
+ 		.at(0)		
+ }
 
 // === LEVY & CAMPAIGN: DISBAND ===
 
@@ -6372,6 +6654,25 @@ function check_campaign_victory() {
 	}
 	return false
 }
+
+function check_disband_victory() {
+	let york_v = check_campaign_victory_york()
+	let lancaster_v = check_campaign_victory_lancaster()
+
+	if (york_v && lancaster_v) {
+		goto_game_over("Draw", "The game ended in a draw.")
+		return true
+	} else if (york_v) {
+		goto_game_over(P1, `${YORK} won a Campaign Victory!`)
+		return true
+	} else if (lancaster_v) {
+		goto_game_over(P2, `${LANCASTER} won a Campaign Victory!`)
+		return true
+	}
+
+	return false
+}
+
 
 function goto_end_campaign() {
 	log_h1("End Campaign")

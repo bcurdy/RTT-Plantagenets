@@ -462,6 +462,10 @@ function is_lord_selected(ix) {
 	return false
 }
 
+function is_lord_in_exile(ix) {
+	return pack1_get(view.pieces.in_exile, ix)
+}
+
 function get_lord_capability(lord, n) {
 	return view.pieces.capabilities[(lord << 1) + n]
 }
@@ -801,6 +805,9 @@ function build_map() {
 		register_action(e, "lord", ix)
 		register_tooltip(e, on_focus_cylinder)
 		document.getElementById("pieces").appendChild(e)
+		let exile = document.createElement("div")
+		exile.className = "exile hide"
+		e.appendChild(exile)
 		build_lord_mat(lord, ix, side, lord.id)
 	})
 
@@ -1184,6 +1191,7 @@ function update_lord(ix) {
 		if (t > 16) t = 16
 		calendar_layout_cylinder[t].push(ui.lord_cylinder[ix])
 		ui.lord_cylinder[ix].classList.remove("hide")
+		ui.lord_cylinder[ix].getElementByClassName("exile")[0].classList.toggle("hide", is_lord_in_exile(ix))
 	}
 	ui.lord_buttons[ix].classList.toggle("action", is_action("lord", ix))
 	ui.lord_cylinder[ix].classList.toggle("action", is_action("lord", ix))
