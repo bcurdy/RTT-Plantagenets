@@ -455,10 +455,10 @@ function is_lord_command(ix) {
 }
 
 function is_lord_selected(ix) {
-	if (view.who >= 0)
-		return ix === view.who
 	if (view.group)
 		return view.group.includes(ix)
+	if (view.who >= 0)
+		return ix === view.who
 	return false
 }
 
@@ -1191,7 +1191,7 @@ function update_lord(ix) {
 		if (t > 16) t = 16
 		calendar_layout_cylinder[t].push(ui.lord_cylinder[ix])
 		ui.lord_cylinder[ix].classList.remove("hide")
-		ui.lord_cylinder[ix].getElementByClassName("exile")[0].classList.toggle("hide", is_lord_in_exile(ix))
+		ui.lord_cylinder[ix].getElementsByClassName("exile")[0].classList.toggle("hide", !is_lord_in_exile(ix))
 	}
 	ui.lord_buttons[ix].classList.toggle("action", is_action("lord", ix))
 	ui.lord_cylinder[ix].classList.toggle("action", is_action("lord", ix))
@@ -1599,6 +1599,7 @@ function on_update() {
 	action_button("play", "Play")
 
 	action_button("approach", "Approach")
+	action_button("intercept", "Intercept")
 	action_button("concede", "Concede")
 	action_button("battle", "Battle")
 

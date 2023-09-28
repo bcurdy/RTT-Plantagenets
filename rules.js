@@ -3269,8 +3269,6 @@ function count_influence_score() {
 		score = 5
 	if (score < 1)
 		score = 1
-	if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES))
-		score = 6
 
 	return score
 }
@@ -3289,6 +3287,8 @@ function do_influence_check() {
 		success = true
 	else if (roll === 6)
 		success = false
+	else if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES) && game.state === "")
+		success = true
 	else
 		success = roll <= rating
 
@@ -3375,13 +3375,14 @@ function can_action_parley_levy() {
 
 function parley_adjacent(here, lord) {
 	let seaports = []
-	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0 ) {
+	if (is_exile(here) && get_shared_assets(here, SHIP) > 0) {
+		return find_ports_from_exile(here)
+	} else if (is_seaport(here) && get_shared_assets(here, SHIP) > 0 ) {
 		if (data.port_1.includes(here)) seaports = data.port_1
 		if (data.port_2.includes(here)) seaports = data.port_2
 		if (data.port_3.includes(here)) seaports = data.port_3
-	} else if (is_exile(here) && get_shared_assets(here, SHIP) > 0) {
-		return find_ports_from_exile(here)
-	}
+	} 
+	
 	return data.locales[here].adjacent.concat(seaports)
 }
 
@@ -3543,12 +3544,13 @@ states.levy_muster_vassal = {
 	spend3:add_influence_check_modifier_2,
 	check() {
 		let results = do_influence_check()
-		if (score < 6) {
+
+		if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES)) {
+			log(`Automatic Success. C${AOW_LANCASTER_TWO_ROSES}.`)
+		} else {
 			log(`Attempt to levy V${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		}
-		else {
-			log(`Automatic Success`)
-		}
+
 		if (results.success) {
 			muster_vassal(game.what, game.who)
 		}
@@ -3738,6 +3740,7 @@ function goto_intercept() {
 
 function end_intercept() {
 	game.intercept_group = 0
+	game.who = NOBODY
 	set_active_enemy()
 	goto_exiles()
 }
@@ -3745,15 +3748,16 @@ function end_intercept() {
 states.intercept = {
 	inactive: "Intercept",
 	prompt() {
+		view.prompt = `Choose lord to intercept moving lords?`
 		let to = get_lord_locale(game.command)
 
-		view.prompt = ``
 		if (game.who === NOBODY) {
 			for (let loc of data.locales[to].adjacent) {
 				let way = find_way(to, loc)
 				if (way !== null && way.type !== "path") {
 					get_lords_in_locale(loc)
 						.filter(is_friendly_lord)
+						.filter(l => data.lords[l].valour > 0)
 						.forEach(gen_action_lord)
 				}
 			}
@@ -3771,6 +3775,8 @@ states.intercept = {
 		}
 
 		view.actions.pass = 1
+		view.group = game.intercept_group
+
 	},
 	lord(lord) {
 		if (game.who === NOBODY) {
@@ -3911,6 +3917,21 @@ function goto_exiles() {
 	}
 }
 
+function end_exiles() {
+	let lords = get_lords_in_locale(get_lord_locale(game.command))
+		.filter(is_friendly_lord)
+
+	if (lords.length > 0) {
+		// still some lords not exiled to fight.
+		set_active_enemy()
+		goto_battle()
+	} else {
+		// no one left, goto finish marching.
+		set_active_enemy()		
+		march_with_group_3()
+	}
+}
+
 states.exiles = {
 	inactive: "Exiles",
 	prompt() {
@@ -3919,8 +3940,7 @@ states.exiles = {
 	},
 	lord:exile_lord,
 	done() {
-		set_active_enemy()
-		goto_battle()
+		end_exiles()
 	}
 }
 
@@ -3929,7 +3949,7 @@ function set_lord_in_exile(lord) {
 }
 
 function get_lord_in_exile(lord) {
-	pack1_get(game.pieces.in_exile, lord)
+	return pack1_get(game.pieces.in_exile, lord)
 }
 
 function exile_lord(lord) {
@@ -6500,7 +6520,8 @@ states.muster_exiles = {
 				}
 			}
 		} else {
-			gen_action_locale(get_valid_exile_box(game.who))
+			get_valid_exile_box(game.who)
+				.forEach(gen_action_locale)
 		}
 
 		if (done) {
@@ -6526,8 +6547,7 @@ function muster_lord_in_exile(lord, exile_box) {
 
  function get_valid_exile_box() {
  	return [LOC_BURGUNDY, LOC_FRANCE, LOC_IRELAND, LOC_SCOTLAND]
- 		.filter(l => has_favour_in_locale(game.active, l))
- 		.at(0)		
+ 		.filter(l => has_favour_in_locale(game.active, l))	
  }
 
 // === LEVY & CAMPAIGN: DISBAND ===
@@ -6541,10 +6561,7 @@ function disband_lord(lord, permanently = false) {
 		set_lord_locale(lord, NOWHERE)
 	}
 	else {
-		if (is_levy_phase())
-			set_lord_cylinder_on_calendar(lord, turn + (6 - data.lords[lord].influence))
-		else
-			set_lord_cylinder_on_calendar(lord, turn + (6 - data.lords[lord].influence) + 1)
+		set_lord_cylinder_on_calendar(lord, turn + (6 - data.lords[lord].influence))
 		log(`Disbanded L${lord} to ${get_lord_calendar(lord)}.`)
 	}
 
