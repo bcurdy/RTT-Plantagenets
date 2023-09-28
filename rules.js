@@ -368,8 +368,8 @@ const AOW_LANCASTER_EXPERT_COUNSELLORS = L13
 const AOW_LANCASTER_PERCYS_POWER = L14
 const AOW_LANCASTER_KINGS_PARLEY = L15 // TODO
 const AOW_LANCASTER_NORTHMEN = L16
-const AOW_LANCASTER_MARGARET = L17 // TODO
-const AOW_LANCASTER_COUNCIL_MEMBER = L18 // TODO
+const AOW_LANCASTER_MARGARET = L17
+const AOW_LANCASTER_COUNCIL_MEMBER = L18 
 const AOW_LANCASTER_ANDREW_TROLLOPE = L19
 const AOW_LANCASTER_VETERAN_OF_FRENCH_WARS = L20 
 const AOW_LANCASTER_MY_FATHERS_BLOOD = L21
@@ -415,7 +415,7 @@ const AOW_YORK_HASTINGS = Y24
 const AOW_YORK_PEMBROKE = Y25 // TODO
 const AOW_YORK_FALLEN_BROTHER = Y26
 const AOW_YORK_PERCYS_NORTH1 = Y27 // TODO
-const AOW_YORK_FIRST_SON = Y28 // TODO
+const AOW_YORK_FIRST_SON = Y28
 const AOW_YORK_STAFFORD_BRANCH = Y29 // TODO
 const AOW_YORK_CAPTAIN = Y30
 const AOW_YORK_WOODWILLES = Y31
@@ -6527,6 +6527,9 @@ function end_reset() {
 
 // === END CAMPAIGN: TIDES OF WAR ===
 function tides_calc(){
+	let town = 0
+	let cities = 0
+	let fortress = 0
 	let domy = 0
 	let doml = 0
 	let domnl = 0
@@ -6537,79 +6540,200 @@ function tides_calc(){
 	let domwy = 0
 	let x = 0
 
+	// DOMINATION CALC
+
 	for (let loc of data.locales) {
-		x++
 		if (loc.region === "North") {
 			if (has_favourl_marker(x)) {
 				domnl += 1
 			}
-			if (has_favoury_marker(x))
+			if (has_favoury_marker(x)) {
 				domny += 1
+			}
 		}
 		if (loc.region === "South") {
 			if (has_favourl_marker(x)) {
 				domsl += 1
 			}
-			if (has_favoury_marker(x))
+			if (has_favoury_marker(x)) {
 				domsy += 1
+			}
 		}
 		if (loc.region === "Wales") {
 			if (has_favourl_marker(x)) {
 				domwl += 1
 			}
-			if (has_favoury_marker(x))
+			if (has_favoury_marker(x)) {
 				domwy += 1
-		}
-		if (loc.region === "London") {
-			if (has_favourl_marker(x))
-				doml = 2
-
-			if (has_favoury_marker(x))
-				domy = 2
+			}
 		}
 
-		if (loc.region === "Calais") {
-			if (has_favourl_marker(x))
-				doml = 2
+	// SPECIAL LOCALES 
 
-			if (has_favoury_marker(x))
-				domy = 2
+
+		if (loc.name === "London") {
+			if (has_favourl_marker(x)) {
+				log(`London control 2 Influence for Lancaster`)
+				doml += 2
+			}
+
+			if (has_favoury_marker(x)) {
+				log(`London control 2 Influence for York`)
+				domy += 2
+			}
 		}
 
-		if (loc.region === "Harlech") {
-			if (has_favourl_marker(x))
-				doml = 1
+		if (loc.name === "Calais") {
+			if (has_favourl_marker(x)) {
+				log(`Calais control 2 Influence for Lancastrians`)
+				doml += 2
+			}
 
-			if (has_favoury_marker(x))
-				domy = 1
+			if (has_favoury_marker(x)) {
+				log(`Calais control 2 Influence for York`)
+				domy += 2
+			}
 		}
+
+		if (loc.name === "Harlech") {
+			if (has_favourl_marker(x)) {
+				log(`Harlech control 1 Influence for Lancaster`)
+				doml += 1
+			}
+
+			if (has_favoury_marker(x)) {
+				log(`Harlech control 1 Influence for York`)
+				domy += 1
+			}
+		}
+
+		if (loc.type === "city") {
+			if (has_favourl_marker(x)) {
+				cities -= 1
+			}
+
+			if (has_favoury_marker(x)) {
+				cities += 1
+			}
+		}
+		if (loc.type === "town") {
+			if (has_favourl_marker(x)) {
+				town -= 1
+				}
+			if (has_favoury_marker(x)) {
+				town += 1
+			}
+		}
+		if (loc.type === "fortress") {
+			if (has_favourl_marker(x)) {
+				fortress -= 1
+				}
+			if (has_favoury_marker(x)) {
+				fortress += 1
+			}
+		}
+		x++
 	}
-	if (domnl >= 3 && lord_has_capability(LORD_NORTHUMBERLAND_L, AOW_LANCASTER_NORTHMEN))
+
+	// DOMINATION CAPS
+
+	// NORTH
+
+	if (domnl === 6) {
+		log(`North Domination 2 Influence for Lancaster`)
 		doml += 2
-
-	if (domnl === 6)
+	}
+	else if (domnl >= 3 && lord_has_capability(LORD_NORTHUMBERLAND_L, AOW_LANCASTER_NORTHMEN)){
+		log(`North Domination 2 Influence for Lancaster`)
 		doml += 2
+	}
 
-	if (domny === 6)
+	if (domny === 6) {
+		log(`North Domination 2 Influence for York`)
 		domy += 2
+	}
 
-	if (domsy >= 5 && (lord_has_capability(LORD_MARCH, AOW_YORK_SOUTHERNERS) || lord_has_capability(LORD_RUTLAND, AOW_YORK_SOUTHERNERS) || lord_has_capability(LORD_YORK, AOW_YORK_SOUTHERNERS)))
-		domy += 2
+	// SOUTH
 
-	if (doml === 9)
+	if (domsl === 9) {
+		log(`South Domination 2 Influence for Lancaster`)
 		doml += 2
+	}
 
-	if (domy === 9)
+	if (domsy === 9) {
+		log(`South Domination 2 Influence for York`)
 		domy += 2
+	}
+	else if (domsy >= 5 && (lord_has_capability(LORD_MARCH, AOW_YORK_SOUTHERNERS) || lord_has_capability(LORD_RUTLAND, AOW_YORK_SOUTHERNERS) || lord_has_capability(LORD_YORK, AOW_YORK_SOUTHERNERS))) {
+		log(`South Domination 2 Influence for York`)
+		domy += 2	
+	}
+
+	// WALES
 		
-	if (domwl >= 3 && (lord_has_capability(LORD_MARCH, AOW_YORK_WELSHMEN) || lord_has_capability(LORD_YORK, AOW_YORK_WELSHMEN)))
+	if (domwl === 5) {
+		log(`South Domination 2 Influence for Lancaster`)
 		doml += 2
+	}
 
-	if (domwl === 5)
-		doml += 2
-
-	if (domwy === 5)
+	if (domwy === 5) {
+		log(`South Domination 2 Influence for York`)
 		domy += 2
+	}
+	else if (domwy >= 3 && (lord_has_capability(LORD_MARCH, AOW_YORK_WELSHMEN) || lord_has_capability(LORD_YORK, AOW_YORK_WELSHMEN))) {
+		log(`South Domination 2 Influence for York`)
+		domy += 2
+	}
+
+
+	// LOCALES TUG OF WAR
+
+	if (cities >= 1) {
+		log(`Most Cities 2 Influence for York`)
+		domy +=2
+	}
+	if (fortress >= 1) {
+		log(`Most Fortresses 1 Influence for York`)
+		domy +=1
+	}
+	if (town >= 1) {
+		log(`Most Towns 1 Influence for York`)
+		domy +=2
+	}
+
+	if (cities <= -1) {
+		log(`Most Cities 2 Influence for Lancaster`)
+		doml +=2
+	}
+	if (fortress <= -1) {
+		log(`Most Fortresses 1 Influence for Lancaster`)
+		doml +=1
+	}
+	if (town <= -1) {
+		log(`Most Towns 1 Influence for Lancaster`)
+		doml +=2
+	}
+
+
+	// CAPS EFFECT
+
+	if (lord_has_capability(LORD_HENRY_VI, AOW_LANCASTER_MARGARET) && get_lord_locale(LORD_HENRY_VI) != LOC_LONDON && is_lord_on_map(LORD_HENRY_VI)) {
+		log(`Capability: Margaret 1 Influence for Lancaster`)
+		doml += 2
+	}
+
+	if (lord_has_capability(LORD_EXETER_1, AOW_LANCASTER_COUNCIL_MEMBER) || lord_has_capability(LORD_EXETER_2, AOW_LANCASTER_COUNCIL_MEMBER) || lord_has_capability(LORD_SOMERSET_2, AOW_LANCASTER_COUNCIL_MEMBER) || lord_has_capability(LORD_SOMERSET_1, AOW_LANCASTER_COUNCIL_MEMBER)|| lord_has_capability(LORD_BUCKINGHAM, AOW_LANCASTER_COUNCIL_MEMBER)) {
+		log(`Capability: Council Member 1 Influence for Lancaster`)
+		doml += 1
+	}
+
+	if (lord_has_capability(LORD_EDWARD_IV, AOW_YORK_FIRST_SON)) {
+		log(`Capability: First Son 1 Influence for Lancaster`)
+		domy += 1
+	}
+
+		log(`Total ` + domy + ` Influence for York`)
+		log(`Total ` + doml + ` Influence for Lancaster`)
 }
 
 
