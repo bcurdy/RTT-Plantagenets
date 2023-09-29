@@ -4097,10 +4097,10 @@ function get_supply_from_source(source){
 		prov += 1
 
 	if (source === LOC_LONDON || source === LOC_CALAIS) {
-		prov += 3
+		prov += 2
 		return prov
 	} else if (is_city(source)) {
-		prov += 2
+		prov += 1
 		return prov
 	} 
 	prov +=1
@@ -6718,6 +6718,10 @@ function goto_game_end() {
 }
 
 function do_grow() {
+	log("Grow:")
+	logi("Changing all Depleted locales to Normal.")
+	logi("Changing all Exhausted locales to Depleted.")
+
 	for (let x = first_locale; x <= last_locale; x++) {
 		refresh_locale(x)
 	}
@@ -6725,6 +6729,9 @@ function do_grow() {
 }
 
 function do_waste() {
+	log("Waste:")
+	logi("Removing half of all lords provinder, carts, and ships.")
+	logi("Resetting Lords Coin and Troops to initial values.")
 	for (let x = first_lord; x <= last_lord; x++) {
 		if (is_lord_on_map(x)){
 			do_lord_waste(x)
@@ -6861,13 +6868,13 @@ states.reset = {
 	inactive: "Reset",
 	prompt() {
 		view.prompt = "Reset: You may discard any held Arts of War cards desired."
-		if (game.active === P1) {
-			for (let c = first_p1_card; c <= last_p1_card; ++c)
+		if (game.active === YORK) {
+			for (let c = first_york_card; c <= last_york_card; ++c)
 				if (can_discard_card(c))
 					gen_action_card(c)
 		}
-		if (game.active === P2) {
-			for (let c = first_p2_card; c <= last_p2_card; ++c)
+		if (game.active === LANCASTER) {
+			for (let c = first_lancaster_card; c <= last_lancaster_card; ++c)
 				if (can_discard_card(c))
 					gen_action_card(c)
 		}
@@ -7111,9 +7118,9 @@ function tides_calc(){
 			}	
 		}
 
-		for (let l = first_lancaster_lord; y <= last_lancaster_lord; y++) {
+		for (let l = first_lancaster_lord; l <= last_lancaster_lord; l++) {
 			if (is_lord_on_map(l)) {
-				domy += data.lords[l].influence
+				doml += data.lords[l].influence
 			}	
 		}
 
@@ -7185,6 +7192,8 @@ function end_disembark() {
 function do_disembark() {
 	let roll = roll_die()
 	let success = roll >= 5
+
+	log(`Disembark: (>4) ${success ? HIT[roll] : MISS[roll]}`)
 
 	return success
 }
@@ -7259,7 +7268,7 @@ function shipwreck(lord) {
 
 	disband_lord(lord, true)
 
-	if (game.active === LANCASTRIANS)
+	if (game.active === LANCASTER)
 		game.ip -= influence
 	else
 		game.ip += influence
