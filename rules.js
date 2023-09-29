@@ -9,6 +9,10 @@ const YORK = "York"
 var P1 = LANCASTER
 var P2 = YORK
 
+const INFLUENCE_TURNS = [1, 4, 6, 9, 11, 14]
+const GROW_TURNS = [4, 9, 14]
+const WASTE_TURNS = [5, 10]
+
 const HIT = [ "0", '\u2776', '\u2777', '\u2778', '\u2779', '\u277A', '\u277B' ]
 const MISS = [ "0", '\u2460', '\u2461', '\u2462', '\u2463', '\u2464', '\u2465' ]
 
@@ -352,6 +356,13 @@ const VASSAL_HASTINGS = find_vassal('Hastings')
 const VASSAL_MONTAGU = find_vassal('Montagu')
 const VASSAL_THOMAS_STANLEY = find_vassal('Thomas Stanley')
 const VASSAL_TROLLOPE = find_vassal('Trollope')
+
+const SEAS = [LOC_NORTH_SEA, LOC_IRISH_SEA, LOC_ENGLISH_CHANNEL]
+
+// === === === === FROM NEVSKY === === === ===
+
+// TODO: log end victory conditions at scenario start
+
 
 const AOW_LANCASTER_CULVERINS_AND_FALCONETS = [ L1, L2 ] // TODO
 const AOW_LANCASTER_MUSTERD_MY_SOLDIERS = L3 // TODO
@@ -1446,6 +1457,18 @@ function remove_depleted_marker(loc) {
 function remove_exhausted_marker(loc) {
 	set_delete(game.pieces.exhausted, loc)
 }
+
+function refresh_locale(locale) {
+	if (has_depleted_marker(locale)) {
+		remove_depleted_marker(locale)
+	}
+
+	if (is_locale_exhausted(locale)) {
+		remove_exhausted_marker(locale)
+		add_depleted_marker(locale)
+	}
+}
+
 function deplete_locale(loc) {
 	if (has_depleted_marker(loc)) {
 		remove_depleted_marker(loc),
@@ -6587,88 +6610,37 @@ function goto_remove_markers() {
 	goto_command_activation()
 }
 
-// === END CAMPAIGN: GROWTH ===
-// TODO : PLANTAGENET GROW
-function count_enemy_ravaged() {
-	let n = 0
-	for (let loc of game.pieces.ravaged)
-		if (is_friendly_territory(loc))
-			++n
-	return n
-}
-
-function goto_grow() {
-	game.count = count_enemy_ravaged() >> 1
-	log_br()
-	if (game.active === TEUTONS)
-		log("Teutonic Growth")
-	else
-		log("Russian Growth")
-	if (game.count === 0) {
-		logi("Nothing")
-		end_growth()
-	} else {
-		game.state = "growth"
-	}
-}
-
-function end_growth() {
-	set_active_enemy()
-	if (game.active === P2)
-		goto_grow()
-	else
-		goto_game_end()
-}
-
-states.growth = {
-	inactive: "Grow",
-	prompt() {
-		view.prompt = `Grow: Remove ${game.count} enemy Ravaged markers.`
-		if (game.count > 0) {
-			for (let loc of game.pieces.ravaged)
-				if (is_friendly_territory(loc))
-					gen_action_locale(loc)
-		} else {
-			view.actions.end_growth = 1
-		}
-	},
-	locale(loc) {
-		push_undo()
-		logi(`%${loc}`)
-		remove_ravaged_marker(loc)
-		game.count--
-	},
-	end_growth() {
-		clear_undo()
-		end_growth()
-	},
-}
-
 // === END CAMPAIGN: GAME END ===
 
-function check_campaign_victory_york() {
+function check_campaign_victory_york(inc_exiles = false) {
 	for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; ++lord)
-		if (is_lord_on_map(lord))
+		if (is_lord_on_map(lord) || (inc_exiles && get_lord_locale(lord) === CALENDAR + current_turn() + 1 && get_lord_in_exile(lord)))
 			return false
 	return true
 }
 
-function check_campaign_victory_lancaster() {
+function check_campaign_victory_lancaster(inc_exiles = false) {
 	for (let lord = first_york_lord; lord <= last_york_lord; ++lord)
-		if (is_lord_on_map(lord))
+		if (is_lord_on_map(lord) || (inc_exiles && get_lord_locale(lord) === CALENDAR + current_turn() + 1 && get_lord_in_exile(lord)) )
 			return false
 	return true
 }
 
 function check_campaign_victory() {
-	if (check_campaign_victory_york()) {
-		goto_game_over(P1, `${P1} won a Campaign Victory!`)
+	let york_v = check_campaign_victory_york(true)
+	let lancaster_v = check_campaign_victory_lancaster(true)
+
+	if (york_v && lancaster_v) {
+		goto_game_over("Draw", "The game ended in a draw.")
+		return true
+	} else if (york_v) {
+		goto_game_over(P1, `${YORK} won a Campaign Victory!`)
+		return true
+	} else if (lancaster_v) {
+		goto_game_over(P2, `${LANCASTER} won a Campaign Victory!`)
 		return true
 	}
-	if (check_campaign_victory_lancaster()) {
-		goto_game_over(P2, `${P2} won a Campaign Victory!`)
-		return true
-	}
+
 	return false
 }
 
@@ -6691,156 +6663,238 @@ function check_disband_victory() {
 }
 
 
+function check_scenario_end_victory() {
+	if (current_turn() === scenario_last_turn[game.scenario]) {  // Scenario End Victory
+
+		if (game.ip == 0)
+			goto_game_over("Draw", "The game ended in a draw.")
+		else if (game.ip > 0)
+			goto_game_over(LANCASTER, `${LANCASTER} won with ${game.ip} Influence.`)
+		else
+			goto_game_over(YORK, `${YORK} won with ${Math.abs(game.ip)} Influence.`)
+
+		return true
+	} 
+	return false
+
+}
+
+function check_threshold_victory() {
+	// This needs to change to account for graduated victory thresholds in some scenarios.
+
+	if (Math.abs(game.ip) > game.victory_check) {
+		if (game.ip > 0)
+			goto_game_over(LANCASTER, `${LANCASTER} won with ${game.ip} Influence.`)
+		else
+			goto_game_over(YORK, `${YORK} won with ${Math.abs(game.ip)} Influence.`)
+		
+		return true
+	}
+
+	return false
+}
+
+
 function goto_end_campaign() {
 	log_h1("End Campaign")
 
 	set_active(P1)
-
-	if (current_turn() === 8 || current_turn() === 16) {
-		goto_grow()
-	} else {
-		goto_game_end()
-	}
+	tides_of_war()
 }
 
 function goto_game_end() {
 	// GAME END
-	if (current_turn() === scenario_last_turn[game.scenario]) {
-		goto_game_over("Draw", "The game ended in a draw.")
-	} else {
-		goto_plow_and_reap()
+
+	if (!(check_scenario_end_victory() || check_campaign_victory() || check_threshold_victory())) {
+		
+		if (GROW_TURNS.includes(current_turn())) {
+			do_grow()
+		} else if (WASTE_TURNS.includes(current_turn())) {
+			do_waste()
+		} else {
+			goto_reset()
+		}
 	}
 }
 
-// === END CAMPAIGN: PLOW AND REAP ===
-
-function goto_plow_and_reap() {
-	let turn = current_turn()
-	end_plow_and_reap()
+function do_grow() {
+	for (let x = first_locale; x <= last_locale; x++) {
+		refresh_locale(x)
+	}
+	goto_reset()
 }
 
-function end_plow_and_reap() {
-	goto_wastage()
+function do_waste() {
+	for (let x = first_lord; x <= last_lord; x++) {
+		if (is_lord_on_map(x)){
+			do_lord_waste(x)
+		}
+	}
+
+	goto_reset()
 }
+
+function do_lord_waste(lord) {
+	[PROV, CART, SHIP].forEach(a => remove_half(lord, a))
+	set_lord_assets(lord, COIN, data.lords[lord].coin)
+	muster_lord_forces(lord)
+}
+
+function remove_half(lord, type) {
+	set_lord_assets(lord, type, Math.ceil(get_lord_assets(lord, type)/2))
+}
+
 
 // === END CAMPAIGN: WASTAGE ===
 // TODO : WASTE
-function goto_wastage() {
-	if (game.turn === 5 || game.turn === 10) {
-	clear_lords_moved()
-	let done = true
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-		if (check_lord_wastage(lord)) {
-			set_lord_moved(lord, 3)
-			done = false
-		}
-	}
-	if (done)
-		end_wastage()
-	else
-		game.state = "wastage"
-}
-	else {
-		push_undo()
-		goto_reset()
-	}
-}
+// function goto_wastage() {
+// 	if (game.turn === 5 || game.turn === 10) {
+// 	clear_lords_moved()
+// 	let done = true
+// 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+// 		if (check_lord_wastage(lord)) {
+// 			set_lord_moved(lord, 3)
+// 			done = false
+// 		}
+// 	}
+// 	if (done)
+// 		end_wastage()
+// 	else
+// 		game.state = "wastage"
+// }
+// 	else {
+// 		push_undo()
+// 		goto_reset()
+// 	}
+// }
 
-function check_lord_wastage(lord) {
-	if (get_lord_assets(lord, PROV) > 1)
-		return true
-	if (get_lord_assets(lord, COIN) > 1)
-		return true
-	if (get_lord_assets(lord, CART) > 1)
-		return true
-	if (get_lord_assets(lord, SHIP) > 1)
-		return true
-	return false
-}
+// function check_lord_wastage(lord) {
+// 	if (get_lord_assets(lord, PROV) > 1)
+// 		return true
+// 	if (get_lord_assets(lord, COIN) > 1)
+// 		return true
+// 	if (get_lord_assets(lord, CART) > 1)
+// 		return true
+// 	if (get_lord_assets(lord, SHIP) > 1)
+// 		return true
+// 	return false
+// }
 
-function prompt_wastage(lord) {
-	if (get_lord_assets(lord, PROV) > 0)
-		gen_action_prov(lord)
-	if (get_lord_assets(lord, COIN) > 0)
-		gen_action_coin(lord)
-	if (get_lord_assets(lord, CART) > 0)
-		gen_action_cart(lord)
-	if (get_lord_assets(lord, SHIP) > 0)
-		gen_action_ship(lord)
-	for (let i = 0; i < 2; ++i) {
-		let c = get_lord_capability(lord, i)
-		if (c !== NOTHING)
-			gen_action_card(c)
-	}
-}
+// function prompt_wastage(lord) {
+// 	if (get_lord_assets(lord, PROV) > 0)
+// 		gen_action_prov(lord)
+// 	if (get_lord_assets(lord, COIN) > 0)
+// 		gen_action_coin(lord)
+// 	if (get_lord_assets(lord, CART) > 0)
+// 		gen_action_cart(lord)
+// 	if (get_lord_assets(lord, SHIP) > 0)
+// 		gen_action_ship(lord)
+// 	for (let i = 0; i < 2; ++i) {
+// 		let c = get_lord_capability(lord, i)
+// 		if (c !== NOTHING)
+// 			gen_action_card(c)
+// 	}
+// }
 
-function action_wastage(lord, type) {
-	push_undo()
-	set_lord_moved(lord, 0)
-	add_lord_assets(lord, type, -1)
-}
+// function action_wastage(lord, type) {
+// 	push_undo()
+// 	set_lord_moved(lord, 0)
+// 	add_lord_assets(lord, type, -1)
+// }
 
-function find_lord_with_capability_card(c) {
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		if (lord_has_capability_card(lord, c))
-			return lord
-	return NOBODY
-}
+// function find_lord_with_capability_card(c) {
+// 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+// 		if (lord_has_capability_card(lord, c))
+// 			return lord
+// 	return NOBODY
+// }
 
-states.wastage = {
-	inactive: "Wastage",
-	prompt() {
-		let done = true
-		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (get_lord_moved(lord)) {
-				prompt_wastage(lord)
-				done = false
-			}
-		}
-		if (done) {
-			view.prompt = "Wastage: All done."
-			view.actions.end_wastage = 1
-		} else {
-			view.prompt = "Wastage: Discard one Asset or Capability from each affected Lord."
-		}
-	},
-	card(c) {
-		push_undo()
-		let lord = find_lord_with_capability_card(c)
-		set_lord_moved(lord, 0)
-		discard_lord_capability(lord, c)
-	},
-	prov(lord) { action_wastage(lord, PROV) },
-	coin(lord) { action_wastage(lord, COIN) },
-	cart(lord) { action_wastage(lord, CART) },
-	ship(lord) { action_wastage(lord, SHIP) },
-	end_wastage() {
-		end_wastage()
-	},
-}
+// states.wastage = {
+// 	inactive: "Wastage",
+// 	prompt() {
+// 		let done = true
+// 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+// 			if (get_lord_moved(lord)) {
+// 				prompt_wastage(lord)
+// 				done = false
+// 			}
+// 		}
+// 		if (done) {
+// 			view.prompt = "Wastage: All done."
+// 			view.actions.end_wastage = 1
+// 		} else {
+// 			view.prompt = "Wastage: Discard one Asset or Capability from each affected Lord."
+// 		}
+// 	},
+// 	card(c) {
+// 		push_undo()
+// 		let lord = find_lord_with_capability_card(c)
+// 		set_lord_moved(lord, 0)
+// 		discard_lord_capability(lord, c)
+// 	},
+// 	prov(lord) { action_wastage(lord, PROV) },
+// 	coin(lord) { action_wastage(lord, COIN) },
+// 	cart(lord) { action_wastage(lord, CART) },
+// 	ship(lord) { action_wastage(lord, SHIP) },
+// 	end_wastage() {
+// 		end_wastage()
+// 	},
+// }
 
-function end_wastage() {
-	push_undo()
-	set_active_enemy()
-	goto_reset()
-}
+// function end_wastage() {
+// 	push_undo()
+// 	set_active_enemy()
+// 	goto_reset()
+// }
 
 // === END CAMPAIGN: RESET (DISCARD ARTS OF WAR) ===
 
 function goto_reset() {
+	game.state = "reset"
 
 	// Discard "This Campaign" events from play.
 	discard_friendly_events("this_campaign")
-	end_reset()
+
+}
+
+states.reset = {
+	inactive: "Reset",
+	prompt() {
+		view.prompt = "Reset: You may discard any held Arts of War cards desired."
+		if (game.active === P1) {
+			for (let c = first_p1_card; c <= last_p1_card; ++c)
+				if (can_discard_card(c))
+					gen_action_card(c)
+		}
+		if (game.active === P2) {
+			for (let c = first_p2_card; c <= last_p2_card; ++c)
+				if (can_discard_card(c))
+					gen_action_card(c)
+		}
+		view.actions.end_discard = 1
+	},
+	card(c) {
+		push_undo()
+		 if (set_has(game.hand1, c)) {
+			log("Discarded Held card.")
+			set_delete(game.hand1, c)
+		} else if (set_has(game.hand2, c)) {
+			log("Discarded Held card.")
+			set_delete(game.hand2, c)
+		}
+	},
+	end_discard() {
+		end_reset()
+	},
 }
 
 function end_reset() {
 	clear_undo()
 	set_active_enemy()
 	if (game.active === P2)
-		goto_plow_and_reap()
+		goto_reset()
 	else
-		tides_of_war()
+		goto_advance_campaign()
 }
 
 // === END CAMPAIGN: TIDES OF WAR ===
@@ -7050,8 +7104,26 @@ function tides_calc(){
 		domy += 1
 	}
 
-		log(`Total ` + domy + ` Influence for York`)
-		log(`Total ` + doml + ` Influence for Lancaster`)
+	if (INFLUENCE_TURNS.includes(current_turn())) {
+		for (let y = first_york_lord; y <= last_york_lord; y++) {
+			if (is_lord_on_map(y)) {
+				domy += data.lords[y].influence
+			}	
+		}
+
+		for (let l = first_lancaster_lord; y <= last_lancaster_lord; y++) {
+			if (is_lord_on_map(l)) {
+				domy += data.lords[l].influence
+			}	
+		}
+
+	}
+
+	log(`Total ` + domy + ` Influence for York`)
+	log(`Total ` + doml + ` Influence for Lancaster`)
+
+	game.influence += doml
+	game.influence -= domy
 }
 
 
@@ -7065,8 +7137,140 @@ function tides_of_war() {
 	}
 
 	tides_calc()
-	goto_advance_campaign()
+	goto_disembark()
 }
+
+// === END CAMPAIGN: DISEMBARK ===
+
+function has_lords_at_sea() {
+	for (let x = first_friendly_lord; x <= last_friendly_lord; x++) {
+		if (is_lord_at_sea(x))
+			return true
+	}
+	return false
+}
+
+function get_lords_at_sea() {
+	let results = []
+	for (let x = first_friendly_lord; x <= last_friendly_lord; x++) {
+		if (is_lord_at_sea(x)) {
+			results.push(x)
+		}
+	}
+	return results;
+}
+
+function is_lord_at_sea(lord) {
+	return SEAS.includes(get_lord_locale(lord))
+}
+
+function goto_disembark() {
+	if (has_lords_at_sea()) {
+		game.state = "disembark"
+	} else {
+		end_disembark()
+	}
+}
+
+function end_disembark() {
+	clear_undo()
+	game.who = NOBODY
+	set_active_enemy()
+	if (game.active === P2)
+		goto_disembark()
+	else
+		goto_game_end()
+}
+
+function do_disembark() {
+	let roll = roll_die()
+	let success = roll >= 5
+
+	return success
+}
+
+function get_safe_ports(sea) {
+	let ports
+	if (data.sea_1.contains(sea)) ports = data.port_1
+	if (data.sea_2.contains(sea)) ports = data.port_2
+	if (data.sea_3.contains(sea)) ports = data.port_3
+
+	return ports
+		.filter(p => !has_enemy_lord(p))
+}
+
+function has_safe_ports(sea) {
+	return get_safe_ports(sea).length > 0
+}
+
+states.disembark = {
+	inactive: "Disembark",
+	prompt() {
+		view.prompt = "Disembark your lords at sea."
+		let done = true
+		if (game.who === NOBODY) {
+			get_lords_at_sea()
+			.forEach(l => {gen_action_lord(l);done=false})
+		} else {
+			let sea = get_lord_locale(game.who)
+				get_safe_ports(sea)
+					.forEach(gen_action_locale)
+		}
+
+		if (done) {
+			view.actions.done = 1
+		}
+	},
+	lord(lord) {
+		if (do_disembark(lord)) {
+			if (has_safe_ports(get_lord_locale(lord))) {
+				game.who = lord
+			} else {
+				no_safe_disembark(lord)
+			}
+		} else {
+			shipwreck(lord)
+		} 
+		
+	},
+	locale(loc) {
+		successful_disembark(game.who, loc)
+	},
+	done() {
+		end_disembark()
+	}
+}
+
+function successful_disembark(lord, loc) {
+	set_lord_locale(lord, loc)
+	set_lord_moved(lord, 1)
+
+	goto_feed()
+}
+
+function shipwreck(lord) {
+	let influence = data.lords[lord].influence
+
+	for (let v = first_vassal; v <= last_vassal; v++) {
+		if (get_vassal_locale(v) === lord) {
+			influence += 1
+		}
+	}
+
+	disband_lord(lord, true)
+
+	if (game.active === LANCASTRIANS)
+		game.ip -= influence
+	else
+		game.ip += influence
+}
+
+function no_safe_disembark(lord) {
+	disband_lord(lord)
+}
+
+
+
 
 
 function goto_advance_campaign() {
