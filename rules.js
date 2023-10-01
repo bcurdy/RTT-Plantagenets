@@ -1166,9 +1166,9 @@ function set_vassal_unavailable(vassal) {
 function muster_vassal(vassal, lord) {
 	set_vassal_with_lord(vassal, lord)
 	if (data.vassals[vassal].service !== 0 && lord_has_capability(lord, AOW_YORK_ALICE_MONTAGU))
-		set_vassal_on_calendar(vassal, current_turn() + (6 - data.vassals[vassal].service) + 1)
+		set_vassal_on_calendar(vassal, current_turn() + (1 + data.vassals[vassal].service))
 	else if (data.vassals[vassal].service !== 0)
-		set_vassal_on_calendar(vassal, current_turn() + (6 - data.vassals[vassal].service))
+		set_vassal_on_calendar(vassal, current_turn() + data.vassals[vassal].service)
 }
 
 function disband_vassal(vassal) {
