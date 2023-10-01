@@ -26,6 +26,7 @@ function frac(x) {
 
 function range(x) {
 	switch (x) {
+	case 0: return "0"
 	case 1: return "1"
 	case 2: return "1-2"
 	case 3: return "1-3"
@@ -3780,7 +3781,6 @@ states.intercept = {
 				if (way !== null && way.type !== "path") {
 					get_lords_in_locale(loc)
 						.filter(is_friendly_lord)
-						.filter(l => data.lords[l].valour > 0)
 						.forEach(gen_action_lord)
 				}
 			}
@@ -3834,7 +3834,7 @@ function goto_intercept_march() {
 	if (count_group_transport(game.intercept_group) >= count_group_assets(PROV, game.intercept_group)) {
 		game.intercept_group
 			.forEach(l => {
-				set_lord_locale(get_lord_locale(game.command))
+				set_lord_locale(l, get_lord_locale(game.command))
 				set_lord_moved(l, 1)
 			})
 		end_intercept_march()
@@ -3847,6 +3847,15 @@ function end_intercept_march() {
 	// successfully intercepted by here.  Make sure to clear out actions
 	spend_all_actions()
 	goto_intercept_exiles()
+}
+
+function do_intercept_march() {
+	game.intercept_group
+	.forEach(l => {
+		set_lord_locale(l, get_lord_locale(game.command))
+		set_lord_moved(l, 1)
+	})
+	end_intercept_march()
 }
 
 states.intercept_march = {
@@ -3875,8 +3884,8 @@ states.intercept_march = {
 
 	},
 	prov: drop_prov,
-	intercept: end_intercept_march,
-	locale: end_intercept_march,
+	intercept: do_intercept_march,
+	locale: do_intercept_march,
 }
 
 function is_enemy_lord(lord) {
