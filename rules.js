@@ -6132,9 +6132,10 @@ function goto_feed() {
 	}
 
 	if (has_friendly_lord_who_must_feed()) {
-		game.state = "feed"
+		push_state("feed")
 	} else {
-		end_feed()
+		if (game.state !== "disembark")
+			goto_remove_markers()
 	}
 }
 
@@ -6173,11 +6174,11 @@ states.feed = {
 
 		// Unfed
 		if (done) {
-			view.prompt = "Feed: You must shift the Service of any Unfed Lords."
+			view.prompt = `Feed: You must pillage to feed your troops.`
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 				if (is_lord_unfed(lord)) {
-				// TODO PILLAGE	gen_action_service_bad(lord)
-				done = true
+				view.actions.pillage = 1
+				done = false
 				}
 			}
 		}
@@ -6198,13 +6199,10 @@ states.feed = {
 		game.who = lord
 		game.state = "feed_lord_shared"
 	},
-	// TODO : PILLAGE
-/*	service_bad(lord) {
+	pillage() {
 		push_undo()
-		add_lord_service(lord, -1)
-		log(`Unfed L${lord} to ${get_lord_service(lord)}.`)
-		set_lord_unfed(lord, 0)
-	},*/
+		goto_pillage_food()
+	},
 	end_feed() {
 		push_undo()
 		end_feed()
@@ -6240,8 +6238,9 @@ states.feed_lord_shared = {
 }
 
 function end_feed() {
-	
-	goto_remove_markers()
+	pop_state()
+	if (game.state !== "disembark")
+		goto_remove_markers()
 }
 
 // === LEVY & CAMPAIGN: PAY ===
@@ -6309,15 +6308,13 @@ states.pay = {
 			}
 		}
 
-		// TODO : PILLAGE 
-		// Unpaid
 		if (done) {
 			view.prompt = "Pay: You must Pillage and/or Disband."
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-				/* if (is_lord_unpaid(lord)) {
-					gen_action_pillage(lord)
+				if (is_lord_unfed(lord)) {
+					view.actions.pillage = 1
 					done = false
-				} */
+				}
 			}
 		}
 
@@ -6337,13 +6334,10 @@ states.pay = {
 		game.who = lord
 		game.state = "pay_lord_shared"
 	},
-	// TODO : PILLAGE
-/*	service_bad(lord) {
+	pillage() {
 		push_undo()
-		add_lord_service(lord, -1)
-		log(`Unfed L${lord} to ${get_lord_service(lord)}.`)
-		set_lord_unfed(lord, 0)
-	},*/
+		goto_pillage_coin()
+	},
 	end_pay() {
 		push_undo()
 		end_pay()
@@ -6581,6 +6575,106 @@ function muster_lord_in_exile(lord, exile_box) {
  	return [LOC_BURGUNDY, LOC_FRANCE, LOC_IRELAND, LOC_SCOTLAND]
  		.filter(l => has_favour_in_locale(game.active, l))	
  }
+
+// === PILLAGE ===
+
+function goto_pillage_food() {
+	push_state("pillage")	
+	game.what = PROV
+}
+
+function goto_pillage_coin() {
+	push_state("pillage")	
+	game.what = COIN
+}
+
+function end_pillage() {
+	pop_state()
+}
+
+function can_pillage(loc) {
+	return !is_exile(loc) && !has_exhausted_marker(loc)
+}
+
+states.pillage = {
+	inactive: "Pillage",
+	prompt() {
+		view.prompt = `Pillage: Pillage the locales where your ${game.what === PROV ? "unfed" : "unpaid"} lords are.`
+
+		let done = true
+		for (let x = first_friendly_lord; x <= last_friendly_lord; x++) {
+			if (is_lord_on_map(x) && is_lord_unfed(x) && can_pillage(get_lord_locale(x))) {
+				gen_action_locale(get_lord_locale(x))
+				done = false
+			}
+		}
+
+		if (done) {
+			view.prompt = `Pillage: Unable to Pillage, you must disband your ${game.what === PROV ? "unfed" : "unpaid"} lords.`
+			for (let x = first_friendly_lord; x <= last_friendly_lord; x++) {
+				if (is_lord_on_map(x) && is_lord_unfed(x)) {
+					gen_action_lord(x)
+					done = false
+				}
+			}	
+		}
+
+		if (done) {
+			view.prompt = `Pillage: Done.`
+			view.actions.done = 1
+		}
+	
+	},
+	locale(loc) {
+		// pillage the Locale
+		game.where = loc
+		goto_pillage_locale()
+	},
+	lord(lord) {
+		disband_influence_penalty(lord)
+		disband_lord(lord)
+	},
+	done() {
+		end_pillage()
+	}
+}
+
+function goto_pillage_locale() {
+	push_state("pillage_locale")
+}
+
+function end_pillage_locale() {
+	pop_state()
+	end_pillage()
+}
+
+states.pillage_locale = {
+	inactive: "Pillage",
+	prompt() {
+		view.prompt = `Pillage: Choose Lord to Pillage ${data.locales[game.where].name}.`
+
+		for (let x = first_friendly_lord; x <= last_friendly_lord; x++) {
+			if (get_lord_locale(x) === game.where && is_lord_unfed(x)) {
+				gen_action_lord(x)
+			}
+		}
+	},
+	lord(lord) {
+		// Pillage
+		// Same values as Taxing.
+		let num = get_tax_amount(game.where)
+		add_lord_assets(lord, COIN, num)
+		add_lord_assets(lord, PROV, num)
+		reduce_influence(2*num)
+
+		add_exhausted_marker(game.where)
+		data.locales[game.where].adjacent
+			.forEach(shift_favor_away)
+
+		end_pillage_locale()
+	}
+}
+
 
 // === LEVY & CAMPAIGN: DISBAND ===
 
@@ -7208,10 +7302,10 @@ function do_disembark() {
 }
 
 function get_safe_ports(sea) {
-	let ports
-	if (data.sea_1.contains(sea)) ports = data.port_1
-	if (data.sea_2.contains(sea)) ports = data.port_2
-	if (data.sea_3.contains(sea)) ports = data.port_3
+	let ports = []
+	if (data.sea_1.includes(sea)) ports = data.port_1
+	if (data.sea_2.includes(sea)) ports = data.port_2
+	if (data.sea_3.includes(sea)) ports = data.port_3
 
 	return ports
 		.filter(p => !has_enemy_lord(p))
@@ -7262,11 +7356,22 @@ states.disembark = {
 function successful_disembark(lord, loc) {
 	set_lord_locale(lord, loc)
 	set_lord_moved(lord, 1)
-
+	game.who = NOBODY
 	goto_feed()
 }
 
 function shipwreck(lord) {
+	disband_influence_penalty(lord)
+	disband_lord(lord, true)
+
+}
+
+function no_safe_disembark(lord) {
+	disband_lord(lord)
+}
+
+
+function disband_influence_penalty(lord) {
 	let influence = data.lords[lord].influence
 
 	for (let v = first_vassal; v <= last_vassal; v++) {
@@ -7275,20 +7380,12 @@ function shipwreck(lord) {
 		}
 	}
 
-	disband_lord(lord, true)
-
 	if (game.active === LANCASTER)
 		game.ip -= influence
 	else
 		game.ip += influence
+
 }
-
-function no_safe_disembark(lord) {
-	disband_lord(lord)
-}
-
-
-
 
 
 function goto_advance_campaign() {

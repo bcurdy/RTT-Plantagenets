@@ -1589,6 +1589,7 @@ function on_update() {
 	// Pay or Disband
 	action_button("pay", "Pay")
 	action_button("disband", "Disband")
+	action_button("pillage", "Pillage")
 
 
 	// Events
