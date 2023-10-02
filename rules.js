@@ -1262,7 +1262,7 @@ function is_lord_at_seat(lord) {
 	return is_lord_seat(lord, get_lord_locale(lord))
 }
 
-function has_local_to_muster(lord) {
+function has_locale_to_muster(lord) {
 	if (!has_enemy_lord(data.lords[lord].seats[0]))
 		return true
 
@@ -2456,7 +2456,7 @@ states.levy_arts_of_war_first = {
 		let c = game.what.shift()
 		log(`${game.active} deployed Capability.`)
 		add_lord_capability(lord, c)
-		capability_muster_effects(game.who, c)
+		capability_muster_effects(lord, c)
 		resume_levy_arts_of_war_first()
 	},
 	deploy() {
@@ -2637,7 +2637,7 @@ states.levy_muster_lord = {
 		if (game.count > 0) {
 			// Roll to muster Ready Lord at Seat
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-				if (is_lord_ready(lord) && has_local_to_muster(lord))
+				if (is_lord_ready(lord) && has_locale_to_muster(lord))
 					gen_action_lord(lord)
 			}
 
@@ -3746,7 +3746,6 @@ function find_way(loc1, loc2) {
 }
 
 function goto_intercept() {
-	clear_undo()
 	let here = get_lord_locale(game.command)
 	for (let loc of data.locales[here].adjacent) {
 		let way = find_way(here, loc)
@@ -3925,7 +3924,10 @@ states.intercept_exiles = {
 						.filter(is_friendly_lord)
 						.filter(l => !game.group.includes(l)))
 	},
-	lord:exile_lord,
+	lord(lord) {
+		push_undo()
+		exile_lord(lord)
+	},
 	done() {
 		end_intercept_exiles()
 	}
@@ -3939,17 +3941,20 @@ function prompt_exiles(lords) {
 }
 
 function goto_exiles() {
+	clear_undo()
 	let here = get_lord_locale(game.command)
 
 	if (has_enemy_lord(here)) {
 		game.state = "exiles"
 		set_active_enemy()
+		push_undo()		
 	} else {
 		march_with_group_3()
 	}
 }
 
 function end_exiles() {
+	clear_undo()
 	let lords = get_lords_in_locale(get_lord_locale(game.command))
 		.filter(is_friendly_lord)
 
@@ -6117,9 +6122,7 @@ function has_friendly_lord_who_must_feed() {
 	return false
 }
 
-function goto_feed() {
-	log_br()
-
+function set_lord_feed_requirements() {
 	// Count how much food each lord needs
 	let n = 0
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
@@ -6130,7 +6133,12 @@ function goto_feed() {
 		else
 			set_lord_unfed(lord, 0)
 	}
+}
 
+function goto_feed() {
+	log_br()
+
+	set_lord_feed_requirements()
 	if (has_friendly_lord_who_must_feed()) {
 		push_state("feed")
 	} else {
@@ -6201,6 +6209,7 @@ states.feed = {
 	},
 	pillage() {
 		push_undo()
+		set_lord_feed_requirements()
 		goto_pillage_food()
 	},
 	end_feed() {
@@ -6245,18 +6254,12 @@ function end_feed() {
 
 // === LEVY & CAMPAIGN: PAY ===
 
-function can_pay_lord(lord) {
-	let loc = get_lord_locale(lord)
-	if (get_shared_assets(loc, COIN) > 0)
-		return true
-	return false
-}
-
-function has_friendly_lord_who_may_be_paid() {
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		if (is_lord_on_map(lord) && can_pay_lord(lord))
-			return true
-	return false
+function reset_unpaid_lords() {
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
+		if (is_lord_unfed(lord)) {
+			set_lord_unfed(lord, Math.ceil(count_lord_all_forces(lord)/6))
+		}
+	}
 }
 
 function goto_pay() {
@@ -6274,17 +6277,12 @@ function goto_pay() {
 	game.state = "pay"
 }
  
-function resume_pay() {
-	if (!can_pay_lord(game.who))
-		game.who = NOBODY
-}
-
 states.pay = {
 	inactive: "Pay",
 	prompt() {
 		view.prompt = "Pay: You must Pay your Lord's Troops"
 		let done = true
-	
+
 		// Pay from own mat
 		if (done) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
@@ -6336,6 +6334,7 @@ states.pay = {
 	},
 	pillage() {
 		push_undo()
+		reset_unpaid_lords()
 		goto_pillage_coin()
 	},
 	end_pay() {
