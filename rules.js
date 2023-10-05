@@ -6845,7 +6845,7 @@ function do_waste() {
 
 function do_lord_waste(lord) {
 	[PROV, CART, SHIP].forEach(a => remove_half(lord, a))
-	set_lord_assets(lord, COIN, data.lords[lord].coin)
+	set_lord_assets(lord, COIN, data.lords[lord].assets.coin)
 	muster_lord_forces(lord)
 }
 
