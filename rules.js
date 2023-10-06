@@ -752,12 +752,14 @@ function get_lord_routed_forces(lord, n) {
 }
 
 function lord_has_unrouted_units(lord) {
-	return (
-		game.pieces.forces[lord] !== 0 ||
-		get_vassals_with_lord(lord).some(
-			v => game.battle.routed_vassals[lord] === 0 || !game.battle.routed_vassals[lord].includes(v)
-		)
-	)
+	if (game.pieces.forces[lord] !== 0)
+		return true
+	let result = false
+	for_each_vassal_with_lord(lord, v => {
+		if (game.battle.routed_vassals[lord] === 0 || !game.battle.routed_vassals[lord].includes(v))
+			result = true
+	})
+	return result
 }
 
 function lord_has_routed_units(lord) {
@@ -1131,15 +1133,18 @@ function get_vassal_locale(vassal) {
 	return pack8_get(game.pieces.vassals[vassal], 1)
 }
 
-function get_vassals_with_lord(lord) {
-	let results = []
-	for (let x = first_vassal; x < last_vassal; x++) {
-		if (pack8_get(game.pieces.vassals[x], 0) === lord) {
-			results.push(x)
-		}
-	}
+function for_each_vassal_with_lord(lord, f) {
+	for (let x = first_vassal; x < last_vassal; x++)
+		if (pack8_get(game.pieces.vassals[x], 0) === lord)
+			f(x)
+}
 
-	return results
+function count_vassals_with_lord(lord) {
+	let n = 0
+	for_each_vassal_with_lord(lord, v => {
+		++n
+	})
+	return n
 }
 
 function get_lord_with_vassal(vassal) {
@@ -4273,20 +4278,36 @@ function goto_forage() {
 
 // === ACTION: TAX ===
 
+function is_possible_taxable_locale(loc) {
+	return is_friendly_locale(loc) && !has_exhausted_marker(loc)
+}
+
 function get_possible_taxable_locales(lord) {
 	let locales = []
-	// Own seat
-	locales.push(data.lords[lord].seats[0])
-	// vassal seats
-	locales = locales.concat(get_vassals_with_lord(lord).map(v => data.vassals[v].seat[0]))
-	// London
-	locales.push(LOC_LONDON)
-	// Calais
-	locales.push(LOC_CALAIS)
-	// Harlech
-	locales.push(LOC_HARLECH)
 
-	return locales.filter(is_friendly_locale).filter(l => !has_exhausted_marker(l))
+	// Own seat
+	if (is_possible_taxable_locale(data.lords[lord].seats[0]))
+		locales.push(data.lords[lord].seats[0])
+
+	// vassal seats
+	for_each_vassal_with_lord(lord, v => {
+		if (is_possible_taxable_locale(data.vassals[v].seat[0]))
+			locales.push(data.vassals[v].seat[0])
+	})
+
+	// London
+	if (is_possible_taxable_locale(LOC_LONDON))
+		locales.push(LOC_LONDON)
+
+	// Calais
+	if (is_possible_taxable_locale(LOC_CALAIS))
+		locales.push(LOC_CALAIS)
+
+	// Harlech
+	if (is_possible_taxable_locale(LOC_HARLECH))
+		locales.push(LOC_HARLECH)
+
+	return locales
 }
 
 function tax_accept(loc, possibles) {
@@ -5191,7 +5212,7 @@ function count_archery_hits(lord) {
 function count_melee_hits(lord) {
 	let hits = 0
 	hits += /*retinue*/ 3 << 1
-	//hits += get_vassals_with_lord(lord).length << 2
+	//hits += count_vassals_with_lord(lord) << 2
 	if (lord_has_capability(lord, AOW_LANCASTER_CHEVALIERS))
 		hits += get_lord_forces(lord, MEN_AT_ARMS) << 2
 	else
@@ -5542,9 +5563,10 @@ function prompt_hit_forces() {
 		if (get_lord_forces(lord, MILITIA) > 0)
 			gen_action_militia(lord)
 
-		get_vassals_with_lord(lord)
-			.filter(v => !game.battle.routed_vassals[lord].includes(v))
-			.forEach(gen_action_vassal)
+		for_each_vassal_with_lord(lord, v => {
+			if (!game.battle.routed_vassals[lord].includes(v))
+				gen_action_vassal(v)
+		})
 	})
 }
 
@@ -5833,7 +5855,7 @@ function goto_battle_influence() {
 		set_active_loser()
 
 		let influence = get_defeated_lords()
-			.map(l => data.lords[l].influence + get_vassals_with_lord(l).length)
+			.map(l => data.lords[l].influence + count_vassals_with_lord(l))
 			.reduce((p, c) => p + c, 0)
 
 		reduce_influence(influence)
@@ -6688,9 +6710,9 @@ function disband_lord(lord, permanently = false) {
 
 	set_lord_moved(lord, 0)
 
-	for (let v of get_vassals_with_lord(lord)) {
+	for_each_vassal_with_lord(lord, v => {
 		disband_vassal(v)
-	}
+	})
 }
 
 // === CAMPAIGN: REMOVE MARKERS ===
