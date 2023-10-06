@@ -770,7 +770,7 @@ function lord_has_routed_units(lord) {
 }
 
 function rout_vassal(lord, vassal) {
-	if (game.battle.routed_vassals[lord] == 0)
+	if (game.battle.routed_vassals[lord] === 0)
 		game.battle.routed_vassals[lord] = []
 
 	set_add(game.battle.routed_vassals[lord], vassal)
@@ -6784,7 +6784,7 @@ function check_scenario_end_victory() {
 	if (current_turn() === scenario_last_turn[game.scenario]) {
 		// Scenario End Victory
 
-		if (game.ip == 0)
+		if (game.ip === 0)
 			goto_game_over("Draw", "The game ended in a draw.")
 		else if (game.ip > 0)
 			goto_game_over(LANCASTER, `${LANCASTER} won with ${game.ip} Influence.`)
@@ -7203,7 +7203,7 @@ function tides_calc() {
 
 	if (
 		lord_has_capability(LORD_HENRY_VI, AOW_LANCASTER_MARGARET) &&
-		get_lord_locale(LORD_HENRY_VI) != LOC_LONDON &&
+		get_lord_locale(LORD_HENRY_VI) !== LOC_LONDON &&
 		is_lord_on_map(LORD_HENRY_VI)
 	) {
 		log(`Capability: Margaret 1 Influence for Lancaster`)
