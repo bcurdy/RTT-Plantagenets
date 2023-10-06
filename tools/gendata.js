@@ -323,7 +323,7 @@ function defloc(region, type, name) {
 	w = Math.ceil(w)
 	h = Math.ceil(h)
 	locmap[name] = locales.length
-	locales.push({ name, type, ways: [], box: { x, y, w, h } })
+	locales.push({ name, type, region, ways: [], box: { x, y, w, h } })
 }
 
 function defdepleted(name) {
