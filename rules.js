@@ -744,23 +744,25 @@ function lord_has_unrouted_units(lord) {
 		return true
 	let result = false
 	for_each_vassal_with_lord(lord, v => {
-		if (!set_has(game.battle.routed_vassals[lord], v))
+		if (!set_has(game.battle.routed_vassals, v))
 			result = true
 	})
 	return result
 }
 
 function lord_has_routed_units(lord) {
-	return (
-		game.pieces.routed[lord] !== 0 || game.battle.routed_vassals[lord].length > 0
-	)
+	if (game.pieces.routed[lord] !== 0)
+		return true
+	let result = false
+	for_each_vassal_with_lord(lord, v => {
+		if (set_has(game.battle.routed_vassals, v))
+			result = true
+	})
+	return result
 }
 
 function rout_vassal(lord, vassal) {
-	if (game.battle.routed_vassals[lord] === 0)
-		game.battle.routed_vassals[lord] = []
-
-	set_add(game.battle.routed_vassals[lord], vassal)
+	set_add(game.battle.routed_vassals, vassal)
 }
 
 function set_lord_locale(lord, locale) {
@@ -4556,7 +4558,7 @@ function init_battle(here) {
 			-1, -1, -1,
 		],
 		valour: Array(lord_count).fill(0),
-		routed_vassals: Array(lord_count).fill([]),
+		routed_vassals: [],
 		engagements: [],
 		reserves: [],
 		retreated: 0,
@@ -5484,7 +5486,7 @@ function prompt_hit_forces() {
 			gen_action_militia(lord)
 
 		for_each_vassal_with_lord(lord, v => {
-			if (!set_has(game.battle.routed_vassals[lord], v))
+			if (!set_has(game.battle.routed_vassals, v))
 				gen_action_vassal(v)
 		})
 	})
@@ -6020,9 +6022,12 @@ function goto_battle_aftermath() {
 	// Routed Vassals get disbanded
 	for (let lord = first_lord; lord <= last_lord; lord++) {
 		if (is_lord_on_map(lord)) {
-			for (let vassal of game.battle.routed_vassals[lord]) {
-				disband_vassal(vassal)
-			}
+			for_each_vassal_with_lord(lord, v => {
+				if (set_has(game.battle.routed_vassals, v)) {
+					set_remove(game.battle.routed_vassals, v)
+					disband_vassal(vassal)
+				}
+			})
 		}
 	}
 

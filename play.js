@@ -392,15 +392,10 @@ function get_vassal_locale(vassal) {
 	return pack8_get(view.pieces.vassals[vassal], 1)
 }
 
-function get_vassals_with_lord(lord) {
-	let results = []
-	for (let x = first_vassal; x < last_vassal; x++) {
-		if (pack8_get(view.pieces.vassals[x], 0) === lord) {
-			results.push(x)
-		}
-	}
-
-	return results
+function for_each_vassal_with_lord(lord, f) {
+	for (let x = first_vassal; x < last_vassal; x++)
+		if (pack8_get(view.pieces.vassals[x], 0) === lord)
+			f(x)
 }
 
 function is_york_locale(loc) {
@@ -1104,9 +1099,15 @@ function update_forces(parent, forces, lord_ix, routed) {
 	parent.replaceChildren()
 	for (let i = 0; i < force_type_count; ++i) {
 		if (i === VASSAL) {
-			get_vassals_with_lord(lord_ix)
-				.filter(v => (view.battle === 0 && routed === false) || (view.battle !== 0 && view.battle.routed_vassals[lord_ix].includes(v) === routed))
-				.forEach(v => add_vassal(parent, v, lord_ix, routed))
+			for_each_vassal_with_lord(lord_ix, v => {
+				if (view.battle) {
+					if (routed === false)
+						add_vassal(parent, v, lord_ix, routed)
+				} else {
+					if (set_has(view.battle.routed_vassals, v) === routed)
+						add_vassal(parent, v, lord_ix, routed)
+				}
+			})
 		} else {
 			let n = pack4_get(forces, i)
 			for (let k = 0; k < n; ++k) {
