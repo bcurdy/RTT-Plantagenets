@@ -105,7 +105,7 @@ const D3 = 5
 function find_card(name) {
 	let ix = data.cards.findIndex(x => x.name === name)
 	if (ix < 0)
-		throw "CANNOT FIND LORD: " + name
+		throw "CANNOT FIND CARD: " + name
 	return ix
 }
 
@@ -119,7 +119,7 @@ function find_lord(name) {
 function find_locale(name) {
 	let ix = data.locales.findIndex(x => x.name === name)
 	if (ix < 0)
-		throw "CANNOT FIND LORD: " + name
+		throw "CANNOT FIND LOCALE: " + name
 	return ix
 }
 
@@ -228,8 +228,6 @@ const L34 = find_card("L34")
 const L35 = find_card("L35")
 const L36 = find_card("L36")
 const L37 = find_card("L37")
-
-//const GARRISON = 100
 
 const LORD_YORK = find_lord("York")
 const LORD_MARCH = find_lord("March")
@@ -1324,17 +1322,11 @@ function pay_vassal(vassal) {
 		set_vassal_on_calendar(vassal, current_turn() + 1)
 }
 
-function get_ready_vassals() {
+function for_each_ready_vassal(f) {
 	let favor = game.active === YORK ? game.pieces.favoury : game.pieces.favourl
-	let results = []
-
-	for (let x = first_vassal; x < last_vassal; x++) {
-		if (is_vassal_ready(x) && favor.includes(data.vassals[x].seat[0])) {
-			results.push(x)
-		}
-	}
-
-	return results
+	for (let x = first_vassal; x < last_vassal; x++)
+		if (is_vassal_ready(x) && set_has(favor, data.vassals[x].seat))
+			f(x)
 }
 
 function is_vassal_unavailable(vassal) {
@@ -2758,9 +2750,9 @@ states.levy_muster_lord = {
 
 			// Muster Ready Vassal Forces
 			if (is_friendly_locale(get_lord_locale(game.who))) {
-				for (let vassal of get_ready_vassals()) {
+				for_each_ready_vassal(vasal => {
 					gen_action_vassal(vassal)
-				}
+				})
 			}
 
 			// Add Transport
