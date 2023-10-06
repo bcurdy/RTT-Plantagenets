@@ -279,11 +279,11 @@ function on_blur() {
 function get_locale_tip(id) {
 	let loc = data.locales[id]
 	let tip = loc.name
-	if (data.seaports.includes(id))
+	if (set_has(data.seaports, id))
 		tip += " - Seaport"
 	let list = []
 	for (let lord = 0; lord < data.lords.length; ++lord) {
-		if (data.lords[lord].seats.includes(id))
+		if (set_has(data.lords[lord].seats, id))
 			list.push(data.lords[lord].name)
 	}
 	if (list.length > 0)
@@ -372,9 +372,9 @@ function count_favour(type) {
 	for (let x = first_locale; x < last_locale; x++) {
 		if (data.locales[x].type !== type)
 			continue
-		if (view.pieces.favourl.includes(x))
+		if (set_has(view.pieces.favourl, x))
 			n += 1
-		if (view.pieces.favoury.includes(x))
+		if (set_has(view.pieces.favoury, x))
 			n -= 1
 	}
 	return n
@@ -433,7 +433,7 @@ function is_lord_in_battle(lord) {
 		for (let i = 0; i < 6; ++i)
 			if (view.battle.array[i] === lord)
 				return true
-		if (view.battle.reserves.includes(lord))
+		if (set_has(view.battle.reserves, lord))
 			return true
 	}
 	return false
@@ -445,7 +445,7 @@ function is_lord_command(ix) {
 
 function is_lord_selected(ix) {
 	if (view.group)
-		return view.group.includes(ix)
+		return set_has(view.group, ix)
 	if (view.who >= 0)
 		return ix === view.who
 	return false
@@ -1179,7 +1179,7 @@ function update_lord_mat(ix) {
 	let m = get_lord_moved(ix)
 	ui.lord_moved1[ix].classList.toggle("hide", is_levy_phase() || (m !== 1 && m !== 2))
 	ui.lord_moved2[ix].classList.toggle("hide", is_levy_phase() || (m !== 2))
-	ui.lord_fled[ix].classList.toggle("hide", view.battle === 0 || !view.battle.fled.includes(ix))
+	ui.lord_fled[ix].classList.toggle("hide", view.battle === 0 || !set_has(view.battle.fled, ix))
 	update_valour(ix, ui.lord_valour[ix], view.battle)
 }
 
