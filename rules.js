@@ -769,6 +769,9 @@ function lord_has_routed_units(lord) {
 }
 
 function rout_vassal(lord, vassal) {
+	if (game.battle.routed_vassals[lord] === 0)
+		game.battle.routed_vassals[lord] = []
+
 	set_add(game.battle.routed_vassals[lord], vassal)
 }
 
