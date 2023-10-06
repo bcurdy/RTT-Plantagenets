@@ -6798,8 +6798,8 @@ function check_threshold_victory() {
 
 
 function goto_end_campaign() {
+	
 	log_h1("End Campaign")
-
 	set_active(P1)
 	tides_of_war()
 }
@@ -6970,16 +6970,6 @@ states.reset = {
 	inactive: "Reset",
 	prompt() {
 		view.prompt = "Reset: You may discard any held Arts of War cards desired."
-		if (game.active === YORK) {
-			for (let c = first_york_card; c <= last_york_card; ++c)
-				if (can_discard_card(c))
-					gen_action_card(c)
-		}
-		if (game.active === LANCASTER) {
-			for (let c = first_lancaster_card; c <= last_lancaster_card; ++c)
-				if (can_discard_card(c))
-					gen_action_card(c)
-		}
 		view.actions.end_discard = 1
 	},
 	card(c) {
