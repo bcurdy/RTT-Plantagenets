@@ -947,7 +947,7 @@ function count_group_forces(type) {
 	return n
 }
 
-function count_group_provender(type) {
+function count_group_provender() {
 	let n = 0
 	for (let lord of game.group)
 		n += get_lord_provender(lord)
@@ -966,10 +966,7 @@ function count_group_transport(group = game.group) {
 }
 
 function count_group_lords() {
-	let n = 0
-	for (let lord of game.group)
-		n += 1
-	return n
+	return game.group.length
 }
 
 function max_plan_length() {
@@ -1128,7 +1125,7 @@ function for_each_vassal_with_lord(lord, f) {
 
 function count_vassals_with_lord(lord) {
 	let n = 0
-	for_each_vassal_with_lord(lord, v => {
+	for_each_vassal_with_lord(lord, _ => {
 		++n
 	})
 	return n
@@ -1454,8 +1451,7 @@ function refresh_locale(locale) {
 	if (has_depleted_marker(locale)) {
 		remove_depleted_marker(locale)
 	}
-
-	if (is_locale_exhausted(locale)) {
+	if (has_exhausted_marker(locale)) {
 		remove_exhausted_marker(locale)
 		add_depleted_marker(locale)
 	}
@@ -1493,17 +1489,8 @@ function can_add_transport(who, what) {
 	return get_lord_assets(who, what) < 100
 }
 
-function count_lord_transport(lord, type) {
-	let season = current_season()
-	let n = 0
-	n += get_lord_assets(lord, CART)
-	return n
-}
-
 function get_lord_provender(lord) {
-	let n = 0
-	n += get_lord_assets(lord, PROV)
-	return n
+	return get_lord_assets(lord, PROV)
 }
 
 function list_ways(from, to) {
@@ -1539,7 +1526,7 @@ function reduce_lancaster_influence(amt) {
 	game.influence -= amt
 }
 
-function increase_lancaster_influnce(amt) {
+function increase_lancaster_influence(amt) {
 	game.influence += amt
 }
 
@@ -2294,6 +2281,7 @@ states.lordship = {
 	}
 }*/
 
+/*
 function prompt_shift_cylinder(list, boxes) {
 	// HACK: look at parent state to see if this can be used as a +2 Lordship event
 	let lordship = NOBODY
@@ -2328,7 +2316,6 @@ function prompt_shift_cylinder(list, boxes) {
 
 	prompt_shift_lord_on_calendar(boxes)
 }
-/*
 function action_shift_cylinder_calendar(turn) {
 	log(`Shifted L${game.who} to ${turn}.`)
 	set_lord_calendar(game.who, turn)
@@ -2431,8 +2418,7 @@ states.levy_arts_of_war_first = {
 				view.prompt = `Arts of War: Assign ${data.cards[c].capability} to a Lord.`
 			}
 		} else {
-			view.prompt = `Arts of War: Deploy ${data.cards[c].capability}.`
-			view.actions.deploy = 1
+			throw "NO GLOBAL CAPABILITIES"
 		}
 	},
 	lord(lord) {
@@ -2441,13 +2427,6 @@ states.levy_arts_of_war_first = {
 		log(`${game.active} deployed Capability.`)
 		add_lord_capability(lord, c)
 		capability_muster_effects(lord, c)
-		resume_levy_arts_of_war_first()
-	},
-	deploy() {
-		push_undo()
-		let c = game.what.shift()
-		log(`${game.active} deployed C${c}.`)
-		deploy_global_capability(c)
 		resume_levy_arts_of_war_first()
 	},
 	discard() {
@@ -2684,7 +2663,7 @@ states.levy_muster_lord = {
 	},
 	levy_troops() {
 		push_undo()
-		let info = data.lords[game.who]
+
 		let locale = data.locales[get_lord_locale(game.who)].type
 		if (
 			!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS) &&
@@ -2897,7 +2876,7 @@ function can_muster_capability() {
 	}
 	return false
 }
-states.muster_troops
+
 states.muster_capability = {
 	inactive: "Muster",
 	prompt() {
