@@ -372,14 +372,12 @@ function count_favour(type) {
 	for (let x = first_locale; x < last_locale; x++) {
 		if (data.locales[x].type !== type)
 			continue
-
 		if (view.pieces.favourl.includes(x))
 			n += 1
 		if (view.pieces.favoury.includes(x))
 			n -= 1
 	}
-
-	return n;
+	return n
 }
 
 function is_vassal_ready(vassal) {

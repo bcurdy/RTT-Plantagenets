@@ -3596,23 +3596,23 @@ function format_group_move() {
 	return ""
 }
 function prompt_march() {
-	let from = get_lord_locale(game.command);
+	let from = get_lord_locale(game.command)
 	if (is_first_action())
 	for (let to of data.locales[from].adjacent_by_path) {
-		gen_action_locale(to);
+		gen_action_locale(to)
 	  }
 
 	if (game.actions > 0) {
 	  for (let to of data.locales[from].adjacent_by_road) {
-		gen_action_locale(to);
+		gen_action_locale(to)
 	  }
 	  for (let to of data.locales[from].adjacent_by_highway) {
-		gen_action_locale(to);
+		gen_action_locale(to)
 	  }
 	}
 	else if (game.actions === 0 && is_first_march_highway()) {
 	 	 for (let to of data.locales[from].adjacent_by_highway) {
-			gen_action_locale(to);
+			gen_action_locale(to)
 		}
 	}
 
@@ -4122,24 +4122,24 @@ function get_supply_from_source(source){
 }
 
 function get_supply_from_source(source) {
-	let prov = 0;
+	let prov = 0
 
 	if (has_exhausted_marker(source)) {
-	  return prov;
+	  return prov
 	}
 
 	if ((game.command === LORD_DEVON && (game.where === LOC_EXETER || game.where === LOC_LAUNCESTON || game.where === LOC_PLYMOUTH || game.where === LOC_WELLS || game.where === LOC_DOCHESTER))) {
-	  prov += 1;
+	  prov += 1
 	}
 
 	if (source === LOC_LONDON || source === LOC_CALAIS) {
-	  prov += 3;
+	  prov += 3
 	} else if (is_city(source)) {
-	  prov += 2;
+	  prov += 2
 	}
 
-	prov += 1;
-	return prov;
+	prov += 1
+	return prov
   }
 
 
@@ -4503,31 +4503,31 @@ states.sail = {
 		switch(true){
 			case data.exile_1.includes(here):
 				from = data.way_exile_1
-				break;
+				break
 			case data.exile_2.includes(here):
 				from = data.way_exile_2
-				break;
+				break
 			case data.exile_3.includes(here):
 				from = data.way_exile_3
-				break;
+				break
 			case data.sea_1.includes(here):
 				from = data.way_sea_1
-				break;
+				break
 			case data.sea_2.includes(here):
 				from = data.way_sea_2
-				break;
+				break
 			case data.sea_3.includes(here):
 				from = data.way_sea_3
-				break;
+				break
 			case data.port_1.includes(here):
 				from = data.way_port_1
-				break;
+				break
 			case data.port_2.includes(here):
 				from = data.way_port_2
-				break;
+				break
 			case data.port_3.includes(here):
 				from = data.way_port_3
-				break;
+				break
 		}
 			for (let to of from) {
 				if (to === here)
@@ -7256,7 +7256,7 @@ function get_lords_at_sea() {
 			results.push(x)
 		}
 	}
-	return results;
+	return results
 }
 
 function is_lord_at_sea(lord) {
