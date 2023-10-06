@@ -191,7 +191,7 @@ const routed_force_action_name = [ "routed_retinue", "routed_vassal", "routed_me
 const COIN = 1
 const asset_type_count = 4
 const asset_action_name = [ "prov", "coin", "cart", "ship" ]
-const asset_type_x34 = [ 1, 1, 1, 0]
+const asset_type_x34 = [ 1, 1, 1, 0 ]
 
 const VASSAL_UNAVAILABLE = 201
 const VASSAL_READY = 200
@@ -585,7 +585,7 @@ const ui = {
 	calendar: [],
 	track: [],
 	seat: [],
-	vassalbox:[],
+	vassalbox: [],
 
 	plan_panel: document.getElementById("plan_panel"),
 	plan: document.getElementById("plan"),
@@ -744,9 +744,9 @@ function build_map() {
 
 		// Locale Markers
 		e = ui.locale_markers_rose[ix] = document.createElement("div")
-		e.className = "locale marker rose favour " + locale.name //  York/Lancaster to add favour
-		e.style.top = y+h-small + "px"
-		e.style.left = x+ (w-small)/2 + "px"
+		e.className = "locale marker rose favour " + locale.name // York/Lancaster to add favour
+		e.style.top = y + h - small + "px"
+		e.style.left = x + (w - small) / 2 + "px"
 		e.style.width = small + "px"
 		e.style.height = small + "px"
 		e.style.zIndex = "-20"
@@ -757,8 +757,8 @@ function build_map() {
 		// Depleted markers
 		e = ui.locale_markers[ix] = document.createElement("div")
 		e.className = "locale marker " + locale.name // depleted or exhausted to add markers
-		e.style.top = y+h-small-offsetdeplete + "px"
-		e.style.left = offsetdeplete+x+ (w-small)/2 + "px"
+		e.style.top = y + h - small - offsetdeplete + "px"
+		e.style.left = offsetdeplete + x + (w - small) / 2 + "px"
 		e.style.width = small + "px"
 		e.style.height = small + "px"
 		e.style.zIndex = "-15"
@@ -767,7 +767,7 @@ function build_map() {
 		document.getElementById("pieces").appendChild(e)
 	})
 
-// Lord seats
+	// Lord seats
 	data.seat.forEach((seat, ix) => {
 		let e = ui.seat[ix] = document.createElement("div")
 		let { x, y, w, h } = seat.box
@@ -779,7 +779,7 @@ function build_map() {
 		e.style.top = y + "px"
 		e.style.left = x + "px"
 		e.style.width = 46 + "px"
-		e.style.height = 46  + "px"
+		e.style.height = 46 + "px"
 		e.style.backgroundSize = small + "px"
 		e.style.transform = "rotate(315deg)"
 		e.style.zIndex = "-50"
@@ -811,7 +811,7 @@ function build_map() {
 		e.style.top = y + "px"
 		e.style.left = x + "px"
 		e.style.width = 46 + "px"
-		e.style.height = 46  + "px"
+		e.style.height = 46 + "px"
 		e.style.backgroundSize = small + "px"
 		register_action(e, "vassal", ix)
 		register_tooltip(e, data.vassalbox[ix].name)
@@ -823,7 +823,7 @@ function build_map() {
 		e.className = "hide marker square vassal vassal_" + clean_name(vassal.name)
 		e.style.position = "absolute"
 		e.style.width = 46 + "px"
-		e.style.height = 46  + "px"
+		e.style.height = 46 + "px"
 		e.style.backgroundSize = 46 + "px"
 
 		register_action(e, "vassal", ix)
@@ -868,7 +868,7 @@ function build_map() {
 	}
 
 	for (let i = 0; i <= 45; ++i)
-	register_action(ui.track[i], "track", i)
+		register_action(ui.track[i], "track", i)
 
 	build_plan()
 
@@ -955,7 +955,9 @@ function layout_locale_cylinders(loc) {
 
 	let wrap = 2
 	switch (data.locales[loc].type) {
-	case "london": wrap = 3; break
+		case "london":
+			wrap = 3
+			break
 	}
 
 	let m = Math.floor((n-1) / wrap)
@@ -1045,14 +1047,30 @@ function add_vassal(parent, vassal, lord, routed) {
 	let elt
 	if (routed) {
 		if (is_action(routed_force_action_name[VASSAL], vassal))
-			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), routed_force_action_name[VASSAL], vassal)
+			elt = get_cached_element(
+				"action unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
+				routed_force_action_name[VASSAL],
+				vassal
+			)
 		else
-			elt = get_cached_element("unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), routed_force_action_name[VASSAL], vassal)
+			elt = get_cached_element(
+				"unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
+				routed_force_action_name[VASSAL],
+				vassal
+			)
 	} else {
 		if (is_action(force_action_name[VASSAL], vassal))
-			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), force_action_name[VASSAL], vassal)
+			elt = get_cached_element(
+				"action unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
+				force_action_name[VASSAL],
+				vassal
+			)
 		else
-			elt = get_cached_element("unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), force_action_name[VASSAL], vassal)
+			elt = get_cached_element(
+				"unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
+				force_action_name[VASSAL],
+				vassal
+			)
 	}
 	parent.appendChild(elt)
 }
@@ -1076,9 +1094,9 @@ function add_force(parent, type, lord, routed) {
 function add_asset(parent, type, n, lord) {
 	let elt
 	if (is_action(asset_action_name[type], lord))
-		elt = get_cached_element("action asset " + asset_action_name[type] + " x"+n, asset_action_name[type], lord)
+		elt = get_cached_element("action asset " + asset_action_name[type] + " x" + n, asset_action_name[type], lord)
 	else
-		elt = get_cached_element("asset " + asset_action_name[type] + " x"+n)
+		elt = get_cached_element("asset " + asset_action_name[type] + " x" + n)
 	parent.appendChild(elt)
 }
 
@@ -1194,7 +1212,6 @@ function update_lord(ix) {
 	ui.lord_mat[ix].classList.toggle("ambushed", is_lord_ambushed(ix))
 
 	ui.seat[ix].classList.toggle("hide", !is_lord_in_game(ix))
-
 }
 
 function update_locale(loc) {
@@ -1217,56 +1234,53 @@ function update_locale(loc) {
 			ui.locale_markers[loc].appendChild(get_cached_element("marker circle battle"))
 
 	//DEPLETED/EXHAUSTED
-	if (!set_has(view.pieces.depleted,loc) && !set_has(view.pieces.exhausted,loc)) {
+	if (!set_has(view.pieces.depleted, loc) && !set_has(view.pieces.exhausted, loc)) {
 		let cn
-			cn = "depleted"
+		cn = "depleted"
 		ui.locale_markers[loc].classList.remove(cn)
-			cn = "exhausted"
+		cn = "exhausted"
 		ui.locale_markers[loc].classList.remove(cn)
 	}
 
 	if (set_has(view.pieces.depleted, loc)) {
 		let cn
-			cn = "depleted"
+		cn = "depleted"
 		ui.locale_markers[loc].classList.add(cn)
-			cn = "exhausted"
+		cn = "exhausted"
 		ui.locale_markers[loc].classList.remove(cn)
-
 	}
 	if (set_has(view.pieces.exhausted, loc)) {
 		let cn
-			cn = "exhausted"
+		cn = "exhausted"
 		ui.locale_markers[loc].classList.add(cn)
-			cn = "depleted"
+		cn = "depleted"
 		ui.locale_markers[loc].classList.remove(cn)
-
 	}
 
 	// FAVOUR MARKERS
-	if (!set_has(view.pieces.favourl,loc) && !set_has(view.pieces.favoury,loc)) {
+	if (!set_has(view.pieces.favourl, loc) && !set_has(view.pieces.favoury, loc)) {
 		let cn
-			cn = "lancaster"
+		cn = "lancaster"
 		ui.locale_markers_rose[loc].classList.remove(cn)
-			cn = "york"
+		cn = "york"
 		ui.locale_markers_rose[loc].classList.remove(cn)
 	}
 
-	if (set_has(view.pieces.favourl,loc)) {
+	if (set_has(view.pieces.favourl, loc)) {
 		let cn
-			cn = "lancaster"
+		cn = "lancaster"
 		ui.locale_markers_rose[loc].classList.add(cn)
-			cn = "york"
+		cn = "york"
 		ui.locale_markers_rose[loc].classList.remove(cn)
 	}
 
-	if (set_has(view.pieces.favoury,loc)) {
+	if (set_has(view.pieces.favoury, loc)) {
 		let cn
-			cn = "york"
+		cn = "york"
 		ui.locale_markers_rose[loc].classList.add(cn)
-			cn = "lancaster"
+		cn = "lancaster"
 		ui.locale_markers_rose[loc].classList.remove(cn)
 	}
-
 }
 
 function update_plan() {
@@ -1647,11 +1661,11 @@ function on_blur_locale_tip(loc) {
 }
 
 function on_click_locale_tip(loc) {
-	ui.locale[loc].scrollIntoView({ block:"center", inline:"center", behavior:"smooth" })
+	ui.locale[loc].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" })
 }
 
 function on_click_lord_tip(lord) {
-	ui.lord_mat[lord].scrollIntoView({ block:"center", inline:"center", behavior:"smooth" })
+	ui.lord_mat[lord].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" })
 }
 
 function sub_locale_name(match, p1) {
@@ -1675,14 +1689,14 @@ function on_log(text) {
 	let p = document.createElement("div")
 
 	if (text.match(/^>>/)) {
-                text = text.substring(2)
-                p.className = "ii"
-        }
+		text = text.substring(2)
+		p.className = "ii"
+	}
 
 	if (text.match(/^>/)) {
-                text = text.substring(1)
-                p.className = "i"
-        }
+		text = text.substring(1)
+		p.className = "i"
+	}
 
 	text = text.replace(/&/g, "&amp;")
 	text = text.replace(/</g, "&lt;")
@@ -1697,36 +1711,28 @@ function on_log(text) {
 	if (text.match(/^\.h1/)) {
 		text = text.substring(4)
 		p.className = "h1"
-	}
-	else if (text.match(/^\.h2y/)) {
+	} else if (text.match(/^\.h2y/)) {
 		text = text.substring(5)
 		p.className = "h2 york"
-	}
-	else if (text.match(/^\.h2l/)) {
+	} else if (text.match(/^\.h2l/)) {
 		text = text.substring(5)
 		p.className = "h2 lancaster"
-	}
-	else if (text.match(/^\.h2/)) {
+	} else if (text.match(/^\.h2/)) {
 		text = text.substring(4)
 		p.className = "h2"
-	}
-	else if (text.match(/^\.h3y/)) {
+	} else if (text.match(/^\.h3y/)) {
 		text = text.substring(5)
 		p.className = "h3 york"
-	}
-	else if (text.match(/^\.h3l/)) {
+	} else if (text.match(/^\.h3l/)) {
 		text = text.substring(5)
 		p.className = "h3 lancaster"
-	}
-	else if (text.match(/^\.h3/)) {
+	} else if (text.match(/^\.h3/)) {
 		text = text.substring(4)
 		p.className = "h3"
-	}
-	else if (text.match(/^\.h4/)) {
+	} else if (text.match(/^\.h4/)) {
 		text = text.substring(4)
 		p.className = "h4"
-	}
-	else if (text.match(/^\.h5/)) {
+	} else if (text.match(/^\.h5/)) {
 		text = text.substring(4)
 		p.className = "h5"
 	}
