@@ -4410,7 +4410,7 @@ states.tax = {
 					game.where === LOC_LAUNCESTON ||
 					game.where === LOC_PLYMOUTH ||
 					game.where === LOC_WELLS ||
-					game.where === LOC_ROCHESTER)
+					game.where === LOC_DORCHESTER)
 			)
 				add_lord_assets(game.command, COIN, 1)
 		} else {
