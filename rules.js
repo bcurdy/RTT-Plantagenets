@@ -4090,12 +4090,13 @@ function get_supply_from_source(source) {
 		return prov
 
 	if (
-		game.command === LORD_DEVON &&
+		game.command === LORD_DEVON && 
+		lord_has_capability(LORD_DEVON, AOW_YORK_STAFFORD_BRANCH) &&
 		(game.where === LOC_EXETER ||
 			game.where === LOC_LAUNCESTON ||
 			game.where === LOC_PLYMOUTH ||
 			game.where === LOC_WELLS ||
-			game.where === LOC_ROCHESTER)
+			game.where === LOC_DORCHESTER)
 	)
 		prov += 1
 
