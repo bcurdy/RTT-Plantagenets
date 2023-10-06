@@ -4085,7 +4085,7 @@ function get_supply_from_source(source) {
 			game.where === LOC_LAUNCESTON ||
 			game.where === LOC_PLYMOUTH ||
 			game.where === LOC_WELLS ||
-			game.where === LOC_DOCHESTER)
+			game.where === LOC_ROCHESTER)
 	)
 		prov += 1
 
@@ -4113,7 +4113,7 @@ function get_supply_from_source(source) {
 			game.where === LOC_LAUNCESTON ||
 			game.where === LOC_PLYMOUTH ||
 			game.where === LOC_WELLS ||
-			game.where === LOC_DOCHESTER)
+			game.where === LOC_ROCHESTER)
 	) {
 		prov += 1
 	}
@@ -4424,7 +4424,7 @@ states.tax = {
 					game.where === LOC_LAUNCESTON ||
 					game.where === LOC_PLYMOUTH ||
 					game.where === LOC_WELLS ||
-					game.where === LOC_DOCHESTER)
+					game.where === LOC_ROCHESTER)
 			)
 				add_lord_assets(game.command, COIN, 1)
 		} else {
