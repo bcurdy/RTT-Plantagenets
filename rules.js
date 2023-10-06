@@ -428,78 +428,229 @@ const AOW_YORK_VANGUARD = Y36 // TODO
 const AOW_YORK_PERCYS_NORTH2 = Y37 // TODO
 
 const EVENT_LANCASTER_LEEWARD_BATTLE_LINE = L1 // TODO
+// Hold event. Play at start of battle AFTER ARRAY halve all units in the is_archery() unless enemy also play that event
 const EVENT_LANCASTER_FLANK_ATTACK = L2 // TODO
+// Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
 const EVENT_LANCASTER_ESCAPE_SHIP = L3 // TODO
+// Hold event. Play during the game state death_or_disband if battle locale is friendly and has a route of friendly locales (like supply) to a friendly port
 const EVENT_LANCASTER_BE_SENT_FOR = L4 // TODO
+// This Levy. All Exiled lords on the calendar automatically muster inside their exile boxes (i'm not sure that part is coded yet)
 const EVENT_LANCASTER_SUSPICION = L5 // TODO
+// Hold Event. Play at start of Battle AFTER ARRAY. Chose one friendly lord. 
+// then choose enemy lord with Lower MODIFIED influence rating 
+// (through capabilities - function influence_capabilities())
+// Influence check (cost is always 1)
+// Success = disband enemy lord Failure no effect
 const EVENT_LANCASTER_SEAMANSHIP = L6 // TODO
+// This campaign : Sail only 1 action instead of full command
 const EVENT_LANCASTER_FOR_TRUST_NOT_HIM = L7 // TODO
+// Hold Event. Play at start of Battle AFTER ARRAY. Cost is always 1 + vassal modifier (		modifier: data.vassals[vassal].influence * (game.active === LANCASTER ? -1 : 1))
+// Y7 DO NOT override this event.
 const EVENT_LANCASTER_FORCED_MARCHES = L8 // TODO
+// This Campaign, Logic already done through Y11 YORKISTS NEVER WAIT (using first_highway flag)
 const EVENT_LANCASTER_RISING_WAGES = L9 // TODO
+// This Levy Yorkist can share the coin. Basically pay one coin. I don't know if it's better
+// to use a new state to force the player to spend the coin or not
 const EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT = L10 // TODO
+// This Campaign. Entire command card = is_first_action() === true
 const EVENT_LANCASTER_BLOCKED_FORD = L11 // TODO
+// Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
+// basically at best, you want the player that when he approaches, 
+// he plays BLOCKED ford or not.
+// but without the enemy knowing this.
+// Then, the opponent may play PARLIAMENT'S TRUCE/KING'S PARLEY to cancel that approach
+// and  consider BLOCKED FORD to not have been used.
+// Blocked ford basically force the player being approached to choose battle rather 
+// then exile.
+// Be careful about interaction aswell with EVENT FLANK ATTACK
+// also note that there is a confirm_approach_sail state aswell.
 const EVENT_LANCASTER_RAVINE = L12 // TODO
+// Play at start of Battle after BATTLE ARRAY basically like Nevsky's Ambush
 const EVENT_LANCASTER_ASPIELLES = L13 // TODO
+// Play when you're the active player. Show all enemy Hidden cards and then
+// select one of enemy's Lord mats to show it to you. Perhaps write those in the log ?
 const EVENT_LANCASTER_SCOTS = L14 // TODO
+// The addition by events are NEVER mandatory.
 const EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT = L15 // TODO
+// count enemy vassals on all enemy lords and yorkists lose that amount of influence
 const EVENT_LANCASTER_WARDEN_OF_THE_MARCHES = L16	 // TODO
+// Play during Death and Disband step of Battle. All routed (flee or not) 
+// select a stronghold in the north and go there (they will need to feed)
 const EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART = L17 // TODO
+// This Levy 2 Parleys available in addition to the other Levy actions.
+// Bypass event Y15
 const EVENT_LANCASTER_PARLIAMENT_VOTES = L18 // TODO
+// This Levy 1 Parley action each levy for each Lancastrian lord cost 1 less
+// and automatic success (success = true)
+// Bypass event Y15
 const EVENT_LANCASTER_HENRYS_PROCLAMATION = L19 // TODO
-const EVENT_LANCASTER_PARLIAMEN_TRUCE = L20 // TODO
+// Vassals to current turn box
+const EVENT_LANCASTER_PARLIAMENT_TRUCE = L20 // TODO
+// Can be played during Levy and Campaign
+// Read L11 Basically it forbids to go to locales where enemy are as long as 
+// this event is active (until end of this campaign)
 const EVENT_LANCASTER_FRENCH_FLEET = L21 // TODO
+// Forbid sail
 const EVENT_LANCASTER_FRENCH_TROOPS = L22 // TODO
+// Select one lord at a port, then he MAY add 0, 1, 2 of each of Militia or Men-at-arms
 const EVENT_LANCASTER_WARWICKS_PROPAGANDA = [ L23, L24 ] // TODO
+// Select 1 stronghold, then Yorkists may pay to keep. Then select a second, then Yorkist may pay to keep. Then select a third, then Yorkist may pay to keep
 const EVENT_LANCASTER_WELSH_REBELLION = L25 // TODO
+// Works like Torzokh event in Nevsky with Domash, but with troops. 
+// if no Yorkist lord in Wales, remove 2 Yorkist favour (if possible)
 const EVENT_LANCASTER_HENRY_RELEASED = L26 // TODO
+// If London lancastrian, they gain 5 influence
 const EVENT_LANCASTER_LUNIVERSELLE_ARAGNE = L27 // TODO
+//The Lancastrian player chooses any two Vassals Mustered
+// to Yorkist mats. They may include Special Vassal Hastings. For
+//each one, the Yorkist Lord that has the Vassal on his mat must
+// make an Influence check, the Yorkist player spending Influence
+// points normally If the check fails, the Vassal Disbands
+// If Hastings Disbands, discard Capability card Y24 HASTINGS from Edward IV
 const EVENT_LANCASTER_REBEL_SUPPLY_DEPOT = L28 // TODO
+// Hold event, play when active. After a March or a Sail action the card becomes
+// available to play and the lord (+ same as locale, like spoils), gain 4 provender
+// No feed at the end of the card.
 const EVENT_LANCASTER_TO_WILFUL_DISOBEDIANCE = L29 // TODO
+// Select all Yorkists locales where Lancastrian lord adjacent and no Yorkist lord adjacent
+// remove Yorkists favour there
 const EVENT_LANCASTER_FRENCH_WAR_LOANS = L30 // TODO
+// Each lancastrian lord on map gain 1 Coin and 1 Provender
 const EVENT_LANCASTER_ROBINS_REBELLION = L31 // TODO
+// It allows 3 shifts. You can't instantly go from Yorkists to lancastrians (there is a function for shifting)
 const EVENT_LANCASTER_TUDOR_BANNERS = L32 // TODO
+// If Henry VI on friendly stronghold, all adjacent stronghold with no Yorkist lord get Lancastrian favour marker 
+// works for both neutral and enemy locales
 const EVENT_LANCASTER_SURPRISE_LANDING = L33 // TODO
+// After a Sail, allows a free March action. NOT POSSIBLE ON PATH
 const EVENT_LANCASTER_BUCKINGHAMS_PLOT = L34 // TODO
+// This Levy Add +2 to each Yorkist Levy vassal action cost
 const EVENT_LANCASTER_MARGARET_BEAUFORT = L35 // TODO
+// This Levy Can levy any vassal on the map event at Enemy or neutral locale favour.
 const EVENT_LANCASTER_TALBOT_TO_THE_RESCUE = L36 // TODO
+// Play at Death and Disband state. Highlight to disband rather than rolling for death.
 const EVENT_LANCASTER_THE_EARL_OF_RICHMOND = L37 // TODO
+// This Levy. Works like Capability AOW_LANCASTER_TWO_ROSES.
 
 const EVENT_YORK_LEEWARD_BATTLE_LINE = Y1 // TODO
+// Hold event. Play at start of battle AFTER ARRAY halve all units in the is_archery() unless enemy also play that event
 const EVENT_YORK_FLANK_ATTACK = Y2 // TODO
+// Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
 const EVENT_YORK_ESCAPE_SHIP = [ Y3, Y9 ] // TODO
+// Hold event. Play during the game state death_or_disband if battle locale is friendly and has a route of friendly locales (like supply) to a friendly port
 const EVENT_YORK_JACK_CADE = Y4 // TODO
+// Each yorkist lord adjacent to dominated areas (inside tides_calc - you can probably add function about 
+// directly checking if a region is dominated rather than checking individual cases. 
+// The bottom line  is that capability affects the Domination status
+// ( adds 2 free successful parleys (no influence cost exceot if EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST active)
 const EVENT_YORK_SUSPICION = Y5 // TODO
+// Hold Event. Play at start of Battle AFTER ARRAY. Chose one friendly lord. 
+// then choose enemy lord with Lower MODIFIED influence rating 
+// (through capabilities - function influence_capabilities())
+// Influence check (cost is always 1)
+// Success = disband enemy lord Failure no effect
 const EVENT_YORK_SEAMANSHIP = Y6 // TODO
+// This campaign : Sail only 1 action instead of full command
 const EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT = Y7 // TODO
+// No Levy vassal possible except by L7 FOR_TRUST_NOT_HIM
 const EVENT_YORK_EXILE_PACT = Y8 // TODO
+// Placing = Not considered a march or sail or exile action. Simply move it 
+// to the scenario exile box without any other change.
+// Marshall/Lieutenant may not take group (because no sail or march)
 const EVENT_YORK_TAX_COLLECTORS = Y10 // TODO
+// Each lord may take a Tax action and receive double the coin. still exhaust and 
+// do the necessary influence checks if needed.
 const EVENT_YORK_BLOCKED_FORD = Y11 // TODO
+// Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
+// basically at best, you want the player that when he approaches, 
+// he plays BLOCKED ford or not.
+// but without the enemy knowing this.
+// Then, the opponent may play PARLIAMENT'S TRUCE/KING'S PARLEY to cancel that approach
+// and  consider BLOCKED FORD to not have been used.
+// Blocked ford basically force the player being approached to choose battle rather 
+// then exile.
+// Be careful about interaction aswell with EVENT FLANK ATTACK
 const EVENT_YORK_PARLIAMENTS_TRUCE = Y12 // TODO
+// Can be played during Levy and Campaign
+// Read L11 Basically it forbids to go to locales where enemy are as long as 
+// this event is active (until end of this campaign)
 const EVENT_YORK_ASPIELLES = Y13 // TODO
+// Play when you're the active player. Show all enemy Hidden cards and then
+// select one of enemy's Lord mats to show it to you. Perhaps write those in the log ?
 const EVENT_YORK_RICHARD_OF_YORK = Y14 // TODO
+// This Levy, game state parley, score += 1
 const EVENT_YORK_LONDON_FOR_YORK = Y15 // TODO
+// That one is a bit tricky : 
+// If Yorkist, Add a SECOND favour marker there
+// No Lancastrian Parley there unless L17 EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART 
+// or L18 events are active EVENT_LANCASTER_PARLIAMENT_VOTES
+// Henry VI/Margaret if their Seats are there may still Muster there BUT 
+// it will not change the locale favour (contrary to other Muster than also change)
+// the locale where the lord mustered to friendly
 const EVENT_YORK_THE_COMMONS = Y16	 // TODO
+// This Levy Same as other add X events. Never mandatory
 const EVENT_YORK_SHEWOLF_OF_FRANCE = Y17 // TODO
+// Shift each yorkists vassal marker +1 to the right 
 const EVENT_YORK_SUCCESSION = Y18 // TODO
+// This Levy 1 Parley action each levy for each Lancastrian lord cost 1 less
+// and automatic success (success = true)
 const EVENT_YORK_CALTROPS = Y19 // TODO
+// Play in Battle after BATTLE ARRAY. Select a FRIENDLY LORD
+// for him to produce 2 more melee hits in his engagements (he may chose 1 on 2 different engagements)
+// the lancastrianw ill himself put the hits between his lords
 const EVENT_YORK_YORKIST_PARADE = Y20 // TODO
+// This Levy York or Warwick_Y in London+ friendly. All Yorkists influence ratings +2
 const EVENT_YORK_SIR_RICHARD_LEIGH = Y21 // TODO
+// Straightforward. Don't care about enemy pressence
 const EVENT_YORK_LOYALTY_AND_TRUST = Y22 // TODO
+// Works like the + Lordship events in Nevsky
 const EVENT_YORK_CHARLES_THE_BOLD = Y23 // TODO
+// Each lancastrian lord on map gain 1 Coin and 1 Provender
 const EVENT_YORK_SUN_IN_SPLENDOUR = Y24 // TODO
+// Hold event only available in Levy. 
+// Muster Edward IV at Any friendly locale (no seat needed) with no enemy lord
 const EVENT_YORK_OWAIN_GLYNDWR = Y25 // TODO
+// Impossible for Lancastrians to select stronghold in Wales after clicking on Sail or 
+// for any March action. (even for "free march" or other sail enabling events)
 const EVENT_YORK_DUBIOUS_CLARENCE = Y26 // TODO
+// If both Edward IV and Clarence on map (on map = not calendar) Yorkist may influence check
+// to disband clarence (usual disband rules)
 const EVENT_YORK_YORKIST_NORTH = Y27 // TODO
+// +1 Influence for each yorkist / stronghold in north
 const EVENT_YORK_GLOUCESTER_AS_HEIR = Y28 // TODO
+// +3 Parley actions for Gloucester (still need to pay for them)
+// Note that this event is very important for the I-III scenario (will need to put a flag if that card has been played or not)
 const EVENT_YORK_DORSET = Y29 // TODO
+// This Campaign. Devon free successful parley at 
+// Wells, Dorchester, Launceston, and Plymouth
+// If he/group has a ship, all stronghold adjacent to the English channel (data.way_port_2)
+// If he/group has ship and GREAT SHIPS CAPABILITY (Y6), all stronghold adjacent to all seats 
+// (data.way_port_2, data.way_port_1, data.way_port_3)
 const EVENT_YORK_REGROUP = Y30 // TODO
+// Play in Battle at Battle Array step.
+// If played when Yorkist active they pay click on that event to make the lord recover his TROOPS (no vassals/retinue)
+// for recover per armour
 const EVENT_YORK_EARL_RIVERS = Y31 // TODO
+// Add up to 2 militia to each lord on map. Never mandatory
 const EVENT_YORK_THE_KINGS_NAME = Y32 // TODO
+// This Levy, Probably most annoying event.
+// Gloucester 1 or 2 may cancel each lancastrian Levy action by paying 1 influence point
+// Parley, Levy Troops, Levy vassals, Levy other Lord, Levy Transport or Capability)
+// The cancellation happens AFTER the result of the action is done.
+// The influence point expenditure from Levy other lord, vassals, troops is still done
+// But the Depletion from Levy Troops is undone
 const EVENT_YORK_EDWARD_V = Y33 // TODO
+// Hold event : +3 Lordship for Gloucester 1 or 2 (same as nevsky events)
 const EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST = Y34 // TODO
+// This Levy & This Campaign, +1 Extra influence point for all Parley actions (even for free successful cards like 
 const EVENT_YORK_PRIVY_COUNCIL = Y35 // TODO
+// This Levy. Yorkists influence ratings +1
 const EVENT_YORK_SWIFT_MANEUVER = Y36 // TODO
+// Hold Event Play in Battle after the BATTLE ARRAY step of the Battle
+// When this event is played, any Lancastrian retinue makes Yorkist able to immediately END THE ROUND
+// All other engagements, hits, etc. are skipped
 const EVENT_YORK_PATRICK_DE_LA_MOTE = Y37 // TODO
+// Y1/Y2 2 dices rather than 1
 
 // Check all push/clear_undo
 
@@ -3420,7 +3571,7 @@ function goto_parley(lord, from) {
 		game.what = find_parley_targets(lord, command_parley_accept, parley_adjacent)
 
 	if (game.what.length === 1 && is_campaign_phase() && get_lord_locale(lord) === game.what[0].locale) {
-		// Campaign phase, and current location is no cost, and always successful.
+		// Campaign phase, and current location is no cost (except some events), and always successful.
 		shift_favor_toward(game.what[0].locale)
 		end_parley()
 	} else if (game.what.length === 1) {
