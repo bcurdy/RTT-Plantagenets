@@ -4425,11 +4425,12 @@ function can_action_sail() {
 		return false
 
 	// and a valid destination
-	for (let to of data.seaports)
+	for (let to of data.seaports) {
 		if (to !== here && !has_enemy_lord(to))
 			return true
-	if (has_enemy_lord(to) && lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
-		return true
+		if (has_enemy_lord(to) && lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
+			return true
+	}
 	return false
 }
 
