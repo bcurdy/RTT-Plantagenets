@@ -2542,22 +2542,18 @@ states.levy_arts_of_war_first = {
 		let c = game.what[0]
 		view.arts_of_war = game.what
 		view.what = c
-		if (data.cards[c].this_lord) {
-			let discard = true
-			for (let lord of data.cards[c].lords) {
-				if (is_lord_on_map(lord) && !lord_already_has_capability(lord, c)) {
-					gen_action_lord(lord)
-					discard = false
-				}
+		let discard = true
+		for (let lord of data.cards[c].lords) {
+			if (is_lord_on_map(lord) && !lord_already_has_capability(lord, c)) {
+				gen_action_lord(lord)
+				discard = false
 			}
-			if (discard) {
-				view.prompt = `Arts of War: Discard ${data.cards[c].capability}.`
-				view.actions.discard = 1
-			} else {
-				view.prompt = `Arts of War: Assign ${data.cards[c].capability} to a Lord.`
-			}
+		}
+		if (discard) {
+			view.prompt = `Arts of War: Discard ${data.cards[c].capability}.`
+			view.actions.discard = 1
 		} else {
-			throw "NO GLOBAL CAPABILITIES"
+			view.prompt = `Arts of War: Assign ${data.cards[c].capability} to a Lord.`
 		}
 	},
 	lord(lord) {
@@ -3007,10 +3003,8 @@ function can_muster_capability() {
 	let deck = list_deck()
 	for (let c of deck) {
 		if (!data.cards[c].lords || set_has(data.cards[c].lords, game.who)) {
-			if (data.cards[c].this_lord) {
-				if (!lord_already_has_capability(game.who, c))
-					return true
-			}
+			if (!lord_already_has_capability(game.who, c))
+				return true
 		}
 	}
 	return false
@@ -3024,18 +3018,14 @@ states.muster_capability = {
 		view.arts_of_war = deck
 		for (let c of deck) {
 			if (!data.cards[c].lords || set_has(data.cards[c].lords, game.who)) {
-				if (data.cards[c].this_lord) {
-					if (!lord_already_has_capability(game.who, c))
-						gen_action_card(c)
-				}
+				if (!lord_already_has_capability(game.who, c))
+					gen_action_card(c)
 			}
 		}
 	},
 	card(c) {
-		if (data.cards[c].this_lord) {
-			add_lord_capability(game.who, c)
-			capability_muster_effects(game.who, c)
-		}
+		add_lord_capability(game.who, c)
+		capability_muster_effects(game.who, c)
 		pop_state()
 		resume_levy_muster_lord()
 	},
