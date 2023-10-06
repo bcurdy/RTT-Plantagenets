@@ -7686,8 +7686,8 @@ function gen_action_routed_militia(lord) {
 	gen_action("routed_militia", lord)
 }
 
-const P1_LORD_MASK = 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 256 | 512 | 1024 | 2048
-const P2_LORD_MASK = P1_LORD_MASK << 6
+const P1_LORD_MASK = 0x1fff
+const P2_LORD_MASK = P1_LORD_MASK << 14
 
 exports.view = function (state, current) {
 	load_state(state)
