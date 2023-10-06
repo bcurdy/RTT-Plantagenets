@@ -3758,18 +3758,16 @@ states.intercept = {
 		if (game.who === NOBODY) {
 			for (let loc of data.locales[to].adjacent) {
 				let way = find_way(to, loc)
-				if (way !== null && way.type !== "path") {
-					get_lords_in_locale(loc).filter(is_friendly_lord).forEach(gen_action_lord)
-				}
+				if (way !== null && way.type !== "path")
+					for_each_friendly_lord_in_locale(loc, gen_action_lord)
 			}
 		} else {
 			gen_action_lord(game.who)
 			if (is_marshal(game.who) || is_lieutenant(game.who)) {
-				for (let l = first_friendly_lord; l <= last_friendly_lord; l++) {
-					if (get_lord_locale(l) === get_lord_locale(game.who) && !is_marshal(l)) {
-						gen_action_lord(l)
-					}
-				}
+				for_each_friendly_lord_in_locale(get_lord_locale(game.who), lord => {
+					if (!is_marshal(lord))
+						gen_action_lord(lord)
+				})
 			}
 
 			view.actions.intercept = 1
@@ -3865,27 +3863,24 @@ function is_enemy_lord(lord) {
 	return lord >= first_enemy_lord && lord <= last_enemy_lord
 }
 
-function get_lords_in_locale(loc) {
-	let results = []
-	for (let x = first_lord; x <= last_lord; x++) {
-		if (get_lord_locale(x) === loc)
-			results.push(x)
-	}
-	return results
+function for_each_friendly_lord_in_locale(loc, f) {
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++)
+		if (get_lord_locale(lord) === loc)
+			f(lord)
 }
 
 function goto_intercept_exiles() {
 	let here = get_lord_locale(game.command)
-	if (
-		get_lords_in_locale(here)
-			.filter(is_enemy_lord)
-			.some(l => !game.group.includes(l))
-	) {
-		game.state = "intercept_exiles"
-		set_active_enemy()
-	} else {
-		end_intercept()
+	for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord) {
+		if (get_lord_locale(lord) === here) {
+			if (!game.group.includes(lord)) {
+				game.state = "intercept_exiles"
+				set_active_enemy()
+				return
+			}
+		}
 	}
+	end_intercept()
 }
 
 function end_intercept_exiles() {
@@ -3896,11 +3891,12 @@ function end_intercept_exiles() {
 states.intercept_exiles = {
 	inactive: "Intercept Exiles",
 	prompt() {
-		prompt_exiles(
-			get_lords_in_locale(game.command)
-				.filter(is_friendly_lord)
-				.filter(l => !game.group.includes(l))
-		)
+		view.prompt = "???"
+		for_each_friendly_lord_in_locale(get_lord_locale(game.command), lord => {
+			if (!game.group.includes(lord))
+				gen_action_lord(lord)
+		})
+		view.actions.done = 1
 	},
 	lord(lord) {
 		push_undo()
@@ -3912,12 +3908,6 @@ states.intercept_exiles = {
 }
 
 // === Exile ===
-
-function prompt_exiles(lords) {
-	view.prompt = "Select Lords to go into Exile."
-	lords.forEach(gen_action_lord)
-	view.actions.done = 1
-}
 
 function goto_exiles() {
 	clear_undo()
@@ -3934,9 +3924,8 @@ function goto_exiles() {
 
 function end_exiles() {
 	clear_undo()
-	let lords = get_lords_in_locale(get_lord_locale(game.command)).filter(is_friendly_lord)
 
-	if (lords.length > 0) {
+	if (has_friendly_lord(get_lord_locale(game.command))) {
 		// still some lords not exiled to fight.
 		set_active_enemy()
 		goto_battle()
@@ -3950,7 +3939,11 @@ function end_exiles() {
 states.exiles = {
 	inactive: "Exiles",
 	prompt() {
-		prompt_exiles(get_lords_in_locale(get_lord_locale(game.command)).filter(is_friendly_lord))
+		view.prompt = "Select Lords to go into Exile."
+		for_each_friendly_lord_in_locale(get_lord_locale(game.command), lord => {
+			gen_action_lord(lord)
+		})
+		view.actions.done = 1
 	},
 	lord: exile_lord,
 	done() {
