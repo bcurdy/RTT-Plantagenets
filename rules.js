@@ -695,17 +695,10 @@ function add_spoils(type, n) {
 	game.spoils[type] += n
 }
 
-function set_item_on_track(item, value) {
-	if (track_value > 45)
-		track_value = 45
-	set_lord_locale(item, TRACK + track_value)
-}
-
 function get_lord_calendar(lord) {
 	if (is_lord_on_calendar(lord))
 		return get_lord_locale(lord) - CALENDAR
-	/*else
-		return get_lord_service(lord)*/
+	// TODO else?
 }
 
 function set_lord_cylinder_on_calendar(lord, turn) {
@@ -719,17 +712,12 @@ function set_lord_cylinder_on_calendar(lord, turn) {
 function set_lord_calendar(lord, turn) {
 	if (is_lord_on_calendar(lord))
 		set_lord_cylinder_on_calendar(lord, turn)
-	else
-		set_lord_service(lord, turn)
+	// TODO else?
 }
 
 function get_lord_locale(lord) {
 	return game.pieces.locale[lord]
 }
-
-/*function get_lord_service(lord) {
-	return game.pieces.service[lord]
-}*/
 
 function get_lord_capability(lord, n) {
 	return game.pieces.capabilities[(lord << 1) + n]
@@ -2904,9 +2892,6 @@ function can_muster_capability() {
 			if (data.cards[c].this_lord) {
 				if (!lord_already_has_capability(game.who, c))
 					return true
-			} else {
-				if (can_deploy_global_capability(c))
-					return true
 			}
 		}
 	}
@@ -2923,9 +2908,6 @@ states.muster_capability = {
 			if (!data.cards[c].lords || set_has(data.cards[c].lords, game.who)) {
 				if (data.cards[c].this_lord) {
 					if (!lord_already_has_capability(game.who, c))
-						gen_action_card(c)
-				} else {
-					if (can_deploy_global_capability(c))
 						gen_action_card(c)
 				}
 			}
@@ -3278,7 +3260,6 @@ function end_influence_check() {
 }
 
 function count_influence_score() {
-	let here = get_lord_locale(game.group)
 	let score = game.check.reduce((p, c) => p + c.modifier, 0)
 	score = influence_capabilities(game.group, score)
 
@@ -3389,7 +3370,7 @@ function can_action_parley_levy() {
 	return targets.next().done !== true
 }
 
-function parley_adjacent(here, lord) {
+function parley_adjacent(here, _) {
 	let seaports = []
 	if (is_exile(here) && get_shared_assets(here, SHIP) > 0) {
 		return find_ports_from_exile(here)
@@ -3651,7 +3632,6 @@ states.march_laden = {
 	inactive: "March",
 	prompt() {
 		let to = game.march.to
-		let way = game.march.approach
 		let transport = count_group_assets(CART)
 		let prov = count_group_assets(PROV)
 
@@ -3680,26 +3660,23 @@ states.march_laden = {
 }
 
 function march_with_group_2() {
-	let from = get_lord_locale(game.command)
 	let way = game.march.approach
 	let to = game.march.to
-	let transport = count_group_assets(data.ways[way].type)
-	let prov = count_group_assets(PROV)
-	let ways = list_ways(from, to)
+	let way_type = data.ways[way].type
 
 	if (
-		(data.ways[way].type === "highway" && is_first_march_highway()) ||
-		(is_first_march_highway() && data.ways[way].type === "road" && count_group_lords() === 1)
+		(way_type === "highway" && is_first_march_highway()) ||
+		(is_first_march_highway() && way_type === "road" && count_group_lords() === 1)
 	) {
 		spend_march_action(0)
-	} else if (data.ways[way].type === "highway") {
+	} else if (way_type === "highway") {
 		spend_march_action(1)
 		game.flags.first_march_highway = 1
-	} else if (data.ways[way].type === "road") {
+	} else if (way_type === "road") {
 		spend_march_action(1)
 		if (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT) && count_group_lords() === 1)
 			game.flags.first_march_highway = 1
-	} else if (data.ways[way].type === "path") {
+	} else if (way_type === "path") {
 		spend_all_actions()
 	}
 
@@ -3871,10 +3848,6 @@ states.intercept_march = {
 	prov: drop_prov,
 	intercept: do_intercept_march,
 	locale: do_intercept_march,
-}
-
-function is_enemy_lord(lord) {
-	return lord >= first_enemy_lord && lord <= last_enemy_lord
 }
 
 function for_each_friendly_lord_in_locale(loc, f) {
@@ -4301,7 +4274,7 @@ function tax_accept(loc, possibles) {
 	)
 }
 
-function tax_adjacent(here, lord) {
+function tax_adjacent(here, _) {
 	let seaports = []
 	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0) {
 		if (data.port_1.includes(here))
@@ -4327,7 +4300,7 @@ function can_action_tax() {
 	return targets.next().done !== true
 }
 
-function get_taxable_locales(lord) {
+function get_taxable_locales() {
 	let possibles = get_possible_taxable_locales(game.command)
 
 	let results = []
@@ -4370,7 +4343,7 @@ states.tax = {
 		view.prompt = "Tax: Select the location to tax."
 
 		if (game.where === NOWHERE) {
-			get_taxable_locales(game.command).forEach(l => gen_action_locale(l.locale))
+			get_taxable_locales().forEach(l => gen_action_locale(l.locale))
 		} else {
 			view.prompt = `Tax: Attempting to tax ${data.locales[game.where].name}. `
 			prompt_influence_check()
@@ -4460,11 +4433,6 @@ function can_action_sail() {
 	return false
 }
 
-function can_march_path() {
-	if (!is_first_action())
-		return false
-}
-
 function goto_sail() {
 	push_undo()
 	game.state = "sail"
@@ -4548,8 +4516,6 @@ states.sail = {
 	cart: drop_cart,
 	locale(to) {
 		log(`Sailed to %${to}${format_group_move()}.`)
-
-		let from = get_lord_locale(game.command)
 
 		for (let lord of game.group) {
 			set_lord_locale(lord, to)
@@ -5168,10 +5134,6 @@ function get_battle_array(pos) {
 
 function filled(pos) {
 	return get_battle_array(pos) !== NOBODY
-}
-
-function empty(pos) {
-	return get_battle_array(pos) === NOBODY
 }
 
 const battle_strike_positions = [ D1, D2, D3, A1, A2, A3 ]
@@ -5948,7 +5910,7 @@ function has_favour_in_locale(side, loc) {
 }
 
 function calculate_spoils() {
-	let spoils_base = get_enemy_defeated_lords()
+	get_enemy_defeated_lords()
 		.map(l => [get_lord_assets(l, PROV), get_lord_assets(l, CART)])
 		.reduce((p, c) => [[p[0][0] + c[0], p[0][1] + c[1]]], [[0, 0]])
 		.map(s => is_neutral_locale(game.battle.where) ? [Math.ceil(s[0] / 2), Math.ceil(s[1] / 2)] : s)
@@ -6674,7 +6636,6 @@ states.pillage_locale = {
 // === LEVY & CAMPAIGN: DISBAND ===
 
 function disband_lord(lord, permanently = false) {
-	let here = get_lord_locale(lord)
 	let turn = current_turn()
 
 	if (permanently) {
@@ -7525,10 +7486,6 @@ function gen_action_calendar(calendar) {
 	gen_action("calendar", calendar)
 }
 
-function gen_action_way(way) {
-	gen_action("way", way)
-}
-
 function gen_action_locale(locale) {
 	gen_action("locale", locale)
 }
@@ -7543,10 +7500,6 @@ function gen_action_array(pos) {
 
 function gen_action_service(service) {
 	gen_action("service", service)
-}
-
-function gen_action_service_bad(service) {
-	gen_action("service_bad", service)
 }
 
 function gen_action_vassal(vassal) {
@@ -7571,10 +7524,6 @@ function gen_action_coin(lord) {
 
 function gen_action_cart(lord) {
 	gen_action("cart", lord)
-}
-
-function gen_action_ship(lord) {
-	gen_action("ship", lord)
 }
 
 function gen_action_mercenaries(lord) {
