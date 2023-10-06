@@ -5637,7 +5637,7 @@ function check_protection_capabilities(protection) {
 	}
 
 	if (game.what === MEN_AT_ARMS) {
-		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_favoury_marker(here))
+		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_favoury_marker(game.battle.where))
 			protection += 1
 	}
 	if (game.what === MEN_AT_ARMS) {
@@ -5646,7 +5646,7 @@ function check_protection_capabilities(protection) {
 		}
 	}
 	if (game.what === MILITIA || game.what === LONGBOWMEN) {
-		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_favoury_marker(here))
+		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_favoury_marker(game.battle.where))
 			protection += 1
 	}
 	return protection
