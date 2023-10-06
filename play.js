@@ -41,7 +41,6 @@ function pack8_get(word, n) {
 	return (word >>> n) & 255
 }
 
-
 // === CONSTANTS (matching those in rules.js) ===
 
 function find_lord(name) { return data.lords.findIndex((x) => x.name === name) }
@@ -185,7 +184,6 @@ const MILITIA = 4
 const BURGUNDIANS = 5
 const MERCENARIES = 6
 const force_type_count = 7
-
 
 const force_action_name = [ "retinue", "vassal", "men_at_arms", "longbowmen", "militia", "burgundians", "mercenary" ]
 const routed_force_action_name = [ "routed_retinue", "routed_vassal", "routed_men_at_arms", "routed_longbowmen", "routed_militia", "routed_burgundians", "routed_mercenary" ]
@@ -388,11 +386,9 @@ function is_vassal_ready(vassal) {
 	return pack8_get(view.pieces.vassals[vassal], 0) === VASSAL_READY
 }
 
-
 function is_vassal_unavailable(vassal) {
 	return pack8_get(view.pieces.vassals[vassal], 0) === VASSAL_UNAVAILABLE
 }
-
 
 function get_vassal_locale(vassal) {
 	return pack8_get(view.pieces.vassals[vassal], 1)
@@ -561,7 +557,6 @@ const track_boxes = {
 	"track45": [1203,630,47,46],
 }
 
-
 const track_xy = []
 const calendar_xy = []
 const locale_xy = []
@@ -623,7 +618,6 @@ const ui = {
 	town: document.getElementById("towns"),
 	cities: document.getElementById("cities"),
 	influence: document.getElementById("ip"),
-
 
 	court1_header: document.getElementById("court1_header"),
 	court2_header: document.getElementById("court2_header"),
@@ -762,7 +756,6 @@ function build_map() {
 		e.style.backgroundSize = small + "px"
 		document.getElementById("pieces").appendChild(e)
 
-
 		// Depleted markers
 		e = ui.locale_markers[ix] = document.createElement("div")
 		e.className = "locale marker " + locale.name // depleted or exhausted to add markers
@@ -775,8 +768,6 @@ function build_map() {
 		e.style.backgroundSize = small + "px"
 		document.getElementById("pieces").appendChild(e)
 	})
-
-
 
 // Lord seats
 	data.seat.forEach((seat, ix) => {
@@ -1058,12 +1049,12 @@ function add_vassal(parent, vassal, lord, routed) {
 		if (is_action(routed_force_action_name[VASSAL], vassal))
 			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), routed_force_action_name[VASSAL], vassal)
 		else
-			elt = get_cached_element("unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), routed_force_action_name[VASSAL], vassal)	
+			elt = get_cached_element("unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), routed_force_action_name[VASSAL], vassal)
 	} else {
 		if (is_action(force_action_name[VASSAL], vassal))
 			elt = get_cached_element("action unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), force_action_name[VASSAL], vassal)
 		else
-			elt = get_cached_element("unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), force_action_name[VASSAL], vassal)	
+			elt = get_cached_element("unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name), force_action_name[VASSAL], vassal)
 	}
 	parent.appendChild(elt)
 }
@@ -1104,7 +1095,7 @@ function update_forces(parent, forces, lord_ix, routed) {
 			let n = pack4_get(forces, i)
 			for (let k = 0; k < n; ++k) {
 				add_force(parent, i, lord_ix, routed)
-			}	
+			}
 		}
 	}
 }
@@ -1218,7 +1209,6 @@ function update_locale(loc) {
 	if (ui.locale_name[loc]) {
 		ui.locale_name[loc].classList.toggle("action", is_action("locale", loc) || is_action("laden_march", loc))
 	}
-	
 
 	ui.locale_markers[loc].replaceChildren()
 
@@ -1262,7 +1252,6 @@ function update_locale(loc) {
 			cn = "york"
 		ui.locale_markers_rose[loc].classList.remove(cn)
 	}
-
 
 	if (set_has(view.pieces.favourl,loc)) {
 		let cn
@@ -1436,7 +1425,7 @@ function update_vassals() {
 		if (!is_vassal_ready(v) && get_vassal_locale(v) !== 0) {
 			let e = ui.map_vassals[v]
 			e.classList.add("hide")
-			calendar_layout_vassal[get_vassal_locale(v) - CALENDAR].push(e) 
+			calendar_layout_vassal[get_vassal_locale(v) - CALENDAR].push(e)
 			e.classList.remove("hide")
 			e.classList.toggle("action", is_action("vassal", v))
 			e.classList.toggle("back", is_vassal_unavailable(v))
@@ -1518,7 +1507,6 @@ function on_update() {
 	ui.influence.classList.toggle("york", view.influence < 0)
 	ui.influence.classList.toggle("lancaster", view.influence >= 0)
 
-
 	update_plan()
 	update_cards()
 
@@ -1559,14 +1547,12 @@ function on_update() {
 
 	// Use all commands
 
-
 	// Use one command
 	action_button("sail", "Sail")
 	action_button("parley", "Parley")
 	action_button("forage", "Forage")
 	action_button("supply", "Supply")
 	action_button("tax", "Tax")
-
 
 	// Muster & Spoils
 	action_button("take_prov", "Provender")
@@ -1575,7 +1561,6 @@ function on_update() {
 	action_button("take_cart", "Cart")
 	action_button("levy_troops", "Levy Troops")
 	action_button("capability", "Capability")
-
 
 	// Parley
 	action_button("check", "Influence Check")
@@ -1590,7 +1575,6 @@ function on_update() {
 	action_button("pay", "Pay")
 	action_button("disband", "Disband")
 	action_button("pillage", "Pillage")
-
 
 	// Events
 	action_button("decline", "Decline")
