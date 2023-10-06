@@ -944,14 +944,12 @@ function count_group_ships() {
 }
 
 function count_group_assets(type, group = game.group) {
-	let m = 0
 	let n = 0
 	for (let lord of group) {
 		n += get_lord_assets(lord, type)
-		if ((game.state === 'command' || game.state === 'march_laden') && lord_has_capability(lord, AOW_LANCASTER_HAY_WAINS) && type === CART)
-			m = get_lord_assets(lord, CART)
-			n += m
-		}
+		if ((game.state === "command" || game.state === "march_laden") && lord_has_capability(lord, AOW_LANCASTER_HAY_WAINS) && type === CART)
+			n += get_lord_assets(lord, CART)
+	}
 	return n
 }
 
