@@ -1580,6 +1580,16 @@ function shift_favor_toward_lancaster(loc) {
 		add_favourl_marker(loc)
 }
 
+function set_favor_enemy(loc) {
+	if (game.active === YORK) {
+		remove_favoury_marker(loc)
+		add_favourl_marker(loc)
+	} else {
+		remove_favourl_marker(loc)
+		add_favoury_marker(loc)
+	}
+}
+
 /*
 function count_unbesieged_friendly_lords(loc) {
 	let n = 0
@@ -6650,6 +6660,7 @@ states.pillage_locale = {
 		reduce_influence(2 * num)
 
 		add_exhausted_marker(game.where)
+		set_favor_enemy(game.where)
 		data.locales[game.where].adjacent.forEach(shift_favor_away)
 
 		end_pillage_locale()
