@@ -1257,7 +1257,7 @@ function setup_vassals(excludes = []) {
 	for (let x = first_vassal; x < last_vassal; x++) {
 		if (!excludes.includes(x) && data.vassals[x].capability === undefined) {
 			set_vassal_ready(x)
-			set_vassal_on_map(x, data.vassals[x].seat[0])
+			set_vassal_on_map(x, data.vassals[x].seat)
 		}
 	}
 }
@@ -4374,8 +4374,8 @@ function get_possible_taxable_locales(lord) {
 
 	// vassal seats
 	for_each_vassal_with_lord(lord, v => {
-		if (is_possible_taxable_locale(data.vassals[v].seat[0]))
-			locales.push(data.vassals[v].seat[0])
+		if (is_possible_taxable_locale(data.vassals[v].seat))
+			locales.push(data.vassals[v].seat)
 	})
 
 	// London
@@ -6596,7 +6596,7 @@ function goto_ready_vassals() {
 	for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
 		if (is_vassal_unavailable(vassal) && get_vassal_locale(vassal) === CALENDAR + current_turn()) {
 			set_vassal_ready(vassal)
-			set_vassal_on_map(vassal, data.vassals[vassal].seat[0])
+			set_vassal_on_map(vassal, data.vassals[vassal].seat)
 		}
 	}
 
