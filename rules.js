@@ -1389,10 +1389,6 @@ function is_favour_neutral(loc) {
 		return false
 }
 
-function is_stronghold(loc) {
-	return data.locales[loc].stronghold > 0
-}
-
 function has_favourl_marker(loc) {
 	return set_has(game.pieces.favourl, loc)
 }
