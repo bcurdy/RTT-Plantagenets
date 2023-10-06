@@ -4100,34 +4100,6 @@ function get_supply_from_source(source) {
 	return prov
 }
 
-function get_supply_from_source(source) {
-	let prov = 0
-
-	if (has_exhausted_marker(source)) {
-		return prov
-	}
-
-	if (
-		game.command === LORD_DEVON &&
-		(game.where === LOC_EXETER ||
-			game.where === LOC_LAUNCESTON ||
-			game.where === LOC_PLYMOUTH ||
-			game.where === LOC_WELLS ||
-			game.where === LOC_ROCHESTER)
-	) {
-		prov += 1
-	}
-
-	if (source === LOC_LONDON || source === LOC_CALAIS) {
-		prov += 3
-	} else if (is_city(source)) {
-		prov += 2
-	}
-
-	prov += 1
-	return prov
-}
-
 states.supply_source = {
 	inactive: "Supply",
 	prompt() {
