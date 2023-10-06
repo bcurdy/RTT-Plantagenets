@@ -346,8 +346,6 @@ const VASSAL_MONTAGU = find_vassal("Montagu")
 const VASSAL_THOMAS_STANLEY = find_vassal("Thomas Stanley")
 const VASSAL_TROLLOPE = find_vassal("Trollope")
 
-const SEAS = [ LOC_NORTH_SEA, LOC_IRISH_SEA, LOC_ENGLISH_CHANNEL ]
-
 // === === === === FROM NEVSKY === === === ===
 
 // TODO: log end victory conditions at scenario start
@@ -3492,14 +3490,17 @@ function can_action_parley_levy() {
 
 function parley_adjacent(here, _) {
 	let seaports = []
+
+	// TODO: precompute these?
+
 	if (is_exile(here) && get_shared_assets(here, SHIP) > 0) {
 		return find_ports_from_exile(here)
 	} else if (is_seaport(here) && get_shared_assets(here, SHIP) > 0) {
-		if (data.port_1.includes(here))
+		if (set_has(data.port_1, here))
 			seaports = data.port_1
-		if (data.port_2.includes(here))
+		if (set_has(data.port_2, here))
 			seaports = data.port_2
-		if (data.port_3.includes(here))
+		if (set_has(data.port_3, here))
 			seaports = data.port_3
 	}
 
@@ -3507,11 +3508,11 @@ function parley_adjacent(here, _) {
 }
 
 function find_ports_from_exile(here) {
-	if (data.exile_1.includes(here))
+	if (set_has(data.exile_1, here))
 		return data.port_1
-	if (data.exile_2.includes(here))
+	if (set_has(data.exile_2, here))
 		return data.port_2
-	if (data.exile_3.includes(here))
+	if (set_has(data.exile_3, here))
 		return data.port_3
 }
 
@@ -3980,7 +3981,7 @@ function goto_intercept_exiles() {
 	let here = get_lord_locale(game.command)
 	for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord) {
 		if (get_lord_locale(lord) === here) {
-			if (!game.group.includes(lord)) {
+			if (!set_has(game.group, lord)) {
 				game.state = "intercept_exiles"
 				set_active_enemy()
 				return
@@ -4000,7 +4001,7 @@ states.intercept_exiles = {
 	prompt() {
 		view.prompt = "???"
 		for_each_friendly_lord_in_locale(get_lord_locale(game.command), lord => {
-			if (!game.group.includes(lord))
+			if (!set_has(game.group, lord))
 				gen_action_lord(lord)
 		})
 		view.actions.done = 1
@@ -4397,11 +4398,11 @@ function tax_accept(loc, possibles) {
 function tax_adjacent(here, _) {
 	let seaports = []
 	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0) {
-		if (data.port_1.includes(here))
+		if (set_has(data.port_1, here))
 			seaports = data.port_1
-		if (data.port_2.includes(here))
+		if (set_has(data.port_2, here))
 			seaports = data.port_2
-		if (data.port_3.includes(here))
+		if (set_has(data.port_3, here))
 			seaports = data.port_3
 	} else if (is_exile(here) && get_shared_assets(here, SHIP) > 0) {
 		return find_ports_from_exile(here)
@@ -4576,31 +4577,31 @@ states.sail = {
 			view.prompt = `Sail: Select a destination Seaport.`
 			let from = 0
 			switch (true) {
-				case data.exile_1.includes(here):
+				case set_has(data.exile_1, here):
 					from = data.way_exile_1
 					break
-				case data.exile_2.includes(here):
+				case set_has(data.exile_2, here):
 					from = data.way_exile_2
 					break
-				case data.exile_3.includes(here):
+				case set_has(data.exile_3, here):
 					from = data.way_exile_3
 					break
-				case data.sea_1.includes(here):
+				case set_has(data.sea_1, here):
 					from = data.way_sea_1
 					break
-				case data.sea_2.includes(here):
+				case set_has(data.sea_2, here):
 					from = data.way_sea_2
 					break
-				case data.sea_3.includes(here):
+				case set_has(data.sea_3, here):
 					from = data.way_sea_3
 					break
-				case data.port_1.includes(here):
+				case set_has(data.port_1, here):
 					from = data.way_port_1
 					break
-				case data.port_2.includes(here):
+				case set_has(data.port_2, here):
 					from = data.way_port_2
 					break
-				case data.port_3.includes(here):
+				case set_has(data.port_3, here):
 					from = data.way_port_3
 					break
 			}
@@ -5072,8 +5073,8 @@ states.flee_battle = {
 	lord(lord) {
 		log(`${lord_name[lord]} Fled the battle of %${game.battle.where}.`)
 		set_add(game.battle.fled, lord)
-		if (game.battle.reserves.includes(lord)) {
-			array_remove_item(game.battle.reserves, lord)
+		if (set_has(game.battle.reserves, lord)) {
+			set_remove(game.battle.reserves, lord)
 		} else {
 			for (let x = 0; x < 6; x++) {
 				if (game.battle.array[x] === lord) {
@@ -6136,7 +6137,7 @@ states.death_or_disband = {
 		let modifier = 0
 		let roll = roll_die()
 
-		if (game.battle.fled.includes(lord)) {
+		if (set_has(game.battle.fled, lord)) {
 			modifier = -2
 		}
 
@@ -6146,7 +6147,7 @@ states.death_or_disband = {
 
 		disband_lord(lord, !success)
 
-		if (game.battle.fled.includes(lord)) {
+		if (set_has(game.battle.fled, lord)) {
 			set_delete(game.battle.fled, lord)
 		} else {
 			set_delete(game.battle.routed, lord)
@@ -6889,9 +6890,9 @@ function goto_game_end() {
 	// GAME END
 
 	if (!(check_scenario_end_victory() || check_campaign_victory() || check_threshold_victory())) {
-		if (GROW_TURNS.includes(current_turn())) {
+		if (set_has(GROW_TURNS, current_turn())) {
 			do_grow()
-		} else if (WASTE_TURNS.includes(current_turn())) {
+		} else if (set_has(WASTE_TURNS, current_turn())) {
 			do_waste()
 		} else {
 			goto_reset()
@@ -7296,7 +7297,7 @@ function tides_calc() {
 		domy += 1
 	}
 
-	if (INFLUENCE_TURNS.includes(current_turn())) {
+	if (set_has(INFLUENCE_TURNS, current_turn())) {
 		for (let y = first_york_lord; y <= last_york_lord; y++) {
 			if (is_lord_on_map(y)) {
 				domy += data.lords[y].influence
@@ -7337,18 +7338,9 @@ function has_lords_at_sea() {
 	return false
 }
 
-function get_lords_at_sea() {
-	let results = []
-	for (let x = first_friendly_lord; x <= last_friendly_lord; x++) {
-		if (is_lord_at_sea(x)) {
-			results.push(x)
-		}
-	}
-	return results
-}
-
 function is_lord_at_sea(lord) {
-	return SEAS.includes(get_lord_locale(lord))
+	let here = get_lord_locale(lord)
+	return here === LOC_NORTH_SEA || here === LOC_IRISH_SEA || here === LOC_ENGLISH_CHANNEL
 }
 
 function goto_disembark() {
@@ -7378,20 +7370,26 @@ function do_disembark() {
 	return success
 }
 
-function get_safe_ports(sea) {
-	let ports = []
-	if (data.sea_1.includes(sea))
+function for_each_port(sea, f) {
+	let ports = null
+	if (set_has(data.sea_1, sea))
 		ports = data.port_1
-	if (data.sea_2.includes(sea))
+	if (set_has(data.sea_2, sea))
 		ports = data.port_2
-	if (data.sea_3.includes(sea))
+	if (set_has(data.sea_3, sea))
 		ports = data.port_3
-
-	return ports.filter(p => !has_enemy_lord(p))
+	if (ports)
+		for (let loc of ports)
+			f(loc)
 }
 
 function has_safe_ports(sea) {
-	return get_safe_ports(sea).length > 0
+	let result = false
+	for_each_port(sea, loc => {
+		if (!has_enemy_lord(loc))
+			result = true
+	})
+	return result
 }
 
 states.disembark = {
@@ -7400,15 +7398,19 @@ states.disembark = {
 		view.prompt = "Disembark your lords at sea."
 		let done = true
 		if (game.who === NOBODY) {
-			get_lords_at_sea().forEach(l => {
-				gen_action_lord(l)
-				done = false
-			})
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
+				if (is_lord_at_sea(lord)) {
+					gen_action_lord(lord)
+					done = false
+				}
+			}
 		} else {
 			let sea = get_lord_locale(game.who)
-			get_safe_ports(sea).forEach(gen_action_locale)
+			for_each_port(sea, loc => {
+				if (!has_enemy_lord(loc))
+					gen_action_locale(loc)
+			})
 		}
-
 		if (done) {
 			view.actions.done = 1
 		}
