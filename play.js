@@ -564,6 +564,7 @@ const ui = {
 	locale_markers_rose: [],
 	lord_cylinder: [],
 	lord_mat: [],
+	lord_exile: [],
 	lord_buttons: [],
 	map_vassals: [],
 	forces: [],
@@ -789,9 +790,12 @@ function build_map() {
 		register_action(e, "lord", ix)
 		register_tooltip(e, on_focus_cylinder)
 		document.getElementById("pieces").appendChild(e)
-		let exile = document.createElement("div")
-		exile.className = "exile hide"
+
+		// TODO: remove this when not in exile
+		let exile = ui.lord_exile[ix] = document.createElement("div")
+		exile.className = "marker small exile hide"
 		e.appendChild(exile)
+
 		build_lord_mat(lord, ix, side, lord.id)
 	})
 
@@ -1194,12 +1198,13 @@ function update_lord(ix) {
 		layout_locale_item(locale, ui.lord_cylinder[ix])
 		ui.lord_cylinder[ix].classList.remove("hide")
 		update_lord_mat(ix)
+		ui.lord_exile[ix].classList.add("hide")
 	} else {
 		let t = locale - 100
 		if (t > 16) t = 16
 		calendar_layout_cylinder[t].push(ui.lord_cylinder[ix])
 		ui.lord_cylinder[ix].classList.remove("hide")
-		ui.lord_cylinder[ix].getElementsByClassName("exile")[0].classList.toggle("hide", !is_lord_in_exile(ix))
+		ui.lord_exile[ix].classList.toggle("hide", !is_lord_in_exile(ix))
 	}
 	ui.lord_buttons[ix].classList.toggle("action", is_action("lord", ix))
 	ui.lord_cylinder[ix].classList.toggle("action", is_action("lord", ix))

@@ -542,11 +542,10 @@ body.shift .exhausted  {
 }
 
 .cylinder > .exile {
-	width: 42px;
-	height: 48px;
-	background-image: url(images/exile.png);
-	background-size: contain;
-	opacity: 60%;
+	position: absolute;
+	top: 6px;
+	left: 20px;
+	//transform: rotate(45deg);
 }
 
 /* BACKGROUND COLORS AND BORDERS */
