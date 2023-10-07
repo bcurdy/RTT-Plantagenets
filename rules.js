@@ -3921,10 +3921,10 @@ states.intercept = {
 
 function goto_intercept_march() {
 	if (count_group_transport(game.intercept_group) >= count_group_assets(PROV, game.intercept_group)) {
-		game.intercept_group.forEach(l => {
-			set_lord_locale(l, get_lord_locale(game.command))
-			set_lord_moved(l, 1)
-		})
+		for (let lord of game.intercept_group) {
+			set_lord_locale(lord, get_lord_locale(game.command))
+			set_lord_moved(lord, 1)
+		}
 		end_intercept_march()
 	} else {
 		game.state = "intercept_march"
@@ -3938,10 +3938,10 @@ function end_intercept_march() {
 }
 
 function do_intercept_march() {
-	game.intercept_group.forEach(l => {
-		set_lord_locale(l, get_lord_locale(game.command))
-		set_lord_moved(l, 1)
-	})
+	for (let lord of game.intercept_group) {
+		set_lord_locale(lord, get_lord_locale(game.command))
+		set_lord_moved(lord, 1)
+	}
 	end_intercept_march()
 }
 
@@ -4225,8 +4225,8 @@ states.supply_source = {
 		if (list.length > 0)
 			view.prompt += " " + list.join(", ") + "."
 
-		if (game.supply.sources.length > 0)
-			game.supply.sources.forEach(l => gen_action_locale(l.locale))
+		for (let x of game.supply.sources)
+			gen_action_locale(x.locale)
 	},
 	locale(source) {
 		let source_item = game.supply.sources.find(s => s.locale === source)
@@ -4467,7 +4467,8 @@ states.tax = {
 		view.prompt = "Tax: Select the location to tax."
 
 		if (game.where === NOWHERE) {
-			get_taxable_locales().forEach(l => gen_action_locale(l.locale))
+			for (let x of get_taxable_locales())
+				gen_action_locale(x.locale)
 		} else {
 			view.prompt = `Tax: Attempting to tax ${data.locales[game.where].name}. `
 			prompt_influence_check()
@@ -6091,10 +6092,11 @@ states.death_or_disband = {
 	prompt() {
 		let done = true
 		view.prompt = `Death or Disband: Select lords to roll for Death or Disband.`
-		get_defeated_lords().forEach(l => {
-			gen_action_lord(l)
+
+		for (let lord of get_defeated_lords()) {
+			gen_action_lord(lord)
 			done = false
-		})
+		}
 
 		if (done) {
 			view.actions.done = 1
@@ -6600,7 +6602,8 @@ states.muster_exiles = {
 				}
 			}
 		} else {
-			get_valid_exile_box(game.who).forEach(gen_action_locale)
+			for (let loc of get_valid_exile_box(game.who))
+				gen_action_locale(loc)
 		}
 
 		if (done) {
@@ -6720,7 +6723,8 @@ states.pillage_locale = {
 
 		add_exhausted_marker(game.where)
 		set_favor_enemy(game.where)
-		data.locales[game.where].adjacent.forEach(shift_favor_away)
+		for (let next of data.locales[game.where].adjacent)
+			shift_favor_away(next)
 
 		end_pillage_locale()
 	},
