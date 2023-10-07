@@ -4469,7 +4469,6 @@ function goto_tax() {
 function end_tax() {
 	pop_state()
 	game.where = NOWHERE
-	clear_undo()
 	spend_action(1)
 	resume_command()
 }
