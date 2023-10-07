@@ -782,10 +782,8 @@ function update_aliases() {
 }
 
 function load_state(state) {
-	if (game !== state) {
-		game = state
-		update_aliases()
-	}
+	game = state
+	update_aliases()
 }
 
 function push_state(next) {
