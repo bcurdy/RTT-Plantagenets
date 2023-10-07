@@ -705,6 +705,32 @@ const TURN_NAME = [
 	null,
 ]
 
+function find_ports(here) {
+	if (here === data.sea_1) return data.port_1
+	if (here === data.sea_2) return data.port_2
+	if (here === data.sea_3) return data.port_3
+	if (here === data.exile_1) return data.port_1
+	if (here === data.exile_2) return data.port_2
+	if (here === data.exile_3) return data.port_3
+	if (set_has(data.port_1, here)) return data.port_1
+	if (set_has(data.port_2, here)) return data.port_2
+	if (set_has(data.port_3, here)) return data.port_3
+	return null
+}
+
+function find_sail_locales(here) {
+	if (here === data.sea_1) return data.way_sea_1
+	if (here === data.sea_2) return data.way_sea_2
+	if (here === data.sea_3) return data.way_sea_3
+	if (here === data.exile_1) return data.way_exile_1
+	if (here === data.exile_2) return data.way_exile_2
+	if (here === data.exile_3) return data.way_exile_3
+	if (set_has(data.port_1, here)) return data.way_port_1
+	if (set_has(data.port_2, here)) return data.way_port_2
+	if (set_has(data.port_3, here)) return data.way_port_3
+	return null
+}
+
 function current_turn() {
 	return game.turn >> 1
 }
@@ -1467,6 +1493,10 @@ function is_enemy_territory(loc) {
 
 function is_seaport(loc) {
 	return set_has(data.seaports, loc)
+}
+
+function is_stronghold(loc) {
+	return data.locales[loc].type !== "exile"
 }
 
 function is_exile(loc) {
@@ -3443,7 +3473,7 @@ function can_parley_at(loc) {
 var search_seen = new Array(last_locale + 1)
 var search_dist = new Array(last_locale + 1)
 
-function search_parley_during_levy(result, start) {
+function search_parley(result, start) {
 	let ships = get_shared_assets(start, SHIP)
 
 	search_dist.fill(0)
@@ -3472,7 +3502,7 @@ function search_parley_during_levy(result, start) {
 				}
 			}
 			if (ships > 0 && is_seaport(next)) {
-				for (let next of find_ports_from_locale(here)) {
+				for (let next of find_ports(here)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
 						search_dist[next] = next_dist
@@ -3503,7 +3533,7 @@ function can_action_parley_command() {
 			return true
 
 	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0)
-		for (let next of find_ports_from_locale(here))
+		for (let next of find_ports(here))
 			if (can_parley_at(next))
 				return true
 
@@ -3522,7 +3552,7 @@ function list_parley_command() {
 			set_add(result, here)
 
 	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0)
-		for (let next of find_ports_from_locale(here))
+		for (let next of find_ports(here))
 			if (can_parley_at(next))
 				set_add(result, here)
 
@@ -3535,38 +3565,12 @@ function can_action_parley_levy() {
 	let here = get_lord_locale(game.who)
 	if (can_parley_at(here))
 		return true
-	return search_parley_during_levy(false, here)
+	return search_parley(false, here)
 }
 
 function list_parley_levy() {
 	let here = get_lord_locale(game.who)
-	return search_parley_during_levy([], here)
-}
-
-function find_ports_from_locale(here) {
-	if (here === data.sea_1) return data.port_1
-	if (here === data.sea_2) return data.port_2
-	if (here === data.sea_3) return data.port_3
-	if (here === data.exile_1) return data.port_1
-	if (here === data.exile_2) return data.port_2
-	if (here === data.exile_3) return data.port_3
-	if (set_has(data.port_1, here)) return data.port_1
-	if (set_has(data.port_2, here)) return data.port_2
-	if (set_has(data.port_3, here)) return data.port_3
-	return null
-}
-
-function find_locales_from_port(here) {
-	if (here === data.sea_1) return data.way_sea_1
-	if (here === data.sea_2) return data.way_sea_2
-	if (here === data.sea_3) return data.way_sea_3
-	if (here === data.exile_1) return data.way_exile_1
-	if (here === data.exile_2) return data.way_exile_2
-	if (here === data.exile_3) return data.way_exile_3
-	if (set_has(data.port_1, here)) return data.way_port_1
-	if (set_has(data.port_2, here)) return data.way_port_2
-	if (set_has(data.port_3, here)) return data.way_port_3
-	return null
+	return search_parley([], here)
 }
 
 function* map_search(lord, acceptfn, adjacentfn, prune = true) {
@@ -4434,7 +4438,7 @@ function search_tax(result, start) {
 				}
 			}
 			if (ships > 0 && is_seaport(next)) {
-				for (let next of find_ports_from_locale(here)) {
+				for (let next of find_ports(here)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
 						queue.push(next)
@@ -4573,7 +4577,7 @@ function can_action_sail() {
 		return false
 
 	// and a valid destination
-	for (let to of find_locales_from_port(here)) {
+	for (let to of find_sail_locales(here)) {
 		if (to !== here)
 			if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
 				return true
@@ -4601,7 +4605,7 @@ states.sail = {
 
 		if (overflow_prov <= 0 && overflow_cart <= 0) {
 			view.prompt = `Sail: Select a destination Seaport.`
-			for (let to of find_locales_from_port(here)) {
+			for (let to of find_sail_locales(here)) {
 				if (to !== here)
 					if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
 						gen_action_locale(to)
@@ -7406,7 +7410,7 @@ function do_disembark() {
 }
 
 function has_safe_ports(sea) {
-	for (let loc of find_ports_from_locale(sea))
+	for (let loc of find_ports(sea))
 		if (!has_enemy_lord(loc))
 			return true
 	return false
@@ -7426,7 +7430,7 @@ states.disembark = {
 			}
 		} else {
 			let sea = get_lord_locale(game.who)
-			for (let loc of find_ports_from_locale(sea))
+			for (let loc of find_ports(sea))
 				if (!has_enemy_lord(loc))
 					gen_action_locale(loc)
 		}
