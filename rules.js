@@ -1632,13 +1632,6 @@ function get_lord_provender(lord) {
 	return get_lord_assets(lord, PROV)
 }
 
-function list_ways(from, to) {
-	for (let ways of data.locales[from].ways)
-		if (ways[0] === to)
-			return ways
-	return null
-}
-
 function group_has_capability(c) {
 	for (let lord of game.group)
 		if (lord_has_capability(lord, c))
@@ -3700,6 +3693,10 @@ states.levy_muster_vassal = {
 
 // === ACTION: MARCH ===
 
+function get_way_type(from, to) {
+	return map_get(data.ways[from], to)
+}
+
 function format_group_move() {
 	if (game.group.length > 1) {
 		let list = []
@@ -3713,20 +3710,22 @@ function format_group_move() {
 
 function prompt_march() {
 	let from = get_lord_locale(game.command)
-	if (is_first_action())
-		for (let to of data.locales[from].adjacent_by_path) {
+
+	if (is_first_action()) {
+		for (let to of data.locales[from].paths) {
 			gen_action_locale(to)
 		}
+	}
 
 	if (game.actions > 0) {
-		for (let to of data.locales[from].adjacent_by_road) {
+		for (let to of data.locales[from].roads) {
 			gen_action_locale(to)
 		}
-		for (let to of data.locales[from].adjacent_by_highway) {
+		for (let to of data.locales[from].highways) {
 			gen_action_locale(to)
 		}
 	} else if (game.actions === 0 && is_first_march_highway()) {
-		for (let to of data.locales[from].adjacent_by_highway) {
+		for (let to of data.locales[from].highways) {
 			gen_action_locale(to)
 		}
 	}
@@ -3737,7 +3736,7 @@ function prompt_march() {
 		is_first_march_highway() &&
 		count_group_lords() === 1
 	) {
-		for (let to of data.locales[from].adjacent_by_road) {
+		for (let to of data.locales[from].roads) {
 			gen_action_locale(to)
 		}
 	}
@@ -3746,17 +3745,13 @@ function prompt_march() {
 function goto_march(to) {
 	push_undo()
 	let from = get_lord_locale(game.command)
-	let ways = list_ways(from, to)
-	game.march = { from, to, approach: ways[1], avoid: -1 }
+	game.march = { from, to, avoid: -1 }
 	march_with_group_1()
 }
 
 function march_with_group_1() {
 	let transport = count_group_assets(CART)
 	let prov = count_group_assets(PROV)
-	if (prov <= transport)
-		return march_with_group_2()
-
 	if (prov > transport)
 		game.state = "march_laden"
 	else
@@ -3795,30 +3790,37 @@ states.march_laden = {
 }
 
 function march_with_group_2() {
-	let way = game.march.approach
+	let from = game.march.from
 	let to = game.march.to
-	let way_type = data.ways[way].type
+	let type = get_way_type(from, to)
+	let alone = count_group_lords() === 1
 
-	if (
-		(way_type === "highway" && is_first_march_highway()) ||
-		(is_first_march_highway() && way_type === "road" && count_group_lords() === 1)
-	) {
-		spend_march_action(0)
-	} else if (way_type === "highway") {
-		spend_march_action(1)
-		game.flags.first_march_highway = 1
-	} else if (way_type === "road") {
-		spend_march_action(1)
-		if (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT) && count_group_lords() === 1)
-			game.flags.first_march_highway = 1
-	} else if (way_type === "path") {
-		spend_all_actions()
+	switch (type) {
+		case "highway":
+			if (is_first_march_highway()) {
+				spend_march_action(0)
+			} else {
+				spend_march_action(1)
+				game.flags.first_march_highway = 1
+			}
+			break
+
+		case "road":
+			if (alone && is_first_march_highway()) {
+				spend_march_action(0)
+			} else {
+				spend_march_action(1)
+				if (alone && lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT))
+					game.flags.first_march_highway = 1
+			}
+			break
+
+		case "path":
+			spend_all_actions()
+			break
 	}
 
-	if (data.ways[way].name)
-		log(`Marched to %${to} via W${way}${format_group_move()}.`)
-	else
-		log(`Marched to %${to}${format_group_move()}.`)
+	log(`Marched to %${to}${format_group_move()}.`)
 
 	for (let lord of game.group) {
 		set_lord_locale(lord, to)
@@ -3843,20 +3845,10 @@ function march_with_group_3() {
 
 // === Interception ===
 
-function find_way(loc1, loc2) {
-	for (let way of data.ways) {
-		if (way.locales.includes(loc1) && way.locales.includes(loc2)) {
-			return way
-		}
-	}
-	return null
-}
-
 function goto_intercept() {
 	let here = get_lord_locale(game.command)
-	for (let loc of data.locales[here].adjacent) {
-		let way = find_way(here, loc)
-		if (has_enemy_lord(loc) && way !== null && way.type !== "path") {
+	for (let next of data.locales[here].not_paths) {
+		if (has_enemy_lord(next)) {
 			game.state = "intercept"
 			set_active_enemy()
 			game.intercept_group = []
@@ -3882,11 +3874,8 @@ states.intercept = {
 		let to = get_lord_locale(game.command)
 
 		if (game.who === NOBODY) {
-			for (let loc of data.locales[to].adjacent) {
-				let way = find_way(to, loc)
-				if (way !== null && way.type !== "path")
-					for_each_friendly_lord_in_locale(loc, gen_action_lord)
-			}
+			for (let next of data.locales[to].not_paths)
+				for_each_friendly_lord_in_locale(next, gen_action_lord)
 		} else {
 			gen_action_lord(game.who)
 			if (is_marshal(game.who) || is_lieutenant(game.who)) {

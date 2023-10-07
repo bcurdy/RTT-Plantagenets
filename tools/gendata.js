@@ -5,10 +5,36 @@
 const fs = require('fs')
 
 function cmpnum(a,b) { return a - b }
-function cmpnum2(a,b) { return a[0] - b[0] }
 
 function clean_name(name) {
 	return name.toLowerCase().replaceAll("&", "and").replaceAll(" ", "_")
+}
+
+function array_insert_pair(array, index, key, value) {
+	for (let i = array.length; i > index; i -= 2) {
+		array[i] = array[i-2]
+		array[i+1] = array[i-1]
+	}
+	array[index] = key
+	array[index+1] = value
+}
+
+function map_set(map, key, value) {
+	let a = 0
+	let b = (map.length >> 1) - 1
+	while (a <= b) {
+		let m = (a + b) >> 1
+		let x = map[m<<1]
+		if (key < x)
+			b = m - 1
+		else if (key > x)
+			a = m + 1
+		else {
+			map[(m<<1)+1] = value
+			return
+		}
+	}
+	array_insert_pair(map, a<<1, key, value)
 }
 
 // :r !node tools/genboxes.js
@@ -306,9 +332,6 @@ var locmap = {}
 // 0=offmap, 1-N=map locales, 100-M=calendar boxes
 var locales = []
 var ways = []
-var highways = []
-var roads = []
-var paths = []
 var deplete = []
 var favour = []
 var seat = []
@@ -323,7 +346,8 @@ function defloc(region, type, name) {
 	w = Math.ceil(w)
 	h = Math.ceil(h)
 	locmap[name] = locales.length
-	locales.push({ name, type, region, ways: [], box: { x, y, w, h } })
+	locales.push({ name, type, region, adjacent: [], highways: [], roads: [], paths: [], not_paths: [], box: { x, y, w, h } })
+	ways.push([])
 }
 
 function defdepleted(name) {
@@ -366,27 +390,45 @@ function defvassal(name) {
 	vassalbox.push({ name, box: { x, y, w, h } })
 }
 
-function defway(type, list) {
-	let ix = ways.length
-	list = list.map(name=>locmap[name]).sort(cmpnum)
-	ways.push({type, locales: list})
-	for (let from of list) {
-		for (let to of list) {
-			if (from !== to) {
-				let old = locales[from].ways.find(w => w[0] === to)
-				if (old)
-					old.push(ix)
-				else
-					locales[from].ways.push([to, ix])
-			}
-		}
+
+function defway(type, aname, bname) {
+	let aix = locmap[aname]
+	let bix = locmap[bname]
+	if (aix > bix) {
+		let tmp = aix
+		aix = bix
+		bix = tmp
 	}
-	return ways[ix]
+
+	let a = locales[aix]
+	let b = locales[bix]
+
+	map_set(ways[aix], bix, type)
+	map_set(ways[bix], aix, type)
+
+	locales[aix].adjacent.push(bix)
+	locales[bix].adjacent.push(aix)
+
+	if (type === "highway") {
+		locales[aix].highways.push(bix)
+		locales[bix].highways.push(aix)
+	}
+	if (type === "road") {
+		locales[aix].roads.push(bix)
+		locales[bix].roads.push(aix)
+	}
+	if (type === "path") {
+		locales[aix].paths.push(bix)
+		locales[bix].paths.push(aix)
+	} else {
+		locales[aix].not_paths.push(bix)
+		locales[bix].not_paths.push(aix)
+	}
 }
 
-function highway(locs) { return defway('highway', locs.split(", ")) }
-function road(locs) { return defway('road', locs.split(", ")) }
-function path(locs) { return defway('path', locs.split(", ")) }
+function highway(a,b) { return defway('highway', a, b) }
+function road(a,b) { return defway('road', a, b) }
+function path(a,b) { return defway('path', a, b) }
 
 
 // LOCALES
@@ -631,90 +673,90 @@ defvassal("vassal vassal_beaumont")
 
 //WAYS BETWEEN LOCALES
 
-highway("Bamburgh, Newcastle")
-highway("Newcastle, York")
-highway("York, Lincoln")
-highway("Lincoln, Peterborough")
-highway("Peterborough, Ely")
-highway("Nottingham, Leicester")
-highway("Leicester, Northampton")
-highway("Bedford, St Albans")
-highway("St Albans, Cambridge")
-highway("St Albans, London")
-highway("London, Oxford")
-highway("Oxford, Gloucester")
-highway("Gloucester, Hereford")
-highway("Gloucester, Worcester")
-highway("Hereford, Ludlow")
-highway("Gloucester, Bristol")
-highway("London, Guildford")
-highway("Guildford, Winchester")
-highway("Exeter, Wells")
-highway("Winchester, Salisbury")
-highway("Salisbury, Wells")
-highway("Cambridge, Ely")
-highway("Northampton, Bedford")
+highway("Bamburgh", "Newcastle")
+highway("Newcastle", "York")
+highway("York", "Lincoln")
+highway("Lincoln", "Peterborough")
+highway("Peterborough", "Ely")
+highway("Nottingham", "Leicester")
+highway("Leicester", "Northampton")
+highway("Bedford", "St Albans")
+highway("St Albans", "Cambridge")
+highway("St Albans", "London")
+highway("London", "Oxford")
+highway("Oxford", "Gloucester")
+highway("Gloucester", "Hereford")
+highway("Gloucester", "Worcester")
+highway("Hereford", "Ludlow")
+highway("Gloucester", "Bristol")
+highway("London", "Guildford")
+highway("Guildford", "Winchester")
+highway("Exeter", "Wells")
+highway("Winchester", "Salisbury")
+highway("Salisbury", "Wells")
+highway("Cambridge", "Ely")
+highway("Northampton", "Bedford")
 
 
-road("Gloucester, Cardiff")
-road("Newbury, Oxford")
-road("Rochester, Hastings")
-road("Hexham, Carlisle")
-road("Hexham, Newcastle")
-road("Appleby, Carlisle")
-road("Appleby, Newcastle")
-road("Lincoln, Nottingham")
-road("Nottingham, Derby")
-road("Chester, Shrewsbury")
-road("Shrewsbury, Lichfield")
-road("Lichfield, Leicester")
-road("Lichfield, Coventry")
-road("Leicester, Peterborough")
-road("Ely, Lynn")
-road("Ely, Bury St Edmunds")
-road("Bury St Edmunds, Norwich")
-road("Norwich, Lynn")
-road("Norwich, Ipswich")
-road("Ipswich, Bury St Edmunds")
-road("Ipswich, St Albans")
-road("Bury St Edmunds, Cambridge")
-road("Cambridge, Bedford")
-road("Peterborough, Northampton")
-road("Northampton, Coventry")
-road("Northampton, Oxford")
-road("Lichfield, Worcester")
-road("Shrewsbury, Ludlow")
-road("Ludlow, Worcester")
-road("London, Rochester")
-road("Rochester, Canterbury")
-road("Canterbury, Dover")
-road("Dover, Hastings")
-road("Hastings, Arundel")
-road("Arundel, Southampton")
-road("Southampton, Winchester")
-road("Southampton, Salisbury")
-road("Salisbury, Newbury")
-road("Salisbury, Dorchester")
-road("Dorchester, Wells")
-road("Dorchester, Exeter")
-road("Wells, Bristol")
-road("Exeter, Launceston")
-road("Plymouth, Launceston")
-road("Exeter, Plymouth")
-road("Plymouth, Truro")
-road("Truro, Launceston")
-road("Derby, Lichfield")
-path("Appleby, Lancaster")
-path("Lancaster, Chester")
-path("Chester, York")
-path("Chester, Harlech")
-path("Harlech, Pembroke")
-path("Pembroke, Cardiff")
+road("Gloucester", "Cardiff")
+road("Newbury", "Oxford")
+road("Rochester", "Hastings")
+road("Hexham", "Carlisle")
+road("Hexham", "Newcastle")
+road("Appleby", "Carlisle")
+road("Appleby", "Newcastle")
+road("Lincoln", "Nottingham")
+road("Nottingham", "Derby")
+road("Chester", "Shrewsbury")
+road("Shrewsbury", "Lichfield")
+road("Lichfield", "Leicester")
+road("Lichfield", "Coventry")
+road("Leicester", "Peterborough")
+road("Ely", "Lynn")
+road("Ely", "Bury St Edmunds")
+road("Bury St Edmunds", "Norwich")
+road("Norwich", "Lynn")
+road("Norwich", "Ipswich")
+road("Ipswich", "Bury St Edmunds")
+road("Ipswich", "St Albans")
+road("Bury St Edmunds", "Cambridge")
+road("Cambridge", "Bedford")
+road("Peterborough", "Northampton")
+road("Northampton", "Coventry")
+road("Northampton", "Oxford")
+road("Lichfield", "Worcester")
+road("Shrewsbury", "Ludlow")
+road("Ludlow", "Worcester")
+road("London", "Rochester")
+road("Rochester", "Canterbury")
+road("Canterbury", "Dover")
+road("Dover", "Hastings")
+road("Hastings", "Arundel")
+road("Arundel", "Southampton")
+road("Southampton", "Winchester")
+road("Southampton", "Salisbury")
+road("Salisbury", "Newbury")
+road("Salisbury", "Dorchester")
+road("Dorchester", "Wells")
+road("Dorchester", "Exeter")
+road("Wells", "Bristol")
+road("Exeter", "Launceston")
+road("Plymouth", "Launceston")
+road("Exeter", "Plymouth")
+road("Plymouth", "Truro")
+road("Truro", "Launceston")
+road("Derby", "Lichfield")
+path("Appleby", "Lancaster")
+path("Lancaster", "Chester")
+path("Chester", "York")
+path("Chester", "Harlech")
+path("Harlech", "Pembroke")
+path("Pembroke", "Cardiff")
 
-road("Newcastle, Scarborough")
-road("Scarborough, York")
-road("York, Ravenspur")
-road("Ravenspur, Lincoln")
+road("Newcastle", "Scarborough")
+road("Scarborough", "York")
+road("York", "Ravenspur")
+road("Ravenspur", "Lincoln")
 
 let way_sea_1 = ["North Sea", "English Channel", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
 let way_sea_2 = ["English Channel","North Sea", "Irish Sea", "Bristol","Pembroke","Harlech", "English Channel","Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich","Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro" ].map(name => locmap[name]).sort(cmpnum)
@@ -755,46 +797,11 @@ function dumplist(name, list) {
 }
 
 locales.forEach(loc => {
-	loc.adjacent = []
-	loc.adjacent_by_highway = []
-	loc.adjacent_by_road = []
-	loc.adjacent_by_path = []
-	loc.highways = []
-	loc.roads = []
-	loc.paths = []
-	for (let data of loc.ways) {
-		let to = data[0]
-		for (let i = 1; i < data.length; ++i) {
-			let way = data[i]
-			if (!loc.adjacent.includes(to))
-				loc.adjacent.push(to)
-			if (ways[way].type === "highway") {
-				if (!loc.adjacent_by_highway.includes(to)) {
-					loc.adjacent_by_highway.push(to)
-					loc.highways.push([to,way])
-				}
-			}
-			if (ways[way].type === "road") {
-				if (!loc.adjacent_by_road.includes(to)) {
-					loc.adjacent_by_road.push(to)
-					loc.roads.push([to,way])
-				}
-			}
-			if (ways[way].type === "path") {
-				if (!loc.adjacent_by_path.includes(to)) {
-					loc.adjacent_by_path.push(to)
-					loc.paths.push([to,way])
-				}
-			}
-		}
-	}
 	loc.adjacent.sort(cmpnum)
-	loc.adjacent_by_highway.sort(cmpnum)
-	loc.adjacent_by_road.sort(cmpnum)
-	loc.adjacent_by_path.sort(cmpnum)
-	loc.highways.sort(cmpnum2)
-	loc.roads.sort(cmpnum2)
-	loc.paths.sort(cmpnum2)
+	loc.highways.sort(cmpnum)
+	loc.roads.sort(cmpnum)
+	loc.paths.sort(cmpnum)
+	loc.not_paths.sort(cmpnum)
 })
 
 function seats(list) {
