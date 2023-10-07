@@ -730,13 +730,13 @@ let way_port_3 = ["Bristol","Pembroke","Harlech", "Irish Sea"].map(name => locma
 
 
 
-let sea_1 = ["North Sea"].map(name => locmap[name]).sort(cmpnum)
-let sea_2 = ["English Channel"].map(name => locmap[name]).sort(cmpnum)
-let sea_3 = ["Irish Sea"].map(name => locmap[name]).sort(cmpnum)
+let sea_1 = locmap["North Sea"]
+let sea_2 = locmap["English Channel"]
+let sea_3 = locmap["Irish Sea"]
 
-let exile_1 = ["Burgundy"].map(name => locmap[name]).sort(cmpnum)
-let exile_2 = ["France"].map(name => locmap[name]).sort(cmpnum)
-let exile_3 = ["Ireland"].map(name => locmap[name]).sort(cmpnum)
+let exile_1 = locmap["Burgundy"]
+let exile_2 = locmap["France"]
+let exile_3 = locmap["Ireland"]
 
 let port_1 = ["Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich"].map(name => locmap[name]).sort(cmpnum)
 let port_2 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)

@@ -3498,12 +3498,36 @@ function parley_adjacent(here, _) {
 }
 
 function find_ports_from_exile(here) {
-	if (set_has(data.exile_1, here))
-		return data.port_1
-	if (set_has(data.exile_2, here))
-		return data.port_2
-	if (set_has(data.exile_3, here))
-		return data.port_3
+	switch (here) {
+		case data.exile_1: return data.port_1
+		case data.exile_2: return data.port_2
+		case data.exile_3: return data.port_3
+	}
+	return null
+}
+
+function find_ports_from_sea(here) {
+	switch (here) {
+		case data.sea_1: return data.port_1
+		case data.sea_2: return data.port_2
+		case data.sea_3: return data.port_3
+	}
+	return null
+}
+
+function find_destinations_from_port(here) {
+	switch (true) {
+		case here === data.exile_1: return data.way_exile_1
+		case here === data.exile_2: return data.way_exile_2
+		case here === data.exile_3: return data.way_exile_3
+		case here === data.sea_1: return data.way_sea_1
+		case here === data.sea_2: return data.way_sea_2
+		case here === data.sea_3: return data.way_sea_3
+		case set_has(data.port_1, here): return data.way_port_1
+		case set_has(data.port_2, here): return data.way_port_2
+		case set_has(data.port_3, here): return data.way_port_3
+	}
+	return null
 }
 
 function find_parley_targets(lord, acceptfn, adjacentfn) {
@@ -4536,11 +4560,10 @@ function can_action_sail() {
 		return false
 
 	// and a valid destination
-	for (let to of data.seaports) {
-		if (to !== here && !has_enemy_lord(to))
-			return true
-		if (has_enemy_lord(to) && lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
-			return true
+	for (let to of find_destinations_from_port(here)) {
+		if (to !== here)
+			if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
+				return true
 	}
 	return false
 }
@@ -4565,44 +4588,10 @@ states.sail = {
 
 		if (overflow_prov <= 0 && overflow_cart <= 0) {
 			view.prompt = `Sail: Select a destination Seaport.`
-			let from = 0
-			switch (true) {
-				case set_has(data.exile_1, here):
-					from = data.way_exile_1
-					break
-				case set_has(data.exile_2, here):
-					from = data.way_exile_2
-					break
-				case set_has(data.exile_3, here):
-					from = data.way_exile_3
-					break
-				case set_has(data.sea_1, here):
-					from = data.way_sea_1
-					break
-				case set_has(data.sea_2, here):
-					from = data.way_sea_2
-					break
-				case set_has(data.sea_3, here):
-					from = data.way_sea_3
-					break
-				case set_has(data.port_1, here):
-					from = data.way_port_1
-					break
-				case set_has(data.port_2, here):
-					from = data.way_port_2
-					break
-				case set_has(data.port_3, here):
-					from = data.way_port_3
-					break
-			}
-			for (let to of from) {
-				if (to === here)
-					continue
-				if (
-					!has_enemy_lord(to) ||
-					(has_enemy_lord(to) && lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
-				)
-					gen_action_locale(to)
+			for (let to of find_destinations_from_port(here)) {
+				if (to !== here)
+					if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
+						gen_action_locale(to)
 			}
 		} else if (overflow_cart > 0) {
 			view.prompt = `Sailing with ${ships} Ships. Please discard ${overflow_cart} Cart`
@@ -7360,26 +7349,11 @@ function do_disembark() {
 	return success
 }
 
-function for_each_port(sea, f) {
-	let ports = null
-	if (set_has(data.sea_1, sea))
-		ports = data.port_1
-	if (set_has(data.sea_2, sea))
-		ports = data.port_2
-	if (set_has(data.sea_3, sea))
-		ports = data.port_3
-	if (ports)
-		for (let loc of ports)
-			f(loc)
-}
-
 function has_safe_ports(sea) {
-	let result = false
-	for_each_port(sea, loc => {
+	for (let loc of find_ports_from_sea(sea))
 		if (!has_enemy_lord(loc))
-			result = true
-	})
-	return result
+			return true
+	return false
 }
 
 states.disembark = {
@@ -7396,10 +7370,9 @@ states.disembark = {
 			}
 		} else {
 			let sea = get_lord_locale(game.who)
-			for_each_port(sea, loc => {
+			for (let loc of find_ports_from_sea(sea))
 				if (!has_enemy_lord(loc))
 					gen_action_locale(loc)
-			})
 		}
 		if (done) {
 			view.actions.done = 1
