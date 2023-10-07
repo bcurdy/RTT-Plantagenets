@@ -3623,7 +3623,7 @@ function goto_parley() {
 
 		// Campaign phase, and current location is no cost (except some events), and always successful.
 		if (game.what.length === 2 && get_lord_locale(game.command) === game.what[0]) {
-			shift_favour_toward(game.what[0].locale)
+			shift_favour_toward(game.what[0])
 			end_parley()
 			return
 		}
