@@ -1077,12 +1077,11 @@ function count_group_assets(type, group = game.group) {
 	let n = 0
 	for (let lord of group) {
 		n += get_lord_assets(lord, type)
-		if (
-			(game.state === "command" || game.state === "march_laden") &&
-			lord_has_capability(lord, AOW_LANCASTER_HAY_WAINS) &&
-			type === CART
-		)
-			n += get_lord_assets(lord, CART)
+		if (type === CART) {
+			if ((game.state === "command" || game.state === "march_laden"))
+				if (lord_has_capability(lord, AOW_LANCASTER_HAY_WAINS))
+					n += get_lord_assets(lord, CART)
+		}
 	}
 	return n
 }
@@ -3614,8 +3613,8 @@ states.parley = {
 	}
 }
 
-
 // === ACTION: LEVY VASSAL ===
+
 // 1) During Levy ONLY
 // 2) game.who location must be friendly and Vassal seat locale must be friendly
 // 3) there need to not be his vassal marker on the calendar (see vassal disband)
