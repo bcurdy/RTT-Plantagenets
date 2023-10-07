@@ -1355,6 +1355,10 @@ function is_friendly_lord(lord) {
 	return lord >= first_friendly_lord && lord <= last_friendly_lord
 }
 
+function is_enemy_lord(lord) {
+	return lord >= first_enemy_lord && lord <= last_enemy_lord
+}
+
 function is_lord_at_friendly_locale(lord) {
 	let loc = get_lord_locale(lord)
 	return is_friendly_locale(loc)
@@ -5877,10 +5881,6 @@ function end_battle() {
 	goto_battle_influence()
 }
 
-function get_enemy_defeated_lords() {
-	return game.battle.fled.concat(game.battle.routed).filter(l => !is_friendly_lord(l))
-}
-
 function has_defeated_lords() {
 	for (let lord of game.battle.fled)
 		if (is_friendly_lord(lord))
@@ -6012,15 +6012,33 @@ function has_favour_in_locale(side, loc) {
 }
 
 function calculate_spoils() {
-	get_enemy_defeated_lords()
-		.map(l => [get_lord_assets(l, PROV), get_lord_assets(l, CART)])
-		.reduce((p, c) => [[p[0][0] + c[0], p[0][1] + c[1]]], [[0, 0]])
-		.map(s => is_neutral_locale(game.battle.where) ? [Math.ceil(s[0] / 2), Math.ceil(s[1] / 2)] : s)
-		.map(s => has_favour_in_locale(game.battle.loser, game.battle.where) ? [0, 0] : s)
-		.forEach(s => {
-			add_spoils(PROV, s[0])
-			add_spoils(CART, s[1])
-		})
+	let n_prov = 0
+	let n_cart = 0
+
+	if (has_favour_in_locale(game.battle.loser, game.battle.where))
+		return
+
+	for (let lord of game.battle.fled) {
+		if (is_enemy_lord(lord)) {
+			n_prov += get_lord_assets(lord, PROV)
+			n_cart += get_lord_assets(lord, CART)
+		}
+	}
+
+	for (let lord of game.battle.routed) {
+		if (is_enemy_lord(lord)) {
+			n_prov += get_lord_assets(lord, PROV)
+			n_cart += get_lord_assets(lord, CART)
+		}
+	}
+
+	if (is_neutral_locale(game.battle.where)) {
+		n_prov = Math.ceil(n_prov / 2)
+		n_cart = Math.ceil(n_cart / 2)
+	}
+
+	add_spoils(PROV, n_prov)
+	add_spoils(CART, n_cart)
 }
 
 function find_lone_victor() {
