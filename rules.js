@@ -1502,8 +1502,8 @@ function is_harlech(loc) {
 	return data.locales[loc].type === "harlech"
 }
 
-function is_favour_friendly(loc, side) {
-	if (side == YORK)
+function is_favour_friendly(loc) {
+	if (game.active == YORK)
 		return has_favoury_marker(loc)
 	else
 		return has_favourl_marker(loc)
@@ -1594,7 +1594,7 @@ function is_friendly_locale(loc) {
 	if (loc !== NOWHERE && loc < CALENDAR) {
 		if (has_enemy_lord(loc))
 			return false
-		if (is_favour_friendly(loc, game.active)) {
+		if (is_favour_friendly(loc)) {
 			//to add friendly favour marker later
 			return true
 		}
@@ -2725,7 +2725,7 @@ states.levy_muster_lord = {
 
 			// Muster Ready Vassal Forces
 			if (is_friendly_locale(get_lord_locale(game.who))) {
-				for (let vassal = first_vassal; vassal < last_vassal; vassal++)
+				for (let vassal = first_vassal; vassal <= last_vassal; vassal++)
 					if (is_vassal_ready(vassal) && is_favour_friendly(data.vassals[vassal].seat))
 						gen_action_vassal(vassal)
 			}
