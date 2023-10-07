@@ -1724,7 +1724,7 @@ function calculate_distance(start, adjacent) {
 
 	while (queue.length > 0) {
 		let [ here, d ] = queue.shift()
-		for (let next of data.locales[here][adjacent]) {
+		for (let next of data.locales[here].adjacent) {
 			if (distance[next] < 0) {
 				distance[next] = d + 1
 				queue.push([ next, d + 1 ])
@@ -1736,7 +1736,7 @@ function calculate_distance(start, adjacent) {
 }
 
 for (let loc = 0; loc <= last_locale; ++loc)
-	data.locales[loc].distance = calculate_distance(loc, "adjacent")
+	data.locales[loc].distance = calculate_distance(loc)
 
 function locale_distance(from, to) {
 	return data.locales[from].distance[to]
@@ -2426,13 +2426,15 @@ function prompt_shift_cylinder(list, boxes) {
 		lordship = parent[1]
 
 	let names
-	if (game.what === EVENT_RUSSIAN_PRINCE_OF_POLOTSK)
+	if (game.what === EVENT_RUSSIAN_PRINCE_OF_POLOTSK) {
 		names = "a Russian Lord"
-	else
-		names = list
-			.filter(lord => is_lord_on_calendar(lord))
-			.map(lord => lord_name[lord])
-			.join(" or ")
+	} else {
+		names = []
+		for (let lord of list)
+			if (is_lord_on_calendar(lord))
+				names.push(lord_name[lord])
+		names = names.join(" or ")
+	}
 
 	if (boxes === 1)
 		view.prompt = `${data.cards[game.what].event}: Shift ${names} 1 Calendar box`
@@ -2452,6 +2454,7 @@ function prompt_shift_cylinder(list, boxes) {
 
 	prompt_shift_lord_on_calendar(boxes)
 }
+
 function action_shift_cylinder_calendar(turn) {
 	log(`Shifted L${game.who} to ${turn}.`)
 	set_lord_calendar(game.who, turn)
@@ -6636,8 +6639,9 @@ states.muster_exiles = {
 				}
 			}
 		} else {
-			for (let loc of get_valid_exile_box(game.who))
-				gen_action_locale(loc)
+			for (let loc of data.exile_boxes)
+				if (has_favour_in_locale(game.active, loc))
+					gen_action_locale(loc)
 		}
 
 		if (done) {
@@ -6659,10 +6663,6 @@ states.muster_exiles = {
 function muster_lord_in_exile(lord, exile_box) {
 	remove_lord_from_exile(lord)
 	muster_lord(lord, exile_box)
-}
-
-function get_valid_exile_box() {
-	return [ LOC_BURGUNDY, LOC_FRANCE, LOC_IRELAND, LOC_SCOTLAND ].filter(l => has_favour_in_locale(game.active, l))
 }
 
 // === PILLAGE ===

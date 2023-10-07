@@ -789,6 +789,10 @@ let seaports = [
 	"English Channel", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea", "Burgundy", "Dover", "Hastings", "Calais", "France", "Arundel", "Southampton","Dorchester","Exeter","Plymouth","Truro","Bristol","Pembroke","Harlech", "Ireland", "Irish Sea"
 ].map(name => locmap[name]).sort(cmpnum)
 
+let exile_boxes = [
+	"Burgundy", "France", "Ireland", "Scotland"
+].map(name => locmap[name]).sort(cmpnum)
+
 function dumplist(name, list) {
 	print(name + ":[")
 	for (let item of list)
@@ -1707,6 +1711,7 @@ vassal(0, "Hastings", -1, 0, "Hastings")
 
 print("const data = {")
 print("seaports:" + JSON.stringify(seaports) + ",")
+print("exile_boxes:" + JSON.stringify(exile_boxes) + ",")
 print("exile_1:" + JSON.stringify(exile_1) + ",")
 print("exile_2:" + JSON.stringify(exile_2) + ",")
 print("exile_3:" + JSON.stringify(exile_3) + ",")
