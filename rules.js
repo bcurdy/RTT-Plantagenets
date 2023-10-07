@@ -2828,7 +2828,7 @@ states.levy_muster_lord = {
 
 	parley() {
 		push_undo()
-		goto_parley(game.who, "levy")
+		goto_parley()
 	},
 
 	done() {
@@ -3312,11 +3312,12 @@ states.command = {
 
 	parley() {
 		push_undo()
-		goto_parley(game.command, "command")
+		goto_parley()
 	},
 }
 
 // === INFLUENCE CHECKS ===
+
 function influence_capabilities(lord, score) {
 	let here = get_lord_locale(game.group)
 	if (game.state === "parley" && lord_has_capability(game.group, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
@@ -3434,49 +3435,111 @@ function prompt_influence_check() {
 
 // INFLUENCE CHECK = 8) and 9) and 10) Will happen a lot in the game, so a own function is best that will be modified depending on exceptions
 
-function command_parley_accept(loc) {
-	return !is_exile(loc.locale) && !is_friendly_locale(loc.locale) && !has_enemy_lord(loc.locale) && loc.distance <= 1
+function can_parley_at(loc) {
+	return !is_exile(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc)
+}
+
+var search_seen = new Array(last_locale + 1)
+var search_dist = new Array(last_locale + 1)
+
+function search_parley_during_levy(result, start) {
+	let ships = get_shared_assets(start, SHIP)
+
+	search_dist.fill(0)
+	search_seen.fill(0)
+	search_seen[start] = 1
+
+	let queue = [ start ]
+	while (queue.length > 0) {
+		let here = queue.shift()
+		let dist = search_dist[here]
+		let next_dist = dist + 1
+
+		if (can_parley_at(here)) {
+			if (result)
+				map_set(result, here, dist)
+			else
+				return true
+		}
+
+		if (is_friendly_locale(here)) {
+			for (let next of data.locales[here].adjacent) {
+				if (!search_seen[next]) {
+					search_seen[next] = 1
+					search_dist[next] = next_dist
+					queue.push(next)
+				}
+			}
+			if (ships > 0 && is_seaport(next)) {
+				for (let next of find_ports_from_port(here)) {
+					if (!search_seen[next]) {
+						search_seen[next] = 1
+						search_dist[next] = next_dist
+						queue.push(next)
+					}
+				}
+			}
+		}
+	}
+
+	if (result)
+		return result
+	else
+		return false
 }
 
 function can_action_parley_command() {
 	if (game.actions <= 0)
 		return false
-	let targets = map_search(game.command, command_parley_accept, parley_adjacent)
 
-	let res = targets.next()
-	return res.done !== true
+	let here = get_lord_locale(game.command)
+
+	if (can_parley_at(here))
+		return true
+
+	for (let next of data.locales[here].adjacent)
+		if (can_parley_at(next))
+			return true
+
+	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0)
+		for (let next of find_ports_from_port(here))
+			if (can_parley_at(next))
+				return true
+
+	return false
 }
 
-function levy_parley_accept(loc) {
-	return !is_exile(loc.locale) && !is_friendly_locale(loc.locale) && !has_enemy_lord(loc.locale)
+function list_parley_command() {
+	let result = []
+
+	let here = get_lord_locale(game.command)
+	if (can_parley_at(here))
+		set_add(result, here)
+
+	for (let next of data.locales[here].adjacent)
+		if (can_parley_at(next))
+			set_add(result, here)
+
+	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0)
+		for (let next of find_ports_from_port(here))
+			if (can_parley_at(next))
+				set_add(result, here)
+
+	return result
 }
 
 function can_action_parley_levy() {
 	if (game.count <= 0)
 		return false
-
-	let targets = map_search(game.who, levy_parley_accept, parley_adjacent)
-
-	return targets.next().done !== true
+	let here = get_lord_locale(game.who)
+	if (can_parley_at(here))
+		return true
+	return search_parley_during_levy(false, here)
 }
 
-function parley_adjacent(here, _) {
-	let seaports = []
-
-	// TODO: precompute these?
-
-	if (is_exile(here) && get_shared_assets(here, SHIP) > 0) {
-		return find_ports_from_exile(here)
-	} else if (is_seaport(here) && get_shared_assets(here, SHIP) > 0) {
-		if (set_has(data.port_1, here))
-			seaports = data.port_1
-		if (set_has(data.port_2, here))
-			seaports = data.port_2
-		if (set_has(data.port_3, here))
-			seaports = data.port_3
-	}
-
-	return data.locales[here].adjacent.concat(seaports)
+function list_parley_levy() {
+	let here = get_lord_locale(game.who)
+	return search_parley_during_levy([], here)
 }
 
 function find_ports_from_exile(here) {
@@ -3497,6 +3560,16 @@ function find_ports_from_sea(here) {
 	return null
 }
 
+function find_ports_from_port(here) {
+	if (set_has(data.port_1, here))
+		return data.port_1
+	if (set_has(data.port_2, here))
+		return data.port_2
+	if (set_has(data.port_3, here))
+		return data.port_3
+	return null
+}
+
 function find_destinations_from_port(here) {
 	switch (true) {
 		case here === data.exile_1: return data.way_exile_1
@@ -3510,13 +3583,6 @@ function find_destinations_from_port(here) {
 		case set_has(data.port_3, here): return data.way_port_3
 	}
 	return null
-}
-
-function find_parley_targets(lord, acceptfn, adjacentfn) {
-	let results = []
-	for (let loc of map_search(lord, acceptfn, adjacentfn))
-		results.push(loc)
-	return results
 }
 
 function* map_search(lord, acceptfn, adjacentfn, prune = true) {
@@ -3545,22 +3611,27 @@ function* map_search(lord, acceptfn, adjacentfn, prune = true) {
 	}
 }
 
-function goto_parley(lord, from) {
+function goto_parley() {
 	push_state("parley")
 
-	init_influence_check(lord)
-	if (from === "levy")
-		game.what = find_parley_targets(lord, levy_parley_accept, parley_adjacent)
-	else
-		game.what = find_parley_targets(lord, command_parley_accept, parley_adjacent)
+	if (is_levy_phase()) {
+		init_influence_check(game.who)
+		game.what = list_parley_levy()
+	} else {
+		init_influence_check(game.command)
+		game.what = list_parley_command()
 
-	if (game.what.length === 1 && is_campaign_phase() && get_lord_locale(lord) === game.what[0].locale) {
 		// Campaign phase, and current location is no cost (except some events), and always successful.
-		shift_favour_toward(game.what[0].locale)
-		end_parley()
-	} else if (game.what.length === 1) {
-		game.where = game.what[0].locale
-		add_influence_check_distance(game.what[0].distance)
+		if (game.what.length === 2 && get_lord_locale(game.command) === game.what[0]) {
+			shift_favour_toward(game.what[0].locale)
+			end_parley()
+			return
+		}
+	}
+
+	if (game.what.length === 2) {
+		game.where = game.what[0]
+		add_influence_check_distance(game.what[1])
 	} else {
 		game.where = NOWHERE
 	}
@@ -3572,7 +3643,7 @@ function end_parley() {
 	game.where = NOWHERE
 	game.what = NOTHING
 	end_influence_check()
-	if (game.state === "command") {
+	if (is_campaign_phase()) {
 		spend_action(1)
 		resume_command()
 	} else {
@@ -3585,23 +3656,23 @@ states.parley = {
 	prompt() {
 		view.prompt = "Parley: Choose a Locale to Parley."
 		if (game.where === NOTHING) {
-			for (let loc of game.what)
-				gen_action_locale(loc.locale)
+			for (let i = 0; i < game.what.length; i += 2)
+				gen_action_locale(game.what[i])
 		} else {
 			view.prompt = "Parley: "
 			prompt_influence_check()
 		}
 	},
 	locale(loc) {
+		push_undo()
 		game.where = loc
-		for (let loc of game.what) {
-			if (loc.locale === game.where)
-				add_influence_check_distance(loc.distance)
-		}
+		add_influence_check_distance(map_get(game.what, loc))
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
+		clear_undo()
+
 		let results = do_influence_check()
 
 		log(`Attempt to Parley with %${game.where} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
