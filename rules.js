@@ -5881,17 +5881,27 @@ function get_enemy_defeated_lords() {
 	return game.battle.fled.concat(game.battle.routed).filter(l => !is_friendly_lord(l))
 }
 
-function get_defeated_lords() {
-	return game.battle.fled.concat(game.battle.routed).filter(is_friendly_lord)
+function has_defeated_lords() {
+	for (let lord of game.battle.fled)
+		if (is_friendly_lord(lord))
+			return true
+	for (let lord of game.battle.routed)
+		if (is_friendly_lord(lord))
+			return true
+	return false
 }
 
 function goto_battle_influence() {
 	if (game.battle.loser !== BOTH) {
 		set_active_loser()
 
-		let influence = get_defeated_lords()
-			.map(l => data.lords[l].influence + count_vassals_with_lord(l))
-			.reduce((p, c) => p + c, 0)
+		let influence = 0
+		for (let lord of game.battle.fled)
+			if (is_friendly_lord(lord))
+				influence += data.lords[lord].influence + count_vassals_with_lord(lord)
+		for (let lord of game.battle.routed)
+			if (is_friendly_lord(lord))
+				influence += data.lords[lord].influence + count_vassals_with_lord(lord)
 
 		reduce_influence(influence)
 		goto_battle_spoils()
@@ -5899,6 +5909,7 @@ function goto_battle_influence() {
 		goto_death_or_disband()
 	}
 }
+
 // === ENDING THE BATTLE: LOSSES ===
 
 function has_battle_losses() {
@@ -6072,7 +6083,7 @@ states.battle_spoils = {
 }
 
 function goto_death_or_disband() {
-	if (get_defeated_lords().length > 0)
+	if (has_defeated_lords())
 		game.state = "death_or_disband"
 	else
 		end_death_or_disband()
@@ -6081,7 +6092,7 @@ function goto_death_or_disband() {
 function end_death_or_disband() {
 	set_active_enemy()
 
-	if (get_defeated_lords().length > 0)
+	if (has_defeated_lords())
 		goto_death_or_disband()
 	else
 		goto_battle_aftermath()
@@ -6090,26 +6101,32 @@ function end_death_or_disband() {
 states.death_or_disband = {
 	inactive: "Death or Disband",
 	prompt() {
-		let done = true
 		view.prompt = `Death or Disband: Select lords to roll for Death or Disband.`
 
-		for (let lord of get_defeated_lords()) {
+		let done = true
+		for (let lord of game.battle.fled) {
+			if (is_friendly_lord(lord)) {
 			gen_action_lord(lord)
-			done = false
+				done = false
+			}
+		}
+		for (let lord of game.battle.routed) {
+			if (is_friendly_lord(lord)) {
+				gen_action_lord(lord)
+				done = false
+			}
 		}
 
-		if (done) {
+		if (done)
 			view.actions.done = 1
-		}
 	},
 	lord(lord) {
 		let threshold = 2
 		let modifier = 0
 		let roll = roll_die()
 
-		if (set_has(game.battle.fled, lord)) {
+		if (set_has(game.battle.fled, lord))
 			modifier = -2
-		}
 
 		let success = threshold >= roll + modifier
 
@@ -6117,11 +6134,8 @@ states.death_or_disband = {
 
 		disband_lord(lord, !success)
 
-		if (set_has(game.battle.fled, lord)) {
-			set_delete(game.battle.fled, lord)
-		} else {
-			set_delete(game.battle.routed, lord)
-		}
+		set_delete(game.battle.fled, lord)
+		set_delete(game.battle.routed, lord)
 	},
 	done() {
 		end_death_or_disband()
