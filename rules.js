@@ -6,8 +6,8 @@ const BOTH = "Both"
 const LANCASTER = "Lancaster"
 const YORK = "York"
 
-var P1 = LANCASTER
-var P2 = YORK
+var P1 = null
+var P2 = null
 
 const INFLUENCE_TURNS = [ 1, 4, 6, 9, 11, 14 ]
 const GROW_TURNS = [ 4, 9, 14 ]
@@ -718,10 +718,9 @@ function current_turn_name() {
 }
 
 function current_hand() {
-	// LIKELY BUG, CHECK goto_command_activation()
-	if (game.active === P1)
-		return game.hand1
-	return game.hand2
+	if (game.active === YORK)
+		return game.hand_y
+	return game.hand_l
 }
 
 function is_summer() {
@@ -807,15 +806,14 @@ function set_active(new_active) {
 }
 
 function set_active_enemy() {
-	game.active = enemy_player()
-	update_aliases()
+	set_active(enemy_player())
 }
 
 function enemy_player() {
-	if (game.active === P1)
-		return P2
-	if (game.active === P2)
-		return P1
+	if (game.active === YORK)
+		return LANCASTER
+	if (game.active === LANCASTER)
+		return YORK
 	return null
 }
 
@@ -1188,9 +1186,9 @@ function is_lancaster_card(c) {
 }
 
 function is_card_in_use(c) {
-	if (set_has(game.hand1, c))
+	if (set_has(game.hand_y, c))
 		return true
-	if (set_has(game.hand2, c))
+	if (set_has(game.hand_l, c))
 		return true
 	if (set_has(game.events, c))
 		return true
@@ -1217,14 +1215,14 @@ function is_friendly_card(c) {
 
 function has_card_in_hand(c) {
 	if (game.active === YORK)
-		return set_has(game.hand1, c)
-	return set_has(game.hand2, c)
+		return set_has(game.hand_y, c)
+	return set_has(game.hand_l, c)
 }
 
 function can_discard_card(c) {
-	if (set_has(game.hand1, c))
+	if (set_has(game.hand_y, c))
 		return true
-	if (set_has(game.hand2, c))
+	if (set_has(game.hand_l, c))
 		return true
 	if (game.pieces.capabilities.includes(c))
 		return true
@@ -1804,7 +1802,7 @@ exports.setup = function (seed, scenario, options) {
 		log: [],
 		undo: [],
 
-		active: P1,
+		active: null,
 		rebel: null,
 		crown: null,
 		state: "setup_lords",
@@ -1812,10 +1810,10 @@ exports.setup = function (seed, scenario, options) {
 		victory_check: 0,
 		influence: 0,
 
-		hand1: [],
-		hand2: [],
-		plan1: [],
-		plan2: [],
+		hand_y: [],
+		hand_l: [],
+		plan_y: [],
+		plan_l: [],
 
 		turn: 0,
 		events: [], // this levy/this campaign cards
@@ -1857,31 +1855,31 @@ exports.setup = function (seed, scenario, options) {
 		parley: 0,
 	}
 
-	update_aliases()
-
 	log_h1(scenario)
 
 	switch (scenario) {
-	default:
-	case "Ia. Henry VI":
-		setup_Ia()
-	break
-	case "Ib. Towton":
-		setup_Ib()
-	break
-	case "Ic. Somerset's Return":
-		setup_Ic()
-	break
-	case "II. Warwicks' Rebellion" :
-		setup_II()
-	break
-	case "III. My Kingdom for a Horse":
-		setup_III()
-	break
+		default:
+		case "Ia. Henry VI":
+			setup_Ia()
+			break
+		case "Ib. Towton":
+			setup_Ib()
+			break
+		case "Ic. Somerset's Return":
+			setup_Ic()
+			break
+		case "II. Warwicks' Rebellion":
+			setup_II()
+			break
+		case "III. My Kingdom for a Horse":
+			setup_III()
+			break
 		case "I-III. Wars of the Roses":
-		setup_ItoIII()
-	break
+			setup_ItoIII()
+			break
 	}
+
+	update_aliases()
 
 	return game
 }
@@ -2323,9 +2321,9 @@ function prompt_shift_lord_on_calendar(boxes) {
 function play_held_event(c) {
 	log(`Played E${c}.`)
 	if (c >= first_york_card && c <= last_york_card)
-		set_delete(game.hand1, c)
+		set_delete(game.hand_y, c)
 	else
-		set_delete(game.hand2, c)
+		set_delete(game.hand_l, c)
 }
 
 function end_held_event() {
@@ -2613,10 +2611,10 @@ states.levy_arts_of_war = {
 	hold() {
 		let c = game.what.shift()
 		log(`${game.active} Held Event.`)
-		if (game.active === P1)
-			set_add(game.hand1, c)
+		if (game.active === YORK)
+			set_add(game.hand_y, c)
 		else
-			set_add(game.hand2, c)
+			set_add(game.hand_l, c)
 		resume_levy_arts_of_war()
 	},
 	discard() {
@@ -3035,14 +3033,14 @@ function goto_campaign_plan() {
 
 	set_active(BOTH)
 	game.state = "campaign_plan"
-	game.plan1 = []
-	game.plan2 = []
+	game.plan_y = []
+	game.plan_l = []
 }
 
 states.campaign_plan = {
 	inactive: "Plan",
 	prompt(current) {
-		let plan = current === YORK ? game.plan1 : game.plan2
+		let plan = current === YORK ? game.plan_y : game.plan_l
 		let first = current === YORK ? first_york_lord : first_lancaster_lord
 		let last = current === YORK ? last_york_lord : last_lancaster_lord
 		view.plan = plan
@@ -3072,15 +3070,15 @@ states.campaign_plan = {
 	},
 	plan(lord, current) {
 		if (current === YORK)
-			game.plan1.push(lord)
+			game.plan_y.push(lord)
 		else
-			game.plan2.push(lord)
+			game.plan_l.push(lord)
 	},
 	undo(_, current) {
 		if (current === YORK) {
-			game.plan1.pop()
+			game.plan_y.pop()
 		} else {
-			game.plan2.pop()
+			game.plan_l.pop()
 		}
 	},
 	end_plan(_, current) {
@@ -3103,7 +3101,7 @@ function end_campaign_plan() {
 // === CAMPAIGN: COMMAND ACTIVATION ===
 
 function goto_command_activation() {
-	if (game.plan2.length === 0) {
+	if (game.plan_y.length === 0 && game.plan_l.length === 0) {
 		game.command = NOBODY
 		goto_end_campaign()
 		return
@@ -3112,18 +3110,18 @@ function goto_command_activation() {
 	if (check_campaign_victory())
 		return
 
-	if (game.plan2.length > game.plan1.length) {
+	if (game.plan_l.length > game.plan_y.length) {
 		set_active(LANCASTER)
-		game.command = game.plan2.shift()
-	} else if (game.plan2.length < game.plan1.length) {
+		game.command = game.plan_l.shift()
+	} else if (game.plan_l.length < game.plan_y.length) {
 		set_active(YORK)
-		game.command = game.plan1.shift()
+		game.command = game.plan_y.shift()
 	} else {
 		set_active(P1)
-		if (P1 === "Lancaster")
-			game.command = game.plan2.shift()
+		if (P1 === LANCASTER)
+			game.command = game.plan_l.shift()
 		else
-			game.command = game.plan1.shift()
+			game.command = game.plan_y.shift()
 	}
 
 	if (game.command === NOBODY) {
@@ -4923,9 +4921,9 @@ function could_play_card(c) {
 	if (set_has(game.events, c))
 		return false
 	if (is_york_card(c))
-		return game.hand1.length > 0
+		return game.hand_y.length > 0
 	if (is_lancaster_card(c))
-		return game.hand2.length > 0
+		return game.hand_l.length > 0
 	return true
 }
 
@@ -6813,10 +6811,10 @@ function check_campaign_victory() {
 		goto_game_over("Draw", "The game ended in a draw.")
 		return true
 	} else if (york_v) {
-		goto_game_over(P1, `${YORK} won a Campaign Victory!`)
+		goto_game_over(YORK, `${YORK} won a Campaign Victory!`)
 		return true
 	} else if (lancaster_v) {
-		goto_game_over(P2, `${LANCASTER} won a Campaign Victory!`)
+		goto_game_over(LANCASTER, `${LANCASTER} won a Campaign Victory!`)
 		return true
 	}
 
@@ -6831,10 +6829,10 @@ function check_disband_victory() {
 		goto_game_over("Draw", "The game ended in a draw.")
 		return true
 	} else if (york_v) {
-		goto_game_over(P1, `${YORK} won a Campaign Victory!`)
+		goto_game_over(YORK, `${YORK} won a Campaign Victory!`)
 		return true
 	} else if (lancaster_v) {
-		goto_game_over(P2, `${LANCASTER} won a Campaign Victory!`)
+		goto_game_over(LANCASTER, `${LANCASTER} won a Campaign Victory!`)
 		return true
 	}
 
@@ -7047,12 +7045,12 @@ states.reset = {
 	},
 	card(c) {
 		push_undo()
-		if (set_has(game.hand1, c)) {
+		if (set_has(game.hand_y, c)) {
 			log("Discarded Held card.")
-			set_delete(game.hand1, c)
-		} else if (set_has(game.hand2, c)) {
+			set_delete(game.hand_y, c)
+		} else if (set_has(game.hand_l, c)) {
 			log("Discarded Held card.")
-			set_delete(game.hand2, c)
+			set_delete(game.hand_l, c)
 		}
 	},
 	end_discard() {
@@ -7672,8 +7670,8 @@ function gen_action_routed_militia(lord) {
 	gen_action("routed_militia", lord)
 }
 
-const P1_LORD_MASK = 0x1fff
-const P2_LORD_MASK = P1_LORD_MASK << 14
+const YORK_LORD_MASK = 0x1fff
+const LANCASTER_LORD_MASK = YORK_LORD_MASK << 14
 
 exports.view = function (state, current) {
 	load_state(state)
@@ -7693,8 +7691,8 @@ exports.view = function (state, current) {
 		pieces: game.pieces,
 		battle: game.battle,
 
-		held1: game.hand1.length,
-		held2: game.hand2.length,
+		held_y: game.hand_y.length,
+		held_l: game.hand_l.length,
 
 		command: game.command,
 		hand: null,
@@ -7705,16 +7703,16 @@ exports.view = function (state, current) {
 		view.reveal = -1
 
 	if (current === YORK) {
-		view.hand = game.hand1
-		view.plan = game.plan1
+		view.hand = game.hand_y
+		view.plan = game.plan_y
 		if (game.hidden)
-			view.reveal |= P1_LORD_MASK
+			view.reveal |= YORK_LORD_MASK
 	}
 	if (current === LANCASTER) {
-		view.hand = game.hand2
-		view.plan = game.plan2
+		view.hand = game.hand_l
+		view.plan = game.plan_l
 		if (game.hidden)
-			view.reveal |= P2_LORD_MASK
+			view.reveal |= LANCASTER_LORD_MASK
 	}
 
 	if (game.battle) {

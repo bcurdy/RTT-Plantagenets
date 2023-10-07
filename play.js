@@ -1496,8 +1496,8 @@ function on_update() {
 	ui.end.style.left = (calendar_xy[view.end][0] + 91 - 52) + "px"
 	ui.end.style.top = (calendar_xy[view.end][1] + 94) + "px"
 
-	ui.held_york.textContent = `${view.held1} Held`
-	ui.held_lancaster.textContent = `${view.held2} Held`
+	ui.held_york.textContent = `${view.held_y} Held`
+	ui.held_lancaster.textContent = `${view.held_l} Held`
 
 	ui.victory_check.style.top = (track_xy[view.victory_check][1]) + "px"
 	ui.victory_check.style.left = (track_xy[view.victory_check][0]) + "px"
