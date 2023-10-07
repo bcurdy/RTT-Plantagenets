@@ -1387,7 +1387,7 @@ function is_lord_at_seat(lord) {
 }
 
 function has_locale_to_muster(lord) {
-	if (!has_enemy_lord(data.lords[lord].seats[0]))
+	if (!has_enemy_lord(data.lords[lord].seat))
 		return true
 
 	for (let l = first_friendly_lord; l <= last_friendly_lord; l++) {
@@ -2843,7 +2843,7 @@ states.muster_lord_at_seat = {
 		view.prompt = `Muster: Select Locale for ${lord_name[game.who]}.`
 		let found = false
 
-		let seat = data.lords[game.who].seats[0]
+		let seat = data.lords[game.who].seat
 		if (!has_enemy_lord(seat)) {
 			gen_action_locale(seat)
 			found = true
@@ -2851,8 +2851,8 @@ states.muster_lord_at_seat = {
 
 		if (!found) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
-				if (is_lord_on_map(lord) && is_friendly_locale(data.lords[lord].seats[0])) {
-					gen_action_locale(data.lords[lord].seats[0])
+				if (is_lord_on_map(lord) && is_friendly_locale(data.lords[lord].seat)) {
+					gen_action_locale(data.lords[lord].seat)
 				}
 			}
 		}
@@ -4412,8 +4412,8 @@ function get_possible_taxable_locales(lord) {
 	let locales = []
 
 	// Own seat
-	if (is_possible_taxable_locale(data.lords[lord].seats[0]))
-		locales.push(data.lords[lord].seats[0])
+	if (is_possible_taxable_locale(data.lords[lord].seat))
+		locales.push(data.lords[lord].seat)
 
 	// vassal seats
 	for_each_vassal_with_lord(lord, v => {
@@ -4523,7 +4523,7 @@ states.tax = {
 	},
 	locale(loc) {
 		game.where = loc
-		if (loc === data.lords[game.command].seats[0]) {
+		if (loc === data.lords[game.command].seat) {
 			// Auto succeed without influence check at Lords seat.
 			deplete_locale(game.where)
 
