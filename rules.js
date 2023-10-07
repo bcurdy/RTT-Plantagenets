@@ -3420,8 +3420,8 @@ function add_influence_check_distance(distance) {
 
 function prompt_influence_check() {
 	if (!game.check.some(c => c.source === "add")) {
-		gen_action("spend1")
-		gen_action("spend3")
+		view.actions.spend1 = 1
+		view.actions.spend3 = 1
 	}
 	if (game.where !== NOWHERE)
 		gen_action_locale(game.where)
