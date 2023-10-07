@@ -5223,12 +5223,8 @@ states.reposition_center = {
 
 // === BATTLE: STRIKE ===
 
-function get_battle_array(pos) {
-	return game.battle.array[pos]
-}
-
 function filled(pos) {
-	return get_battle_array(pos) !== NOBODY
+	return game.battle.array[pos] !== NOBODY
 }
 
 const battle_strike_positions = [ D1, D2, D3, A1, A2, A3 ]
@@ -5308,10 +5304,6 @@ function has_strike(pos) {
 	return game.battle.ah[pos] > 0
 }
 
-function current_strike_positions() {
-	return battle_strike_positions
-}
-
 // === BATTLE: ENGAGEMENTS
 
 function determine_engagements() {
@@ -5389,8 +5381,8 @@ function goto_engagement() {
 	// Generate hits
 	game.battle.ah = [ 0, 0, 0, 0, 0, 0 ]
 
-	for (let pos of current_strike_positions()) {
-		let lord = get_battle_array(pos)
+	for (let pos of battle_strike_positions) {
+		let lord = game.battle.array[pos]
 		if (lord !== NOBODY) {
 			let hits = count_lord_hits(lord)
 
@@ -5420,11 +5412,13 @@ states.select_engagement = {
 	inactive: "Select Engagment",
 	prompt() {
 		view.prompt = `Select the next engagement to resolve.`
-		current_strike_positions()
-			.filter(has_strike)
-			.map(pos => game.battle.array[pos])
-			.filter(is_friendly_lord)
-			.forEach(gen_action_lord)
+		for (let pos of battle_strike_positions) {
+			if (has_strike(pos)) {
+				let lord = game.battle.array[pos]
+				if (is_friendly_lord(lord))
+					gen_action_lord(lord)
+			}
+		}
 	},
 	lord(lord) {
 		let idx = find_engagement_index(get_lord_array_position(lord))
@@ -5482,11 +5476,12 @@ function goto_engagement_total_hits() {
 }
 
 function continue_engagement() {
-	current_strike_positions()
-		.map(p => get_battle_array(p))
-		.filter(l => l !== NOBODY)
-		.filter(will_lord_rout)
-		.forEach(rout_lord)
+	for (let pos of battle_strike_positions) {
+		let lord = game.battle.array[pos]
+		if (lord !== NOBODY)
+			if (will_rout_lord(lord))
+				rout_lord(lord)
+	}
 
 	end_assign_hits()
 }
@@ -5514,15 +5509,21 @@ function goto_defender_assign_hits() {
 }
 
 function goto_assign_hits() {
-	let lords_in_engagement = game.battle.engagements[0].filter(p => is_friendly_lord(get_battle_array(p)))
-
-	if (game.battle.target === NOBODY && lords_in_engagement.length > 1) {
-		game.state = "select_target"
-	} else {
-		if (game.battle.target === NOBODY)
-			game.battle.target = lords_in_engagement.at(0)
-
-		game.state = "assign_hits"
+	game.state = "assign_hits"
+	if (game.battle.target === NOBODY) {
+		let count = 0
+		let found = NOBODY
+		for (let pos of game.battle.engagements[0]) {
+			let lord = game.battle.array[pos]
+			if (is_friendly_lord(lord)) {
+				found = lord
+				++count
+			}
+		}
+		if (count > 1)
+			game.state = "select_target"
+		else
+			game.battle.target = found
 	}
 }
 
@@ -5533,10 +5534,13 @@ function end_defender_assign_hits() {
 }
 
 function no_remaining_targets() {
-	return !game.battle.engagements[0]
-		.filter(p => is_friendly_lord(get_battle_array(p)))
-		.map(get_battle_array)
-		.some(lord_has_unrouted_units)
+	for (let pos of game.battle.engagements[0]) {
+		let lord = game.battle.array[pos]
+		if (is_friendly_lord(lord))
+			if (lord_has_unrouted_units(lord))
+				return false
+	}
+	return true
 }
 
 function goto_attacker_assign_hits() {
@@ -5558,11 +5562,13 @@ states.select_target = {
 	inactive: "Select Target Lord",
 	prompt() {
 		view.prompt = "Battle: Select Lord to Assign Hits to."
-		game.battle.engagements[0]
-			.filter(has_strike)
-			.map(get_battle_array)
-			.filter(is_friendly_lord)
-			.forEach(gen_action_lord)
+		for (let pos of game.battle.engagements[0]) {
+			if (has_strike(pos)) {
+				let lord = game.battle.array[pos]
+				if (is_friendly_lord(lord))
+					gen_action_lord(lord)
+			}
+		}
 	},
 	lord(lord) {
 		game.battle.target = get_lord_array_position(lord)
@@ -6042,16 +6048,16 @@ function calculate_spoils() {
 }
 
 function find_lone_victor() {
-	let lord = NOBODY
-	for (let x = 0; x < 6; x++) {
-		if (is_friendly_lord(get_battle_array(x))) {
-			if (lord === NOBODY)
-				lord = get_battle_array(x)
-			else
+	let found = NOBODY
+	for (let pos of battle_strike_positions) {
+		let lord = game.battle.array[pos]
+		if (is_friendly_lord(lord)) {
+			if (found !== NOBODY)
 				return NOBODY
+			found = lord
 		}
 	}
-	return lord
+	return found
 }
 
 function goto_battle_spoils() {
