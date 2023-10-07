@@ -3381,6 +3381,7 @@ function do_influence_check() {
 	else
 		success = roll <= rating
 
+	// TODO: print log message here instead of returning object
 	return { success: success, rating: rating, roll: roll }
 }
 
@@ -4387,83 +4388,75 @@ function goto_forage() {
 
 // === ACTION: TAX ===
 
-function is_possible_taxable_locale(loc) {
-	return is_friendly_locale(loc) && !has_exhausted_marker(loc)
-}
+function can_tax_at(here) {
+	if (is_friendly_locale(here) && !has_exhausted_marker(here)) {
+		// London, Calais, and Harlech
+		if (here === LOC_LONDON || here === LOC_CALAIS || here === LOC_HARLECH)
+			locales.push(LOC_LONDON)
 
-function get_possible_taxable_locales(lord) {
-	let locales = []
+		// Own seat
+		if (here === data.lords[game.command].seat)
+			return true
 
-	// Own seat
-	if (is_possible_taxable_locale(data.lords[lord].seat))
-		locales.push(data.lords[lord].seat)
-
-	// vassal seats
-	for_each_vassal_with_lord(lord, v => {
-		if (is_possible_taxable_locale(data.vassals[v].seat))
-			locales.push(data.vassals[v].seat)
-	})
-
-	// London
-	if (is_possible_taxable_locale(LOC_LONDON))
-		locales.push(LOC_LONDON)
-
-	// Calais
-	if (is_possible_taxable_locale(LOC_CALAIS))
-		locales.push(LOC_CALAIS)
-
-	// Harlech
-	if (is_possible_taxable_locale(LOC_HARLECH))
-		locales.push(LOC_HARLECH)
-
-	return locales
-}
-
-function tax_accept(loc, possibles) {
-	return (
-		!is_exile(loc.locale) &&
-		is_friendly_locale(loc.locale) &&
-		!has_enemy_lord(loc.locale) &&
-		possibles.includes(loc.locale)
-	)
-}
-
-function tax_adjacent(here, _) {
-	let seaports = []
-	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0) {
-		if (set_has(data.port_1, here))
-			seaports = data.port_1
-		if (set_has(data.port_2, here))
-			seaports = data.port_2
-		if (set_has(data.port_3, here))
-			seaports = data.port_3
-	} else if (is_exile(here) && get_shared_assets(here, SHIP) > 0) {
-		return find_ports_from_exile(here)
+		// vassal seats
+		for (let vassal = first_vassal; vassal < last_vassal; ++vassal)
+			if (get_lord_with_vassal(vassal) === game.command)
+				if (here === data.vassals[vassal].seat)
+					return true
 	}
-	return data.locales[here].adjacent.concat(seaports)
+	return false
+}
+
+function search_tax(result, start) {
+	let ships = get_shared_assets(start, SHIP)
+
+	search_seen.fill(0)
+	search_seen[start] = 1
+
+	let queue = [ start ]
+	while (queue.length > 0) {
+		let here = queue.shift()
+		let dist = search_dist[here]
+		let next_dist = dist + 1
+
+		if (can_tax_at(here)) {
+			if (result)
+				set_add(result, here)
+			else
+				return true
+		}
+
+		if (is_friendly_locale(here)) {
+			for (let next of data.locales[here].adjacent) {
+				if (!search_seen[next]) {
+					search_seen[next] = 1
+					queue.push(next)
+				}
+			}
+			if (ships > 0 && is_seaport(next)) {
+				for (let next of find_ports_from_locale(here)) {
+					if (!search_seen[next]) {
+						search_seen[next] = 1
+						queue.push(next)
+					}
+				}
+			}
+		}
+	}
+
+	if (result)
+		return result
+	else
+		return false
 }
 
 function can_action_tax() {
 	if (game.actions < 1)
 		return false
-
-	let possibles = get_possible_taxable_locales(game.command)
-
-	let targets = map_search(game.command, l => tax_accept(l, possibles), tax_adjacent, false)
-
-	return targets.next().done !== true
-}
-
-function get_taxable_locales() {
-	let possibles = get_possible_taxable_locales(game.command)
-
-	let results = []
-	let targets = map_search(game.command, l => tax_accept(l, possibles), tax_adjacent, false)
-
-	for (let loc of targets)
-		results.push(loc)
-
-	return results
+	let here = get_lord_locale(game.command)
+	if (can_tax_at(here))
+		return true
+	return search_tax(false, here)
 }
 
 function goto_tax() {
@@ -4495,16 +4488,16 @@ states.tax = {
 	inactive: "Tax",
 	prompt() {
 		view.prompt = "Tax: Select the location to tax."
-
 		if (game.where === NOWHERE) {
-			for (let x of get_taxable_locales())
-				gen_action_locale(x.locale)
+			for (let loc of search_tax([], get_lord_locale(game.command)))
+				gen_action_locale(loc)
 		} else {
 			view.prompt = `Tax: Attempting to tax ${data.locales[game.where].name}. `
 			prompt_influence_check()
 		}
 	},
 	locale(loc) {
+		push_undo()
 		game.where = loc
 		if (loc === data.lords[game.command].seat) {
 			// Auto succeed without influence check at Lords seat.
@@ -4518,13 +4511,14 @@ states.tax = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
+		clear_undo()
+
 		let results = do_influence_check()
-		if (
-			(game.command === LORD_GLOUCESTER_1 || game.command === LORD_GLOUCESTER_2) &&
-			(lord_has_capability(LORD_GLOUCESTER_1, AOW_YORK_SO_WISE_SO_YOUNG) ||
-				lord_has_capability(LORD_GLOUCESTER_2, AOW_YORK_SO_WISE_SO_YOUNG))
-		)
+
+		if (lord_has_capability(game.command, AOW_YORK_SO_WISE_SO_YOUNG)) {
+			log(`C${AOW_YORK_SO_WISE_SO_YOUNG}.`)
 			add_lord_assets(game.command, COIN, 1)
+		}
 
 		if (results.success) {
 			deplete_locale(game.where)
