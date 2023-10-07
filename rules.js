@@ -1318,13 +1318,6 @@ function pay_vassal(vassal) {
 		set_vassal_on_calendar(vassal, current_turn() + 1)
 }
 
-function for_each_ready_vassal(f) {
-	let favor = game.active === YORK ? game.pieces.favoury : game.pieces.favourl
-	for (let x = first_vassal; x < last_vassal; x++)
-		if (is_vassal_ready(x) && set_has(favor, data.vassals[x].seat))
-			f(x)
-}
-
 function is_vassal_unavailable(vassal) {
 	return pack8_get(game.pieces.vassals[vassal], 0) === VASSAL_UNAVAILABLE
 }
@@ -1510,21 +1503,17 @@ function is_harlech(loc) {
 }
 
 function is_favour_friendly(loc, side) {
-	if (has_favoury_marker(loc) && side === YORK)
-		return true
-	else if (has_favourl_marker(loc) && side === LANCASTER)
-		return true
+	if (side == YORK)
+		return has_favoury_marker(loc)
 	else
-		return false
+		return has_favourl_marker(loc)
 }
 
 function is_favour_enemy(loc, side) {
-	if (has_favoury_marker(loc) && side === LANCASTER)
-		return true
-	else if (has_favourl_marker(loc) && side === YORK)
-		return true
+	if (side == LANCASTER)
+		return has_favoury_marker(loc)
 	else
-		return false
+		return has_favourl_marker(loc)
 }
 
 function is_favour_neutral(loc) {
@@ -1556,12 +1545,6 @@ function add_favoury_marker(loc) {
 
 function remove_favoury_marker(loc) {
 	set_delete(game.pieces.favoury, loc)
-}
-
-function parley_locale(loc, side) {
-	if (is_favour_friendly(loc, side))
-		set_delete(game.pieces.favoury, loc)
-	set_delete(game.pieces.favourl, loc)
 }
 
 function has_exhausted_marker(loc) {
@@ -1664,35 +1647,35 @@ function increase_lancaster_influence(amt) {
 	game.influence += amt
 }
 
-function shift_favor_away(loc) {
+function shift_favour_away(loc) {
 	if (game.active === YORK)
-		shift_favor_toward_lancaster(loc)
+		shift_favour_toward_lancaster(loc)
 	else
-		shift_favor_toward_york(loc)
+		shift_favour_toward_york(loc)
 }
 
-function shift_favor_toward(loc) {
+function shift_favour_toward(loc) {
 	if (game.active === YORK)
-		shift_favor_toward_york(loc)
+		shift_favour_toward_york(loc)
 	else
-		shift_favor_toward_lancaster(loc)
+		shift_favour_toward_lancaster(loc)
 }
 
-function shift_favor_toward_york(loc) {
+function shift_favour_toward_york(loc) {
 	if (has_favourl_marker(loc))
 		remove_favourl_marker(loc)
 	else
 		add_favoury_marker(loc)
 }
 
-function shift_favor_toward_lancaster(loc) {
+function shift_favour_toward_lancaster(loc) {
 	if (has_favoury_marker(loc))
 		remove_favoury_marker(loc)
 	else
 		add_favourl_marker(loc)
 }
 
-function set_favor_enemy(loc) {
+function set_favour_enemy(loc) {
 	if (game.active === YORK) {
 		remove_favoury_marker(loc)
 		add_favourl_marker(loc)
@@ -2742,9 +2725,9 @@ states.levy_muster_lord = {
 
 			// Muster Ready Vassal Forces
 			if (is_friendly_locale(get_lord_locale(game.who))) {
-				for_each_ready_vassal(vasal => {
-					gen_action_vassal(vassal)
-				})
+				for (let vassal = first_vassal; vassal < last_vassal; vassal++)
+					if (is_vassal_ready(vassal) && is_favour_friendly(data.vassals[vassal].seat))
+						gen_action_vassal(vassal)
 			}
 
 			// Add Transport
@@ -3574,7 +3557,7 @@ function goto_parley(lord, from) {
 
 	if (game.what.length === 1 && is_campaign_phase() && get_lord_locale(lord) === game.what[0].locale) {
 		// Campaign phase, and current location is no cost (except some events), and always successful.
-		shift_favor_toward(game.what[0].locale)
+		shift_favour_toward(game.what[0].locale)
 		end_parley()
 	} else if (game.what.length === 1) {
 		game.where = game.what[0].locale
@@ -3625,7 +3608,7 @@ states.parley = {
 		log(`Attempt to Parley with %${game.where} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
 		if (results.success) {
-			shift_favor_toward(game.where)
+			shift_favour_toward(game.where)
 		}
 		end_parley()
 	}
@@ -6757,9 +6740,9 @@ states.pillage_locale = {
 		reduce_influence(2 * num)
 
 		add_exhausted_marker(game.where)
-		set_favor_enemy(game.where)
+		set_favour_enemy(game.where)
 		for (let next of data.locales[game.where].adjacent)
-			shift_favor_away(next)
+			shift_favour_away(next)
 
 		end_pillage_locale()
 	},
