@@ -2845,6 +2845,7 @@ states.levy_muster_lord = {
 	},
 
 	parley() {
+		push_undo()
 		goto_parley(game.who, "levy")
 	},
 
@@ -3328,6 +3329,7 @@ states.command = {
 	card: action_held_event,
 
 	parley() {
+		push_undo()
 		goto_parley(game.command, "command")
 	},
 }
@@ -3562,7 +3564,6 @@ function* map_search(lord, acceptfn, adjacentfn, prune = true) {
 }
 
 function goto_parley(lord, from) {
-	push_undo()
 	push_state("parley")
 
 	init_influence_check(lord)
@@ -4028,7 +4029,6 @@ function goto_exiles() {
 	if (has_enemy_lord(here)) {
 		game.state = "exiles"
 		set_active_enemy()
-		push_undo()
 	} else {
 		march_with_group_3()
 	}
@@ -4057,7 +4057,10 @@ states.exiles = {
 		})
 		view.actions.done = 1
 	},
-	lord: exile_lord,
+	lord(lord) {
+		push_undo()
+		exile_lord(lord)
+	},
 	done() {
 		end_exiles()
 	},
@@ -4102,19 +4105,10 @@ function prompt_spoils() {
 }
 
 function take_spoils(type) {
-	push_undo_without_who()
 	add_lord_assets(game.who, type, 1)
 	add_spoils(type, -1)
 	if (!has_any_spoils())
 		game.who = NOBODY
-}
-
-function take_spoils_prov() {
-	take_spoils(PROV)
-}
-
-function take_spoils_cart() {
-	take_spoils(CART)
 }
 
 // === ACTION: SUPPLY (SEARCHING) ===
@@ -4634,7 +4628,7 @@ states.confirm_approach_sail = {
 		view.actions.approach = 1
 	},
 	approach() {
-		push_undo()
+		push_undo() // TODO: why confirm if undo?
 		goto_battle()
 	},
 }
@@ -6095,8 +6089,17 @@ states.battle_spoils = {
 		}
 	},
 	lord: action_select_lord,
-	take_prov: take_spoils_prov,
-	take_cart: take_spoils_cart,
+
+	take_prov() {
+		push_undo_without_who()
+		take_spoils(PROV)
+	},
+
+	take_cart() {
+		push_undo_without_who()
+		take_spoils(CART)
+	},
+
 	end_spoils() {
 		clear_undo()
 		end_battle_spoils()
