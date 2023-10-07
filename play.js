@@ -1106,10 +1106,10 @@ function update_forces(parent, forces, lord_ix, routed) {
 		if (i === VASSAL) {
 			for_each_vassal_with_lord(lord_ix, v => {
 				if (view.battle) {
-					if (routed === false)
+					if (set_has(view.battle.routed_vassals, v) === routed)
 						add_vassal(parent, v, lord_ix, routed)
 				} else {
-					if (set_has(view.battle.routed_vassals, v) === routed)
+					if (routed === false)
 						add_vassal(parent, v, lord_ix, routed)
 				}
 			})
