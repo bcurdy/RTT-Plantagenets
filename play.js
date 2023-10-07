@@ -558,6 +558,7 @@ let expand_calendar = -1
 let expand_track = -1
 
 const ui = {
+	favicon: document.getElementById("favicon"),
 	locale: [],
 	locale_name: [],
 	locale_markers: [],
@@ -1459,6 +1460,18 @@ function update_vassals() {
 
 function on_update() {
 	restart_cache()
+
+	switch (player) {
+		case "York":
+			ui.favicon.href = "favicons/favicon_york.png"
+			break
+		case "Lancaster":
+			ui.favicon.href = "favicons/favicon_henry_vi.png"
+			break
+		default:
+			ui.favicon.href = "favicons/favicon_warwick.png"
+			break
+	}
 
 	for (let i = 0; i <= 16; ++i) {
 		calendar_layout_cylinder[i] = []
