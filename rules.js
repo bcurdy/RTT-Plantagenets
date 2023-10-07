@@ -4006,10 +4006,9 @@ states.intercept_exiles = {
 // === Exile ===
 
 function goto_exiles() {
-	clear_undo()
 	let here = get_lord_locale(game.command)
-
 	if (has_enemy_lord(here)) {
+		clear_undo()
 		game.state = "exiles"
 		set_active_enemy()
 	} else {
