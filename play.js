@@ -283,7 +283,7 @@ function get_locale_tip(id) {
 		tip += " - Seaport"
 	let list = []
 	for (let lord = 0; lord < data.lords.length; ++lord) {
-		if (set_has(data.lords[lord].seat, id))
+		if (data.lords[lord].seat === id)
 			list.push(data.lords[lord].name)
 	}
 	if (list.length > 0)
