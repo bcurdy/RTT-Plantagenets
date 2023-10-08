@@ -4421,7 +4421,7 @@ function can_tax_at(here) {
 	if (is_friendly_locale(here) && !has_exhausted_marker(here)) {
 		// London, Calais, and Harlech
 		if (here === LOC_LONDON || here === LOC_CALAIS || here === LOC_HARLECH)
-			locales.push(LOC_LONDON)
+			return true
 
 		// Own seat
 		if (here === data.lords[game.command].seat)
@@ -4503,13 +4503,19 @@ function end_tax() {
 }
 
 function get_tax_amount(loc) {
+	let tax
+
 	if (loc === LOC_LONDON || loc === LOC_CALAIS)
-		return 3
+		tax = 3
+	else if (is_city(loc))
+		tax = 2
+	else
+		tax = 1
 
-	if (is_city(loc))
-		return 2
+	if (command_has_stafford_branch(loc))
+		tax += 1
 
-	return 1
+	return tax
 }
 
 states.tax = {
@@ -4525,7 +4531,6 @@ states.tax = {
 		}
 	},
 	locale(loc) {
-		push_undo()
 		game.where = loc
 		if (loc === data.lords[game.command].seat) {
 			// Auto succeed without influence check at Lords seat.
