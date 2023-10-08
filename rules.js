@@ -3472,6 +3472,8 @@ function can_parley_at(loc) {
 
 var search_seen = new Array(last_locale + 1)
 var search_dist = new Array(last_locale + 1)
+var search_carts = new Array(last_locale + 1)
+var search_ships = new Array(last_locale + 1)
 
 function search_parley(result, start) {
 	let ships = get_shared_assets(start, SHIP)
@@ -3571,32 +3573,6 @@ function can_action_parley_levy() {
 function list_parley_levy() {
 	let here = get_lord_locale(game.who)
 	return search_parley([], here)
-}
-
-function* map_search(lord, acceptfn, adjacentfn, prune = true) {
-	let start = get_lord_locale(lord)
-	let queue = [ { locale: start, distance: 0 } ]
-	let seen = [ start ]
-
-	while (queue.length > 0) {
-		let item = queue.shift()
-
-		if (acceptfn(item)) {
-			yield item
-			if (prune)
-				continue
-		}
-
-		if (is_friendly_locale(item.locale)) {
-			let distance = item.distance + 1
-			for (let next of adjacentfn(item.locale, lord)) {
-				if (!set_has(seen, next)) {
-					set_add(seen, next)
-					queue.push({ locale: next, distance })
-				}
-			}
-		}
-	}
 }
 
 function goto_parley() {
@@ -4153,62 +4129,118 @@ function take_spoils(type) {
 
 // === ACTION: SUPPLY (SEARCHING) ===
 
-function supply_adjacent(here, lord) {
-	let lord_loc = get_lord_locale(lord)
-	if (is_exile(here) && get_shared_assets(here, SHIP) > 0) {
-		return find_ports_from_locale(here)
-	} else if (is_exile(lord_loc) && lord_loc !== here) {
-		return []
+// If Lord is in Exile: use ships and a port on the same sea.
+// If Lord is not in Exile or is in Scotland: use carts by way.
+// If Lord is in Exile in Scotland: may use carts by way to stronghold.
+// If source is stronghold: must use way.
+// Record number of carts needed in result map.
+
+// TODO: supply from scotland with carts? no ways defined in data
+
+function can_supply_at(loc, ships) {
+	// if theoretically possible to supply (does not check carts or ships)
+	if (is_stronghold(loc) && is_friendly_locale(loc)) {
+		if (ships > 0 && is_seaport(loc))
+			return true
+		if (!has_exhausted_marker(loc))
+			return true
 	}
-	return data.locales[here].adjacent
+	return false
+}
+
+function search_supply_by_way(result, start, carts, ships) {
+	search_dist.fill(0)
+	search_seen.fill(0)
+	search_seen[start] = 1
+
+	let queue = [ start ]
+	while (queue.length > 0) {
+		let here = queue.shift()
+		let dist = search_dist[here]
+
+		if (can_supply_at(here, ships)) {
+			if (result)
+				map_set(result, here, dist)
+			else
+				return true
+		}
+
+		if (is_friendly_locale(here)) {
+			let next_dist = dist + 1
+			if (next_dist <= carts) {
+				for (let next of data.locales[here].adjacent) {
+					if (!search_seen[next]) {
+						search_seen[next] = 1
+						search_dist[next] = next_dist
+						queue.push(next)
+					}
+				}
+			}
+		}
+	}
+
+	if (result)
+		return result
+	return false
+}
+
+function search_supply_by_sea(result, here) {
+	// Search via sea from Exile box.
+	if (is_friendly_locale(here)) {
+		for (let next of find_ports(here)) {
+			if (can_supply_at(next, 1)) {
+				if (result)
+					map_set(result, next, 0)
+				else
+					return true
+			}
+		}
+	}
+	if (result)
+		return result
+	return false
+}
+
+function search_supply(result) {
+	let here = get_lord_locale(game.command)
+	let carts = get_shared_assets(here, CART)
+	let ships = get_shared_assets(here, SHIP)
+	if (ships > 0 && is_exile(here))
+		result = search_supply_by_sea(result, here)
+	result = search_supply_by_way(result, here, carts, ships)
+	return result
 }
 
 // === ACTION: SUPPLY ===
 
-function supply_accept(loc, carts, ships) {
+function command_has_harbingers() {
 	return (
-		!is_exile(loc.locale) &&
-		is_friendly_locale(loc.locale) &&
-		!has_enemy_lord(loc.locale) &&
-		(!has_exhausted_marker(loc.locale) || (ships > 0 && is_seaport(loc.locale))) &&
-		carts >= loc.distance
+		lord_has_capability(game.command, AOW_LANCASTER_HARBINGERS) ||
+		lord_has_capability(game.command, AOW_YORK_HARBINGERS)
 	)
 }
 
-function find_supply_sources(lord, carts, ships) {
-	let search = map_search(lord, loc => supply_accept(loc, carts, ships), supply_adjacent, false)
-
-	let results = []
-	for (let loc of search)
-		results.push(loc)
-	return results
+function command_has_stafford_branch(loc) {
+	if (lord_has_capability(game.command, AOW_YORK_STAFFORD_BRANCH)) {
+		return (
+			loc === LOC_EXETER ||
+			loc === LOC_LAUNCESTON ||
+			loc === LOC_PLYMOUTH ||
+			loc === LOC_WELLS ||
+			loc === LOC_DORCHESTER
+		)
+	}
+	return false
 }
 
 function init_supply() {
-	let here = get_lord_locale(game.command)
-	let carts = get_shared_assets(here, CART)
-	let ships = get_shared_assets(here, SHIP)
-
-	game.supply = {
-		sources: find_supply_sources(game.command, carts, ships),
-		carts: carts,
-		ships: ships,
-	}
+	game.supply = search_supply([])
 }
 
 function can_action_supply() {
 	if (game.actions < 1)
 		return false
-	return can_supply()
-}
-
-function can_supply() {
-	let here = get_lord_locale(game.command)
-	let carts = get_shared_assets(here, CART)
-	let ships = get_shared_assets(here, SHIP)
-	let search = map_search(game.command, loc => supply_accept(loc, carts, ships), supply_adjacent, false)
-
-	return search.next().done !== true
+	return search_supply(false)
 }
 
 function goto_supply() {
@@ -4218,32 +4250,41 @@ function goto_supply() {
 	init_supply()
 }
 
-function get_supply_from_source(source) {
-	let prov = 0
+function modify_supply(loc, supply) {
+	let here = get_lord_locale(game.command)
+	let carts = get_shared_assets(here, CART)
 
-	if (has_exhausted_marker(source))
-		return prov
+	// Must carry supply over land with one cart per provender per way
+	let distance = map_get(game.supply, loc)
+	if (distance > 0)
+		supply = Math.min(supply, Math.floor(carts / distance))
 
-	if (
-		game.command === LORD_DEVON && 
-		lord_has_capability(LORD_DEVON, AOW_YORK_STAFFORD_BRANCH) &&
-		(game.where === LOC_EXETER ||
-			game.where === LOC_LAUNCESTON ||
-			game.where === LOC_PLYMOUTH ||
-			game.where === LOC_WELLS ||
-			game.where === LOC_DORCHESTER)
-	)
-		prov += 1
+	// Harbingers event doubles supply received
+	if (command_has_harbingers())
+		supply = supply * 2
 
-	if (source === LOC_LONDON || source === LOC_CALAIS) {
-		prov += 2
-		return prov
-	} else if (is_city(source)) {
-		prov += 1
-		return prov
+	return supply
+}
+
+function get_port_supply_amount(loc) {
+	if (is_seaport(loc)) {
+		let here = get_lord_locale(game.command)
+		let ships = get_shared_assets(here, SHIP)
+		return modify_supply(loc, ships)
 	}
-	prov += 1
-	return prov
+	return 0
+}
+
+function get_stronghold_supply_amount(loc) {
+	if (!has_exhausted_marker(loc)) {
+		let supply = 1
+		if (loc === LOC_LONDON || loc === LOC_CALAIS)
+			supply = 2
+		if (command_has_stafford_branch(loc))
+			supply += 1
+		return modify_supply(loc, supply)
+	}
+	return 0
 }
 
 states.supply_source = {
@@ -4251,53 +4292,50 @@ states.supply_source = {
 	prompt() {
 		view.prompt = "Supply: Select Supply Source."
 
-		let list = []
-		if (game.supply.carts > 0)
-			list.push(`${game.supply.carts} Cart`)
-		if (game.supply.ships > 0)
-			list.push(`${game.supply.ships} Ship`)
+		let here = get_lord_locale(game.command)
+		let carts = get_shared_assets(here, CART)
+		let ships = get_shared_assets(here, SHIP)
 
-		if (list.length > 0)
-			view.prompt += " " + list.join(", ") + "."
+		if (carts > 0)
+			view.prompt += ` ${carts} Cart.`
+		if (ships > 0)
+			view.prompt += ` ${carts} Ship.`
 
-		for (let x of game.supply.sources)
-			gen_action_locale(x.locale)
+		for (let i = 0; i < game.supply.length; i += 2)
+			gen_action_locale(game.supply[i])
 	},
-	locale(source) {
-		let source_item = game.supply.sources.find(s => s.locale === source)
-		if (source_item !== undefined) {
-			let supply = 0
-			let sea_supply = 0
+	locale(loc) {
+		push_undo()
 
-			if (is_seaport(source))
-				sea_supply = game.supply.ships
+		let port_supply = get_port_supply_amount(loc)
+		let stronghold_supply = get_stronghold_supply_amount(loc)
 
-			if (!is_exile(get_lord_locale(game.command)))
-				supply = Math.min(get_supply_from_source(source), Math.floor(game.supply.carts / source_item.distance))
-
-			if (
-				lord_has_capability(game.command, AOW_LANCASTER_HARBINGERS) ||
-				lord_has_capability(game.command, AOW_YORK_HARBINGERS)
-			) {
-				supply = supply * 2
-				sea_supply = sea_supply * 2
-			}
-
-			if (supply > 0 && sea_supply === 0) {
-				logi(`Stronghold at %${source}`)
-				add_lord_assets(game.command, PROV, supply)
-				deplete_locale(source)
-			} else if (sea_supply > 0 && supply === 0) {
-				logi(`Seaport at %${source}`)
-				add_lord_assets(game.command, PROV, sea_supply)
-			} else {
-				game.where = source
-				goto_select_supply_type(supply, sea_supply)
-				return
-			}
+		if (stronghold_supply > 0 && port_supply === 0) {
+			use_stronghold_supply(loc, stronghold_supply)
+			return
 		}
-		end_supply()
+
+		if (port_supply > 0 && stronghold_supply === 0) {
+			use_port_supply(loc, port_supply)
+			return
+		}
+
+		game.where = loc
+		game.state = "select_supply_type"
 	},
+}
+
+function use_stronghold_supply(source, amount) {
+	logi(`${amount} from Stronghold at %${source}`)
+	add_lord_assets(game.command, PROV, amount)
+	deplete_locale(source)
+	end_supply()
+}
+
+function use_port_supply(source, amount) {
+	logi(`${amount} from Port at %${source}`)
+	add_lord_assets(game.command, PROV, amount)
+	end_supply()
 }
 
 function end_supply() {
@@ -4306,34 +4344,21 @@ function end_supply() {
 	game.supply = 0
 }
 
-function goto_select_supply_type(supply, sea_supply) {
-	push_state("select_supply_type")
-	game.count = supply
-	game.what = sea_supply
-}
-
-function end_select_supply_type() {
-	pop_state()
-	end_supply()
-}
-
 states.select_supply_type = {
 	inactive: "Supply",
 	prompt() {
-		view.prompt = `Supply: ${game.count} from Stronghold or ${game.what} from Port?`
+		let port = get_port_supply_amount(game.where)
+		let stronghold = get_stronghold_supply_amount(game.where)
+
+		view.prompt = `Supply: ${stronghold} from Stronghold or ${port} from Port?`
 		view.actions.stronghold = 1
 		view.actions.port = 1
 	},
 	stronghold() {
-		logi(`Stronghold at %${game.where}`)
-		add_lord_assets(game.command, PROV, game.count)
-		deplete_locale(game.where)
-		end_select_supply_type()
+		use_stronghold_supply(source, get_stronghold_supply_amount(source))
 	},
 	port() {
-		logi(`Seaport at %${game.where}`)
-		add_lord_assets(game.command, PROV, game.what)
-		end_select_supply_type()
+		use_port_supply(source, get_port_supply_amount(source))
 	},
 }
 
@@ -4604,7 +4629,7 @@ states.sail = {
 		let overflow_cart = (cart / 2 - ships) * 2
 
 		if (overflow_prov <= 0 && overflow_cart <= 0) {
-			view.prompt = `Sail: Select a destination Seaport.`
+			view.prompt = `Sail: Select a destination Port.`
 			for (let to of find_sail_locales(here)) {
 				if (to !== here)
 					if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))

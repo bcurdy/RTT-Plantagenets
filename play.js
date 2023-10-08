@@ -280,7 +280,7 @@ function get_locale_tip(id) {
 	let loc = data.locales[id]
 	let tip = loc.name
 	if (set_has(data.seaports, id))
-		tip += " - Seaport"
+		tip += " - Port"
 	let list = []
 	for (let lord = 0; lord < data.lords.length; ++lord) {
 		if (data.lords[lord].seat === id)
