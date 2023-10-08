@@ -3130,6 +3130,8 @@ function end_campaign_plan() {
 // === CAMPAIGN: COMMAND ACTIVATION ===
 
 function goto_command_activation() {
+	clear_undo()
+
 	if (game.plan_y.length === 0 && game.plan_l.length === 0) {
 		game.command = NOBODY
 		goto_end_campaign()
@@ -3547,16 +3549,18 @@ function list_parley_command() {
 
 	let here = get_lord_locale(game.command)
 	if (can_parley_at(here))
-		set_add(result, here)
+		map_set(result, here, 0)
 
-	for (let next of data.locales[here].adjacent)
-		if (can_parley_at(next))
-			set_add(result, here)
-
-	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0)
-		for (let next of find_ports(here))
+	if (is_friendly_locale(here)) {
+		for (let next of data.locales[here].adjacent)
 			if (can_parley_at(next))
-				set_add(result, here)
+				map_set(result, next, 1)
+
+		if (is_seaport(here) && get_shared_assets(here, SHIP) > 0)
+			for (let next of find_ports(here))
+				if (can_parley_at(next))
+					map_set(result, next, 1)
+	}
 
 	return result
 }
@@ -3587,6 +3591,7 @@ function goto_parley() {
 
 		// Campaign phase, and current location is no cost (except some events), and always successful.
 		if (game.what.length === 2 && get_lord_locale(game.command) === game.what[0]) {
+			log(`Parley.`)
 			shift_favour_toward(game.what[0])
 			end_parley()
 			return
@@ -3602,7 +3607,6 @@ function goto_parley() {
 }
 
 function end_parley() {
-	clear_undo()
 	pop_state()
 	game.where = NOWHERE
 	game.what = NOTHING
