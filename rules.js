@@ -3505,7 +3505,7 @@ function search_parley(result, start) {
 					queue.push(next)
 				}
 			}
-			if (ships > 0 && is_seaport(next)) {
+			if (ships > 0 && is_seaport(here)) {
 				for (let next of find_ports(here)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
