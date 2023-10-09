@@ -5573,7 +5573,7 @@ function goto_assign_hits() {
 		for (let pos of game.battle.engagements[0]) {
 			let lord = game.battle.array[pos]
 			if (is_friendly_lord(lord)) {
-				found = lord
+				found = pos
 				++count
 			}
 		}
