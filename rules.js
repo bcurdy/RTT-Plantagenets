@@ -5536,7 +5536,7 @@ function continue_engagement() {
 	for (let pos of battle_strike_positions) {
 		let lord = game.battle.array[pos]
 		if (lord !== NOBODY)
-			if (will_rout_lord(lord))
+			if (will_lord_rout(lord))
 				rout_lord(lord)
 	}
 
