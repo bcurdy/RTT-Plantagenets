@@ -1639,6 +1639,9 @@ function on_update() {
 	action_button("end_wastage", "End Wastage")
 	action_button("end_withdraw", "End Withdraw")
 
+	action_button("add_militia", "Add Militia")
+	action_button("add_men_at_arms", "Add Men at Arms")
+
 	action_button("pass", "Pass")
 	action_button("done", "Done")
 	action_button("undo", "Undo")
