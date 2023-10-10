@@ -2807,6 +2807,23 @@ function end_levy_muster() {
 		goto_levy_discard_events()
 }
 
+function can_lord_muster(lord) {
+	// already mustered (except free levy)!
+	if (get_lord_moved(lord) && game.flags.free_levy !== 1)
+		return false
+
+	// must be on map
+	if (is_lord_on_map(lord)) {
+		// can use lordship
+		if (is_lord_at_friendly_locale(lord))
+			return true
+		// can only parley
+		if (can_parley_at(get_lord_locale(lord)))
+			return true
+	}
+	return false
+}
+
 states.levy_muster = {
 	inactive: "Muster",
 	prompt() {
@@ -2816,13 +2833,9 @@ states.levy_muster = {
 
 		let done = true
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (
-				is_lord_at_friendly_locale(lord) &&
-				!is_lord_on_calendar(lord) &&
-				(!get_lord_moved(lord) || game.flags.free_levy === 1)
-			) {
+			if (can_lord_muster(lord)) {
 				gen_action_lord(lord)
-				done = true
+				done = false // ???
 			}
 		}
 		if (done) {
@@ -2864,40 +2877,50 @@ states.levy_muster_lord = {
 
 		prompt_held_event_lordship()
 
-		if (game.count > 0) {
-			// Roll to muster Ready Lord at Seat
-			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-				if (is_lord_ready(lord) && has_locale_to_muster(lord))
-					gen_action_lord(lord)
+		let here = get_lord_locale(game.who)
+
+		if (is_friendly_locale(here)) {
+			if (game.count > 0) {
+				// Roll to muster Ready Lord at Seat
+				for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+					if (is_lord_ready(lord) && has_locale_to_muster(lord))
+						gen_action_lord(lord)
+				}
+
+				// Muster Ready Vassal Forces
+				if (is_friendly_locale(here)) {
+					for (let vassal = first_vassal; vassal <= last_vassal; vassal++)
+						if (is_vassal_ready(vassal) && is_favour_friendly(data.vassals[vassal].seat))
+							gen_action_vassal(vassal)
+				}
+
+				// Add Transport
+				if (is_seaport(here) && get_lord_assets(game.who, SHIP) < 2)
+					view.actions.take_ship = 1
+
+				if (can_add_transport(game.who, CART))
+					view.actions.take_cart = 1
+
+				if (can_add_troops(game.who, here))
+					view.actions.levy_troops = 1
+
+				// Add Capability
+				if (can_add_lord_capability(game.who))
+					view.actions.capability = 1
+
+				if (can_action_parley_levy())
+					view.actions.parley = 1
 			}
 
-			// Muster Ready Vassal Forces
-			if (is_friendly_locale(get_lord_locale(game.who))) {
-				for (let vassal = first_vassal; vassal <= last_vassal; vassal++)
-					if (is_vassal_ready(vassal) && is_favour_friendly(data.vassals[vassal].seat))
-						gen_action_vassal(vassal)
-			}
-
-			// Add Transport
-			if (is_seaport(get_lord_locale(game.who)) && get_lord_assets(game.who, SHIP) < 2)
-				view.actions.take_ship = 1
-
-			if (can_add_transport(game.who, CART))
-				view.actions.take_cart = 1
-
-			if (can_add_troops(game.who, get_lord_locale(game.who)))
+			if (game.count === 0 && game.flags.free_levy === 1 && can_add_troops(game.who, here)) {
 				view.actions.levy_troops = 1
-
-			// Add Capability
-			if (can_add_lord_capability(game.who))
-				view.actions.capability = 1
-
-			if (can_action_parley_levy())
-				view.actions.parley = 1
-		}
-
-		if (game.count === 0 && game.flags.free_levy === 1 && can_add_troops(game.who, get_lord_locale(game.who))) {
-			view.actions.levy_troops = 1
+			}
+		} else {
+			// Can only Parley if locale is not friendly.
+			if (game.count > 0) {
+				if (can_action_parley_levy())
+					view.actions.parley = 1
+			}
 		}
 
 		view.actions.done = 1
