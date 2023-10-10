@@ -2329,11 +2329,13 @@ function end_immediate_event() {
 
 function goto_lancaster_event_scots() {
 	game.state = "scots"
+	game.count = []
 	game.who = NOBODY
 }
 
 function end_lancaster_event_scots() {
-	clear_lords_moved()
+	clear_undo()
+	game.count = 0
 	game.who = NOBODY
 	end_immediate_event()
 }
@@ -2345,16 +2347,16 @@ states.scots = {
 		view.actions.done = 1
 
 		for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; lord++) {
-			if (is_lord_on_map(lord) && is_lord_unfed(lord) < 3) {
+			if (is_lord_on_map(lord) && map_get(game.count, lord, 0) < 3) {
 				gen_action_lord(lord)
 			}
 		}
 
 		if (game.who !== NOBODY) {
-			let troops = is_lord_unfed(game.who)
-			if ((troops & 1) !== 1)
+			let troops = map_get(game.count, game.who, 0)
+			if ((troops & 1) === 0)
 				gen_action("add_militia")
-			if (((troops >> 1) & 1) !== 1)
+			if ((troops & 2) === 0)
 				gen_action("add_men_at_arms")
 		}
 	},
@@ -2363,23 +2365,20 @@ states.scots = {
 	},
 	add_militia() {
 		add_lord_forces(game.who, MILITIA, 1)
-		let troops = is_lord_unfed(game.who)
-		set_lord_unfed(game.who, troops + 1)
-
-		if (troops !== 0) {
+		let troops = map_get(game.count, game.who, 0)
+		map_set(game.count, game.who, troops + 1)
+		if (troops !== 0)
 			game.who = NOBODY
-		}
 	},
 	add_men_at_arms() {
 		add_lord_forces(game.who, MEN_AT_ARMS, 1)
-		let troops = is_lord_unfed(game.who)
-		set_lord_unfed(game.who, troops + 2)
-
-		if (troops !== 0) {
+		let troops = map_get(game.count, game.who, 0)
+		map_set(game.count, game.who, troops + 2)
+		if (troops !== 0)
 			game.who = NOBODY
-		}
 	},
 	lord(lord) {
+		push_undo()
 		game.who = lord
 	}
 }
