@@ -802,8 +802,13 @@ function update_aliases() {
 		first_enemy_lord = -1
 		last_enemy_lord = -1
 	}
-	P1 = game.rebel
-	P2 = game.crown
+	if (game.rebel === YORK) {
+		P1 = YORK
+		P2 = LANCASTER
+	} else {
+		P1 = LANCASTER
+		P2 = YORK
+	}
 }
 
 function load_state(state) {
@@ -1835,7 +1840,6 @@ exports.setup = function (seed, scenario, options) {
 
 		active: null,
 		rebel: null,
-		crown: null,
 		state: "setup_lords",
 		stack: [],
 		victory_check: 0,
@@ -1921,7 +1925,6 @@ function setup_Ia() {
 	game.turn = 1 << 1
 
 	game.rebel = YORK
-	game.crown = LANCASTER
 	game.active = YORK
 	game.victory_check = 40
 	game.influence = 0
@@ -1954,7 +1957,6 @@ function setup_Ib() {
 	game.turn = 1 << 1
 
 	game.rebel = YORK
-	game.crown = LANCASTER
 	game.active = YORK
 	game.victory_check = 45
 	game.influence = 0
@@ -2000,7 +2002,6 @@ function setup_Ic() {
 	game.turn = 5 << 1
 
 	game.rebel = YORK
-	game.crown = LANCASTER
 	game.active = YORK
 	game.victory_check = 45
 	game.influence = 6
@@ -2047,7 +2048,6 @@ function setup_II() {
 	game.turn = 1 << 1
 
 	game.rebel = LANCASTER
-	game.crown = YORK
 	game.active = LANCASTER
 	muster_lord(LORD_EDWARD_IV, LOC_LONDON)
 	muster_lord(LORD_PEMBROKE, LOC_LONDON)
@@ -2085,7 +2085,6 @@ function setup_III() {
 	game.turn = 1 << 1
 
 	game.rebel = LANCASTER
-	game.crown = YORK
 	game.active = LANCASTER
 	muster_lord(LORD_RICHARD_III, LOC_LONDON)
 	muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
@@ -2114,7 +2113,6 @@ function setup_ItoIII() {
 	game.turn = 1 << 1
 
 	game.rebel = YORK
-	game.crown = LANCASTER
 	game.active = YORK
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
