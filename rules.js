@@ -479,7 +479,7 @@ const EVENT_LANCASTER_PARLIAMENT_VOTES = L18 // TODO
 // This Levy 1 Parley action each levy for each Lancastrian lord cost 1 less
 // and automatic success (success = true)
 // Bypass event Y15
-const EVENT_LANCASTER_HENRYS_PROCLAMATION = L19 // TODO
+const EVENT_LANCASTER_HENRYS_PROCLAMATION = L19
 // Vassals to current turn box
 const EVENT_LANCASTER_PARLIAMENT_TRUCE = L20 // TODO
 // Can be played during Levy and Campaign
@@ -2267,9 +2267,9 @@ function goto_immediate_event(c) {
 			return goto_lancaster_event_scots()
 		case EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT:
 			return goto_lancaster_event_henry_pressures_parliament()
-		/*case EVENT_LANCASTER_HENRYS_PROCLAMATION:
+		case EVENT_LANCASTER_HENRYS_PROCLAMATION:
 			return goto_lancaster_event_henrys_proclamation()
-		case EVENT_LANCASTER_FRENCH_TROOPS:
+		/*case EVENT_LANCASTER_FRENCH_TROOPS:
 			return goto_lancaster_event_french_troops()
 		case EVENT_LANCASTER_WARWICKS_PROPAGANDA:
 			return goto_lancaster_event_warwicks_propaganda()
@@ -2385,11 +2385,21 @@ function goto_lancaster_event_henry_pressures_parliament() {
 	}
 
 	if (count > 0) {
-		logi(`C${EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT} removes ${count} York influence.`)
+		logi(`Removed ${count} York influence.`)
 		reduce_york_influence(count)
 	}
 
 	end_immediate_event()
+}
+
+// === EVENTS: LANCASTER HENRY'S PROCLAMATION EVENT ===
+
+function goto_lancaster_event_henrys_proclamation() {
+	for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
+		if (is_vassal_mustered(vassal) && is_york_lord(get_lord_with_vassal(vassal))) {
+			set_vassal_on_calendar(vassal, current_turn())
+		}
+	}
 }
 
 // === EVENTS: SHIFT LORD OR SERVICE (IMMEDIATE) ===
