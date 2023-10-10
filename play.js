@@ -6,6 +6,30 @@ function toggle_pieces() {
 
 // === COMMON LIBRARY ===
 
+function map_get(map, key, missing) {
+	let a = 0
+	let b = (map.length >> 1) - 1
+	while (a <= b) {
+		let m = (a + b) >> 1
+		let x = map[m << 1]
+		if (key < x)
+			b = m - 1
+		else if (key > x)
+			a = m + 1
+		else
+			return map[(m << 1) + 1]
+	}
+	return missing
+}
+
+function map_get_pack4(map, lord, k) {
+	return pack4_get(map_get(map, lord, 0), k)
+}
+
+function map2_get(map, x, y, v) {
+	return map_get(map, (x << 1) + y, v)
+}
+
 function set_has(set, item) {
 	let a = 0
 	let b = set.length - 1
@@ -34,11 +58,6 @@ function pack2_get(word, n) {
 function pack4_get(word, n) {
 	n = n << 2
 	return (word >>> n) & 15
-}
-
-function pack8_get(word, n) {
-	n = n << 3
-	return (word >>> n) & 255
 }
 
 // === CONSTANTS (matching those in rules.js) ===
@@ -349,12 +368,32 @@ function is_lord_ambushed(lord) {
 	return false
 }
 
+function get_lord_locale(lord) {
+	return map_get(view.pieces.locale, lord, -1)
+}
+
 function get_lord_moved(lord) {
-	return pack2_get(view.pieces.moved, lord)
+	return map_get(view.pieces.moved, lord, 0)
+}
+
+function get_lord_assets(lord, n) {
+	return map_get_pack4(view.pieces.assets, lord, n, 0)
 }
 
 function get_lord_forces(lord, n) {
-	return pack4_get(view.pieces.forces[lord], n)
+	return map_get_pack4(view.pieces.forces, lord, n, 0)
+}
+
+function get_lord_routed(lord, n) {
+	return map_get_pack4(view.pieces.routed, lord, n, 0)
+}
+
+function get_lord_capability(lord, n) {
+	return map2_get(view.pieces.capabilities, lord, n, -1)
+}
+
+function is_lord_in_exile(ix) {
+	return pack1_get(view.pieces.in_exile, ix)
 }
 
 function count_lord_all_forces(lord) {
@@ -406,10 +445,6 @@ function is_lancaster_locale(loc) {
 	return loc >= first_lancaster_locale && loc <= last_lancaster_locale
 }
 
-function get_lord_locale(lord) {
-	return view.pieces.locale[lord]
-}
-
 function is_lord_on_map(lord) {
 	let loc = get_lord_locale(lord)
 	return loc !== NOWHERE && loc < CALENDAR
@@ -449,14 +484,6 @@ function is_lord_selected(ix) {
 	if (view.who >= 0)
 		return ix === view.who
 	return false
-}
-
-function is_lord_in_exile(ix) {
-	return pack1_get(view.pieces.in_exile, ix)
-}
-
-function get_lord_capability(lord, n) {
-	return view.pieces.capabilities[(lord << 1) + n]
 }
 
 function lord_has_capability_card(lord, c) {
@@ -1114,7 +1141,7 @@ function update_forces(parent, forces, lord_ix, routed) {
 				}
 			})
 		} else {
-			let n = pack4_get(forces, i)
+			let n = map_get_pack4(forces, lord_ix, i, 0)
 			for (let k = 0; k < n; ++k) {
 				add_force(parent, i, lord_ix, routed)
 			}
@@ -1122,26 +1149,26 @@ function update_forces(parent, forces, lord_ix, routed) {
 	}
 }
 
-function update_assets(id, parent, assets) {
+function update_assets(parent, assets, lord_ix) {
 	parent.replaceChildren()
 	for (let i = 0; i < asset_type_count; ++i) {
-		let n = pack4_get(assets, i)
+		let n = map_get_pack4(assets, lord_ix, i, 0)
 		if (asset_type_x34[i]) {
 			while (n >= 4) {
-				add_asset(parent, i, 4, id)
+				add_asset(parent, i, 4, lord_ix)
 				n -= 4
 			}
 			while (n >= 3) {
-				add_asset(parent, i, 3, id)
+				add_asset(parent, i, 3, lord_ix)
 				n -= 3
 			}
 		}
 		while (n >= 2) {
-			add_asset(parent, i, 2, id)
+			add_asset(parent, i, 2, lord_ix)
 			n -= 2
 		}
 		while (n >= 1) {
-			add_asset(parent, i, 1, id)
+			add_asset(parent, i, 1, lord_ix)
 			n -= 1
 		}
 	}
@@ -1168,9 +1195,9 @@ function update_valour(lord, parent, battle) {
 function update_lord_mat(ix) {
 	if (view.reveal & (1 << ix)) {
 		ui.lord_mat[ix].classList.remove("hidden")
-		update_assets(ix, ui.assets[ix], view.pieces.assets[ix])
-		update_forces(ui.forces[ix], view.pieces.forces[ix], ix, false)
-		update_forces(ui.routed[ix], view.pieces.routed[ix], ix, true)
+		update_assets(ui.assets[ix], view.pieces.assets, ix)
+		update_forces(ui.forces[ix], view.pieces.forces, ix, false)
+		update_forces(ui.routed[ix], view.pieces.routed, ix, true)
 		ui.lord_feed[ix].classList.toggle("hide", count_lord_all_forces(ix) <= 6)
 	} else {
 		ui.lord_mat[ix].classList.add("hidden")

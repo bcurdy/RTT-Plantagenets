@@ -887,27 +887,30 @@ function set_lord_calendar(lord, turn) {
 }
 
 function get_lord_locale(lord) {
-	return game.pieces.locale[lord]
+	return map_get(game.pieces.locale, lord, NOWHERE)
 }
 
 function get_lord_capability(lord, n) {
-	return game.pieces.capabilities[(lord << 1) + n]
+	return map2_get(game.pieces.capabilities, lord, n, NOTHING)
 }
 
 function set_lord_capability(lord, n, x) {
-	game.pieces.capabilities[(lord << 1) + n] = x
+	if (x === NOTHING)
+		map2_delete(game.pieces.capabilities, lord, n)
+	else
+		map2_set(game.pieces.capabilities, lord, n, x)
 }
 
 function get_lord_assets(lord, n) {
-	return pack4_get(game.pieces.assets[lord], n)
+	return map_get_pack4(game.pieces.assets, lord, n)
 }
 
 function get_lord_forces(lord, n) {
-	return pack4_get(game.pieces.forces[lord], n)
+	return map_get_pack4(game.pieces.forces, lord, n)
 }
 
 function get_lord_routed_forces(lord, n) {
-	return pack4_get(game.pieces.routed[lord], n)
+	return map_get_pack4(game.pieces.routed, lord, n)
 }
 
 function lord_has_unrouted_units(lord) {
@@ -939,7 +942,10 @@ function rout_vassal(lord, vassal) {
 }
 
 function set_lord_locale(lord, locale) {
-	game.pieces.locale[lord] = locale
+	if (locale === NOWHERE)
+		map_delete(game.pieces.locale, lord)
+	else
+		map_set(game.pieces.locale, lord, locale)
 }
 
 function get_force_name(lord, n, x) {
@@ -960,7 +966,7 @@ function set_lord_assets(lord, n, x) {
 		x = 0
 	if (x > 40)
 		x = 40
-	game.pieces.assets[lord] = pack4_set(game.pieces.assets[lord], n, x)
+	map_set_pack4(game.pieces.assets, lord, n, x)
 }
 
 function add_lord_assets(lord, n, x) {
@@ -972,7 +978,7 @@ function set_lord_forces(lord, n, x) {
 		x = 0
 	if (x > 15)
 		x = 15
-	game.pieces.forces[lord] = pack4_set(game.pieces.forces[lord], n, x)
+	map_set_pack4(game.pieces.forces, lord, n, x)
 }
 
 function add_lord_forces(lord, n, x) {
@@ -984,7 +990,7 @@ function set_lord_routed_forces(lord, n, x) {
 		x = 0
 	if (x > 15)
 		x = 15
-	game.pieces.routed[lord] = pack4_set(game.pieces.routed[lord], n, x)
+	map_set_pack4(game.pieces.routed, lord, n, x)
 }
 
 function add_lord_routed_forces(lord, n, x) {
@@ -992,15 +998,15 @@ function add_lord_routed_forces(lord, n, x) {
 }
 
 function clear_lords_moved() {
-	game.pieces.moved = 0
+	map_clear(game.pieces.moved)
 }
 
 function get_lord_moved(lord) {
-	return pack2_get(game.pieces.moved, lord)
+	return map_get(game.pieces.moved, lord, 0)
 }
 
 function set_lord_moved(lord, x) {
-	game.pieces.moved = pack2_set(game.pieces.moved, lord, x)
+	map_set(game.pieces.moved, lord, x)
 }
 
 function set_lord_fought(lord) {
@@ -1221,7 +1227,7 @@ function is_card_in_use(c) {
 		return true
 	if (set_has(game.events, c))
 		return true
-	if (game.pieces.capabilities.includes(c))
+	if (map_has_value(game.pieces.capabilities, c))
 		return true
 	return false
 }
@@ -1253,7 +1259,7 @@ function can_discard_card(c) {
 		return true
 	if (set_has(game.hand_l, c))
 		return true
-	if (game.pieces.capabilities.includes(c))
+	if (map_has_value(game.pieces.capabilities, c))
 		return true
 }
 
@@ -1853,18 +1859,23 @@ exports.setup = function (seed, scenario, options) {
 		events: [], // this levy/this campaign cards
 
 		pieces: {
-			locale: Array(lord_count).fill(NOWHERE),
-			assets: Array(lord_count).fill(0),
-			forces: Array(lord_count).fill(0),
-			routed: Array(lord_count).fill(0),
-			capabilities: Array(lord_count << 1).fill(NOTHING),
-			moved: 0,
+			// per lord data
+			locale: [],
+			assets: [],
+			forces: [],
+			routed: [],
+			capabilities: [], // TODO map card -> lord instead of lord+slot -> card
+			moved: [],
+			in_exile: 0,
+
+			// per vassal data
 			vassals: Array(vassal_count).fill(VASSAL_UNAVAILABLE),
+
+			// per locale data
 			depleted: [],
 			exhausted: [],
 			favourl: [],
 			favoury: [],
-			in_exile: 0,
 		},
 
 		flags: {
@@ -5167,7 +5178,7 @@ function resume_battle_events() {
 function could_play_card(c) {
 	if (!game.hidden) {
 		// TODO: check capabilities on lords revealed in battle if hidden
-		if (game.pieces.capabilities.includes(c))
+		if (map_has_value(game.pieces.capabilities, c))
 			return false
 	}
 	if (set_has(game.events, c))
@@ -8041,6 +8052,11 @@ function pack4_get(word, n) {
 	return (word >>> n) & 15
 }
 
+function pack8_get(word, n) {
+	n = n << 3
+	return (word >>> n) & 255
+}
+
 function pack1_set(word, n, x) {
 	return (word & ~(1 << n)) | (x << n)
 }
@@ -8053,11 +8069,6 @@ function pack2_set(word, n, x) {
 function pack4_set(word, n, x) {
 	n = n << 2
 	return (word & ~(15 << n)) | (x << n)
-}
-
-function pack8_get(word, n) {
-	n = n << 3
-	return (word >>> n) & 255
 }
 
 function pack8_set(word, n, x) {
@@ -8244,6 +8255,41 @@ function set_toggle(set, item) {
 }
 
 // Map as plain sorted array of key/value pairs
+
+function map_get_pack4(map, lord, k) {
+	return pack4_get(map_get(map, lord, 0), k)
+}
+
+function map_set_pack4(map, lord, k, v) {
+	let val = pack4_set(map_get(map, lord, 0), k, v)
+	if (val === 0)
+		map_delete(map, lord)
+	else
+		map_set(map, lord, val)
+}
+
+function map2_get(map, x, y, v) {
+	return map_get(map, (x << 1) + y, v)
+}
+
+function map2_set(map, x, y, v) {
+	return map_set(map, (x << 1) + y, v)
+}
+
+function map2_delete(map, x, y) {
+	return map_delete(map, (x << 1) + y)
+}
+
+function map_has_value(map, value) {
+	for (let i = 1; i < map.length; i += 2)
+		if (map[i] === value)
+			return true
+	return false
+}
+
+function map_clear(map) {
+	map.length = 0
+}
 
 function map_has(map, key) {
 	let a = 0
