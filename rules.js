@@ -487,7 +487,7 @@ const EVENT_LANCASTER_PARLIAMENT_TRUCE = L20 // TODO
 // this event is active (until end of this campaign)
 const EVENT_LANCASTER_FRENCH_FLEET = L21 // TODO
 // Forbid sail
-const EVENT_LANCASTER_FRENCH_TROOPS = L22 // TODO
+const EVENT_LANCASTER_FRENCH_TROOPS = L22
 // Select one lord at a port, then he MAY add 0, 1, 2 of each of Militia or Men-at-arms
 const EVENT_LANCASTER_WARWICKS_PROPAGANDA = [ L23, L24 ] // TODO
 // Select 1 stronghold, then Yorkists may pay to keep. Then select a second, then Yorkist may pay to keep. Then select a third, then Yorkist may pay to keep
@@ -1312,6 +1312,8 @@ function set_vassal_ready(vassal) {
 }
 
 function set_vassal_on_calendar(vassal, turn) {
+	if (data.vassals[vassal].service === 0)
+		return
 	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 1, turn + CALENDAR)
 }
 
@@ -2269,9 +2271,9 @@ function goto_immediate_event(c) {
 			return goto_lancaster_event_henry_pressures_parliament()
 		case EVENT_LANCASTER_HENRYS_PROCLAMATION:
 			return goto_lancaster_event_henrys_proclamation()
-		/*case EVENT_LANCASTER_FRENCH_TROOPS:
+		case EVENT_LANCASTER_FRENCH_TROOPS:
 			return goto_lancaster_event_french_troops()
-		case EVENT_LANCASTER_WARWICKS_PROPAGANDA:
+		/*case EVENT_LANCASTER_WARWICKS_PROPAGANDA:
 			return goto_lancaster_event_warwicks_propaganda()
 		case EVENT_LANCASTER_WELSH_REBELLION:
 			return goto_lancaster_event_welsh_rebellion()
@@ -2399,6 +2401,47 @@ function goto_lancaster_event_henrys_proclamation() {
 		if (is_vassal_mustered(vassal) && is_york_lord(get_lord_with_vassal(vassal))) {
 			set_vassal_on_calendar(vassal, current_turn())
 		}
+	}
+}
+
+// === EVENTS: LANCASTER FRENCH TROOPS EVENT ===
+
+function goto_lancaster_event_french_troops() {
+	let can_play = false
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
+		if (is_lord_on_map(lord) && data.seaports.includes(get_lord_locale(lord))) {
+			can_play = true
+		}
+	}
+
+	if (can_play) {
+		game.state = "french_troops"
+	} else {
+		end_immediate_event()
+	}
+}
+
+function end_lancaster_event_french_troops() {
+	end_immediate_event()
+}
+
+states.french_troops = {
+	inactive: "French Troops",
+	prompt() {
+		view.prompt = `Add 2 Men at Arms and 2 Militia to a Lord at a port.`
+		for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
+			if (is_lord_on_map(lord) && data.seaports.includes(get_lord_locale(lord))) {
+				gen_action_lord(lord)
+			}
+		}
+	},
+	lord(lord) {
+		add_lord_forces(lord, MEN_AT_ARMS, 2)
+		add_lord_forces(lord, MILITIA, 2)
+		end_lancaster_event_french_troops()
+	},
+	done() {
+		end_lancaster_event_french_troops()
 	}
 }
 
@@ -2558,25 +2601,25 @@ function action_shift_cylinder_lordship() {
 
 function capability_muster_effects(lord, c) {
 	if (c === AOW_LANCASTER_MONTAGU)
-		muster_vassal(VASSAL_MONTAGU, game.who)
+		muster_vassal(VASSAL_MONTAGU, lord)
 
 	if (c === AOW_LANCASTER_MY_FATHERS_BLOOD)
-		muster_vassal(VASSAL_CLIFFORD, game.who)
+		muster_vassal(VASSAL_CLIFFORD, lord)
 
 	if (c === AOW_LANCASTER_ANDREW_TROLLOPE)
-		muster_vassal(VASSAL_TROLLOPE, game.who)
+		muster_vassal(VASSAL_TROLLOPE, lord)
 
 	if (c === AOW_LANCASTER_EDWARD)
-		muster_vassal(VASSAL_EDWARD, game.who)
+		muster_vassal(VASSAL_EDWARD, lord)
 
 	if (c === AOW_LANCASTER_THOMAS_STANLEY) {
-		muster_vassal(VASSAL_THOMAS_STANLEY, game.who)
+		muster_vassal(VASSAL_THOMAS_STANLEY, lord)
 		game.flags.free_levy = 1
 	}
 
 	if (c === AOW_YORK_HASTINGS) {
-		add_lord_forces(game.who, MEN_AT_ARMS, 2)
-		muster_vassal(VASSAL_HASTINGS, game.who)
+		add_lord_forces(lord, MEN_AT_ARMS, 2)
+		muster_vassal(VASSAL_HASTINGS, lord)
 	}
 	if (c === AOW_YORK_FAIR_ARBITER && is_friendly_locale(get_lord_locale(LORD_SALISBURY))) {
 		game.count += 1
@@ -2670,12 +2713,23 @@ function end_levy_arts_of_war_first() {
 
 // === LEVY: ARTS OF WAR ===
 
+// function goto_levy_arts_of_war() {
+// 	if (game.active === YORK)
+// 		log_h2("York Arts of War")
+// 	else
+// 		log_h2("Lancaster Arts of War")
+// 	game.what = draw_two_cards()
+// 	resume_levy_arts_of_war()
+// }
+
 function goto_levy_arts_of_war() {
+	game.what = draw_two_cards()
 	if (game.active === YORK)
 		log_h2("York Arts of War")
-	else
+	else {
 		log_h2("Lancaster Arts of War")
-	game.what = draw_two_cards()
+		game.what = [L22,L19,L15]
+	}
 	resume_levy_arts_of_war()
 }
 
