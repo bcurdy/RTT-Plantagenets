@@ -467,7 +467,7 @@ const EVENT_LANCASTER_ASPIELLES = L13 // TODO
 // select one of enemy's Lord mats to show it to you. Perhaps write those in the log ?
 const EVENT_LANCASTER_SCOTS = L14
 // The addition by events are NEVER mandatory.
-const EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT = L15 // TODO
+const EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT = L15
 // count enemy vassals on all enemy lords and yorkists lose that amount of influence
 const EVENT_LANCASTER_WARDEN_OF_THE_MARCHES = L16	 // TODO
 // Play during Death and Disband step of Battle. All routed (flee or not)
@@ -2265,9 +2265,9 @@ function goto_immediate_event(c) {
 		// Discard - Immediate Events
 		case EVENT_LANCASTER_SCOTS:
 			return goto_lancaster_event_scots()
-		/*case EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT:
+		case EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT:
 			return goto_lancaster_event_henry_pressures_parliament()
-		case EVENT_LANCASTER_HENRYS_PROCLAMATION:
+		/*case EVENT_LANCASTER_HENRYS_PROCLAMATION:
 			return goto_lancaster_event_henrys_proclamation()
 		case EVENT_LANCASTER_FRENCH_TROOPS:
 			return goto_lancaster_event_french_troops()
@@ -2324,6 +2324,7 @@ function goto_lancaster_event_scots() {
 
 function end_lancaster_event_scots() {
 	clear_lords_moved()
+	game.who = NOBODY
 	end_immediate_event()
 }
 
@@ -2371,6 +2372,24 @@ states.scots = {
 	lord(lord) {
 		game.who = lord
 	}
+}
+
+// === EVENTS: LANCASTER HENRY PRESSURES PARLIMENT EVENT ===
+
+function goto_lancaster_event_henry_pressures_parliament() {
+	let count = 0
+	for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
+		if (is_vassal_mustered(vassal) && is_york_lord(get_lord_with_vassal(vassal))) {
+			count++
+		}
+	}
+
+	if (count > 0) {
+		logi(`C${EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT} removes ${count} York influence.`)
+		reduce_york_influence(count)
+	}
+
+	end_immediate_event()
 }
 
 // === EVENTS: SHIFT LORD OR SERVICE (IMMEDIATE) ===
