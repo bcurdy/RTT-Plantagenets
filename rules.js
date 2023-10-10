@@ -6,6 +6,8 @@ const BOTH = "Both"
 const LANCASTER = "Lancaster"
 const YORK = "York"
 
+// TODO: "approach" pause when about to move into intercept range?
+
 var P1 = null
 var P2 = null
 
@@ -651,16 +653,16 @@ const EVENT_YORK_PATRICK_DE_LA_MOTE = Y37 // TODO
 
 // Check all push/clear_undo
 
-const VASSAL_UNAVAILABLE = 201
-const VASSAL_READY = 200
-//const VASSAL_MUSTERED = -3
-
 const NOBODY = -1
 const NOWHERE = -1
 const NOTHING = -1
 const NEVER = -1
+
 const CALENDAR = 100
-const TRACK = 100
+
+const VASSAL_READY = 29
+const VASSAL_CALENDAR = 30
+const VASSAL_OUT_OF_PLAY = 31
 
 const SUMMER = 0
 const SPRING = 1
@@ -964,8 +966,8 @@ function shift_lord_cylinder(lord, dir) {
 function set_lord_assets(lord, n, x) {
 	if (x < 0)
 		x = 0
-	if (x > 40)
-		x = 40
+	if (x > 15)
+		x = 15
 	map_set_pack4(game.pieces.assets, lord, n, x)
 }
 
@@ -1282,89 +1284,88 @@ function is_lord_ready(lord) {
 	return loc >= CALENDAR && loc <= CALENDAR + (game.turn >> 1)
 }
 
+// === VASSAL STATE ===
+
+function set_vassal_lord_and_service(vassal, lord, service) {
+	game.pieces.vassals[vassal] = lord + (service << 5)
+}
+
+function get_vassal_lord(vassal) {
+	return game.pieces.vassals[vassal] & 31
+}
+
+function get_vassal_service(vassal) {
+	return game.pieces.vassals[vassal] >> 5
+}
+
 function setup_vassals(excludes = []) {
 	for (let x = first_vassal; x < last_vassal; x++) {
 		if (!excludes.includes(x) && data.vassals[x].capability === undefined) {
-			set_vassal_ready(x)
-			set_vassal_on_map(x, data.vassals[x].seat)
+			set_vassal_lord_and_service(x, VASSAL_READY, 0)
 		}
 	}
 }
 
-function set_vassal_on_map(vassal, loc) {
-	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 1, loc)
+function is_vassal_ready(x) {
+	return get_vassal_lord(x) === VASSAL_READY
 }
 
-function get_vassal_locale(vassal) {
-	return pack8_get(game.pieces.vassals[vassal], 1)
+function is_vassal_mustered(x) {
+	return get_vassal_lord(x) < VASSAL_READY
+}
+
+function is_vassal_mustered_with(x, lord) {
+	return get_vassal_lord(x) === lord
+}
+
+function is_vassal_mustered_with_friendly_lord(x) {
+	return is_friendly_lord(get_vassal_lord(x))
+}
+
+function is_vassal_mustered_with_york_lord(x) {
+	return is_york_lord(get_vassal_lord(x))
 }
 
 function for_each_vassal_with_lord(lord, f) {
 	for (let x = first_vassal; x < last_vassal; x++)
-		if (pack8_get(game.pieces.vassals[x], 0) === lord)
+		if (is_vassal_mustered_with(x, lord))
 			f(x)
 }
 
 function count_vassals_with_lord(lord) {
 	let n = 0
-	for_each_vassal_with_lord(lord, _ => {
-		++n
-	})
+	for (let x = first_vassal; x < last_vassal; x++)
+		if (is_vassal_mustered_with(x, lord))
+			++n
 	return n
 }
 
-function get_lord_with_vassal(vassal) {
-	return pack8_get(game.pieces.vassals[vassal], 0)
-}
-
-function set_vassal_ready(vassal) {
-	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 0, VASSAL_READY)
-}
-
-function set_vassal_on_calendar(vassal, turn) {
-	if (data.vassals[vassal].service === 0)
-		return
-	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 1, turn + CALENDAR)
-}
-
-function set_vassal_with_lord(vassal, lord) {
-	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 0, lord)
-}
-
-function set_vassal_unavailable(vassal) {
-	game.pieces.vassals[vassal] = pack8_set(game.pieces.vassals[vassal], 0, VASSAL_UNAVAILABLE)
-}
-
 function muster_vassal(vassal, lord) {
-	set_vassal_with_lord(vassal, lord)
-	if (data.vassals[vassal].service !== 0 && lord_has_capability(lord, AOW_YORK_ALICE_MONTAGU))
-		set_vassal_on_calendar(vassal, current_turn() + (1 + data.vassals[vassal].service))
-	else if (data.vassals[vassal].service !== 0)
-		set_vassal_on_calendar(vassal, current_turn() + data.vassals[vassal].service)
+	if (data.vassals[vassal].service !== 0) {
+		let service = current_turn() + data.vassals[vassal].service
+		if (lord_has_capability(lord, AOW_YORK_ALICE_MONTAGU))
+			service += 1
+		set_vassal_lord_and_service(vassal, lord, service)
+	} else {
+		set_vassal_lord_and_service(vassal, lord, 0)
+	}
 }
 
 function disband_vassal(vassal) {
-	let new_turn = current_turn() + (6 - data.vassals[vassal].service)
-	set_vassal_unavailable(vassal)
-	set_vassal_on_calendar(vassal, new_turn)
-	log(`Disbanded V${vassal} to turn ${current_turn() + (6 - data.vassals[vassal].service)}.`)
+	if (data.vassals[vassa].service > 0) {
+		let new_turn = current_turn() + (6 - data.vassals[vassal].service)
+		set_vassal_lord_and_service(vassal, VASSAL_CALENDAR, new_turn)
+		log(`Disbanded V${vassal} to turn ${current_turn() + (6 - data.vassals[vassal].service)}.`)
+	} else {
+		// TODO: special vassals with no service marker!?
+		set_vassal_lord_and_service(vassal, VASSAL_OUT_OF_PLAY, 0)
+		log(`Disbanded V${vassal}.`)
+	}
 }
 
 function pay_vassal(vassal) {
 	if (current_turn() < 15)
-		set_vassal_on_calendar(vassal, current_turn() + 1)
-}
-
-function is_vassal_unavailable(vassal) {
-	return pack8_get(game.pieces.vassals[vassal], 0) === VASSAL_UNAVAILABLE
-}
-
-function is_vassal_ready(vassal) {
-	return pack8_get(game.pieces.vassals[vassal], 0) === VASSAL_READY
-}
-
-function is_vassal_mustered(vassal) {
-	return pack8_get(game.pieces.vassals[vassal]) < VASSAL_READY
+		set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), current_turn() + 1)
 }
 
 function is_york_lord(lord) {
@@ -1869,7 +1870,7 @@ exports.setup = function (seed, scenario, options) {
 			in_exile: 0,
 
 			// per vassal data
-			vassals: Array(vassal_count).fill(VASSAL_UNAVAILABLE),
+			vassals: Array(vassal_count).fill(VASSAL_OUT_OF_PLAY),
 
 			// per locale data
 			depleted: [],
@@ -2395,7 +2396,7 @@ states.scots = {
 function goto_lancaster_event_henry_pressures_parliament() {
 	let count = 0
 	for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
-		if (is_vassal_mustered(vassal) && is_york_lord(get_lord_with_vassal(vassal))) {
+		if (is_vassal_mustered_with_york_lord(vassal)) {
 			count++
 		}
 	}
@@ -2412,8 +2413,8 @@ function goto_lancaster_event_henry_pressures_parliament() {
 
 function goto_lancaster_event_henrys_proclamation() {
 	for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
-		if (is_vassal_mustered(vassal) && is_york_lord(get_lord_with_vassal(vassal))) {
-			set_vassal_on_calendar(vassal, current_turn())
+		if (is_vassal_mustered_with_york_lord(vassal)) {
+			set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), current_turn())
 		}
 	}
 }
@@ -2928,11 +2929,9 @@ states.levy_muster_lord = {
 				}
 
 				// Muster Ready Vassal Forces
-				if (is_friendly_locale(here)) {
-					for (let vassal = first_vassal; vassal <= last_vassal; vassal++)
-						if (is_vassal_ready(vassal) && is_favour_friendly(data.vassals[vassal].seat))
-							gen_action_vassal(vassal)
-				}
+				for (let vassal = first_vassal; vassal <= last_vassal; vassal++)
+					if (is_vassal_ready(vassal) && is_favour_friendly(data.vassals[vassal].seat))
+						gen_action_vassal(vassal)
 
 				// Add Transport
 				if (is_seaport(here) && get_lord_assets(game.who, SHIP) < 2)
@@ -4615,7 +4614,7 @@ function can_tax_at(here) {
 
 		// vassal seats
 		for (let vassal = first_vassal; vassal < last_vassal; ++vassal)
-			if (get_lord_with_vassal(vassal) === game.command)
+			if (is_vassal_mustered_with(vassal, game.command))
 				if (here === data.vassals[vassal].seat)
 					return true
 	}
@@ -5880,7 +5879,8 @@ states.assign_hits = {
 		action_assign_hits(lord, MILITIA)
 	},
 	vassal(vassal) {
-		action_assign_hits(get_lord_with_vassal(vassal), VASSAL, vassal)
+		let lord = get_vassal_lord(vassal)
+		action_assign_hits(lord, VASSAL, vassal)
 	},
 }
 
@@ -6770,9 +6770,8 @@ function goto_pay_vassals() {
 
 	for (let v = first_vassal; v < last_vassal; v++) {
 		if (
-			is_vassal_mustered(v) &&
-			is_friendly_lord(get_lord_with_vassal(v)) &&
-			get_vassal_locale(v) === CALENDAR + current_turn()
+			is_vassal_mustered_with_friendly_lord(v) &&
+			get_vassal_service(v) === current_turn()
 		) {
 			vassal_to_pay = true
 		}
@@ -6803,9 +6802,8 @@ states.pay_vassals = {
 		if (game.what === NOBODY) {
 			for (let v = first_vassal; v < last_vassal; v++) {
 				if (
-					is_vassal_mustered(v) &&
-					is_friendly_lord(get_lord_with_vassal(v)) &&
-					get_vassal_locale(v) === CALENDAR + current_turn()
+					is_vassal_mustered_with_friendly_lord(v) &&
+					get_vassal_service(v) === current_turn()
 				) {
 					gen_action_vassal(v)
 					done = false
@@ -6841,9 +6839,8 @@ states.pay_vassals = {
 
 function goto_ready_vassals() {
 	for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
-		if (is_vassal_unavailable(vassal) && get_vassal_locale(vassal) === CALENDAR + current_turn()) {
-			set_vassal_ready(vassal)
-			set_vassal_on_map(vassal, data.vassals[vassal].seat)
+		if (get_vassal_service(vassal) === current_turn()) {
+			set_vassal_lord_and_service(vassal, VASSAL_READY, 0)
 		}
 	}
 
@@ -7696,7 +7693,7 @@ function disband_influence_penalty(lord) {
 	let influence = data.lords[lord].influence
 
 	for (let v = first_vassal; v <= last_vassal; v++) {
-		if (get_vassal_locale(v) === lord) {
+		if (is_vassal_mustered_with(v, lord)) {
 			influence += 1
 		}
 	}
@@ -8052,11 +8049,6 @@ function pack4_get(word, n) {
 	return (word >>> n) & 15
 }
 
-function pack8_get(word, n) {
-	n = n << 3
-	return (word >>> n) & 255
-}
-
 function pack1_set(word, n, x) {
 	return (word & ~(1 << n)) | (x << n)
 }
@@ -8069,11 +8061,6 @@ function pack2_set(word, n, x) {
 function pack4_set(word, n, x) {
 	n = n << 2
 	return (word & ~(15 << n)) | (x << n)
-}
-
-function pack8_set(word, n, x) {
-	n = n << 3
-	return (word & ~(255 << n)) | (x << n)
 }
 
 // === COMMON LIBRARY ===

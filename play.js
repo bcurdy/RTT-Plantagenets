@@ -212,10 +212,12 @@ const asset_type_count = 4
 const asset_action_name = [ "prov", "coin", "cart", "ship" ]
 const asset_type_x34 = [ 1, 1, 1, 0 ]
 
-const VASSAL_UNAVAILABLE = 201
-const VASSAL_READY = 200
 const NOWHERE = -1
 const CALENDAR = 100
+
+const VASSAL_READY = 29
+const VASSAL_CALENDAR = 30
+const VASSAL_OUT_OF_PLAY = 31
 
 const TOWN = "town"
 const CITY = "city"
@@ -419,21 +421,17 @@ function count_favour(type) {
 	return n
 }
 
-function is_vassal_ready(vassal) {
-	return pack8_get(view.pieces.vassals[vassal], 0) === VASSAL_READY
+function get_vassal_lord(vassal) {
+	return view.pieces.vassals[vassal] & 31
 }
 
-function is_vassal_unavailable(vassal) {
-	return pack8_get(view.pieces.vassals[vassal], 0) === VASSAL_UNAVAILABLE
-}
-
-function get_vassal_locale(vassal) {
-	return pack8_get(view.pieces.vassals[vassal], 1)
+function get_vassal_service(vassal) {
+	return view.pieces.vassals[vassal] >> 5
 }
 
 function for_each_vassal_with_lord(lord, f) {
 	for (let x = first_vassal; x < last_vassal; x++)
-		if (pack8_get(view.pieces.vassals[x], 0) === lord)
+		if (get_vassal_lord(x) === lord)
 			f(x)
 }
 
@@ -594,7 +592,8 @@ const ui = {
 	lord_mat: [],
 	lord_exile: [],
 	lord_buttons: [],
-	map_vassals: [],
+	vassal_cal: [], // token on calendar
+	vassal_map: [], // token on map
 	forces: [],
 	routed: [],
 	assets: [],
@@ -609,7 +608,6 @@ const ui = {
 	calendar: [],
 	track: [],
 	seat: [],
-	vassalbox: [],
 
 	plan_panel: document.getElementById("plan_panel"),
 	plan: document.getElementById("plan"),
@@ -828,7 +826,7 @@ function build_map() {
 	})
 
 	data.vassalbox.forEach((vassal, ix) => {
-		let e = ui.vassalbox[ix] = document.createElement("div")
+		let e = ui.vassal_map[ix] = document.createElement("div")
 		let { x, y, w, h } = vassal.box
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
@@ -841,13 +839,13 @@ function build_map() {
 		e.style.height = 46 + "px"
 		e.style.backgroundSize = small + "px"
 		register_action(e, "vassal", ix)
-		register_tooltip(e, data.vassalbox[ix].name)
+		register_tooltip(e, data.vassals[ix].name)
 		document.getElementById("pieces").appendChild(e)
 	})
 
 	data.vassals.forEach((vassal, ix) => {
-		let e = ui.map_vassals[ix] = document.createElement("div")
-		e.className = "hide marker square vassal vassal_" + clean_name(vassal.name)
+		let e = ui.vassal_cal[ix] = document.createElement("div")
+		e.className = "hide marker square back vassal vassal_" + clean_name(vassal.name)
 		e.style.position = "absolute"
 		e.style.width = 46 + "px"
 		e.style.height = 46 + "px"
@@ -1467,20 +1465,34 @@ function update_court() {
 
 function update_vassals() {
 	for (let v = first_vassal; v < last_vassal; v++) {
-		let info = data.vassals[v]
-		if (!is_vassal_ready(v) && get_vassal_locale(v) !== 0) {
-			let e = ui.map_vassals[v]
-			e.classList.add("hide")
-			calendar_layout_vassal[get_vassal_locale(v) - CALENDAR].push(e)
-			e.classList.remove("hide")
-			e.classList.toggle("action", is_action("vassal", v))
-			e.classList.toggle("back", is_vassal_unavailable(v))
-			ui.vassalbox[v].classList.add("hide")
-		} else if (is_vassal_ready(v)) {
-			let e = ui.vassalbox[v]
-			e.classList.remove("hide")
-			e.classList.toggle("action", is_action("vassal", v))
-			e.classList.add("vassal" + clean_name(info.name))
+		let loc = get_vassal_lord(v)
+		let srv = get_vassal_service(v)
+		if (loc === VASSAL_OUT_OF_PLAY) {
+			// not present
+			ui.vassal_cal[v].classList.add("hide")
+			if (ui.vassal_map[v]) {
+				ui.vassal_map[v].classList.add("hide")
+			}
+		} else if (loc === VASSAL_READY) {
+			// on map
+			ui.vassal_cal[v].classList.add("hide")
+			if (ui.vassal_map[v]) {
+				ui.vassal_map[v].classList.remove("hide")
+				ui.vassal_map[v].classList.toggle("action", is_action("vassal", v))
+			}
+		} else {
+			// on calendar (+ maybe on lord mat)
+			if (data.vassals[v].service > 0) {
+				ui.vassal_cal[v].classList.remove("hide")
+				ui.vassal_cal[v].classList.toggle("action", is_action("vassal", v))
+				calendar_layout_vassal[srv].push(ui.vassal_cal[v])
+			} else {
+				// special vassal not on calendar
+				ui.vassal_cal[v].classList.add("hide")
+			}
+			if (ui.vassal_map[v]) {
+				ui.vassal_map[v].classList.add("hide")
+			}
 		}
 	}
 }
