@@ -2421,29 +2421,55 @@ function goto_lancaster_event_french_troops() {
 
 	if (can_play) {
 		game.state = "french_troops"
+		game.who = NOBODY
+		game.count = 0
 	} else {
 		end_immediate_event()
 	}
 }
 
 function end_lancaster_event_french_troops() {
+	game.who = NOBODY
+	game.count = 0
 	end_immediate_event()
 }
 
 states.french_troops = {
 	inactive: "French Troops",
 	prompt() {
+
 		view.prompt = `Add 2 Men at Arms and 2 Militia to a Lord at a port.`
-		for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
-			if (is_lord_on_map(lord) && data.seaports.includes(get_lord_locale(lord))) {
-				gen_action_lord(lord)
+		if (game.who === NOBODY) {
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
+				if (is_lord_on_map(lord) && data.seaports.includes(get_lord_locale(lord))) {
+					gen_action_lord(lord)
+				}
 			}
+		} else {
+			view.prompt = `Add ${2-pack2_get(game.count, 0)} Men at Arms and ${2-pack2_get(game.count, 1)} Militia to ${lord_name[game.who]}.`
+			if (pack2_get(game.count, 0) < 2)
+				gen_action("add_men_at_arms")
+			if (pack2_get(game.count, 1) < 2)
+				gen_action("add_militia")
 		}
+
+		view.actions.done = 1
+	},
+	add_men_at_arms() {
+		push_undo()
+		add_lord_forces(game.who, MEN_AT_ARMS, 1)
+		let c = pack2_get(game.count, 0)
+		game.count = pack2_set(game.count, 0, c+1)
+	},
+	add_militia() {
+		push_undo()
+		add_lord_forces(game.who, MEN_AT_ARMS, 1)
+		let c = pack2_get(game.count, 1)
+		game.count = pack2_set(game.count, 1, c+1)
 	},
 	lord(lord) {
-		add_lord_forces(lord, MEN_AT_ARMS, 2)
-		add_lord_forces(lord, MILITIA, 2)
-		end_lancaster_event_french_troops()
+		push_undo()
+		game.who = lord
 	},
 	done() {
 		end_lancaster_event_french_troops()
