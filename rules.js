@@ -3760,23 +3760,23 @@ function goto_parley() {
 
 	if (is_levy_phase()) {
 		init_influence_check(game.who)
-		game.what = list_parley_levy()
+		game.parley = list_parley_levy()
 	} else {
 		init_influence_check(game.command)
-		game.what = list_parley_command()
+		game.parley = list_parley_command()
 
 		// Campaign phase, and current location is no cost (except some events), and always successful.
-		if (game.what.length === 2 && get_lord_locale(game.command) === game.what[0]) {
+		if (game.parley.length === 2 && get_lord_locale(game.command) === game.parley[0]) {
 			log(`Parley.`)
-			shift_favour_toward(game.what[0])
+			shift_favour_toward(game.parley[0])
 			end_parley()
 			return
 		}
 	}
 
-	if (game.what.length === 2) {
-		game.where = game.what[0]
-		add_influence_check_distance(game.what[1])
+	if (game.parley.length === 2) {
+		game.where = game.parley[0]
+		add_influence_check_distance(game.parley[1])
 	} else {
 		game.where = NOWHERE
 	}
@@ -3785,7 +3785,7 @@ function goto_parley() {
 function end_parley() {
 	pop_state()
 	game.where = NOWHERE
-	game.what = NOTHING
+	game.parley = NOTHING
 	end_influence_check()
 	if (is_campaign_phase()) {
 		spend_action(1)
@@ -3800,8 +3800,8 @@ states.parley = {
 	prompt() {
 		view.prompt = "Parley: Choose a Locale to Parley."
 		if (game.where === NOTHING) {
-			for (let i = 0; i < game.what.length; i += 2)
-				gen_action_locale(game.what[i])
+			for (let i = 0; i < game.parley.length; i += 2)
+				gen_action_locale(game.parley[i])
 		} else {
 			view.prompt = "Parley: "
 			prompt_influence_check()
@@ -3810,7 +3810,7 @@ states.parley = {
 	locale(loc) {
 		push_undo()
 		game.where = loc
-		add_influence_check_distance(map_get(game.what, loc))
+		add_influence_check_distance(map_get(game.parley, loc))
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
@@ -6773,7 +6773,7 @@ function goto_pay_vassals() {
 	}
 	if (vassal_to_pay) {
 		game.state = "pay_vassals"
-		game.what = NOTHING
+		game.what = NOBODY
 	} else {
 		end_pay_vassals()
 	}
@@ -6794,7 +6794,7 @@ states.pay_vassals = {
 	prompt() {
 		let done = true
 		view.prompt = "You may pay or disband vassals in the next calendar box."
-		if (game.what === NOTHING) {
+		if (game.what === NOBODY) {
 			for (let v = first_vassal; v < last_vassal; v++) {
 				if (
 					is_vassal_mustered(v) &&
