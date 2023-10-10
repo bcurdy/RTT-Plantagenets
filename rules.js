@@ -2713,23 +2713,12 @@ function end_levy_arts_of_war_first() {
 
 // === LEVY: ARTS OF WAR ===
 
-// function goto_levy_arts_of_war() {
-// 	if (game.active === YORK)
-// 		log_h2("York Arts of War")
-// 	else
-// 		log_h2("Lancaster Arts of War")
-// 	game.what = draw_two_cards()
-// 	resume_levy_arts_of_war()
-// }
-
 function goto_levy_arts_of_war() {
-	game.what = draw_two_cards()
 	if (game.active === YORK)
 		log_h2("York Arts of War")
-	else {
+	else
 		log_h2("Lancaster Arts of War")
-		game.what = [L22,L19,L15]
-	}
+	game.what = draw_two_cards()
 	resume_levy_arts_of_war()
 }
 
