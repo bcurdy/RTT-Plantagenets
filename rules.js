@@ -1912,6 +1912,8 @@ exports.setup = function (seed, scenario, options) {
 
 	update_aliases()
 
+	goto_setup_lords()
+
 	return game
 }
 
@@ -2128,7 +2130,12 @@ function setup_ItoIII() {
 
 	setup_vassals()
 }
-// setup will be used in some scenarios
+
+function goto_setup_lords() {
+	// setup will be used in some scenarios
+	end_setup_lords()
+	end_setup_lords()
+}
 
 states.setup_lords = {
 	inactive: "Set up Lords",
