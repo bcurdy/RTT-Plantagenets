@@ -875,21 +875,15 @@ function add_spoils(type, n) {
 function get_lord_calendar(lord) {
 	if (is_lord_on_calendar(lord))
 		return get_lord_locale(lord) - CALENDAR
-	// TODO else?
+	return 0
 }
 
-function set_lord_cylinder_on_calendar(lord, turn) {
+function set_lord_calendar(lord, turn) {
 	if (turn < 1)
 		turn = 1
 	if (turn > 16)
 		turn = 16
 	set_lord_locale(lord, CALENDAR + turn)
-}
-
-function set_lord_calendar(lord, turn) {
-	if (is_lord_on_calendar(lord))
-		set_lord_cylinder_on_calendar(lord, turn)
-	// TODO else?
 }
 
 function get_lord_locale(lord) {
@@ -1011,10 +1005,12 @@ function set_lord_moved(lord, x) {
 
 function set_lord_fought(lord) {
 	set_lord_moved(lord, 1)
+	// TODO: is this needed?
 	game.battle.fought = pack1_set(game.battle.fought, lord, 1)
 }
 
 function get_lord_fought(lord) {
+	// TODO: is this needed?
 	return pack1_get(game.battle.fought, lord)
 }
 
@@ -1936,12 +1932,12 @@ function setup_Ia() {
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_LONDON)
 
-	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 2)
-	set_lord_cylinder_on_calendar(LORD_EXETER_1, 3)
-	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM, 5)
-	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
-	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
-	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
+	set_lord_calendar(LORD_NORTHUMBERLAND_L, 2)
+	set_lord_calendar(LORD_EXETER_1, 3)
+	set_lord_calendar(LORD_BUCKINGHAM, 5)
+	set_lord_calendar(LORD_SALISBURY, 2)
+	set_lord_calendar(LORD_WARWICK_Y, 3)
+	set_lord_calendar(LORD_RUTLAND, 5)
 
 	add_favourl_marker(LOC_LONDON)
 	add_favourl_marker(LOC_WELLS)
@@ -2012,7 +2008,7 @@ function setup_Ic() {
 	muster_lord(LORD_MARCH, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_BAMBURGH)
 
-	set_lord_cylinder_on_calendar(LORD_HENRY_VI, 5)
+	set_lord_calendar(LORD_HENRY_VI, 5)
 
 	add_favourl_marker(LOC_SCARBOROUGH)
 	add_favourl_marker(LOC_NEWCASTLE)
@@ -2058,13 +2054,13 @@ function setup_II() {
 	muster_lord(LORD_CLARENCE, LOC_YORK)
 	muster_lord(LORD_JASPER_TUDOR_1, LOC_HARLECH)
 
-	set_lord_cylinder_on_calendar(LORD_DEVON, 4)
-	set_lord_cylinder_on_calendar(LORD_GLOUCESTER_1, 9)
-	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_Y1, 9)
-	set_lord_cylinder_on_calendar(LORD_MARGARET, 9)
-	set_lord_cylinder_on_calendar(LORD_SOMERSET_2, 9)
-	set_lord_cylinder_on_calendar(LORD_OXFORD, 9)
-	set_lord_cylinder_on_calendar(LORD_EXETER_2, 9)
+	set_lord_calendar(LORD_DEVON, 1)
+	set_lord_calendar(LORD_GLOUCESTER_1, 9)
+	set_lord_calendar(LORD_NORTHUMBERLAND_Y1, 9)
+	set_lord_calendar(LORD_MARGARET, 9)
+	set_lord_calendar(LORD_SOMERSET_2, 9)
+	set_lord_calendar(LORD_OXFORD, 9)
+	set_lord_calendar(LORD_EXETER_2, 9)
 
 	add_favourl_marker(LOC_CALAIS)
 	add_favourl_marker(LOC_YORK)
@@ -2122,12 +2118,12 @@ function setup_ItoIII() {
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
 	muster_lord(LORD_SOMERSET_1, LOC_WELLS)
 
-	set_lord_cylinder_on_calendar(LORD_NORTHUMBERLAND_L, 1)
-	set_lord_cylinder_on_calendar(LORD_EXETER_1, 3)
-	set_lord_cylinder_on_calendar(LORD_BUCKINGHAM, 5)
-	set_lord_cylinder_on_calendar(LORD_SALISBURY, 2)
-	set_lord_cylinder_on_calendar(LORD_WARWICK_Y, 3)
-	set_lord_cylinder_on_calendar(LORD_RUTLAND, 5)
+	set_lord_calendar(LORD_NORTHUMBERLAND_L, 1)
+	set_lord_calendar(LORD_EXETER_1, 3)
+	set_lord_calendar(LORD_BUCKINGHAM, 5)
+	set_lord_calendar(LORD_SALISBURY, 2)
+	set_lord_calendar(LORD_WARWICK_Y, 3)
+	set_lord_calendar(LORD_RUTLAND, 5)
 
 	setup_vassals()
 }
@@ -7013,7 +7009,7 @@ function disband_lord(lord, permanently = false) {
 		log(`Removed L${lord}.`)
 		set_lord_locale(lord, NOWHERE)
 	} else {
-		set_lord_cylinder_on_calendar(lord, turn + (6 - data.lords[lord].influence))
+		set_lord_calendar(lord, turn + (6 - data.lords[lord].influence))
 		log(`Disbanded L${lord} to ${get_lord_calendar(lord)}.`)
 	}
 
