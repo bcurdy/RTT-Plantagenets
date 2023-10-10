@@ -294,7 +294,7 @@ function get_locale_tip(id) {
 function on_focus_cylinder(evt) {
 	let lord = evt.target.my_id
 	let info = data.lords[lord]
-	let loc = view.pieces.locale[lord]
+	let loc = get_lord_locale(lord)
 	let tip = info.name
 	on_focus(tip)
 }
@@ -1189,7 +1189,7 @@ function update_lord_mat(ix) {
 }
 
 function update_lord(ix) {
-	let locale = view.pieces.locale[ix]
+	let locale = get_lord_locale(ix)
 	if (locale < 0) {
 		ui.lord_cylinder[ix].classList.add("hide")
 		ui.lord_mat[ix].classList.remove("action")
@@ -1389,10 +1389,10 @@ function update_cards() {
 		ui.lord_capabilities[ix].replaceChildren()
 		ui.lord_events[ix].replaceChildren()
 		if (view.reveal & (1 << ix)) {
-			let c = view.pieces.capabilities[(ix << 1) + 0]
+			let c = get_lord_capability(ix, 0)
 			if (c >= 0)
 				ui.lord_capabilities[ix].appendChild(ui.cards[c])
-			c = view.pieces.capabilities[(ix << 1) + 1]
+			c = get_lord_capability(ix, 1)
 			if (c >= 0)
 				ui.lord_capabilities[ix].appendChild(ui.cards[c])
 			if (view.battle && view.battle.field_organ === ix)
@@ -1482,7 +1482,7 @@ function on_update() {
 		locale_layout[i].length = 0
 
 	for (let ix = 0; ix < data.lords.length; ++ix) {
-		if (view.pieces.locale[ix] < 0) {
+		if (get_lord_locale(ix) < 0) {
 			ui.lord_cylinder[ix].classList.add("hide")
 		} else {
 			ui.lord_cylinder[ix].classList.remove("hide")
