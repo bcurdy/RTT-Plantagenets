@@ -93,6 +93,7 @@ const CART = 2
 const SHIP = 3
 
 const ASSET_TYPE_NAME = [ "Provender", "Coin", "Cart", "Ship" ]
+const ASSET_TYPE_COUNT = 4
 
 // battle array
 const A1 = 0 // attackers
@@ -916,8 +917,9 @@ function get_lord_routed_forces(lord, n) {
 }
 
 function lord_has_unrouted_units(lord) {
-	if (game.pieces.forces[lord] !== 0)
-		return true
+	for (let x = 0; x < FORCE_TYPE_COUNT; ++x)
+		if (get_lord_forces(lord, x) > 0)
+			return true
 	let result = false
 	for_each_vassal_with_lord(lord, v => {
 		if (!set_has(game.battle.routed_vassals, v))
@@ -927,8 +929,9 @@ function lord_has_unrouted_units(lord) {
 }
 
 function lord_has_routed_units(lord) {
-	if (game.pieces.routed[lord] !== 0)
-		return true
+	for (let x = 0; x < FORCE_TYPE_COUNT; ++x)
+		if (get_lord_routed(lord, x) > 0)
+			return true
 	let result = false
 	for_each_vassal_with_lord(lord, v => {
 		if (set_has(game.battle.routed_vassals, v))
@@ -7017,9 +7020,14 @@ function disband_lord(lord, permanently = false) {
 
 	discard_lord_capability_n(lord, 0)
 	discard_lord_capability_n(lord, 1)
-	game.pieces.assets[lord] = 0
-	game.pieces.forces[lord] = 0
-	game.pieces.routed[lord] = 0
+
+	for (let x = 0; x < ASSET_TYPE_COUNT; ++x)
+		set_lord_assets(lord, x, 0)
+
+	for (let x = 0; x < FORCE_TYPE_COUNT; ++x) {
+		set_lord_forces(lord, x, 0)
+		set_lord_routed(lord, x, 0)
+	}
 
 	set_lord_moved(lord, 0)
 
