@@ -1394,14 +1394,16 @@ function is_lord_at_friendly_locale(lord) {
 }
 
 function has_locale_to_muster(lord) {
+	// Can muster at own seat without enemy lord.
 	if (!has_enemy_lord(data.lords[lord].seat))
 		return true
 
-	for (let l = first_friendly_lord; l <= last_friendly_lord; l++) {
-		if (is_lord_on_map(l) && is_friendly_locale(get_lord_locale(l)))
+	// Else, can muster at any friendly seat (of a friendly lord who is also in play)
+	for (let other = first_friendly_lord; other <= last_friendly_lord; other++)
+		if (!is_lord_in_play(other) && is_friendly_locale(data.lords[other].seat))
 			return true
-	}
 
+	// Tough luck!
 	return false
 }
 
