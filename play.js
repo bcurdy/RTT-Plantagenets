@@ -410,7 +410,7 @@ function count_lord_all_forces(lord) {
 
 function count_favour(type) {
 	let n = 0
-	for (let x = first_locale; x < last_locale; x++) {
+	for (let x = first_locale; x <= last_locale; x++) {
 		if (data.locales[x].type !== type)
 			continue
 		if (set_has(view.pieces.favourl, x))
@@ -430,7 +430,7 @@ function get_vassal_service(vassal) {
 }
 
 function for_each_vassal_with_lord(lord, f) {
-	for (let x = first_vassal; x < last_vassal; x++)
+	for (let x = first_vassal; x <= last_vassal; x++)
 		if (get_vassal_lord(x) === lord)
 			f(x)
 }
@@ -1375,7 +1375,7 @@ function update_plan() {
 }
 
 function update_cards() {
-	for (let c = 0; c < last_aow_card; ++c) {
+	for (let c = 0; c <= last_aow_card; ++c) {
 		let elt = ui.cards[c]
 		elt.classList.toggle("selected", c === view.what)
 		elt.classList.toggle("action", is_action("card", c))
@@ -1464,7 +1464,7 @@ function update_court() {
 }
 
 function update_vassals() {
-	for (let v = first_vassal; v < last_vassal; v++) {
+	for (let v = first_vassal; v <= last_vassal; v++) {
 		let loc = get_vassal_lord(v)
 		let srv = get_vassal_service(v)
 		if (loc === VASSAL_OUT_OF_PLAY) {

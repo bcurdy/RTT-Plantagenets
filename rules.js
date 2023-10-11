@@ -1299,7 +1299,7 @@ function get_vassal_service(vassal) {
 }
 
 function setup_vassals(excludes = []) {
-	for (let x = first_vassal; x < last_vassal; x++) {
+	for (let x = first_vassal; x <= last_vassal; x++) {
 		if (!excludes.includes(x) && data.vassals[x].capability === undefined) {
 			set_vassal_lord_and_service(x, VASSAL_READY, 0)
 		}
@@ -1327,14 +1327,14 @@ function is_vassal_mustered_with_york_lord(x) {
 }
 
 function for_each_vassal_with_lord(lord, f) {
-	for (let x = first_vassal; x < last_vassal; x++)
+	for (let x = first_vassal; x <= last_vassal; x++)
 		if (is_vassal_mustered_with(x, lord))
 			f(x)
 }
 
 function count_vassals_with_lord(lord) {
 	let n = 0
-	for (let x = first_vassal; x < last_vassal; x++)
+	for (let x = first_vassal; x <= last_vassal; x++)
 		if (is_vassal_mustered_with(x, lord))
 			++n
 	return n
@@ -4590,7 +4590,7 @@ function can_tax_at(here) {
 			return true
 
 		// vassal seats
-		for (let vassal = first_vassal; vassal < last_vassal; ++vassal)
+		for (let vassal = first_vassal; vassal <= last_vassal; ++vassal)
 			if (is_vassal_mustered_with(vassal, game.command))
 				if (here === data.vassals[vassal].seat)
 					return true
@@ -6745,7 +6745,7 @@ function goto_pay_vassals() {
 	clear_undo()
 	let vassal_to_pay = false
 
-	for (let v = first_vassal; v < last_vassal; v++) {
+	for (let v = first_vassal; v <= last_vassal; v++) {
 		if (
 			is_vassal_mustered_with_friendly_lord(v) &&
 			get_vassal_service(v) === current_turn()
@@ -6777,7 +6777,7 @@ states.pay_vassals = {
 		let done = true
 		view.prompt = "You may pay or disband vassals in the next calendar box."
 		if (game.what === NOBODY) {
-			for (let v = first_vassal; v < last_vassal; v++) {
+			for (let v = first_vassal; v <= last_vassal; v++) {
 				if (
 					is_vassal_mustered_with_friendly_lord(v) &&
 					get_vassal_service(v) === current_turn()
