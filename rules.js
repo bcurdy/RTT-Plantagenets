@@ -4430,11 +4430,18 @@ function get_port_supply_amount(loc) {
 
 function get_stronghold_supply_amount(loc) {
 	if (!has_exhausted_marker(loc)) {
-		let supply = 1
+		let supply
+
 		if (loc === LOC_LONDON || loc === LOC_CALAIS)
+			supply = 3
+		else if (is_city(loc))
 			supply = 2
+		else
+			supply = 1
+
 		if (command_has_stafford_branch(loc))
 			supply += 1
+
 		return modify_supply(loc, supply)
 	}
 	return 0
