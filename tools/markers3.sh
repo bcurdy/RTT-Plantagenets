@@ -95,7 +95,7 @@ single vassal_oxford
 single vassal_shrewsbury
 single vassal_stanley
 single vassal_suffolk
-single vassal_westmorld
+single vassal_westmoreland
 single vassal_worcester
 
 single vassal_beaumont_b
@@ -109,7 +109,7 @@ single vassal_oxford_b
 single vassal_shrewsbury_b
 single vassal_stanley_b
 single vassal_suffolk_b
-single vassal_westmorld_b
+single vassal_westmoreland_b
 single vassal_worcester_b
 
 single vassal_beaumont_b
@@ -123,7 +123,7 @@ single vassal_oxford_b
 single vassal_shrewsbury_b
 single vassal_stanley_b
 single vassal_suffolk_b
-single vassal_westmorld_b
+single vassal_westmoreland_b
 single vassal_worcester_b
 
 
@@ -132,12 +132,14 @@ single vassal_edward
 single vassal_hastings
 single vassal_thomas_stanley
 single vassal_trollope
+single vassal_montagu
 
 single vassal_clifford_b
 single vassal_edward_b
 single vassal_hastings_b
 single vassal_thomas_stanley_b
 single vassal_trollope_b
+single vassal_montagu_b
 
 multi "#ffffff" 6x1 numbers_york \
 	HIRES/output/number_1_york.png \
@@ -221,7 +223,7 @@ multi '#d1cfa1' 4x vassals \
 	HIRES/output/vassal_shrewsbury.png \
 	HIRES/output/vassal_stanley.png \
 	HIRES/output/vassal_suffolk.png \
-	HIRES/output/vassal_westmorld.png \
+	HIRES/output/vassal_westmoreland.png \
 	HIRES/output/vassal_worcester.png \
 
 multi '#ddda9f' 4x vassals_b \
@@ -236,6 +238,13 @@ multi '#ddda9f' 4x vassals_b \
 	HIRES/output/vassal_shrewsbury_b.png \
 	HIRES/output/vassal_stanley_b.png \
 	HIRES/output/vassal_suffolk_b.png \
-	HIRES/output/vassal_westmorld_b.png \
+	HIRES/output/vassal_westmoreland_b.png \
 	HIRES/output/vassal_worcester_b.png \
+
+multi '#d1cfa1' 1x vassals_lancaster \
+	HIRES/output/vassal_clifford.png \
+	HIRES/output/vassal_edward.png \
+	HIRES/output/vassal_montagu.png \
+	HIRES/output/vassal_thomas_stanley.png \
+	HIRES/output/vassal_trollope.png \
 

@@ -694,12 +694,13 @@ body.shift .exhausted  {
 .vassal.vassal_shrewsbury { background-image: url(images/vassal_shrewsbury.png) }
 .vassal.vassal_stanley { background-image: url(images/vassal_stanley.png) }
 .vassal.vassal_suffolk { background-image: url(images/vassal_suffolk.png) }
-.vassal.vassal_westmorld { background-image: url(images/vassal_westmorld.png) }
+.vassal.vassal_westmoreland { background-image: url(images/vassal_westmoreland.png) }
 .vassal.vassal_worcester { background-image: url(images/vassal_worcester.png) }
 
 .vassal.vassal_hastings { background-image: url(images/vassal_hastings.png) }
 .vassal.vassal_clifford { background-image: url(images/vassal_clifford.png) }
 .vassal.vassal_edward { background-image: url(images/vassal_edward.png) }
+.vassal.vassal_montagu { background-image: url(images/vassal_montagu.png) }
 .vassal.vassal_thomas_stanley { background-image: url(images/vassal_thomas_stanley.png) }
 .vassal.vassal_trollope { background-image: url(images/vassal_trollope.png) }
 
@@ -714,12 +715,13 @@ body.shift .exhausted  {
 .vassal.back.vassal_shrewsbury { background-image: url(images/vassal_shrewsbury_b.png) }
 .vassal.back.vassal_stanley { background-image: url(images/vassal_stanley_b.png) }
 .vassal.back.vassal_suffolk { background-image: url(images/vassal_suffolk_b.png) }
-.vassal.back.vassal_westmorld { background-image: url(images/vassal_westmorld_b.png) }
+.vassal.back.vassal_westmoreland { background-image: url(images/vassal_westmoreland_b.png) }
 .vassal.back.vassal_worcester { background-image: url(images/vassal_worcester_b.png) }
 
 .vassal.back.vassal_hastings { background-image: url(images/vassal_hastings_b.png) }
 .vassal.back.vassal_clifford { background-image: url(images/vassal_clifford_b.png) }
 .vassal.back.vassal_edward { background-image: url(images/vassal_edward_b.png) }
+.vassal.back.vassal_montagu { background-image: url(images/vassal_montagu_b.png) }
 .vassal.back.vassal_thomas_stanley { background-image: url(images/vassal_thomas_stanley_b.png) }
 .vassal.back.vassal_trollope { background-image: url(images/vassal_trollope_b.png) }
 
@@ -922,6 +924,7 @@ body.shift .exhausted  {
 .marker.vassal.vassal_hastings { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%), 0px 1px 4px #0008; }
 .marker.vassal.vassal_clifford { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
 .marker.vassal.vassal_edward { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
+.marker.vassal.vassal_montagu { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
 .marker.vassal.vassal_thomas_stanley { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
 .marker.vassal.vassal_trollope { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
 .unit.vassal { background-color: hsl(58,34%,73%); border-color: hsl(58,34%,83%) hsl(58,34%,63%) hsl(58,34%,63%) hsl(58,34%,83%); box-shadow: 0 0 0 1px hsl(58,34%,24%), 0px 1px 4px #0008; }
@@ -929,5 +932,6 @@ body.shift .exhausted  {
 .unit.vassal.vassal_hastings { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%), 0px 1px 4px #0008; }
 .unit.vassal.vassal_clifford { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
 .unit.vassal.vassal_edward { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
+.unit.vassal.vassal_montagu { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
 .unit.vassal.vassal_thomas_stanley { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
 .unit.vassal.vassal_trollope { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }

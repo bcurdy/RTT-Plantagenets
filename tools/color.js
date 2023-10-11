@@ -110,6 +110,7 @@ foo(".marker.vassal.back", "#DDDA9F")
 foo(".marker.vassal.vassal_hastings", "#D1DDF1")
 foo(".marker.vassal.vassal_clifford", "#FBD3D4")
 foo(".marker.vassal.vassal_edward", "#FBD3D4")
+foo(".marker.vassal.vassal_montagu", "#FBD3D4")
 foo(".marker.vassal.vassal_thomas_stanley", "#FBD3D4")
 foo(".marker.vassal.vassal_trollope", "#FBD3D4")
 

@@ -78,7 +78,7 @@ large2 26 vassal_beaumont
 large2 28 vassal_oxford
 large2 36 vassal_shrewsbury
 large2 38 vassal_essex
-large2 40 vassal_westmorld
+large2 40 vassal_westmoreland
 large2 47 vassal_worcester
 
 large2 6 vassal_hastings
@@ -86,6 +86,7 @@ large2 49 vassal_trollope
 large2 50 vassal_clifford
 large2 51 vassal_edward
 large2 52 vassal_thomas_stanley
+large2 53 vassal_montagu
 
 large2 7 seat_lancaster_henry_vi
 large2 8 seat_lancaster_somerset
