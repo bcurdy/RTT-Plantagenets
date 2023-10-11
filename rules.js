@@ -1400,7 +1400,7 @@ function has_locale_to_muster(lord) {
 
 	// Else, can muster at any friendly seat (of a friendly lord who is also in play)
 	for (let other = first_friendly_lord; other <= last_friendly_lord; other++)
-		if (!is_lord_in_play(other) && is_friendly_locale(data.lords[other].seat))
+		if (is_lord_in_play(other) && is_friendly_locale(data.lords[other].seat))
 			return true
 
 	// Tough luck!
