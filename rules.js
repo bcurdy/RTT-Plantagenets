@@ -1642,7 +1642,7 @@ function is_friendly_locale(loc) {
 }
 
 function can_add_troops(lordwho, locale) {
-	if (has_exhausted_marker(locale))
+	if (has_exhausted_marker(locale) || is_exile(locale))
 		return false
 	else
 		return true
