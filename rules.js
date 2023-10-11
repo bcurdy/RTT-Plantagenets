@@ -4540,10 +4540,10 @@ states.select_supply_type = {
 		view.actions.port = 1
 	},
 	stronghold() {
-		use_stronghold_supply(source, get_stronghold_supply_amount(source))
+		use_stronghold_supply(game.where, get_stronghold_supply_amount(game.where))
 	},
 	port() {
-		use_port_supply(source, get_port_supply_amount(source))
+		use_port_supply(game.where, get_port_supply_amount(game.where))
 	},
 }
 
