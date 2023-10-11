@@ -1393,38 +1393,6 @@ function is_lord_at_friendly_locale(lord) {
 	return is_friendly_locale(loc)
 }
 
-function used_seat_capability(lord, where, extra) {
-	let seats = data.lords[lord].seats
-	if (extra) {
-		if (set_has(seats, where) && !extra.includes(where))
-			return -1
-	} else {
-		if (set_has(seats, where))
-			return -1
-	}
-	return -1
-}
-
-function for_each_seat(lord, fn, repeat = false) {
-	let list = data.lords[lord].seats
-
-	for (let seat of list)
-		fn(seat)
-}
-
-function is_lord_seat(lord, here) {
-	let result = false
-	for_each_seat(lord, seat => {
-		if (seat === here)
-			result = true
-	})
-	return result
-}
-
-function is_lord_at_seat(lord) {
-	return is_lord_seat(lord, get_lord_locale(lord))
-}
-
 function has_locale_to_muster(lord) {
 	if (!has_enemy_lord(data.lords[lord].seat))
 		return true
