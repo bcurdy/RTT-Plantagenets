@@ -1352,7 +1352,7 @@ function muster_vassal(vassal, lord) {
 }
 
 function disband_vassal(vassal) {
-	if (data.vassals[vassa].service > 0) {
+	if (data.vassals[vassal].service > 0) {
 		let new_turn = current_turn() + (6 - data.vassals[vassal].service)
 		set_vassal_lord_and_service(vassal, VASSAL_CALENDAR, new_turn)
 		log(`Disbanded V${vassal} to turn ${current_turn() + (6 - data.vassals[vassal].service)}.`)
@@ -4241,7 +4241,7 @@ function get_lord_in_exile(lord) {
 
 function exile_lord(lord) {
 	set_lord_in_exile(lord)
-	disband_lord(lord)
+	disband_lord(lord, false)
 }
 
 function remove_lord_from_exile(lord) {
@@ -7000,7 +7000,7 @@ function disband_lord(lord, permanently = false) {
 
 	for (let x = 0; x < FORCE_TYPE_COUNT; ++x) {
 		set_lord_forces(lord, x, 0)
-		set_lord_routed(lord, x, 0)
+		//set_lord_routed(lord, x, 0)
 	}
 
 	set_lord_moved(lord, 0)
