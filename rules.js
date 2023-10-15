@@ -355,9 +355,9 @@ const VASSAL_TROLLOPE = find_vassal("Trollope")
 
 const AOW_LANCASTER_CULVERINS_AND_FALCONETS = [ L1, L2 ] // TODO
 const AOW_LANCASTER_MUSTERD_MY_SOLDIERS = L3 // TODO
-const AOW_LANCASTER_HERALDS = L4 // TODO
+const AOW_LANCASTER_HERALDS = L4
 const AOW_LANCASTER_CHURCH_BLESSINGS = L5
-const AOW_LANCASTER_GREAT_SHIPS = L6 // TODO
+const AOW_LANCASTER_GREAT_SHIPS = L6
 const AOW_LANCASTER_HARBINGERS = L7
 const AOW_LANCASTER_HAY_WAINS = L8
 const AOW_LANCASTER_QUARTERMASTERS = L9
@@ -394,7 +394,7 @@ const AOW_YORK_CULVERINS_AND_FALCONETS = [ Y1, Y2 ] // TODO
 const AOW_YORK_MUSTERD_MY_SOLDIERS = Y3 // TODO
 const AOW_YORK_WE_DONE_DEEDS_OF_CHARITY = Y4 // TODO
 const AOW_YORK_THOMAS_BOURCHIER = Y5
-const AOW_YORK_GREAT_SHIPS = Y6 // TODO
+const AOW_YORK_GREAT_SHIPS = Y6
 const AOW_YORK_HARBINGERS = Y7
 const AOW_YORK_ENGLAND_IS_MY_HOME = Y8 // TODO
 const AOW_YORK_BARRICADES = Y9
@@ -416,7 +416,7 @@ const AOW_YORK_PEMBROKE = Y25 // TODO
 const AOW_YORK_FALLEN_BROTHER = Y26
 const AOW_YORK_PERCYS_NORTH1 = Y27 // TODO
 const AOW_YORK_FIRST_SON = Y28
-const AOW_YORK_STAFFORD_BRANCH = Y29 // TODO
+const AOW_YORK_STAFFORD_BRANCH = Y29
 const AOW_YORK_CAPTAIN = Y30
 const AOW_YORK_WOODWILLES = Y31
 const AOW_YORK_FINAL_CHARGE = Y32 // TODO
@@ -709,6 +709,7 @@ const TURN_NAME = [
 ]
 
 function find_ports(here) {
+	if ((lord_has_capability(game.group, AOW_YORK_GREAT_SHIPS) || lord_has_capability(game.group, AOW_LANCASTER_GREAT_SHIPS))) return data.port_1.concat(data.port_2, data.port_3);
 	if (here === data.sea_1) return data.port_1
 	if (here === data.sea_2) return data.port_2
 	if (here === data.sea_3) return data.port_3
@@ -1076,6 +1077,10 @@ function get_shared_assets(loc, what) {
 			m = get_lord_assets(lord, CART)
 			n += m
 		}
+		if (game.state === "supply_source" && (lord_has_capability(lord, AOW_YORK_GREAT_SHIPS) || lord_has_capability(AOW_YORK_GREAT_SHIPS)) && what === SHIP) {
+			m = get_lord_assets(lord, SHIP)
+			n += m
+		}
 	}
 	return n
 }
@@ -1106,9 +1111,12 @@ function count_shared_ships() {
 
 function count_group_ships() {
 	let n = 0
-	for (let lord of game.group)
+	for (let lord of game.group) {
 		n += count_lord_ships(lord)
+		if (lord_has_capability(AOW_YORK_GREAT_SHIPS) || lord_has_capability(AOW_LANCASTER_GREAT_SHIPS))
+			n += count_lord_ships(lord)
 	return n
+	}
 }
 
 function count_group_assets(type, group = game.group) {
