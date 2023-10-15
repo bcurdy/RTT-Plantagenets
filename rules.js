@@ -354,7 +354,7 @@ const VASSAL_TROLLOPE = find_vassal("Trollope")
 // TODO: log end victory conditions at scenario start
 
 const AOW_LANCASTER_CULVERINS_AND_FALCONETS = [ L1, L2 ] // TODO
-const AOW_LANCASTER_MUSTERD_MY_SOLDIERS = L3 // TODO
+const AOW_LANCASTER_MUSTERD_MY_SOLDIERS = L3
 const AOW_LANCASTER_HERALDS = L4
 const AOW_LANCASTER_CHURCH_BLESSINGS = L5
 const AOW_LANCASTER_GREAT_SHIPS = L6
@@ -376,7 +376,7 @@ const AOW_LANCASTER_MY_FATHERS_BLOOD = L21
 const AOW_LANCASTER_STAFFORD_ESTATES = L22
 const AOW_LANCASTER_MONTAGU = L23
 const AOW_LANCASTER_MARRIED_TO_A_NEVILLE = L24
-const AOW_LANCASTER_WELSH_LORD = L25 // TODO
+const AOW_LANCASTER_WELSH_LORD = L25
 const AOW_LANCASTER_EDWARD = L26
 const AOW_LANCASTER_BARDED_HORSE = L27
 const AOW_LANCASTER_LOYAL_SOMERSET = L28
@@ -388,10 +388,10 @@ const AOW_LANCASTER_PHILIBERT_DE_CHANDEE = L33 // TODO
 const AOW_LANCASTER_PIQUIERS = L34 // TODO
 const AOW_LANCASTER_THOMAS_STANLEY = L35
 const AOW_LANCASTER_CHEVALIERS = L36
-const AOW_LANCASTER_MADAME_LA_GRANDE = L37 // TODO
+const AOW_LANCASTER_MADAME_LA_GRANDE = L37
 
 const AOW_YORK_CULVERINS_AND_FALCONETS = [ Y1, Y2 ] // TODO
-const AOW_YORK_MUSTERD_MY_SOLDIERS = Y3 // TODO
+const AOW_YORK_MUSTERD_MY_SOLDIERS = Y3
 const AOW_YORK_WE_DONE_DEEDS_OF_CHARITY = Y4 // TODO
 const AOW_YORK_THOMAS_BOURCHIER = Y5
 const AOW_YORK_GREAT_SHIPS = Y6
@@ -412,9 +412,9 @@ const AOW_YORK_YORKS_FAVOURED_SON = Y20
 const AOW_YORK_SOUTHERNERS = Y21
 const AOW_YORK_FAIR_ARBITER = Y22
 const AOW_YORK_HASTINGS = Y24
-const AOW_YORK_PEMBROKE = Y25 // TODO
+const AOW_YORK_PEMBROKE = Y25 
 const AOW_YORK_FALLEN_BROTHER = Y26
-const AOW_YORK_PERCYS_NORTH1 = Y27 // TODO
+const AOW_YORK_PERCYS_NORTH1 = Y27 
 const AOW_YORK_FIRST_SON = Y28
 const AOW_YORK_STAFFORD_BRANCH = Y29
 const AOW_YORK_CAPTAIN = Y30
@@ -424,7 +424,7 @@ const AOW_YORK_BLOODY_THOU_ART = Y33 // TODO
 const AOW_YORK_SO_WISE_SO_YOUNG = Y34
 const AOW_YORK_KINGDOM_UNITED = Y35 // TODO
 const AOW_YORK_VANGUARD = Y36 // TODO
-const AOW_YORK_PERCYS_NORTH2 = Y37 // TODO
+const AOW_YORK_PERCYS_NORTH2 = Y37
 
 const EVENT_LANCASTER_LEEWARD_BATTLE_LINE = L1 // TODO
 // Hold event. Play at start of battle AFTER ARRAY halve all units in the is_archery() unless enemy also play that event
@@ -483,7 +483,6 @@ const EVENT_LANCASTER_PARLIAMENT_VOTES = L18 // TODO
 // and automatic success (success = true)
 // Bypass event Y15
 const EVENT_LANCASTER_HENRYS_PROCLAMATION = L19
-// Vassals to current turn box
 const EVENT_LANCASTER_PARLIAMENT_TRUCE = L20 // TODO
 // Can be played during Levy and Campaign
 // Read L11 Basically it forbids to go to locales where enemy are as long as
@@ -4991,12 +4990,70 @@ function init_battle(here) {
 	}
 }
 
+function add_battle_capability_troops() {
+	let here = get_lord_locale(game.command)
+
+	for (let lord = first_york_lord; lord <= last_lancaster_lord; ++lord) {
+		if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_favoury_marker(here)) {
+			add_lord_forces(lord, MEN_AT_ARMS, 2)
+			add_lord_forces(lord, LONGBOWMEN, 1)
+		}
+		if (lord_has_capability(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS) && has_favourl_marker(here)) {
+			add_lord_forces(lord, MEN_AT_ARMS, 2)
+			add_lord_forces(lord, LONGBOWMEN, 1)
+		}
+		if (lord_has_capability(lord, AOW_LANCASTER_WELSH_LORD) && data.locales[here].region === "Wales") {
+			add_lord_forces(lord, LONGBOWMEN, 2)
+		}
+		if (lord_has_capability(lord, AOW_YORK_PEMBROKE) && data.locales[here].region === "Wales") {
+			add_lord_forces(lord, LONGBOWMEN, 2)
+		}
+		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && data.locales[here].region === "North") {
+			add_lord_forces(lord, MILITIA, 4)	
+		}
+		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
+			add_lord_forces(lord, MILITIA, 4)
+		}
+	}
+}
+
+function remove_battle_capability_troops() {
+	let here = get_lord_locale(game.command)
+
+	for (let lord = first_york_lord; lord <= last_lancaster_lord; ++lord) {
+		if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_favoury_marker(here)) {
+			add_lord_forces(lord, MEN_AT_ARMS, -2)
+			add_lord_forces(lord, LONGBOWMEN, -1)
+		}
+		if (lord_has_capability(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS) && has_favourl_marker(here)) {
+			add_lord_forces(lord, MEN_AT_ARMS, -2)
+			add_lord_forces(lord, LONGBOWMEN, -1)
+		}
+		if (lord_has_capability(lord, AOW_LANCASTER_WELSH_LORD) && data.locales[here].region === "Wales") {
+			add_lord_forces(lord, LONGBOWMEN, -2)
+		}
+		if (lord_has_capability(lord, AOW_YORK_PEMBROKE) && data.locales[here].region === "Wales") {
+			add_lord_forces(lord, LONGBOWMEN, -2)
+		}
+		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && data.locales[here].region === "North") {
+			add_lord_forces(lord, MILITIA, -4)	
+		}
+		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
+			add_lord_forces(lord, MILITIA, -4)
+		}
+	}
+}
+
 function start_battle() {
 	let here = get_lord_locale(game.command)
 
 	log_h3(`Battle at %${here}`)
 
 	init_battle(here, 0, 0)
+
+	// Troops by capability
+
+	add_battle_capability_troops()
 
 	// All attacking lords to reserve
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
@@ -6417,6 +6474,7 @@ states.battle_spoils = {
 }
 
 function goto_death_or_disband() {
+	remove_battle_capability_troops()
 	if (has_defeated_lords())
 		game.state = "death_or_disband"
 	else
