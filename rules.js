@@ -3041,12 +3041,6 @@ states.muster_lord_at_seat = {
 	locale(loc) {
 		push_undo()
 
-		let cap = used_seat_capability(game.who, loc)
-		if (cap >= 0)
-			log(`L${game.who} to %${loc} (C${cap}).`)
-		else
-			log(`L${game.who} to %${loc}.`)
-
 		// FIXME: clean up these transitions
 		// TODO : INFLUENCE FAVOURING CURRENT SIDE
 		// TODO : IF SEAT WITH ENEMY LORD GOES WITH ANY FRIENDLY SEAT
