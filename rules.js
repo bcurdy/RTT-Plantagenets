@@ -7509,7 +7509,7 @@ function tides_calc() {
 		get_lord_locale(LORD_HENRY_VI) !== LOC_LONDON &&
 		is_lord_on_map(LORD_HENRY_VI)
 	) {
-		log(`Capability: Margaret 1 Influence for Lancaster`)
+		log(`Capability: Margaret 2 Influence for Lancaster`)
 		doml += 2
 	}
 
