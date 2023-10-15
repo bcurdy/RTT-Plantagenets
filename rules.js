@@ -1433,6 +1433,14 @@ function has_friendly_lord(loc) {
 			return true
 	return false
 }
+
+function is_adjacent_friendly_port_english_channel(loc) {
+	for (let next of data.locales[loc].adjacent) {
+		if (is_friendly_locale(next) && data.port_2.includes(next))
+			return true
+	}
+}
+
 /*
 function has_besieged_friendly_lord(loc) {
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
@@ -6655,6 +6663,14 @@ function goto_pay() {
 	log_br()
 	let n = 0
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+		let here = get_lord_locale(lord)
+		if (is_lord_on_map(lord) &&
+			!is_lord_on_calendar(lord) &&
+			lord_has_capability(lord, AOW_LANCASTER_MADAME_LA_GRANDE) &&
+			(((is_friendly_locale(data.locales[here])) && data.port_2.includes(here)) ||
+			is_adjacent_friendly_port_english_channel(here))) {
+				add_lord_assets(lord, COIN, 1)
+			}
 		if (
 			game.active === LANCASTER &&
 			is_lord_on_map(lord) &&
