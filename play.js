@@ -1616,7 +1616,8 @@ function on_update() {
 	action_button("surrender", "Surrender")
 
 	// Use all commands
-
+	action_button("heralds", "Heralds")
+	
 	// Use one command
 	action_button("sail", "Sail")
 	action_button("parley", "Parley")

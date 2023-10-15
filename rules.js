@@ -3459,6 +3459,8 @@ states.command = {
 			view.actions.sail = 1
 		if (can_action_parley_command())
 			view.actions.parley = 1
+		if (can_action_heralds())
+			view.actions.heralds = 1
 	},
 
 	pass() {
@@ -3476,6 +3478,7 @@ states.command = {
 	supply: goto_supply,
 	tax: goto_tax,
 	sail: goto_sail,
+	heralds: goto_heralds,
 
 	locale: goto_march,
 
@@ -4850,6 +4853,80 @@ states.confirm_approach_sail = {
 		goto_battle()
 	},
 }
+
+// === CAPABILITY : HERALDS === 
+
+function can_action_heralds() {
+	if (!is_first_action())
+		return false
+	// at a seaport
+	let here = get_lord_locale(game.command)
+	if (!is_seaport(here))
+		return false
+
+	if (!lord_has_capability(game.command, AOW_LANCASTER_HERALDS)) 
+		return false
+
+	return true
+}
+
+function goto_heralds(){
+	game.state = "heralds"
+
+}
+
+states.heralds = {
+	inactive: "Heralds",
+	prompt() {
+		view.prompt = "Heralds: Choose a Lord on calendar to shift him to next turn box"
+		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+			if (is_lord_on_calendar(lord))
+				gen_action_lord(lord)
+		}
+	},
+	lord(other) {
+		clear_undo()
+		goto_heralds_attempt(other)
+	},
+}
+
+function goto_heralds_attempt(lord) {
+	game.what = lord
+	push_state("heralds_attempt")
+	init_influence_check(game.command)
+}
+
+states.heralds_attempt = {
+	inactive: "Heralds Attempt",
+	prompt() {
+		view.prompt = `Attempt to shift ${lord_name[game.what]} to next Turn Box. `
+		prompt_influence_check()
+	},
+	spend1: add_influence_check_modifier_1,
+	spend3: add_influence_check_modifier_2,
+	check() {
+		let results = do_influence_check()
+		log(`Attempt to shift L${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+
+		if (results.success) {
+			game.who = game.what
+			set_lord_calendar(game.who, current_turn() + 1)
+			end_heralds_attempt()
+		} else {
+			end_heralds_attempt()
+		}
+	},
+}
+
+function end_heralds_attempt() {
+	spend_all_actions()
+	pop_state()
+	clear_undo()
+	end_influence_check()
+	resume_command()
+}
+
+
 // === BATTLE ===
 
 function set_active_attacker() {
@@ -7000,7 +7077,7 @@ function disband_lord(lord, permanently = false) {
 
 	for (let x = 0; x < FORCE_TYPE_COUNT; ++x) {
 		set_lord_forces(lord, x, 0)
-		//set_lord_routed(lord, x, 0)
+		//set_lord_routed(lord, x, 0) 
 	}
 
 	set_lord_moved(lord, 0)
@@ -7306,6 +7383,7 @@ function end_reset() {
 // === END CAMPAIGN: TIDES OF WAR ===
 
 function tides_calc() {
+	log_h3(`Tides of War`)
 	let town = 0
 	let cities = 0
 	let fortress = 0
@@ -7317,6 +7395,14 @@ function tides_calc() {
 	let domsy = 0
 	let domwl = 0
 	let domwy = 0
+	let prenl = 0
+	let preny = 0
+	let presl = 0
+	let presy = 0
+	let prewl = 0
+	let prewy = 0	
+	let prel = 0
+	let prey = 0
 	let x = 0
 
 	// DOMINATION CALC
@@ -7480,7 +7566,7 @@ function tides_calc() {
 	}
 	if (town >= 1) {
 		log(`Most Towns 1 Influence for York`)
-		domy += 2
+		domy += 1
 	}
 
 	if (cities <= -1) {
@@ -7493,8 +7579,43 @@ function tides_calc() {
 	}
 	if (town <= -1) {
 		log(`Most Towns 1 Influence for Lancaster`)
-		doml += 2
+		doml += 1
 	}
+
+	// LORD PRESENCE
+	for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; ++lord) {
+		if (is_lord_on_map(lord)) {
+			if (data.locales[get_lord_locale(lord)].region === "North") {
+				prenl = 1
+			}
+			if (data.locales[get_lord_locale(lord)].region === "South") {
+				presl = 1
+			}
+			if (data.locales[get_lord_locale(lord)].region === "Wales") {
+				prewl = 1
+			}
+		}
+	}
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
+		if (is_lord_on_map(lord)) {
+			if (data.locales[get_lord_locale(lord)].region === "North") {
+				preny = 1
+			}
+			if (data.locales[get_lord_locale(lord)].region === "South") {
+				presy = 1
+			}
+			if (data.locales[get_lord_locale(lord)].region === "Wales") 
+				prewy = 1
+		}
+	}
+	prel = prenl+presl+prewl
+	prey = preny+presy+prewy
+
+	log("Presence in Areas : " +prel+ " for Lancaster")
+	log("Presence in Areas : " +prey+ " for Yorkists")
+
+	domy += preny+presy+prewy
+	doml += prenl+presl+prewl
 
 	// CAPS EFFECT
 
@@ -7507,6 +7628,7 @@ function tides_calc() {
 		doml += 2
 	}
 
+
 	if (
 		lord_has_capability(LORD_EXETER_1, AOW_LANCASTER_COUNCIL_MEMBER) ||
 		lord_has_capability(LORD_EXETER_2, AOW_LANCASTER_COUNCIL_MEMBER) ||
@@ -7518,8 +7640,9 @@ function tides_calc() {
 		doml += 1
 	}
 
+
 	if (lord_has_capability(LORD_EDWARD_IV, AOW_YORK_FIRST_SON)) {
-		log(`Capability: First Son 1 Influence for Lancaster`)
+		log(`Capability: First Son 1 Influence for York`)
 		domy += 1
 	}
 
@@ -7536,6 +7659,7 @@ function tides_calc() {
 			}
 		}
 	}
+
 
 	log(`Total ` + domy + ` Influence for York`)
 	log(`Total ` + doml + ` Influence for Lancaster`)
