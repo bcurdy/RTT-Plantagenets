@@ -1631,6 +1631,9 @@ function on_update() {
 	action_button("take_ship", "Ship")
 	action_button("take_cart", "Cart")
 	action_button("levy_troops", "Levy Troops")
+	action_button("levy_beloved_warwick", "Beloved Warwick")
+	action_button("levy_irishmen", "Irishmen")
+
 	action_button("capability", "Capability")
 
 	// Parley

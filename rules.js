@@ -384,7 +384,7 @@ const AOW_LANCASTER_HIGH_ADMIRAL = L29
 const AOW_LANCASTER_MERCHANTS = L30 // TODO
 const AOW_LANCASTER_YEOMEN_OF_THE_CROWN = L31 // TODO
 const AOW_LANCASTER_TWO_ROSES = L32
-const AOW_LANCASTER_PHILIBERT_DE_CHANDEE = L33 // TODO
+const AOW_LANCASTER_PHILIBERT_DE_CHANDEE = L33
 const AOW_LANCASTER_PIQUIERS = L34 // TODO
 const AOW_LANCASTER_THOMAS_STANLEY = L35
 const AOW_LANCASTER_CHEVALIERS = L36
@@ -404,9 +404,9 @@ const AOW_YORK_SOLDIERS_OF_FORTUNE = Y12 // TODO
 const AOW_YORK_SCOURERS = Y13
 const AOW_YORK_BURGUNDIANS = [ Y14, Y23 ] // TODO
 const AOW_YORK_NAVAL_BLOCKADE = Y15 // TODO
-const AOW_YORK_BELOVED_WARWICK = Y16 // TODO
+const AOW_YORK_BELOVED_WARWICK = Y16
 const AOW_YORK_ALICE_MONTAGU = Y17
-const AOW_YORK_IRISHMEN = Y18 // TODO
+const AOW_YORK_IRISHMEN = Y18
 const AOW_YORK_WELSHMEN = Y19
 const AOW_YORK_YORKS_FAVOURED_SON = Y20
 const AOW_YORK_SOUTHERNERS = Y21
@@ -1622,11 +1622,10 @@ function is_friendly_locale(loc) {
 		if (has_enemy_lord(loc))
 			return false
 		if (is_favour_friendly(loc)) {
-			//to add friendly favour marker later
 			return true
 		}
 	}
-	return false // TESTING PURPOSES NEED TO CHANGE TO FALSE
+	return false
 }
 
 function can_add_troops(lordwho, locale) {
@@ -1634,6 +1633,26 @@ function can_add_troops(lordwho, locale) {
 		return false
 	else
 		return true
+}
+
+function can_add_troops_beloved_warwick(lordwho, locale) {
+	if (!has_exhausted_marker(locale) && 
+	!is_exile(locale) &&
+	lord_has_capability(lordwho, AOW_YORK_BELOVED_WARWICK)
+	)
+		return true
+	else
+		return false
+}
+function can_add_troops_irishmen(lordwho, locale) {
+	if (
+	(!has_exhausted_marker(locale) && 
+	(locale === LOC_IRELAND || data.port_3.includes(locale))) &&
+	lord_has_capability(lordwho, AOW_YORK_IRISHMEN) 
+	) 
+		return true
+	else
+		return false
 }
 
 function can_add_transport(who, what) {
@@ -1712,15 +1731,6 @@ function set_favour_enemy(loc) {
 	}
 }
 
-/*
-function count_unbesieged_friendly_lords(loc) {
-	let n = 0
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		if (get_lord_locale(lord) === loc && is_lord_unbesieged(lord))
-			++n
-	return n
-}
-*/
 // === MAP ===
 
 function calculate_distance(start, adjacent) {
@@ -1759,17 +1769,6 @@ function muster_lord_forces(lord) {
 	set_lord_forces(lord, LONGBOWMEN, info.forces.longbowmen | 0)
 	set_lord_forces(lord, MILITIA, info.forces.militia | 0)
 }
-/*
-function muster_vassal_forces(lord, vassal) {
-	let info = data.vassals[vassal]
-	add_lord_forces(lord, RETINUE, info.forces.knights | 0)
-	add_lord_forces(lord, SERGEANTS, info.forces.sergeants | 0)
-	add_lord_forces(lord, LIGHT_HORSE, info.forces.light_horse | 0)
-	add_lord_forces(lord, ASIATIC_HORSE, info.forces.asiatic_horse | 0)
-	add_lord_forces(lord, MEN_AT_ARMS, info.forces.men_at_arms | 0)
-	add_lord_forces(lord, MILITIA, info.forces.militia | 0)
-	add_lord_forces(lord, SERFS, info.forces.serfs | 0)
-}*/
 
 function restore_lord_forces(lord, type, count) {
 	if (get_lord_forces(lord, type) < count) {
@@ -2934,6 +2933,12 @@ states.levy_muster_lord = {
 
 				if (can_action_parley_levy())
 					view.actions.parley = 1
+
+				if (can_add_troops_beloved_warwick(game.who, here))
+					view.actions.levy_beloved_warwick = 1
+
+				if (can_add_troops_irishmen(game.who, here))
+					view.actions.levy_irishmen = 1	
 			}
 
 			if (game.count === 0 && game.flags.free_levy === 1 && can_add_troops(game.who, here)) {
@@ -2978,7 +2983,8 @@ states.levy_muster_lord = {
 		let locale = data.locales[get_lord_locale(game.who)].type
 		if (
 			!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS) &&
-			!lord_has_capability(game.who, AOW_YORK_WOODWILLES)
+			!lord_has_capability(game.who, AOW_YORK_WOODWILLES) &&
+			!chamberlains_eligible_levy(locale)
 		)
 			deplete_locale(get_lord_locale(game.who))
 
@@ -3017,6 +3023,26 @@ states.levy_muster_lord = {
 		resume_levy_muster_lord()
 	},
 
+	levy_beloved_warwick() {
+		push_undo()
+		add_lord_forces(game.who, MILITIA, 5)
+		if (game.flags.free_levy === 1) {
+			++game.count
+			game.flags.free_levy = 0
+		}
+		resume_levy_muster_lord()
+	},
+
+	levy_irishmen() {
+		push_undo()
+		add_lord_forces(game.who, MILITIA, 5)
+		if (game.flags.free_levy === 1) {
+			++game.count
+			game.flags.free_levy = 0
+		}
+		resume_levy_muster_lord()
+	},
+
 	capability() {
 		push_undo()
 		push_state("muster_capability")
@@ -3031,6 +3057,15 @@ states.levy_muster_lord = {
 		set_lord_moved(game.who, 1)
 		pop_state()
 	},
+}
+
+function chamberlains_eligible_levy(locale) {
+	for (let vassal = first_vassal; vassal <= last_vassal; ++vassal)
+	if (is_vassal_mustered_with(vassal, game.who) && 
+	lord_has_capability(game.who, AOW_LANCASTER_CHAMBERLAINS)) {
+		if (locale === data.vassals[vassal].seat)
+			return true
+	}
 }
 
 states.muster_lord_at_seat = {
@@ -4393,6 +4428,15 @@ function command_has_harbingers() {
 	)
 }
 
+function chamberlains_eligible_supply(source) {
+	for (let vassal = first_vassal; vassal <= last_vassal; ++vassal)
+	if (is_vassal_mustered_with(vassal, game.command) && 
+	lord_has_capability(game.command, AOW_LANCASTER_CHAMBERLAINS)) {
+		if (source === data.vassals[vassal].seat)
+			return true
+	}
+}
+
 function command_has_stafford_branch(loc) {
 	if (lord_has_capability(game.command, AOW_YORK_STAFFORD_BRANCH)) {
 		return (
@@ -4505,11 +4549,25 @@ states.supply_source = {
 	},
 }
 
+function quartermasters_eligible_supply(source) {
+		for (let vassal = first_vassal; vassal <= last_vassal; ++vassal)
+		if (is_vassal_mustered_with(vassal, game.command) && 
+		lord_has_capability(game.command, AOW_LANCASTER_CHAMBERLAINS)) {
+			if (source === data.vassals[vassal].seat)
+				return true
+		}
+}
+
 function use_stronghold_supply(source, amount) {
 	logi(`${amount} from Stronghold at %${source}`)
 	add_lord_assets(game.command, PROV, amount)
-	deplete_locale(source)
-	end_supply()
+	if (chamberlains_eligible_supply(source)) {
+		end_supply()
+	}
+	else {
+		deplete_locale(source)
+		end_supply()
+	}
 }
 
 function use_port_supply(source, amount) {
