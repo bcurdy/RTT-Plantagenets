@@ -396,7 +396,7 @@ const AOW_YORK_WE_DONE_DEEDS_OF_CHARITY = Y4 // TODO
 const AOW_YORK_THOMAS_BOURCHIER = Y5
 const AOW_YORK_GREAT_SHIPS = Y6
 const AOW_YORK_HARBINGERS = Y7
-const AOW_YORK_ENGLAND_IS_MY_HOME = Y8 // TODO
+const AOW_YORK_ENGLAND_IS_MY_HOME = Y8
 const AOW_YORK_BARRICADES = Y9
 const AOW_YORK_AGITATORS = Y10 // TODO
 const AOW_YORK_YORKISTS_NEVER_WAIT = Y11
@@ -4258,8 +4258,14 @@ function get_lord_in_exile(lord) {
 }
 
 function exile_lord(lord) {
-	set_lord_in_exile(lord)
-	disband_lord(lord, false)
+	if (!lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME)) {
+		set_lord_in_exile(lord)
+		disband_lord(lord, false)
+	}
+	else {
+		disband_lord(lord, false)
+		set_lord_calendar(lord, current_turn() + 1) 
+	}
 }
 
 function remove_lord_from_exile(lord) {
@@ -7142,12 +7148,13 @@ states.pillage_locale = {
 
 function disband_lord(lord, permanently = false) {
 	let turn = current_turn()
+	let extra = 6
 
 	if (permanently) {
 		log(`Removed L${lord}.`)
 		set_lord_locale(lord, NOWHERE)
 	} else {
-		set_lord_calendar(lord, turn + (6 - data.lords[lord].influence))
+		set_lord_calendar(lord, turn + (extra - data.lords[lord].influence))
 		log(`Disbanded L${lord} to ${get_lord_calendar(lord)}.`)
 	}
 
