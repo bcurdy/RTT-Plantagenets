@@ -5020,6 +5020,13 @@ function add_battle_capability_troops() {
 		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
 			add_lord_forces(lord, MILITIA, 4)
 		}
+		if (is_lord_on_map(lord) &&
+		!is_lord_on_calendar(lord) &&
+		lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) &&
+		(((is_friendly_locale(data.locales[here])) && data.port_2.includes(here)) ||
+		is_adjacent_friendly_port_english_channel(here))) {
+			add_lord_forces(lord, MEN_AT_ARMS, 2)
+		}
 	}
 }
 
@@ -5046,6 +5053,13 @@ function remove_battle_capability_troops() {
 		}
 		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
 			add_lord_forces(lord, MILITIA, -4)
+		}
+		if (is_lord_on_map(lord) &&
+		!is_lord_on_calendar(lord) &&
+		lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) &&
+		(((is_friendly_locale(data.locales[here])) && data.port_2.includes(here)) ||
+		is_adjacent_friendly_port_english_channel(here))) {
+			add_lord_forces(lord, MEN_AT_ARMS, -2)
 		}
 	}
 }
