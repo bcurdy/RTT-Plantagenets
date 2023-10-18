@@ -204,8 +204,8 @@ const BURGUNDIANS = 5
 const MERCENARIES = 6
 const force_type_count = 7
 
-const force_action_name = [ "retinue", "vassal", "men_at_arms", "longbowmen", "militia", "burgundians", "mercenary" ]
-const routed_force_action_name = [ "routed_retinue", "routed_vassal", "routed_men_at_arms", "routed_longbowmen", "routed_militia", "routed_burgundians", "routed_mercenary" ]
+const force_action_name = [ "retinue", "vassal", "men_at_arms", "longbowmen", "militia", "burgundians", "mercenaries" ]
+const routed_force_action_name = [ "routed_retinue", "routed_vassal", "routed_men_at_arms", "routed_longbowmen", "routed_militia", "routed_burgundians", "routed_mercenaries" ]
 
 const COIN = 1
 const asset_type_count = 4
@@ -1633,6 +1633,7 @@ function on_update() {
 	action_button("levy_troops", "Levy Troops")
 	action_button("levy_beloved_warwick", "Beloved Warwick")
 	action_button("levy_irishmen", "Irishmen")
+	action_button("soldiers_of_fortune", "Soldiers of Fortune")
 
 	action_button("capability", "Capability")
 

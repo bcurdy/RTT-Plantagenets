@@ -1655,6 +1655,22 @@ function can_add_troops_irishmen(lordwho, locale) {
 		return false
 }
 
+function can_add_troops_sof(lordwho, locale) {
+	let number = 6
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+		number -= get_lord_forces(lord, MERCENARIES)
+	}
+	if (!has_exhausted_marker(locale) && 
+	!is_exile(locale) &&
+	lord_has_capability(lordwho, AOW_YORK_SOLDIERS_OF_FORTUNE) &&
+	(get_lord_assets(lordwho, COIN) > 0 || get_shared_assets(lordwho, COIN) > 0) &&
+	number >= 1
+	)
+		return true
+	else
+		return false
+}
+
 function can_add_transport(who, what) {
 	return get_lord_assets(who, what) < 100
 }
@@ -2939,8 +2955,11 @@ states.levy_muster_lord = {
 
 				if (can_add_troops_irishmen(game.who, here))
 					view.actions.levy_irishmen = 1	
-			}
 
+				if (can_add_troops_sof(game.who, here))
+					view.actions.soldiers_of_fortune = 1
+			}
+			
 			if (game.count === 0 && game.flags.free_levy === 1 && can_add_troops(game.who, here)) {
 				view.actions.levy_troops = 1
 			}
@@ -3026,21 +3045,19 @@ states.levy_muster_lord = {
 	levy_beloved_warwick() {
 		push_undo()
 		add_lord_forces(game.who, MILITIA, 5)
-		if (game.flags.free_levy === 1) {
-			++game.count
-			game.flags.free_levy = 0
-		}
 		resume_levy_muster_lord()
 	},
 
 	levy_irishmen() {
 		push_undo()
 		add_lord_forces(game.who, MILITIA, 5)
-		if (game.flags.free_levy === 1) {
-			++game.count
-			game.flags.free_levy = 0
-		}
 		resume_levy_muster_lord()
+	},
+
+	soldiers_of_fortune() {
+		push_undo()
+		push_state("soldier_of_fortune")
+
 	},
 
 	capability() {
@@ -3068,6 +3085,51 @@ function chamberlains_eligible_levy(locale) {
 	}
 }
 
+
+states.soldier_of_fortune = {
+	inactive: "sof",
+	prompt() {
+		set_lord_unfed(game.who, 1)
+		view.prompt = `Pay 1 Coin for Mercenaries ${lord_name[game.who]}.`
+		let done = true
+
+
+		if (done) {
+			if (is_lord_unfed(game.who)) {
+				if (get_lord_assets(game.who, COIN) > 0) {
+					done = false
+					gen_action_coin(game.who)
+				}
+			}
+		}
+		// Sharing
+		if (done) {
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+				if (is_lord_unfed(lord) && can_pay_from_shared(lord)) {
+				gen_action_lord(lord)		
+				}
+			}
+		}
+		
+	},
+
+	coin(lord) {
+		push_undo()
+		let number = get_lord_forces(game.who, MERCENARIES)
+		let merc = 0
+		if (number === 5)
+			merc = 1
+		else 
+			merc = 2
+		add_lord_assets(lord, COIN, -1)
+		add_lord_forces(game.who, MERCENARIES, merc)
+	},
+	lord(lord) {
+		push_undo()
+		game.who = lord
+		game.state = "pay_lord_shared"
+	},
+}
 states.muster_lord_at_seat = {
 	inactive: "Muster",
 	prompt() {
