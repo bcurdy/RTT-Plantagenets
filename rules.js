@@ -2998,7 +2998,6 @@ states.levy_muster_lord = {
 	},
 	levy_troops() {
 		push_undo()
-
 		let locale = data.locales[get_lord_locale(game.who)].type
 		if (
 			!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS) &&
@@ -3056,6 +3055,7 @@ states.levy_muster_lord = {
 
 	soldiers_of_fortune() {
 		push_undo()
+		set_lord_unfed(game.who, 1)
 		push_state("soldier_of_fortune")
 
 	},
@@ -3087,48 +3087,79 @@ function chamberlains_eligible_levy(locale) {
 
 
 states.soldier_of_fortune = {
-	inactive: "sof",
+	inactive: "Levy Troops",
 	prompt() {
-		set_lord_unfed(game.who, 1)
 		view.prompt = `Pay 1 Coin for Mercenaries ${lord_name[game.who]}.`
 		let done = true
-
-
-		if (done) {
-			if (is_lord_unfed(game.who)) {
-				if (get_lord_assets(game.who, COIN) > 0) {
-					done = false
-					gen_action_coin(game.who)
-				}
-			}
-		}
-		// Sharing
 		if (done) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-				if (is_lord_unfed(lord) && can_pay_from_shared(lord)) {
-				gen_action_lord(lord)		
+				if (is_lord_unfed(lord) || can_pay_from_shared(lord)) {
+					if (get_lord_assets(lord, COIN) > 0) {
+						gen_action_coin(lord)
+						done = false
+					}
 				}
 			}
+		}	
+		// Done
+		if (done) {
+			view.prompt = "Soldiers of fortune: Done."
+			view.actions.end_sof = 1
 		}
-		
 	},
-
 	coin(lord) {
 		push_undo()
+		let locale = data.locales[get_lord_locale(game.who)].type
 		let number = get_lord_forces(game.who, MERCENARIES)
 		let merc = 0
+		if (!lord_has_capability(game.who, AOW_YORK_WOODWILLES))
+			deplete_locale(get_lord_locale(game.who))
+
+		switch (locale) {
+			case "calais":
+				add_lord_forces(game.who, MEN_AT_ARMS, 2)
+				add_lord_forces(game.who, LONGBOWMEN, 1)
+				break
+			case "london":
+				add_lord_forces(game.who, MEN_AT_ARMS, 1)
+				add_lord_forces(game.who, LONGBOWMEN, 1)
+				add_lord_forces(game.who, MILITIA, 1)
+				break
+			case "harlech":
+				add_lord_forces(game.who, MEN_AT_ARMS, 1)
+				add_lord_forces(game.who, LONGBOWMEN, 2)
+				break
+			case "city":
+				add_lord_forces(game.who, LONGBOWMEN, 1)
+				add_lord_forces(game.who, MILITIA, 1)
+				break
+			case "town":
+				add_lord_forces(game.who, MILITIA, 2)
+				break
+			case "fortress":
+				add_lord_forces(game.who, MEN_AT_ARMS, 1)
+				add_lord_forces(game.who, MILITIA, 1)
+				break
+		}
+		if (game.flags.free_levy === 1) {
+			++game.count
+			game.flags.free_levy = 0
+		}
 		if (number === 5)
 			merc = 1
 		else 
 			merc = 2
 		add_lord_assets(lord, COIN, -1)
 		add_lord_forces(game.who, MERCENARIES, merc)
+		set_lord_unfed(game.who, 0)
+		end_soldiers_of_fortune()
 	},
-	lord(lord) {
-		push_undo()
-		game.who = lord
-		game.state = "pay_lord_shared"
-	},
+	card: action_held_event,
+}
+
+function end_soldiers_of_fortune() {
+		pop_state()
+		resume_levy_muster_lord()
 }
 states.muster_lord_at_seat = {
 	inactive: "Muster",
