@@ -381,7 +381,7 @@ const AOW_LANCASTER_EDWARD = L26
 const AOW_LANCASTER_BARDED_HORSE = L27
 const AOW_LANCASTER_LOYAL_SOMERSET = L28
 const AOW_LANCASTER_HIGH_ADMIRAL = L29
-const AOW_LANCASTER_MERCHANTS = L30 // NEEDS TO BE IMPROVED
+const AOW_LANCASTER_MERCHANTS = L30
 const AOW_LANCASTER_YEOMEN_OF_THE_CROWN = L31 // TODO
 const AOW_LANCASTER_TWO_ROSES = L32
 const AOW_LANCASTER_PHILIBERT_DE_CHANDEE = L33
@@ -402,7 +402,7 @@ const AOW_YORK_AGITATORS = Y10 // TODO
 const AOW_YORK_YORKISTS_NEVER_WAIT = Y11
 const AOW_YORK_SOLDIERS_OF_FORTUNE = Y12 // TODO
 const AOW_YORK_SCOURERS = Y13
-const AOW_YORK_BURGUNDIANS = [ Y14, Y23 ] // TODO
+const AOW_YORK_BURGUNDIANS = [ Y14, Y23 ]
 const AOW_YORK_NAVAL_BLOCKADE = Y15 // TODO
 const AOW_YORK_BELOVED_WARWICK = Y16
 const AOW_YORK_ALICE_MONTAGU = Y17
@@ -1883,6 +1883,7 @@ exports.setup = function (seed, scenario, options) {
 			first_action: 0,
 			first_march_highway: 0,
 			free_levy: 0,
+			burgundians:0,
 		},
 
 		command: NOBODY,
@@ -2667,6 +2668,16 @@ function capability_muster_effects(lord, c) {
 	}
 	if (c === AOW_YORK_FALLEN_BROTHER && !is_lord_in_play(LORD_CLARENCE)) {
 		game.count += 1
+	}
+
+	if (c === AOW_YORK_BURGUNDIANS) {
+		if (is_seaport(get_lord_locale(lord) && !is_exile(get_lord_locale(lord)))) {
+			add_lord_forces(lord, BURGUNDIANS, 2)
+			game.flags.burgundians = 1
+		}
+		else {
+			game.flags.burgundians = 0
+		}
 	}
 }
 
@@ -4142,6 +4153,7 @@ function march_with_group_2() {
 	for (let lord of game.group) {
 		set_lord_locale(lord, to)
 		set_lord_moved(lord, 1)
+		can_levy_burgundians(lord)
 	}
 
 	goto_intercept()
@@ -5122,6 +5134,14 @@ function count_deplete(loc) {
 	else 
 		return game.count
 
+}
+// === CAPABILITY : BURGUNDIANS === 
+
+function can_levy_burgundians(lord) {
+	if (is_seaport(get_lord_locale(lord)) && !is_exile(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_BURGUNDIANS) && game.flags.burgundians === 0) {
+		add_lord_forces(lord, BURGUNDIANS, 2)
+		game.flags.burgundians === 1
+	}
 }
 
 // === CAPABILITY : HERALDS === 
