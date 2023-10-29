@@ -423,7 +423,7 @@ seat:[
 {"name":"seat lancaster lord_warwick_l","box":{"x":1118,"y":1385,"w":54,"h":56}},
 ],
 vassalbox:[
-{"name":"vassal vassal_westmorld","box":{"x":600,"y":470,"w":54,"h":56}},
+{"name":"vassal vassal_westmoreland","box":{"x":600,"y":470,"w":54,"h":56}},
 {"name":"vassal vassal_stanley","box":{"x":609,"y":840,"w":54,"h":56}},
 {"name":"vassal vassal_dudley","box":{"x":704,"y":898,"w":54,"h":56}},
 {"name":"vassal vassal_shrewsbury","box":{"x":455,"y":879,"w":54,"h":56}},

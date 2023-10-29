@@ -276,7 +276,7 @@ const boxes = {
 	"Shrewsbury deplete": [510,855,78,69],
 	"Harlech deplete": [288,902,67,61],
 	"Plymouth deplete": [263,1407,58,50],
-	"vassal vassal_westmorld": [600,470,54,56],
+	"vassal vassal_westmoreland": [600,470,54,56],
 	"vassal vassal_stanley": [609,840,54,56],
 	"vassal vassal_dudley": [704,898,54,56],
 	"vassal vassal_shrewsbury": [455,879,54,56],
@@ -657,7 +657,7 @@ defseat("seat lancaster lord_warwick_l")
 
 // VASSAL SEAT
 
-defvassal("vassal vassal_westmorld")
+defvassal("vassal vassal_westmoreland")
 defvassal("vassal vassal_stanley")
 defvassal("vassal vassal_dudley")
 defvassal("vassal vassal_shrewsbury")
