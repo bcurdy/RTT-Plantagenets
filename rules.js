@@ -5031,64 +5031,49 @@ states.confirm_approach_sail = {
 
 // === CAPABILITY : MERCHANTS ===
 
-function can_action_merchants() {
+ function can_action_merchants() {
+	let loc = get_lord_locale(game.command)
 	if (game.actions <= 0)
 		return false
 
-	if (lord_has_capability(game.command, AOW_LANCASTER_MERCHANTS)) 
+	if (lord_has_capability(game.command, AOW_LANCASTER_MERCHANTS) && count_deplete(loc) > 0) 
 		return true
 	else
 		return false
 }
+
 function goto_merchants() {
+	game.count = count_deplete(get_lord_locale(game.command))
 	game.state = "merchants"
+	init_influence_check(game.command)
 }
+
 
 states.merchants = {
 	inactive: "Merchants",
 	prompt() {
-		view.prompt = "Merchants: Succeed an Influence Check to remove 2 adjacent Exhausted/Depleted markers"
-		let lord = game.command
-		gen_action_lord(lord)
-	},
-	lord(other) {
-		clear_undo()
-		goto_merchants_attempt(other)
-	},
-}
-
-function goto_merchants_attempt(lord) {
-	game.what = lord
-	game.count = count_deplete(get_lord_locale(game.command))
-	push_state("merchants_attempt")
-	init_influence_check(game.command)
-}
-
-states.merchants_attempt = {
-	inactive: "Merchants Attempt",
-	prompt() {
-		view.prompt = `Attempt to Remove 2 adjacent/Depleted markers `
+		view.prompt = "Merchants: Succeed an influence check to remove Depleted markers"
 		prompt_influence_check()
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
+		clear_undo()
 		let results = do_influence_check()
-		log(`Attempt to remove restore locales ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		log(`Attempt to Merchants with %${game.command} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		if (results.success) {
-			game.who = game.what
-			merchants_success()
-		} else {
-			end_merchants_attempt()
+			merchants_success(game.command)
 		}
-	},
+		else {
+		end_merchants_attempt()
+		}
+	}
 }
-
 function merchants_success() {
-	push_state("merchants_success")
+	game.state = "merchants_success"
 }
 
-states.merchants_attempt = {
+states.merchants_success = {
 	inactive: "Merchants Success",
 	prompt() {
 		view.prompt = `Remove Depleted/Exhausted markers`
@@ -5099,14 +5084,15 @@ states.merchants_attempt = {
 		remove_depleted_marker(loc)
 		remove_exhausted_marker(loc)
 		--game.count
-		if (game.count === 0)
+		if (game.count === 0) {
 			end_merchants_attempt()
+		}
 	}
 }
 
 function end_merchants_attempt() {
 	spend_action(1)
-	pop_state()
+	game.count = 0
 	push_undo()
 	end_influence_check()
 	resume_command()
@@ -5120,21 +5106,22 @@ function deplete_merchants(){
 	}
 	if (has_exhausted_marker(here) || has_depleted_marker(here))
 		gen_action_locale(here)
-
 }
 
 function count_deplete(loc) {
 	for (let next of data.locales[loc].adjacent) {
-		if (has_exhausted_marker(next) || has_depleted_marker(next))
-		++game.count
+		if (has_exhausted_marker(next) || has_depleted_marker(next)) {
+			++game.count
+		}
 	}
-	if (has_exhausted_marker(loc) || has_depleted_marker(loc))
-		++game.count
-
+	if (has_exhausted_marker(loc) || has_depleted_marker(loc)) {
+			++game.count
+	}
 	if (game.count > 1)
-		return 2
-	if (game.count === 1)
-		return 1
+		return game.count = 2
+	else 
+		return game.count
+
 }
 
 // === CAPABILITY : HERALDS === 
