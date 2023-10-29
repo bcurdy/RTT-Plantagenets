@@ -5138,7 +5138,6 @@ function count_deplete(loc) {
 // === CAPABILITY : BURGUNDIANS === 
 
 function can_levy_burgundians(lord) {
-		console.log(game.flags.burgundians)
 	if (is_seaport(get_lord_locale(lord)) && !is_exile(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_BURGUNDIANS) && game.flags.burgundians === 0) {
 		add_lord_forces(lord, BURGUNDIANS, 2)
 		game.flags.burgundians = 1
