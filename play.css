@@ -545,7 +545,7 @@ body.shift .exhausted  {
 	position: absolute;
 	top: 6px;
 	left: 20px;
-	//transform: rotate(45deg);
+	transform: rotate(45deg);
 }
 
 /* BACKGROUND COLORS AND BORDERS */
@@ -606,7 +606,7 @@ body.shift .exhausted  {
 .unit.longbowmen { background-image: url(images/unit_longbowmen.svg) }
 .unit.militia { background-image: url(images/unit_militia.svg) }
 .unit.mercenaries { background-image: url(images/unit_mercenaries.svg) }
-.unit.handgunners { background-image: url(images/unit_handgunners.svg) }
+.unit.burgundians { background-image: url(images/unit_handgunners.svg) }
 
 .asset.cart.x1 { background-image: url(images/cart_x1.png); }
 .asset.cart.x2 { background-image: url(images/cart_x2.png) }
