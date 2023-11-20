@@ -5040,6 +5040,38 @@ states.confirm_approach_sail = {
 		goto_battle()
 	},
 }
+// === CAPABILITY : WE DONE DEEDS OF CHARITY ===
+
+function tow_extra_ip() {
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
+		if (lord_has_capability(lord, AOW_YORK_WE_DONE_DEEDS_OF_CHARITY) && (get_lord_assets(lord, PROV) > 0 || get_shared_assets(lord, PROV) > 0))
+			console.log("lord " + lord)
+			return true
+	}
+	return false
+}
+
+
+states.tow_extra_ip = {
+	inactive: "We done needs of charity",
+	prompt() {
+		view.prompt = "We done deeds of charity, spend one or two Provender to add one or two influence points"
+		let done = true
+		let pay_ip = 0
+		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+			let here = get_lord_locale(lord)
+			if (pay_ip < 2 && get_lord_locale(lord) === here && (get_lord_assets(lord, PROV) > 0)) {
+					gen_action_prov(lord)
+					done = false
+			}
+		}
+	},
+	prov(lord) {
+		push_undo()
+		add_lord_assets(lord, PROV, -1)
+		pay_ip += 1
+	},
+}
 
 // === CAPABILITY : MERCHANTS ===
 
@@ -8047,9 +8079,13 @@ function tides_of_war() {
 		add_lord_assets(LORD_BUCKINGHAM, COIN, 1)
 		add_lord_assets(LORD_BUCKINGHAM, PROV, 1)
 	}
-
 	tides_calc()
-	goto_disembark()
+	if (tow_extra_ip()) {
+		set_active(YORK)
+		game.state = "tow_extra_ip"
+	}
+	else
+		goto_disembark()
 }
 
 // === END CAMPAIGN: DISEMBARK ===
