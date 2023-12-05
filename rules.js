@@ -392,7 +392,7 @@ const AOW_LANCASTER_MADAME_LA_GRANDE = L37
 
 const AOW_YORK_CULVERINS_AND_FALCONETS = [ Y1, Y2 ] // TODO
 const AOW_YORK_MUSTERD_MY_SOLDIERS = Y3
-const AOW_YORK_WE_DONE_DEEDS_OF_CHARITY = Y4 // TODO
+const AOW_YORK_WE_DONE_DEEDS_OF_CHARITY = Y4
 const AOW_YORK_THOMAS_BOURCHIER = Y5
 const AOW_YORK_GREAT_SHIPS = Y6
 const AOW_YORK_HARBINGERS = Y7
@@ -400,7 +400,7 @@ const AOW_YORK_ENGLAND_IS_MY_HOME = Y8
 const AOW_YORK_BARRICADES = Y9
 const AOW_YORK_AGITATORS = Y10 // TODO
 const AOW_YORK_YORKISTS_NEVER_WAIT = Y11
-const AOW_YORK_SOLDIERS_OF_FORTUNE = Y12 // TODO
+const AOW_YORK_SOLDIERS_OF_FORTUNE = Y12
 const AOW_YORK_SCOURERS = Y13
 const AOW_YORK_BURGUNDIANS = [ Y14, Y23 ]
 const AOW_YORK_NAVAL_BLOCKADE = Y15 // TODO
@@ -1884,6 +1884,7 @@ exports.setup = function (seed, scenario, options) {
 			first_march_highway: 0,
 			free_levy: 0,
 			burgundians:0,
+			charity:0
 		},
 
 		command: NOBODY,
@@ -5045,7 +5046,6 @@ states.confirm_approach_sail = {
 function tow_extra_ip() {
 	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
 		if (lord_has_capability(lord, AOW_YORK_WE_DONE_DEEDS_OF_CHARITY) && (get_lord_assets(lord, PROV) > 0 || get_shared_assets(lord, PROV) > 0))
-			console.log("lord " + lord)
 			return true
 	}
 	return false
@@ -5055,21 +5055,27 @@ function tow_extra_ip() {
 states.tow_extra_ip = {
 	inactive: "We done needs of charity",
 	prompt() {
-		view.prompt = "We done deeds of charity, spend one or two Provender to add one or two influence points"
 		let done = true
-		let pay_ip = 0
+		view.prompt = "We done deeds of charity, spend one or two Provender to add one or two influence points"
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 			let here = get_lord_locale(lord)
-			if (pay_ip < 2 && get_lord_locale(lord) === here && (get_lord_assets(lord, PROV) > 0)) {
+			if (game.flags.charity < 2 && get_lord_locale(lord) === here && (get_lord_assets(lord, PROV) > 0)) {
 					gen_action_prov(lord)
-					done = false
 			}
 		}
+	if (done)
+			view.actions.done = 1
 	},
 	prov(lord) {
 		push_undo()
 		add_lord_assets(lord, PROV, -1)
-		pay_ip += 1
+		game.flags.charity += 1
+	},
+	done() {
+		increase_york_influence(game.flags.charity)
+		log("York paid " + game.flags.charity + " provender to add " + game.flags.charity + " Influence Points")
+		game.flags.charity = 0
+		goto_disembark()
 	},
 }
 
