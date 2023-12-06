@@ -5922,6 +5922,12 @@ const battle_steps = [
 
 function count_archery_hits(lord) {
 	let hits = 0
+	let die = 0
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+		if (lord_has_capability(lord, AOW_YORK_CULVERINS_AND_FALCONETS) || lord_has_capability(lord, AOW_LANCASTER_CULVERINS_AND_FALCONETS))
+			die = roll_die()
+	}
+
 	hits += get_lord_forces(lord, LONGBOWMEN) << 2
 	hits += get_lord_forces(lord, BURGUNDIANS) << 2
 	hits += get_lord_forces(lord, MILITIA)
@@ -6311,7 +6317,10 @@ states.assign_hits = {
 		prompt_hit_forces()
 	},
 	retinue(lord) {
-		action_assign_hits(lord, RETINUE)
+		if((lord === LORD_MARGARET) && (lord_has_capability(AOW_LANCASTER_YEOMEN_OF_THE_CROWN)) && get_lord_forces(lord, MEN_AT_ARMS) > 0)
+			action_assign_hits(lord, MEN_AT_ARMS)
+		else 
+			action_assign_hits(lord, RETINUE)
 	},
 	burgundians(lord) {
 		action_assign_hits(lord, BURGUNDIANS)
