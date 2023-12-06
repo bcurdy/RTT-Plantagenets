@@ -422,7 +422,7 @@ const AOW_YORK_WOODWILLES = Y31
 const AOW_YORK_FINAL_CHARGE = Y32 // TODO
 const AOW_YORK_BLOODY_THOU_ART = Y33
 const AOW_YORK_SO_WISE_SO_YOUNG = Y34
-const AOW_YORK_KINGDOM_UNITED = Y35 // TODO
+const AOW_YORK_KINGDOM_UNITED = Y35
 const AOW_YORK_VANGUARD = Y36 // TODO
 const AOW_YORK_PERCYS_NORTH2 = Y37
 
@@ -469,9 +469,7 @@ const EVENT_LANCASTER_ASPIELLES = L13 // TODO
 // Play when you're the active player. Show all enemy Hidden cards and then
 // select one of enemy's Lord mats to show it to you. Perhaps write those in the log ?
 const EVENT_LANCASTER_SCOTS = L14
-// The addition by events are NEVER mandatory.
 const EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT = L15
-// count enemy vassals on all enemy lords and yorkists lose that amount of influence
 const EVENT_LANCASTER_WARDEN_OF_THE_MARCHES = L16	 // TODO
 // Play during Death and Disband step of Battle. All routed (flee or not)
 // select a stronghold in the north and go there (they will need to feed)
@@ -490,7 +488,6 @@ const EVENT_LANCASTER_PARLIAMENT_TRUCE = L20 // TODO
 const EVENT_LANCASTER_FRENCH_FLEET = L21 // TODO
 // Forbid sail
 const EVENT_LANCASTER_FRENCH_TROOPS = L22
-// Select one lord at a port, then he MAY add 0, 1, 2 of each of Militia or Men-at-arms
 const EVENT_LANCASTER_WARWICKS_PROPAGANDA = [ L23, L24 ] // TODO
 // Select 1 stronghold, then Yorkists may pay to keep. Then select a second, then Yorkist may pay to keep. Then select a third, then Yorkist may pay to keep
 const EVENT_LANCASTER_WELSH_REBELLION = L25 // TODO
@@ -5382,6 +5379,10 @@ function add_battle_capability_troops() {
 		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
 			add_lord_forces(lord, MILITIA, 4)
 		}
+		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (data.locales[here].region === "North" || data.locales[here].region === "South" || data.locales[here].region === "Wales")) {
+			add_lord_forces(lord, MILITIA, 3)
+		}
+
 		if (is_lord_on_map(lord) &&
 		!is_lord_on_calendar(lord) &&
 		lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) &&
@@ -5415,6 +5416,9 @@ function remove_battle_capability_troops() {
 		}
 		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
 			add_lord_forces(lord, MILITIA, -4)
+		}
+		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (data.locales[here].region === "North" || data.locales[here].region === "South" || data.locales[here].region === "Wales")) {
+			add_lord_forces(lord, MILITIA, -3)
 		}
 		if (is_lord_on_map(lord) &&
 		!is_lord_on_calendar(lord) &&
