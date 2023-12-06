@@ -5224,7 +5224,7 @@ states.agitators = {
 function deplete_agitators(){
 	let here = get_lord_locale(game.command)
 	for (let next of data.locales[here].adjacent) {
-		if (!has_exhausted_marker(next))
+		if (!has_exhausted_marker(next) && !is_friendly_locale(next))
 			gen_action_locale(next)
 	}
 }
