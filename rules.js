@@ -1881,7 +1881,8 @@ exports.setup = function (seed, scenario, options) {
 			first_march_highway: 0,
 			free_levy: 0,
 			burgundians:0,
-			charity:0
+			charity:0,
+			bloody:0
 		},
 
 		command: NOBODY,
@@ -5420,11 +5421,7 @@ function remove_battle_capability_troops() {
 		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (data.locales[here].region === "North" || data.locales[here].region === "South" || data.locales[here].region === "Wales")) {
 			add_lord_forces(lord, MILITIA, -3)
 		}
-		if (is_lord_on_map(lord) &&
-		!is_lord_on_calendar(lord) &&
-		lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) &&
-		(((is_friendly_locale(data.locales[here])) && data.port_2.includes(here)) ||
-		is_adjacent_friendly_port_english_channel(here))) {
+		if (is_lord_on_map(lord) &&	lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE)) {
 			add_lord_forces(lord, MEN_AT_ARMS, -2)
 		}
 	}
@@ -6870,19 +6867,26 @@ states.battle_spoils = {
 
 function goto_death_or_disband() {
 	remove_battle_capability_troops()
-	if (has_defeated_lords())
+	if (has_defeated_lords()) {
+		if (game.battle.loser === LANCASTER && lord_has_capability(LORD_RICHARD_III, AOW_YORK_BLOODY_THOU_ART) && get_lord_locale(LORD_RICHARD_III) === game.battle.where) {
+			game.flags.bloody = 1
+		}
 		game.state = "death_or_disband"
+	}
 	else
 		end_death_or_disband()
 }
 
 function end_death_or_disband() {
+
 	set_active_enemy()
 
-	if (has_defeated_lords())
-		goto_death_or_disband()
-	else
+	if (has_defeated_lords()) {
+	goto_death_or_disband()
+	}
+	else {
 		goto_battle_aftermath()
+	}
 }
 
 states.death_or_disband = {
@@ -6912,9 +6916,8 @@ states.death_or_disband = {
 		let threshold = 2
 		let modifier = 0
 
-
 	// === CAPABILITY : BLOODY THOU ART, BLOODY WILL BE THE END === //
-		if (game.battle.loser === LANCASTER && is_lancaster_lord(lord) && lord_has_capability(LORD_RICHARD_III, AOW_YORK_BLOODY_THOU_ART) && get_lord_locale(LORD_RICHARD_III) === here) {
+		if (is_lancaster_lord(lord) && game.flags.bloody === 1) {
 			log('BLOODY THOU ART, BLOODY WILL BE THE END')
 			disband_lord(lord, true)
 			set_delete(game.battle.fled, lord)
@@ -6964,6 +6967,7 @@ function goto_battle_aftermath() {
 	spend_all_actions()
 
 	game.battle = 0
+	game.flags.bloody = 0
 	march_with_group_3()
 }
 
