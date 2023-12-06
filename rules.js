@@ -382,7 +382,7 @@ const AOW_LANCASTER_BARDED_HORSE = L27
 const AOW_LANCASTER_LOYAL_SOMERSET = L28
 const AOW_LANCASTER_HIGH_ADMIRAL = L29
 const AOW_LANCASTER_MERCHANTS = L30
-const AOW_LANCASTER_YEOMEN_OF_THE_CROWN = L31 // TODO
+const AOW_LANCASTER_YEOMEN_OF_THE_CROWN = L31
 const AOW_LANCASTER_TWO_ROSES = L32
 const AOW_LANCASTER_PHILIBERT_DE_CHANDEE = L33
 const AOW_LANCASTER_PIQUIERS = L34 // TODO
@@ -398,7 +398,7 @@ const AOW_YORK_GREAT_SHIPS = Y6
 const AOW_YORK_HARBINGERS = Y7
 const AOW_YORK_ENGLAND_IS_MY_HOME = Y8
 const AOW_YORK_BARRICADES = Y9
-const AOW_YORK_AGITATORS = Y10 // TODO
+const AOW_YORK_AGITATORS = Y10
 const AOW_YORK_YORKISTS_NEVER_WAIT = Y11
 const AOW_YORK_SOLDIERS_OF_FORTUNE = Y12
 const AOW_YORK_SCOURERS = Y13
@@ -420,7 +420,7 @@ const AOW_YORK_STAFFORD_BRANCH = Y29
 const AOW_YORK_CAPTAIN = Y30
 const AOW_YORK_WOODWILLES = Y31
 const AOW_YORK_FINAL_CHARGE = Y32 // TODO
-const AOW_YORK_BLOODY_THOU_ART = Y33 // TODO
+const AOW_YORK_BLOODY_THOU_ART = Y33
 const AOW_YORK_SO_WISE_SO_YOUNG = Y34
 const AOW_YORK_KINGDOM_UNITED = Y35 // TODO
 const AOW_YORK_VANGUARD = Y36 // TODO
@@ -6889,7 +6889,7 @@ states.death_or_disband = {
 		let done = true
 		for (let lord of game.battle.fled) {
 			if (is_friendly_lord(lord)) {
-			gen_action_lord(lord)
+				gen_action_lord(lord)
 				done = false
 			}
 		}
@@ -6904,10 +6904,20 @@ states.death_or_disband = {
 			view.actions.done = 1
 	},
 	lord(lord) {
+		let here = get_lord_locale(lord)
 		let threshold = 2
 		let modifier = 0
-		let roll = roll_die()
 
+
+	// === CAPABILITY : BLOODY THOU ART, BLOODY WILL BE THE END === //
+		if (game.battle.loser === LANCASTER && is_lancaster_lord(lord) && lord_has_capability(LORD_RICHARD_III, AOW_YORK_BLOODY_THOU_ART) && get_lord_locale(LORD_RICHARD_III) === here) {
+			log('BLOODY THOU ART, BLOODY WILL BE THE END')
+			disband_lord(lord, true)
+			set_delete(game.battle.fled, lord)
+			set_delete(game.battle.routed, lord)
+		}
+		else {
+			let roll = roll_die()
 		if (set_has(game.battle.fled, lord))
 			modifier = -2
 
@@ -6919,6 +6929,7 @@ states.death_or_disband = {
 
 		set_delete(game.battle.fled, lord)
 		set_delete(game.battle.routed, lord)
+		}
 	},
 	done() {
 		end_death_or_disband()
