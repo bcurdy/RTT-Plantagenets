@@ -3618,6 +3618,8 @@ states.command = {
 			view.actions.heralds = 1
 		if (can_action_merchants())
 			view.actions.merchants = 1
+		if (can_action_agitators())
+			view.actions.agitators = 1
 	},
 
 	pass() {
@@ -3637,6 +3639,7 @@ states.command = {
 	sail: goto_sail,
 	heralds: goto_heralds,
 	merchants: goto_merchants,
+	agitators: goto_agitators,
 
 	locale: goto_march,
 
@@ -5180,6 +5183,56 @@ function can_levy_burgundians(lord) {
 		add_lord_forces(lord, BURGUNDIANS, 2)
 		game.flags.burgundians = 1
 	}
+}
+
+// === CAPABILITY : AGITATORS ===
+
+function can_action_agitators() {
+	if (game.actions <= 0)
+		return false
+
+	if (lord_has_capability(game.command, AOW_YORK_AGITATORS)) 
+		return true
+	else
+		return false
+}
+
+function goto_agitators() {
+	game.count = count_deplete(get_lord_locale(game.command))
+	game.state = "agitators"
+}
+
+
+states.agitators = {
+	inactive: "Agitators",
+	prompt() {
+		view.prompt = "Agitators: Add a depleted marker or flip to exhausted adjacent"
+		deplete_agitators()
+	},
+	locale(loc) {
+		push_undo()
+		if (has_depleted_marker(loc)) {
+			add_exhausted_marker(loc)
+		}
+		else {
+			add_depleted_marker(loc)
+		}
+		end_agitators()
+		}
+	}
+
+function deplete_agitators(){
+	let here = get_lord_locale(game.command)
+	for (let next of data.locales[here].adjacent) {
+		if (!has_exhausted_marker(next))
+			gen_action_locale(next)
+	}
+}
+
+function end_agitators() {
+	spend_action(1)
+	push_undo()
+	resume_command()
 }
 
 // === CAPABILITY : HERALDS === 

@@ -1625,6 +1625,7 @@ function on_update() {
 	action_button("supply", "Supply")
 	action_button("tax", "Tax")
 	action_button("merchants", "Merchants")
+	action_button("agitators", "Agitators")
 
 	// Muster & Spoils
 	action_button("take_prov", "Provender")
