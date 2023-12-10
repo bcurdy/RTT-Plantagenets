@@ -627,8 +627,8 @@ const ui = {
 	hand_panel: document.getElementById("hand_panel"),
 	hand: document.getElementById("hand"),
 
-	held_york: document.querySelector("#role_York .role_held"),
-	held_lancaster: document.querySelector("#role_Lancaster .role_held"),
+	held_york: document.querySelector("#role_York .role_stat"),
+	held_lancaster: document.querySelector("#role_Lancaster .role_stat"),
 
 	command: document.getElementById("command"),
 	turn: document.getElementById("turn"),

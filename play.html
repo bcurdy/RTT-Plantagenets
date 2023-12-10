@@ -7,9 +7,9 @@
 <title>PLANTAGENET</title>
 <link id="favicon" rel="icon" href="favicons/favicon_warwick.png">
 <link rel="stylesheet" href="/fonts/fonts.css">
-<link rel="stylesheet" href="/common/play.css">
+<link rel="stylesheet" href="/common/client.css">
 <link rel="stylesheet" href="play.css">
-<script defer src="/common/play.js"></script>
+<script defer src="/common/client.js"></script>
 <script defer src="data.js"></script>
 <script defer src="play.js"></script>
 </head>
@@ -17,45 +17,38 @@
 
 <header>
 	<div id="toolbar">
-		<div class="menu">
-			<div class="menu_title"><img src="/images/cog.svg"></div>
-			<div class="menu_popup">
-				<a class="menu_item" target="_blanK" href="/plantagenet/info/rulebook.html">Rules of Play</a>
-				<a class="menu_item" target="_blanK" href="/plantagenet/info/playbook.html">Background Book</a>
-				<a class="menu_item" target="_blanK" href="/plantagenet/info/reference.html">Reference Sheets</a>
-				<a class="menu_item" target="_blanK" href="/plantagenet/info/cards.html">Arts of War</a>
-				<div class="menu_item" onclick="send_save()">&#x1F41E; Save</div>
-				<div class="menu_item" onclick="send_restore()">&#x1F41E; Restore</div>
-				<div class="menu_separator"></div>
-				<div class="menu_item" onclick="send_restart()">&#x26a0; Restart</div>
-				<div class="resign menu_separator"></div>
-				<div class="resign menu_item" onclick="confirm_resign()">Resign</div>
-			</div>
-		</div>
-		<div class="icon_button" onclick="toggle_pieces()"><img src="/images/earth-africa-europe.svg"></div>
-		<div class="icon_button" onclick="toggle_log()"><img src="/images/scroll-quill.svg"></div>
+		<details>
+			<summary><img src="/images/cog.svg"></summary>
+			<menu>
+				<li><a target="_blanK" href="/plantagenet/info/rulebook.html">Rules of Play</a>
+				<li><a target="_blanK" href="/plantagenet/info/playbook.html">Background Book</a>
+				<li><a target="_blanK" href="/plantagenet/info/charts.html">Reference Sheets</a>
+				<li><a target="_blanK" href="/plantagenet/info/cards.html">Arts of War</a>
+				<li class="debug" onclick="send_save()">&#x1F41E; Save
+				<li class="debug" onclick="send_restore()">&#x1F41E; Restore
+				<li class="debug" onclick="send_restart()">&#x26a0; Restart
+				<li class="debug separator">
+				<li class="resign separator">
+				<li class="resign" onclick="confirm_resign()">Resign
+			</menu>
+		</details>
+		<button onclick="toggle_pieces()"><img src="/images/earth-africa-europe.svg"></button>
 	</div>
-	<div id="prompt"></div>
-	<div id="actions"></div>
 </header>
 
 <aside>
 	<div id="roles">
 		<div class="role" id="role_York">
-			<div class="role_name">
-				York
-				<div class="role_held">0 Held</div>
-				<div class="role_user">-</div>
-			</div>
+			<div class="role_name"> York </div>
+			<div class="role_stat">0 Held</div>
+			<div class="role_user">-</div>
 		</div>
 		<div class="role" id="role_Lancaster">
-			<div class="role_name">
-				Lancaster
-				<div class="role_held">0 Held</div>
-				<div class="role_user">-</div>
-			</div>
+			<div class="role_name"> Lancaster </div>
+			<div class="role_stat">0 Held</div>
+			<div class="role_user">-</div>
 		</div>
-		<div class="card_info"><div id="command" class="card york aow_back"></div></div>
+		<div id="turn_info"><div id="command" class="card york aow_back"></div></div>
 	</div>
 	<div id="log"></div>
 </aside>

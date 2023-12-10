@@ -2,10 +2,9 @@ main { background-color: dimgray; }
 #roles { background-color: gray; }
 header { background-color: silver; }
 header.your_turn { background-color: orange; }
-#role_York .role_name { background-color: whitesmoke; }
-#role_Lancaster .role_name { background-color: salmon; }
-#turn_info { background-color: gainsboro; }
-.role_held { float: right; }
+#role_York { background-color: whitesmoke; }
+#role_Lancaster { background-color: salmon; }
+#turn_info { background-color: gray; }
 
 #log { background-color: whitesmoke; }
 #log .h1 { font-weight: bold; padding-top:2px; padding-bottom:2px; text-align: center; }
@@ -414,12 +413,25 @@ body.shift .exhausted  {
 	box-shadow: 0 0 0 1px #333, 1px 1px 4px #0008;
 }
 
-.card_info {
+#turn_info {
 	border-bottom: 1px solid black;
+	padding: 12px;
+	overflow: clip;
 }
 
-.card_info .card {
-	margin: 12px auto;
+#turn_info .card {
+	margin: 0 auto;
+}
+
+@media (max-height: 800px) {
+	#turn_info { height: 95px; }
+	#turn_info:hover { height: auto; }
+}
+
+@media (max-height: 600px) {
+	#turn_info {
+		display: none;
+	}
 }
 
 .card.disabled {
