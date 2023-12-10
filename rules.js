@@ -241,7 +241,6 @@ const LORD_PEMBROKE = find_lord("Pembroke")
 const LORD_DEVON = find_lord("Devon")
 const LORD_NORTHUMBERLAND_Y1 = find_lord("Northumberland Y1")
 const LORD_NORTHUMBERLAND_Y2 = find_lord("Northumberland Y2")
-
 const LORD_GLOUCESTER_1 = find_lord("Gloucester 1")
 const LORD_GLOUCESTER_2 = find_lord("Gloucester 2")
 const LORD_RICHARD_III = find_lord("Richard III")
@@ -252,17 +251,14 @@ const LORD_HENRY_VI = find_lord("Henry VI")
 const LORD_MARGARET = find_lord("Margaret")
 const LORD_SOMERSET_1 = find_lord("Somerset 1")
 const LORD_SOMERSET_2 = find_lord("Somerset 2")
-
 const LORD_EXETER_1 = find_lord("Exeter 1")
 const LORD_EXETER_2 = find_lord("Exeter 2")
-
 const LORD_BUCKINGHAM = find_lord("Buckingham")
 const LORD_CLARENCE = find_lord("Clarence")
 const LORD_NORTHUMBERLAND_L = find_lord("Northumberland L")
 
 const LORD_JASPER_TUDOR_1 = find_lord("Jasper Tudor 1")
 const LORD_JASPER_TUDOR_2 = find_lord("Jasper Tudor 2")
-
 const LORD_HENRY_TUDOR = find_lord("Henry Tudor")
 const LORD_OXFORD = find_lord("Oxford")
 const LORD_WARWICK_L = find_lord("Warwick L")
@@ -6558,8 +6554,8 @@ states.spend_valour = {
 
 		spend_valour(game.who)
 		log(`Reroll:`)
-		if (assign_hit_roll(get_force_name(game.who, game.what), protection, "")) {
-			rout_unit(game.who, game.what)
+		if (assign_hit_roll(get_force_name(game.who, game.what, game.where), protection, "")) {
+			rout_unit(game.who, game.what, game.where)
 			finish_action_assign_hits(game.who)
 		} else {
 			finish_action_assign_hits(game.who)
