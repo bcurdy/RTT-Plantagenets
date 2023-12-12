@@ -1685,8 +1685,12 @@ function on_update() {
 	action_button("end_wastage", "End Wastage")
 	action_button("end_withdraw", "End Withdraw")
 
+	// ADDING TROOPS THROUGH EVENTS
 	action_button("add_militia", "Add Militia")
 	action_button("add_men_at_arms", "Add Men at Arms")
+	
+	// REMOVE INFLUENCE
+	action_button("remove_influence", "Remove influence")
 
 	action_button("pass", "Pass")
 	action_button("done", "Done")

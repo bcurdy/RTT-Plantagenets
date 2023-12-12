@@ -484,11 +484,9 @@ const EVENT_LANCASTER_PARLIAMENT_TRUCE = L20 // TODO
 const EVENT_LANCASTER_FRENCH_FLEET = L21 // TODO
 // Forbid sail
 const EVENT_LANCASTER_FRENCH_TROOPS = L22
-const EVENT_LANCASTER_WARWICKS_PROPAGANDA = [ L23, L24 ] // TODO
-// Select 1 stronghold, then Yorkists may pay to keep. Then select a second, then Yorkist may pay to keep. Then select a third, then Yorkist may pay to keep
-const EVENT_LANCASTER_WELSH_REBELLION = L25 // TODO
-// Works like Torzokh event in Nevsky with Domash, but with troops.
-// if no Yorkist lord in Wales, remove 2 Yorkist favour (if possible)
+const EVENT_LANCASTER_WARWICKS_PROPAGANDA = L23 
+const EVENT_LANCASTER_WARWICKS_PROPAGANDA2 = L24
+const EVENT_LANCASTER_WELSH_REBELLION = L25
 const EVENT_LANCASTER_HENRY_RELEASED = L26 // TODO
 // If London lancastrian, they gain 5 influence
 const EVENT_LANCASTER_LUNIVERSELLE_ARAGNE = L27 // TODO
@@ -1502,6 +1500,30 @@ function is_town(loc) {
 	return data.locales[loc].type === "town"
 }
 
+function in_wales(loc) {
+	return data.locales[loc].region === "Wales"
+}
+
+function in_south(loc) {
+	return data.locales[loc].region === "South"
+}
+
+function in_north(loc) {
+	return data.locales[loc].region === "North"
+}
+
+function is_lord_in_wales(lord) {
+	return data.locales[get_lord_locale(lord)].region === "Wales"
+}
+
+function is_lord_in_south(lord) {
+	return data.locales[get_lord_locale(lord)].region === "South"
+}
+
+function is_lord_in_north(lord) {
+	return data.locales[get_lord_locale(lord)].region === "North"
+}
+
 function is_fortress(loc) {
 	return data.locales[loc].type === "fortress"
 }
@@ -1870,6 +1892,7 @@ exports.setup = function (seed, scenario, options) {
 			exhausted: [],
 			favourl: [],
 			favoury: [],
+			propaganda: [],
 		},
 
 		flags: {
@@ -2274,7 +2297,6 @@ function goto_immediate_event(c) {
 			set_add(game.events, c)
 			return end_immediate_event()
 			*/
-
 			// Immediate effect
 		// Discard - Immediate Events
 		case EVENT_LANCASTER_SCOTS:
@@ -2285,11 +2307,13 @@ function goto_immediate_event(c) {
 			return goto_lancaster_event_henrys_proclamation()
 		case EVENT_LANCASTER_FRENCH_TROOPS:
 			return goto_lancaster_event_french_troops()
-		/*case EVENT_LANCASTER_WARWICKS_PROPAGANDA:
-			return goto_lancaster_event_warwicks_propaganda()
+		case EVENT_LANCASTER_WARWICKS_PROPAGANDA:
+			return goto_warwicks_propaganda()
+		case EVENT_LANCASTER_WARWICKS_PROPAGANDA2:
+			return goto_warwicks_propaganda()
 		case EVENT_LANCASTER_WELSH_REBELLION:
 			return goto_lancaster_event_welsh_rebellion()
-		case EVENT_LANCASTER_HENRY_RELEASED:
+		/*case EVENT_LANCASTER_HENRY_RELEASED:
 			return goto_lancaster_event_henry_released()
 		case EVENT_LANCASTER_LUNIVERSELLE_ARAGNE:
 			return goto_lancaster_event_luniverselle_aragne()
@@ -2329,6 +2353,8 @@ function end_immediate_event() {
 
 // === EVENTS: UNIQUE IMMEDIATE EVENTS ===
 
+
+
 // === EVENTS: LANCASTER SCOTS EVENT ===
 
 function goto_lancaster_event_scots() {
@@ -2338,7 +2364,6 @@ function goto_lancaster_event_scots() {
 }
 
 function end_lancaster_event_scots() {
-	clear_undo()
 	game.count = 0
 	game.who = NOBODY
 	end_immediate_event()
@@ -2480,6 +2505,217 @@ states.french_troops = {
 	done() {
 		end_lancaster_event_french_troops()
 	}
+}
+
+// === EVENTS: WARWICKS PROPAGANDA ===
+
+function add_propaganda_target(loc) {
+	set_add(game.pieces.propaganda, loc)
+}
+
+function remove_propaganda_target(loc) {
+	set_delete(game.pieces.propaganda, loc)
+}
+
+function is_propaganda_target(loc) {
+	return set_has(game.pieces.propaganda, loc)
+}
+
+function goto_warwicks_propaganda() {
+	let can_play = false
+	for (let loc of data.locales) {
+		if (has_favoury_marker(loc)) {
+			can_play = true
+		}
+	}
+
+	if (can_play) {
+		game.state = "warwicks_propaganda"
+		game.who = NOBODY
+		game.count = 0
+	} else {
+		end_immediate_event()
+	}
+}
+
+states.warwicks_propaganda = {
+	inactive: "Warwick's Propaganda",
+	prompt() {
+		view.prompt = `Select up to ${3-game.count} Yorkists Locales.`
+		for (let loc = first_locale; loc <= last_locale; loc++) {
+				if (game.count < 3 && has_favoury_marker(loc) && !is_exile(loc) && !is_propaganda_target(loc)) {
+					gen_action_locale(loc)
+				}
+			}
+		view.actions.done = 1
+	},
+	locale(loc) {
+		push_undo()
+		add_propaganda_target(loc)
+		game.count++
+	},
+	done() {
+		goto_yorkist_choice()
+	}
+}
+
+function goto_yorkist_choice() {
+	clear_undo()
+	game.who = NOBODY
+	set_active_enemy()
+	game.state = "warwicks_propaganda_yorkist_choice"
+}
+
+states.warwicks_propaganda_yorkist_choice = {
+	inactive: "Yorkists to choose to Pay or Remove influence",
+	prompt() {
+		view.prompt = `For each Stronghold, Pay 2 influence or Remove favour.`
+		let done = true
+		if (game.who === NOBODY) {
+			for (let loc = first_locale; loc <= last_locale; loc++) {
+				if (is_propaganda_target(loc)) {
+					gen_action_locale(loc)
+					done = false
+				}
+			}
+			if (done) {
+				view.actions.done = 1
+			}
+		} 	else {
+				view.actions.remove_influence = 1
+				view.actions.pay = 1
+			}
+
+},
+	locale(loc) {
+		game.who = loc
+	},
+	remove_influence() {
+		push_undo()
+		remove_favoury_marker(game.who)
+		remove_propaganda_target(game.who)
+		game.who = NOBODY
+	},
+	pay() {
+		push_undo()
+		reduce_influence(2)
+		remove_propaganda_target(game.who)
+		game.who = NOBODY
+	},
+	done() {
+		end_warwicks_propaganda()
+	},
+}
+
+function end_warwicks_propaganda() {
+	game.who = NOBODY
+	game.count = 0
+	set_active_enemy()
+	end_immediate_event()
+}
+
+// === EVENTS: WELSH REBELLION ===
+
+function goto_lancaster_event_welsh_rebellion() {
+	let can_play_remove_troops = false
+	let can_play_remove_favour = false
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
+		if (is_lord_on_map(lord) && is_lord_in_wales(lord)) {
+			can_play_remove_troops = true
+		}
+	}
+	for (let loc = first_locale; loc <= last_locale; loc++) {
+		if (in_wales(loc) && has_favoury_marker(loc)) 
+			can_play_remove_favour = true
+	}
+
+	if (can_play_remove_troops) {
+		game.state = "welsh_rebellion_remove_troops"
+		game.who = NOBODY
+		game.count = 0
+	} 
+	else if (can_play_remove_favour) {
+		game.state = "welsh_rebellion_remove_favour"
+		game.who = NOBODY
+		game.count = 0
+	} 
+	else {
+		end_immediate_event()
+	}
+}
+
+
+states.welsh_rebellion_remove_troops = {
+	inactive: "Welsh Rebellion - Remove troops",
+	prompt() {
+		view.prompt = `Remove 2 Troops from each enemy Lord in Wales.`
+		let done = true
+		if (game.who === NOBODY) {
+			for (let lord = first_enemy_lord; lord  <= last_enemy_lord; lord++) {
+				if (is_lord_on_map(lord) && is_lord_in_wales(lord)) {
+					gen_action_lord(lord)
+					done = false
+				}
+			}
+			if (done) {
+				view.actions.done = 1
+			}
+		}	
+		else if (game.who !== NOBODY) {
+			if (game.count >= 0) {
+				view.prompt = `Remove ${game.count} Troops from ${data.lords[game.who].name}.`
+				if (game.count === 0) {
+					game.who = NOBODY
+				}
+					else {
+						if (get_lord_forces(game.who, BURGUNDIANS) > 0) 
+							gen_action_burgundians(game.who)
+						if (get_lord_forces(game.who, MERCENARIES) > 0)
+							gen_action_mercenaries(game.who)
+						if (get_lord_forces(game.who, LONGBOWMEN) > 0)
+							gen_action_longbowmen(game.who)
+						if (get_lord_forces(game.who, MEN_AT_ARMS) > 0)
+							gen_action_men_at_arms(game.who)
+						if (get_lord_forces(game.who, MILITIA) > 0)
+							gen_action_militia(game.who)	
+					}
+			}
+		}
+	},
+	lord(lord) {
+		push_undo()
+		game.who = lord
+		game.count = 2
+		},
+	burgundians(lord){
+		add_lord_forces(lord, BURGUNDIANS, -1)
+		game.count--
+	},
+	mercenaries(lord){
+		add_lord_forces(lord, MERCENARIES, -1)
+		game.count--
+	},
+	longbowmen(lord) {
+		add_lord_forces(lord, LONGBOWMEN, -1)
+		game.count--
+	},
+	men_at_arms(lord) {
+		add_lord_forces(lord, MEN_AT_ARMS, -1)
+		game.count--
+	},
+	militia(lord) {
+		add_lord_forces(lord, MILITIA, -1)
+		game.count--
+	},
+ 	done() {
+		end_welsh_rebellion()
+	},
+}
+
+function end_welsh_rebellion() {
+	game.count = 0
+	game.who = NOBODY
+	end_immediate_event()
 }
 
 // === EVENTS: SHIFT LORD OR SERVICE (IMMEDIATE) ===
