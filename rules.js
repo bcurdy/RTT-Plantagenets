@@ -3335,7 +3335,7 @@ states.soldier_of_fortune = {
 		let done = true
 		if (done) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-				if (is_lord_unfed(lord) || can_pay_from_shared(lord)) {
+				if (is_lord_unfed(lord) && can_pay_from_shared(lord)) {
 					if (get_lord_assets(lord, COIN) > 0) {
 						gen_action_coin(lord)
 						done = false
