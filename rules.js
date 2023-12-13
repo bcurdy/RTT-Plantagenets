@@ -1016,6 +1016,9 @@ function is_lord_unfed(lord) {
 	return get_lord_moved(lord)
 }
 
+
+
+
 function feed_lord_skip(lord) {
 	// reuse "moved" flag for hunger
 	set_lord_moved(lord, 0)
@@ -2879,6 +2882,7 @@ function goto_york_event_shewolf_of_france() {
 	let can_play = false
 	for (let v = first_vassal; v <= last_vassal; v++) {
 		if (is_vassal_mustered_with_friendly_lord(v)) {
+			set_vassal_moved(v, 1)
 			can_play = true
 		}
 	}
@@ -2891,14 +2895,27 @@ function goto_york_event_shewolf_of_france() {
 }
 }
 
+function get_vassal_moved(v) {
+	return map_get(game.pieces.moved, v, 0)
+}
+
+function set_vassal_moved(v, x) {
+	map_set(game.pieces.moved, v, x)
+}
+
+function pay_vassal_shewolf(vassal) {
+	if (current_turn() < 16)
+		set_vassal_lord_and_service(vassal, get_vassal_lord(vassal),get_vassal_service(vassal) + 1)
+}
+
 states.she_wolf = {
 	inactive: "She-Wolf of France",
 	prompt() {
 		let done = true
 		view.prompt = "You may shift your vassals one calendar box."
-		if (game.what === NOBODY) {
+		if (game.who === NOBODY) {
 			for (let v = first_vassal; v <= last_vassal; v++) {
-				if (is_vassal_mustered_with_friendly_lord(v)) {
+				if (get_vassal_moved(v) && is_vassal_mustered_with_friendly_lord(v)) {
 					gen_action_vassal(v)
 					done = false
 				}
@@ -2910,10 +2927,11 @@ states.she_wolf = {
 	},
 	vassal(v) {
 		push_undo()
-		game.what = v
-		pay_vassal(game.what)
+		game.who = v
+		pay_vassal_shewolf(game.who)
+		set_vassal_moved(v, 0)
 		logi(`Vassal ${data.vassals[v].name} shifted one calendar box`)
-		game.what = NOBODY
+		game.who = NOBODY
 	},
 	done() {
 		end_immediate_event()
@@ -8880,8 +8898,8 @@ function action_select_lord(lord) {
 function gen_action_calendar(calendar) {
 	if (calendar < 0)
 		calendar = 0
-	if (calendar > 17)
-		calendar = 17
+	if (calendar > 16)
+		calendar = 16
 	gen_action("calendar", calendar)
 }
 
