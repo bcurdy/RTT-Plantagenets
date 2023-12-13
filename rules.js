@@ -2322,7 +2322,7 @@ function goto_immediate_event(c) {
 			return goto_york_event_tax_collectors()*/
 		/*case EVENT_YORK_LONDON_FOR_YORK:
 			return goto_york_event_london_for_york()*/
-		/*case EVENT_YORK_SHEWOLF_OF_FRANCE:
+		case EVENT_YORK_SHEWOLF_OF_FRANCE:
 			return goto_york_event_shewolf_of_france()
 		/*case EVENT_YORK_SIR_RICHARD_LEIGH:
 			return goto_york_event_sir_richard_leigh()
@@ -2871,6 +2871,55 @@ states.tudor_banners = {
 		end_immediate_event()
 	}
 }
+// === EVENTS: TAX COLLECTORS ===
+// === EVENTS: LONDON FOR YORK ===
+// === EVENTS: SHE-WOLF OF FRANCE ===
+
+function goto_york_event_shewolf_of_france() {
+	let can_play = false
+	for (let v = first_vassal; v <= last_vassal; v++) {
+		if (is_vassal_mustered_with_friendly_lord(v)) {
+			can_play = true
+		}
+	}
+	if (can_play) {
+		game.state = "she_wolf"
+		game.who = NOBODY
+	} else {
+		logi(`No Effect`)
+		end_immediate_event()
+}
+}
+
+states.she_wolf = {
+	inactive: "She-Wolf of France",
+	prompt() {
+		let done = true
+		view.prompt = "You may shift your vassals one calendar box."
+		if (game.what === NOBODY) {
+			for (let v = first_vassal; v <= last_vassal; v++) {
+				if (is_vassal_mustered_with_friendly_lord(v)) {
+					gen_action_vassal(v)
+					done = false
+				}
+			}
+			if (done) {
+				view.actions.done = 1
+			}
+		}
+	},
+	vassal(v) {
+		push_undo()
+		game.what = v
+		pay_vassal(game.what)
+		logi(`Vassal ${data.vassals[v].name} shifted one calendar box`)
+		game.what = NOBODY
+	},
+	done() {
+		end_immediate_event()
+	},
+}
+
 
 // === EVENTS: SHIFT LORD OR SERVICE (IMMEDIATE) ===
 /*
