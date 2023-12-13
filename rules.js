@@ -571,8 +571,7 @@ const EVENT_YORK_LONDON_FOR_YORK = Y15 // TODO
 // the locale where the lord mustered to friendly
 const EVENT_YORK_THE_COMMONS = Y16	 // TODO
 // This Levy Same as other add X events. Never mandatory
-const EVENT_YORK_SHEWOLF_OF_FRANCE = Y17 // TODO
-// Shift each yorkists vassal marker +1 to the right
+const EVENT_YORK_SHEWOLF_OF_FRANCE = Y17 
 const EVENT_YORK_SUCCESSION = Y18 // TODO
 // This Levy 1 Parley action each levy for each Lancastrian lord cost 1 less
 // and automatic success (success = true)
@@ -582,12 +581,10 @@ const EVENT_YORK_CALTROPS = Y19 // TODO
 // the lancastrianw ill himself put the hits between his lords
 const EVENT_YORK_YORKIST_PARADE = Y20 // TODO
 // This Levy York or Warwick_Y in London+ friendly. All Yorkists influence ratings +2
-const EVENT_YORK_SIR_RICHARD_LEIGH = Y21 // TODO
-// Straightforward. Don't care about enemy pressence
+const EVENT_YORK_SIR_RICHARD_LEIGH = Y21
 const EVENT_YORK_LOYALTY_AND_TRUST = Y22 // TODO
 // Works like the + Lordship events in Nevsky
-const EVENT_YORK_CHARLES_THE_BOLD = Y23 // TODO
-// Each lancastrian lord on map gain 1 Coin and 1 Provender
+const EVENT_YORK_CHARLES_THE_BOLD = Y23
 const EVENT_YORK_SUN_IN_SPLENDOUR = Y24 // TODO
 // Hold event only available in Levy.
 // Muster Edward IV at Any friendly locale (no seat needed) with no enemy lord
@@ -597,8 +594,7 @@ const EVENT_YORK_OWAIN_GLYNDWR = Y25 // TODO
 const EVENT_YORK_DUBIOUS_CLARENCE = Y26 // TODO
 // If both Edward IV and Clarence on map (on map = not calendar) Yorkist may influence check
 // to disband clarence (usual disband rules)
-const EVENT_YORK_YORKIST_NORTH = Y27 // TODO
-// +1 Influence for each yorkist / stronghold in north
+const EVENT_YORK_YORKIST_NORTH = Y27
 const EVENT_YORK_GLOUCESTER_AS_HEIR = Y28 // TODO
 // +3 Parley actions for Gloucester (still need to pay for them)
 // Note that this event is very important for the I-III scenario (will need to put a flag if that card has been played or not)
@@ -612,8 +608,7 @@ const EVENT_YORK_REGROUP = Y30 // TODO
 // Play in Battle at Battle Array step.
 // If played when Yorkist active they pay click on that event to make the lord recover his TROOPS (no vassals/retinue)
 // for recover per armour
-const EVENT_YORK_EARL_RIVERS = Y31 // TODO
-// Add up to 2 militia to each lord on map. Never mandatory
+const EVENT_YORK_EARL_RIVERS = Y31
 const EVENT_YORK_THE_KINGS_NAME = Y32 // TODO
 // This Levy, Probably most annoying event.
 // Gloucester 1 or 2 may cancel each lancastrian Levy action by paying 1 influence point
@@ -2327,7 +2322,7 @@ function goto_immediate_event(c) {
 			return goto_york_event_london_for_york()*/
 		case EVENT_YORK_SHEWOLF_OF_FRANCE:
 			return goto_york_event_shewolf_of_france()
-		/*case EVENT_YORK_SIR_RICHARD_LEIGH:
+		case EVENT_YORK_SIR_RICHARD_LEIGH:
 			return goto_york_event_sir_richard_leigh()
 		case EVENT_YORK_CHARLES_THE_BOLD:
 			return goto_york_event_charles_the_bold()
@@ -2335,7 +2330,6 @@ function goto_immediate_event(c) {
 			return goto_york_event_yorkist_north()
 		case EVENT_YORK_EARL_RIVERS:
 			return goto_york_event_earl_rivers()
-			*/
 		default:
 			log("NOT IMPLEMENTED")
 			return end_immediate_event()
@@ -2724,8 +2718,6 @@ function goto_lancaster_event_henry_released() {
 }
 
 // === EVENTS : L'UNIVERSELLE ARAGNE === 
-
-
 // === EVENTS : TO WILFUL DISOBEDIANCE === 
 
 function goto_lancaster_event_to_wilful_disobediance() {
@@ -2799,9 +2791,8 @@ function goto_lancaster_event_robins_rebellion() {
 		logi(`No Effect`)
 		end_immediate_event()
 	}
-	
-
 }
+
 states.robins_rebellion = {
 	inactive: "Robin's Rebellion",
 	prompt() {
@@ -2938,6 +2929,157 @@ states.she_wolf = {
 	},
 }
 
+// === EVENTS : RICHARD LEIGH ===
+function goto_york_event_sir_richard_leigh() {
+		let can_play = false
+		if (!has_favoury_marker(LOC_LONDON)) {
+				can_play = true
+			}
+		if (can_play) {
+			game.state = "richard_leigh"
+			game.who = LOC_LONDON
+			game.count = 0
+		} else {
+			logi(`No Effect`)
+			end_immediate_event()
+		}
+}
+
+
+states.richard_leigh = {
+	inactive: "Richard Leigh",
+	prompt() {
+		view.prompt = `Select London, shift it once in your favour`
+				if (game.who === LOC_LONDON && !has_favoury_marker(LOC_LONDON)) {
+					gen_action_locale(LOC_LONDON)
+				}
+				else {
+					view.actions.done = 1
+				}
+	},
+	locale(loc) {
+		push_undo()
+		shift_favour_toward(loc)
+		logi(`London shifted once in your favour`)
+		game.who = NOBODY
+	},
+	done() {
+		end_immediate_event()
+	}
+}
+
+// === EVENTS: CHARLES THE BOLD === 
+
+function goto_york_event_charles_the_bold() {
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
+		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
+			add_lord_assets(lord, PROV, 1)		
+			add_lord_assets(lord, COIN, 1)
+			logi(`1 Coin and 1 Provender added to ${lord}`)
+		}
+	}
+	end_immediate_event()
+}
+
+// === EVENTS: YORKIST NORTH ===
+function goto_york_event_yorkist_north() {
+	let can_play = false
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
+		if (is_lord_in_north(lord))
+		can_play = true
+	}
+	for (let loc of data.locales) {
+		if (in_north(loc) && has_favoury_marker(loc)) {
+			can_play = true
+		}
+	}
+	if (can_play) {
+		game.state = "yorkist_north"
+		game.who = NOBODY
+		game.count = 0
+	} else {
+		logi(`No Effect`)
+		end_immediate_event()
+	}
+}
+
+function goto_york_event_yorkist_north() {
+	let influence_gained = 0
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
+		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord) && is_lord_in_north(lord))
+			influence_gained++
+	}
+	for (let loc of data.locales) {
+		if (loc !== NOWHERE && loc < CALENDAR && has_favoury_marker(loc) && in_north(loc)) {
+			influence_gained++
+		}
+	}
+	logi(`Yorkist North : ${influence_gained} Influence for Yorkists`)
+	increase_york_influence(influence_gained)
+	end_immediate_event()
+}
+
+// === EARL RIVERS ===
+
+
+function goto_york_event_earl_rivers() {
+	game.state = "earl_rivers"
+	game.count = []
+	game.who = NOBODY
+}
+
+function end_york_event_earl_rivers() {
+	game.count = 0
+	game.who = NOBODY
+	end_immediate_event()
+}
+
+states.earl_rivers = {
+	inactive: "Earl Rivers",
+	prompt() {
+		view.prompt = "Earl Rivers: Add up to 2 Militia to each lord"
+		view.actions.done = 1
+		for (let lord = first_york_lord; lord <= last_york_lord; lord++) {
+			if (is_lord_on_map(lord) && map_get(game.count, lord, 0) < 3) {
+				gen_action_lord(lord)
+			}
+		}
+
+		if (game.who !== NOBODY) {
+			let troops = map_get(game.count, game.who, 0)
+			if ((troops & 1) === 0)
+				gen_action("add_militia")
+		}
+		if (game.who !== NOBODY) {
+			let troops = map_get(game.count, game.who, 0)
+			if ((troops & 1) === 0)
+				gen_action("add_militia2")
+		}
+	},
+	done() {
+		end_york_event_earl_rivers()
+	},
+	add_militia() {
+		push_undo()
+		add_lord_forces(game.who, MILITIA, 1)
+		let troops = map_get(game.count, game.who, 0)
+		map_set(game.count, game.who, troops + 1)
+		if (troops > 1)
+			game.who = NOBODY
+	},
+	add_militia2() {
+		push_undo()
+		add_lord_forces(game.who, MILITIA, 2)
+		let troops = map_get(game.count, game.who, 0)
+		map_set(game.count, game.who, troops + 1)
+		if (troops > 1)
+			game.who = NOBODY
+	},
+	lord(lord) {
+		push_undo()
+		game.who = lord
+	}
+}
 
 // === EVENTS: SHIFT LORD OR SERVICE (IMMEDIATE) ===
 /*
