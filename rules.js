@@ -487,8 +487,7 @@ const EVENT_LANCASTER_FRENCH_TROOPS = L22
 const EVENT_LANCASTER_WARWICKS_PROPAGANDA = L23 
 const EVENT_LANCASTER_WARWICKS_PROPAGANDA2 = L24
 const EVENT_LANCASTER_WELSH_REBELLION = L25
-const EVENT_LANCASTER_HENRY_RELEASED = L26 // TODO
-// If London lancastrian, they gain 5 influence
+const EVENT_LANCASTER_HENRY_RELEASED = L26
 const EVENT_LANCASTER_LUNIVERSELLE_ARAGNE = L27 // TODO
 //The Lancastrian player chooses any two Vassals Mustered
 // to Yorkist mats. They may include Special Vassal Hastings. For
@@ -500,16 +499,10 @@ const EVENT_LANCASTER_REBEL_SUPPLY_DEPOT = L28 // TODO
 // Hold event, play when active. After a March or a Sail action the card becomes
 // available to play and the lord (+ same as locale, like spoils), gain 4 provender
 // No feed at the end of the card.
-const EVENT_LANCASTER_TO_WILFUL_DISOBEDIANCE = L29 // TODO
-// Select all Yorkists locales where Lancastrian lord adjacent and no Yorkist lord adjacent
-// remove Yorkists favour there
-const EVENT_LANCASTER_FRENCH_WAR_LOANS = L30 // TODO
-// Each lancastrian lord on map gain 1 Coin and 1 Provender
-const EVENT_LANCASTER_ROBINS_REBELLION = L31 // TODO
-// It allows 3 shifts. You can't instantly go from Yorkists to lancastrians (there is a function for shifting)
-const EVENT_LANCASTER_TUDOR_BANNERS = L32 // TODO
-// If Henry VI on friendly stronghold, all adjacent stronghold with no Yorkist lord get Lancastrian favour marker
-// works for both neutral and enemy locales
+const EVENT_LANCASTER_TO_WILFUL_DISOBEDIANCE = L29
+const EVENT_LANCASTER_FRENCH_WAR_LOANS = L30
+const EVENT_LANCASTER_ROBINS_REBELLION = L31
+const EVENT_LANCASTER_TUDOR_BANNERS = L32
 const EVENT_LANCASTER_SURPRISE_LANDING = L33 // TODO
 // After a Sail, allows a free March action. NOT POSSIBLE ON PATH
 const EVENT_LANCASTER_BUCKINGHAMS_PLOT = L34 // TODO
@@ -2313,10 +2306,10 @@ function goto_immediate_event(c) {
 			return goto_warwicks_propaganda()
 		case EVENT_LANCASTER_WELSH_REBELLION:
 			return goto_lancaster_event_welsh_rebellion()
-		/*case EVENT_LANCASTER_HENRY_RELEASED:
+		case EVENT_LANCASTER_HENRY_RELEASED:
 			return goto_lancaster_event_henry_released()
-		case EVENT_LANCASTER_LUNIVERSELLE_ARAGNE:
-			return goto_lancaster_event_luniverselle_aragne()
+		/*case EVENT_LANCASTER_LUNIVERSELLE_ARAGNE:
+			return goto_lancaster_event_luniverselle_aragne()*/
 		case EVENT_LANCASTER_TO_WILFUL_DISOBEDIANCE:
 			return goto_lancaster_event_to_wilful_disobediance()
 		case EVENT_LANCASTER_FRENCH_WAR_LOANS:
@@ -2325,13 +2318,13 @@ function goto_immediate_event(c) {
 			return goto_lancaster_event_robins_rebellion()
 		case EVENT_LANCASTER_TUDOR_BANNERS:
 			return goto_lancaster_event_tudor_banners()
-		case EVENT_YORK_TAX_COLLECTORS:
-			return goto_york_event_tax_collectors()
-		case EVENT_YORK_LONDON_FOR_YORK:
-			return goto_york_event_london_for_york()
-		case EVENT_YORK_SHEWOLF_OF_FRANCE:
+		/*case EVENT_YORK_TAX_COLLECTORS:
+			return goto_york_event_tax_collectors()*/
+		/*case EVENT_YORK_LONDON_FOR_YORK:
+			return goto_york_event_london_for_york()*/
+		/*case EVENT_YORK_SHEWOLF_OF_FRANCE:
 			return goto_york_event_shewolf_of_france()
-		case EVENT_YORK_SIR_RICHARD_LEIGH:
+		/*case EVENT_YORK_SIR_RICHARD_LEIGH:
 			return goto_york_event_sir_richard_leigh()
 		case EVENT_YORK_CHARLES_THE_BOLD:
 			return goto_york_event_charles_the_bold()
@@ -2716,6 +2709,167 @@ function end_welsh_rebellion() {
 	game.count = 0
 	game.who = NOBODY
 	end_immediate_event()
+}
+
+// === EVENTS: HENRY RELEASED === 
+function goto_lancaster_event_henry_released() {
+	if (has_favourl_marker(LOC_LONDON)) {
+		logi(`Henry Released : 5 Influence for Lancaster`)
+		increase_lancaster_influence(5)
+	}
+	end_immediate_event()
+}
+
+// === EVENTS : L'UNIVERSELLE ARAGNE === 
+
+
+// === EVENTS : TO WILFUL DISOBEDIANCE === 
+
+function goto_lancaster_event_to_wilful_disobediance() {
+	let can_play = false
+	for (let loc = first_locale; loc <= last_locale; loc++){
+		if (has_favoury_marker(loc) && !has_enemy_lord(loc) && !has_adjacent_enemy(loc) && (has_friendly_lord(loc) || has_adjacent_friendly(loc))) {
+			can_play = true
+		}
+	}
+	if (can_play) {
+		game.state = "wilful_disobediance"
+		game.who = NOBODY
+		game.count = 0
+	} else {
+		end_immediate_event()
+		logi(`No Effect`)
+	}
+	
+
+}
+states.wilful_disobediance = {
+	inactive: "to wilful disobediance",
+	prompt() {
+		view.prompt = `Select up to ${2-game.count} Yorkists Locales.`
+		for (let loc = first_locale; loc <= last_locale; loc++) {
+				if (game.count < 2 && has_favoury_marker(loc) && !has_enemy_lord(loc) && !has_adjacent_enemy(loc) && (has_friendly_lord(loc) || has_adjacent_friendly(loc))) {
+					gen_action_locale(loc)
+				}
+			}
+		view.actions.done = 1
+	},
+	locale(loc) {
+		push_undo()
+		remove_favoury_marker(loc)
+		game.count++
+		logi(`Favour removed at ${loc}`)
+	},
+	done() {
+		logi(`No Effect`)
+		end_immediate_event()
+	}
+}
+
+// === EVENTS : FRENCH WAR LOANS ===
+
+function goto_lancaster_event_french_war_loans() {
+	for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; ++lord) {
+		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
+			add_lord_assets(lord, PROV, 1)		
+			add_lord_assets(lord, COIN, 1)
+			logi(`1 Coin and 1 Provender added to ${lord}`)
+		}
+	}
+	end_immediate_event()
+}
+
+// === EVENTS : ROBINS REBELLION ===
+
+function goto_lancaster_event_robins_rebellion() {
+	let can_play = false
+	for (let loc of data.locales) {
+		if (in_north(loc) && !has_favourl_marker(loc)) {
+			can_play = true
+		}
+	}
+	if (can_play) {
+		game.state = "robins_rebellion"
+		game.who = NOBODY
+		game.count = 0
+	} else {
+		logi(`No Effect`)
+		end_immediate_event()
+	}
+	
+
+}
+states.robins_rebellion = {
+	inactive: "Robin's Rebellion",
+	prompt() {
+		view.prompt = `Select up to ${3-game.count} Locales in North.`
+		for (let loc = first_locale; loc <= last_locale; loc++) {
+				if (game.count < 3 && in_north(loc) && !has_favourl_marker(loc)) {
+					gen_action_locale(loc)
+				}
+			}
+		view.actions.done = 1
+	},
+	locale(loc) {
+		push_undo()
+		shift_favour_toward()
+		logi(`Placed/Removed favour at ${data.locales[loc].name}`)
+		game.count++
+	},
+	done() {
+		end_immediate_event()
+	}
+}
+
+// === EVENTS: TUDOR BANNERS ===
+
+function tudor_banner_eligible() {
+	if (is_lord_on_map(LORD_HENRY_TUDOR) && !is_lord_on_calendar(LORD_HENRY_TUDOR)) {
+		for (let next of data.locales[get_lord_locale(LORD_HENRY_TUDOR)].adjacent) {
+			if (can_parley_at(next))
+				return true
+		}
+	}
+	else 
+		return false
+}
+
+function goto_lancaster_event_tudor_banners() {
+	let can_play = false
+		if (tudor_banner_eligible()) {
+				can_play = true
+		}
+	if (can_play) {
+		game.state = "tudor_banners"
+		game.who = NOBODY
+	} else {
+		logi(`No Effect`)
+		end_immediate_event()
+	}
+}
+
+states.tudor_banners = {
+	inactive: "Tudor banners",
+	prompt() {
+		view.prompt = `Select locales adjacent to Henry to make them Lancastrian`
+			for (let next of data.locales[get_lord_locale(LORD_HENRY_TUDOR)].adjacent) {
+				if (!has_enemy_lord(next) && !has_favourl_marker(next)) {
+					gen_action_locale(next)
+				}
+				else {
+					view.actions.done = 1
+				}
+			}
+	},
+	locale(loc) {
+		push_undo()
+		remove_favoury_marker(loc)
+		add_favourl_marker(loc)
+		logi(`Placed Lancastrian favour at ${data.locales[loc].name}`)
+	},
+	done() {
+		end_immediate_event()
+	}
 }
 
 // === EVENTS: SHIFT LORD OR SERVICE (IMMEDIATE) ===
@@ -4956,6 +5110,13 @@ function can_action_forage() {
 function has_adjacent_enemy(loc) {
 	for (let next of data.locales[loc].adjacent)
 		if (has_unbesieged_enemy_lord(next))
+			return true
+	return false
+}
+
+function has_adjacent_friendly(loc) {
+	for (let next of data.locales[loc].adjacent)
+		if (has_friendly_lord(next))
 			return true
 	return false
 }
