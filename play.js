@@ -1692,7 +1692,7 @@ function on_update() {
 	action_button("add_men_at_arms", "Add Men at Arms")
 	
 	// REMOVE INFLUENCE
-	action_button("remove_influence", "Remove influence")
+	action_button("remove_favour", "Remove favour")
 
 	action_button("pass", "Pass")
 	action_button("done", "Done")

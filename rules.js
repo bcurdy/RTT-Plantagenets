@@ -2557,7 +2557,7 @@ function goto_yorkist_choice() {
 }
 
 states.warwicks_propaganda_yorkist_choice = {
-	inactive: "Yorkists to choose to Pay or Remove influence",
+	inactive: "Yorkists to choose to Pay or Remove favour",
 	prompt() {
 		view.prompt = `For each Stronghold, Pay 2 influence or Remove favour.`
 		let done = true
@@ -2572,7 +2572,7 @@ states.warwicks_propaganda_yorkist_choice = {
 				view.actions.done = 1
 			}
 		} 	else {
-				view.actions.remove_influence = 1
+				view.actions.remove_favour = 1
 				view.actions.pay = 1
 			}
 
@@ -2580,7 +2580,7 @@ states.warwicks_propaganda_yorkist_choice = {
 	locale(loc) {
 		game.who = loc
 	},
-	remove_influence() {
+	remove_favour() {
 		push_undo()
 		remove_favoury_marker(game.who)
 		remove_propaganda_target(game.who)
@@ -2806,7 +2806,7 @@ states.robins_rebellion = {
 	},
 	locale(loc) {
 		push_undo()
-		shift_favour_toward()
+		shift_favour_toward(loc)
 		logi(`Placed/Removed favour at ${data.locales[loc].name}`)
 		game.count++
 	},
