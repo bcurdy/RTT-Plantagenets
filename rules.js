@@ -488,13 +488,7 @@ const EVENT_LANCASTER_WARWICKS_PROPAGANDA = L23
 const EVENT_LANCASTER_WARWICKS_PROPAGANDA2 = L24
 const EVENT_LANCASTER_WELSH_REBELLION = L25
 const EVENT_LANCASTER_HENRY_RELEASED = L26
-const EVENT_LANCASTER_LUNIVERSELLE_ARAGNE = L27 // TODO
-//The Lancastrian player chooses any two Vassals Mustered
-// to Yorkist mats. They may include Special Vassal Hastings. For
-//each one, the Yorkist Lord that has the Vassal on his mat must
-// make an Influence check, the Yorkist player spending Influence
-// points normally If the check fails, the Vassal Disbands
-// If Hastings Disbands, discard Capability card Y24 HASTINGS from Edward IV
+const EVENT_LANCASTER_LUNIVERSELLE_ARAGNE = L27
 const EVENT_LANCASTER_REBEL_SUPPLY_DEPOT = L28 // TODO
 // Hold event, play when active. After a March or a Sail action the card becomes
 // available to play and the lord (+ same as locale, like spoils), gain 4 provender
@@ -539,9 +533,7 @@ const EVENT_YORK_EXILE_PACT = Y8 // TODO
 // Placing = Not considered a march or sail or exile action. Simply move it
 // to the scenario exile box without any other change.
 // Marshall/Lieutenant may not take group (because no sail or march)
-const EVENT_YORK_TAX_COLLECTORS = Y10 // TODO
-// Each lord may take a Tax action and receive double the coin. still exhaust and
-// do the necessary influence checks if needed.
+const EVENT_YORK_TAX_COLLECTORS = Y10
 const EVENT_YORK_BLOCKED_FORD = Y11 // TODO
 // Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
 // basically at best, you want the player that when he approaches,
@@ -561,14 +553,7 @@ const EVENT_YORK_ASPIELLES = Y13 // TODO
 // select one of enemy's Lord mats to show it to you. Perhaps write those in the log ?
 const EVENT_YORK_RICHARD_OF_YORK = Y14 // TODO
 // This Levy, game state parley, score += 1
-const EVENT_YORK_LONDON_FOR_YORK = Y15 // TODO
-// That one is a bit tricky :
-// If Yorkist, Add a SECOND favour marker there
-// No Lancastrian Parley there unless L17 EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART
-// or L18 events are active EVENT_LANCASTER_PARLIAMENT_VOTES
-// Henry VI/Margaret if their Seats are there may still Muster there BUT
-// it will not change the locale favour (contrary to other Muster than also change)
-// the locale where the lord mustered to friendly
+const EVENT_YORK_LONDON_FOR_YORK = Y15 
 const EVENT_YORK_THE_COMMONS = Y16	 // TODO
 // This Levy Same as other add X events. Never mandatory
 const EVENT_YORK_SHEWOLF_OF_FRANCE = Y17 
@@ -1892,7 +1877,8 @@ exports.setup = function (seed, scenario, options) {
 			free_levy: 0,
 			burgundians:0,
 			charity:0,
-			bloody:0
+			bloody:0,
+			london_for_york:0
 		},
 
 		command: NOBODY,
@@ -2306,8 +2292,8 @@ function goto_immediate_event(c) {
 			return goto_lancaster_event_welsh_rebellion()
 		case EVENT_LANCASTER_HENRY_RELEASED:
 			return goto_lancaster_event_henry_released()
-		/*case EVENT_LANCASTER_LUNIVERSELLE_ARAGNE:
-			return goto_lancaster_event_luniverselle_aragne()*/
+		case EVENT_LANCASTER_LUNIVERSELLE_ARAGNE:
+			return goto_lancaster_event_luniverselle_aragne()
 		case EVENT_LANCASTER_TO_WILFUL_DISOBEDIANCE:
 			return goto_lancaster_event_to_wilful_disobediance()
 		case EVENT_LANCASTER_FRENCH_WAR_LOANS:
@@ -2316,10 +2302,10 @@ function goto_immediate_event(c) {
 			return goto_lancaster_event_robins_rebellion()
 		case EVENT_LANCASTER_TUDOR_BANNERS:
 			return goto_lancaster_event_tudor_banners()
-		/*case EVENT_YORK_TAX_COLLECTORS:
-			return goto_york_event_tax_collectors()*/
-		/*case EVENT_YORK_LONDON_FOR_YORK:
-			return goto_york_event_london_for_york()*/
+		case EVENT_YORK_TAX_COLLECTORS:
+			return goto_york_event_tax_collectors()
+		case EVENT_YORK_LONDON_FOR_YORK:
+			return goto_york_event_london_for_york()
 		case EVENT_YORK_SHEWOLF_OF_FRANCE:
 			return goto_york_event_shewolf_of_france()
 		case EVENT_YORK_SIR_RICHARD_LEIGH:
@@ -2426,8 +2412,11 @@ function goto_lancaster_event_henrys_proclamation() {
 	for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
 		if (is_vassal_mustered_with_york_lord(vassal)) {
 			set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), current_turn())
+			logi(`Vassal ${data.vassals[vassal].name} moved to current turn`)
+
 		}
 	}
+	end_immediate_event()
 }
 
 // === EVENTS: LANCASTER FRENCH TROOPS EVENT ===
@@ -2439,7 +2428,6 @@ function goto_lancaster_event_french_troops() {
 			can_play = true
 		}
 	}
-
 	if (can_play) {
 		game.state = "french_troops"
 		game.who = NOBODY
@@ -2718,6 +2706,137 @@ function goto_lancaster_event_henry_released() {
 }
 
 // === EVENTS : L'UNIVERSELLE ARAGNE === 
+
+function goto_lancaster_event_luniverselle_aragne() {
+	let can_play = false
+	for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
+		if (is_vassal_mustered_with_york_lord(vassal)) {
+			can_play = true
+		}
+	}
+	if (can_play) {
+		game.state = "aragne"
+		game.who = NOBODY
+		game.count = 0
+	} else {
+		end_immediate_event()
+	}
+}
+
+states.aragne = {
+	inactive: "L'universelle Aragne",
+	prompt() {
+		let done = true
+		view.prompt = "Select up to 2 Vassals"
+		if (game.who === NOBODY && game.count < 2) {
+			for (let v = first_vassal; v <= last_vassal; v++) {
+				if (!get_vassal_moved(v) && is_vassal_mustered_with_york_lord(v)) {
+					gen_action_vassal(v)
+					done = false
+				}
+			}
+		}
+		view.actions.done = 1
+	},
+	vassal(v) {
+		push_undo()
+		game.who = v
+		game.count++
+		set_vassal_moved(v, 1)
+		logi(`Vassal ${data.vassals[v].name} selected`)
+		game.who = NOBODY
+	},
+	done() {
+		goto_yorkist_aragne()
+	},
+}
+
+function goto_yorkist_aragne() {
+	clear_undo()
+	game.who = NOBODY
+	set_active_enemy()
+	game.state = "yorkist_aragne"
+}
+
+states.yorkist_aragne = {
+	inactive: "Influence checks",
+	prompt() {
+		view.prompt = `For Each vassal, influence check : failure disbands it`
+		let done = true
+		if (game.who === NOBODY) {
+			for (let v = first_vassal; v <= last_vassal; v++) {
+				if (get_vassal_moved(v) && is_vassal_mustered_with_friendly_lord(v)) {
+					gen_action_vassal(v)
+					done = false
+				}
+			}
+			if (done) {
+				view.actions.done = 1
+			}
+		} 	else {
+				
+			}
+
+},
+	vassal(other) {
+		push_undo()
+		goto_aragne_save(other)
+	},	
+	done() {
+		end_universelle_aragne()
+	},
+}
+
+function goto_aragne_save(other){
+	game.who = other
+	init_influence_check(other)
+	game.check.push({
+		cost: 0,
+		modifier: data.vassals[other].influence * (game.active === LANCASTER ? -1 : 1),
+		source: "vassal",
+	})
+	push_state("aragne_save")
+}
+
+states.aragne_save = {
+	inactive: `Influence check`,
+	prompt() {
+		view.prompt = `Influence check : Failure disbands ${data.vassals[game.who].name}`
+		prompt_influence_check()
+	},
+	spend1: add_influence_check_modifier_1,
+	spend3: add_influence_check_modifier_2,
+	check() {
+		let results = do_influence_check()
+		logi(`Attempt to save ${data.vassals[game.who].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+
+		if (results.success) {
+			clear_undo()
+			set_vassal_moved(game.who, 0)
+			game.who = NOBODY
+			end_influence_check()
+			push_state("yorkist_aragne")
+		} else {
+			clear_undo()
+			set_vassal_moved(game.who, 0)
+			disband_vassal(game.who)
+			if (game.who === VASSAL_HASTINGS) {
+				discard_card_capability(AOW_YORK_HASTINGS)
+				logi(`Hastings Discarded`)
+			}
+			game.who = NOBODY
+			end_influence_check()
+			push_state("yorkist_aragne")
+		}
+	},
+}
+
+function end_universelle_aragne() {
+	game.who = NOBODY
+	game.count = 0
+	end_immediate_event()
+}
+
 // === EVENTS : TO WILFUL DISOBEDIANCE === 
 
 function goto_lancaster_event_to_wilful_disobediance() {
@@ -2768,7 +2887,7 @@ function goto_lancaster_event_french_war_loans() {
 		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
 			add_lord_assets(lord, PROV, 1)		
 			add_lord_assets(lord, COIN, 1)
-			logi(`1 Coin and 1 Provender added to ${lord}`)
+			logi(`1 Coin and 1 Provender added to ${data.lords[lord].name}`)
 		}
 	}
 	end_immediate_event()
@@ -2778,7 +2897,7 @@ function goto_lancaster_event_french_war_loans() {
 
 function goto_lancaster_event_robins_rebellion() {
 	let can_play = false
-	for (let loc of data.locales) {
+	for (let loc = first_locale; loc <= last_locale; loc++) {
 		if (in_north(loc) && !has_favourl_marker(loc)) {
 			can_play = true
 		}
@@ -2866,7 +2985,233 @@ states.tudor_banners = {
 	}
 }
 // === EVENTS: TAX COLLECTORS ===
+
+function goto_york_event_tax_collectors() {
+	game.who = NOBODY
+	game.count = 0
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
+		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
+			set_lord_moved(lord, 1)
+		}
+	}
+	push_state("tax_collectors")
+}
+
+function can_action_tax_collectors(lord) {
+	let here = get_lord_locale(lord)
+	if (can_tax_collectors_at(here, lord))
+		return true
+	return search_tax(false, here)
+}
+
+function can_tax_collectors_at(here, lord) {
+	if (is_friendly_locale(here) && !has_exhausted_marker(here)) {
+		// London, Calais, and Harlech
+		if (here === LOC_LONDON || here === LOC_CALAIS || here === LOC_HARLECH)
+			return true
+
+		// Own seat
+		if (here === data.lords[lord].seat)
+			return true
+
+		// vassal seats
+		for (let vassal = first_vassal; vassal <= last_vassal; ++vassal)
+			if (is_vassal_mustered_with(vassal, lord))
+				if (here === data.vassals[vassal].seat)
+					return true
+	}
+	return false
+}
+
+
+function search_tax_collectors(result, start) {
+	let ships = get_shared_assets(start, SHIP)
+
+	search_seen.fill(0)
+	search_seen[start] = 1
+
+	let queue = [ start ]
+	while (queue.length > 0) {
+		let here = queue.shift()
+		let dist = search_dist[here]
+		let next_dist = dist + 1
+
+		if (can_tax_collectors_at(here, game.who)) {
+			if (result)
+				set_add(result, here)
+			else
+				return true
+		}
+
+		if (is_friendly_locale(here)) {
+			for (let next of data.locales[here].adjacent) {
+				if (!search_seen[next]) {
+					search_seen[next] = 1
+					queue.push(next)
+				}
+			}
+			if (ships > 0 && is_seaport(here)) {
+				for (let next of find_ports(here)) {
+					if (!search_seen[next]) {
+						search_seen[next] = 1
+						queue.push(next)
+					}
+				}
+			}
+		}
+	}
+
+	if (result)
+		return result
+	else
+		return false
+}
+
+states.tax_collectors = {
+	inactive: "Tax Collectors",
+	prompt() {
+		view.prompt = "Tax Collectors : You may tax for Double coin with each lord"
+		for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
+			if (can_action_tax_collectors(lord) && get_lord_moved(lord)) {
+				gen_action_lord(lord)
+			}
+		}
+		view.actions.done = 1
+	},
+	lord(lord) {	
+	push_undo()
+	game.where = NOWHERE
+	game.who = lord
+	push_state("double_tax_collectors")
+	init_influence_check(lord)
+	},
+	done() {
+		end_tax_collectors()
+	},
+}
+
+states.double_tax_collectors = {
+	inactive: "Tax Collectors",
+	prompt() {
+		view.prompt = "Tax: Select the location to tax for double."
+		console.log(get_lord_locale(game.who))
+		console.log(game.who)
+		if (game.where === NOWHERE) {
+			for (let loc of search_tax_collectors([], get_lord_locale(game.who)))
+				gen_action_locale(loc)
+		} else {
+			view.prompt = `Tax: Attempting to tax ${data.locales[game.where].name}. `
+			prompt_influence_check()
+		}
+	},
+	locale(loc) {
+		game.where = loc
+		if (loc === data.lords[game.who].seat) {
+			// Auto succeed without influence check at Lords seat.
+			deplete_locale(game.where)
+
+			log(`Taxed %${game.where}.`)
+			add_lord_assets(game.who, COIN, get_tax_amount(game.where)*2)
+			set_lord_moved(lord, 0)
+			end_tax_lord(game.who)
+		}
+	},
+	spend1: add_influence_check_modifier_1,
+	spend3: add_influence_check_modifier_2,
+	check() {
+		clear_undo()
+
+		let results = do_influence_check()
+		logi(`Tax : ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+
+
+		if (lord_has_capability(game.who, AOW_YORK_SO_WISE_SO_YOUNG)) {
+			log(`C${AOW_YORK_SO_WISE_SO_YOUNG}.`)
+			add_lord_assets(game.who, COIN, 1)
+		}
+
+		if (results.success) {
+			deplete_locale(game.where)
+			log(`Taxed %${game.where}.`)
+			add_lord_assets(game.who, COIN, get_tax_amount(game.where)*2)
+
+			if (
+				game.command === LORD_DEVON &&
+				(game.where === LOC_EXETER ||
+					game.where === LOC_LAUNCESTON ||
+					game.where === LOC_PLYMOUTH ||
+					game.where === LOC_WELLS ||
+					game.where === LOC_DORCHESTER)
+			)
+				add_lord_assets(game.command, COIN, 4)
+		} else {
+			log(`Tax of %${game.where} failed.`)
+			
+		}
+		set_lord_moved(game.who, 0)
+		game.who = NOBODY
+		push_state("tax_collectors")
+	},
+}
+
+function end_tax_lord(lord) {
+		game.where = NOWHERE
+		game.who = NOBODY
+		pop_state()
+}
+
+function end_tax_collectors() {
+	game.who = NOBODY
+	game.count = 0
+	end_immediate_event()
+}
+
 // === EVENTS: LONDON FOR YORK ===
+
+function goto_york_event_london_for_york() {
+	let can_play = false
+		if (has_favoury_marker(LOC_LONDON)) {
+			can_play = true
+		}
+	if (can_play) {
+		game.who = NOBODY
+		game.state = "london_for_york"
+	} else {
+		logi(`No Effect`)
+		end_immediate_event()
+	}
+}
+
+states.london_for_york = {
+	inactive: "London For York",
+	prompt() {
+		view.prompt = `Select London to add a second favour marker`
+		gen_action_locale(LOC_LONDON)
+	},
+	locale(loc) {
+		push_undo()
+		game.flags.london_for_york = 1
+		logi(`Second marker placed at ${data.locales[loc].name}`)
+		logi(`Immune to Lancastrian parley unless aided by event`)
+		end_immediate_event()
+	},
+}
+
+function check_london_protected() {
+// TODO IF HENRY/MARGARET ARE MUSTERED IT DOES NOT CHANGE FAVOUR
+// ONLY L17/L18 and Pillage will cancel that event 
+//(it is annuled when london go to neutral
+	if (game.state === "pillage") {
+		return false
+	}
+	if (game.flags.london_for_york === 1 && game.where === LOC_LONDON) {
+		return true 
+	}
+	else {
+		return false
+	}
+}
+
 // === EVENTS: SHE-WOLF OF FRANCE ===
 
 function goto_york_event_shewolf_of_france() {
@@ -2886,6 +3231,7 @@ function goto_york_event_shewolf_of_france() {
 }
 }
 
+// TO TRACK VASSALS DURING EVENTS
 function get_vassal_moved(v) {
 	return map_get(game.pieces.moved, v, 0)
 }
@@ -2975,7 +3321,7 @@ function goto_york_event_charles_the_bold() {
 		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
 			add_lord_assets(lord, PROV, 1)		
 			add_lord_assets(lord, COIN, 1)
-			logi(`1 Coin and 1 Provender added to ${lord}`)
+			logi(`1 Coin and 1 Provender added to ${data.lords[lord].name}`)
 		}
 	}
 	end_immediate_event()
@@ -7676,6 +8022,7 @@ states.feed = {
 	},
 	pillage() {
 		push_undo()
+		check_london_protected()
 		set_lord_feed_requirements()
 		goto_pillage_food()
 	},
