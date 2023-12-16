@@ -381,7 +381,7 @@ const AOW_LANCASTER_MERCHANTS = L30
 const AOW_LANCASTER_YEOMEN_OF_THE_CROWN = L31
 const AOW_LANCASTER_TWO_ROSES = L32
 const AOW_LANCASTER_PHILIBERT_DE_CHANDEE = L33
-const AOW_LANCASTER_PIQUIERS = L34 // TODO
+const AOW_LANCASTER_PIQUIERS = L34
 const AOW_LANCASTER_THOMAS_STANLEY = L35
 const AOW_LANCASTER_CHEVALIERS = L36
 const AOW_LANCASTER_MADAME_LA_GRANDE = L37
@@ -399,7 +399,7 @@ const AOW_YORK_YORKISTS_NEVER_WAIT = Y11
 const AOW_YORK_SOLDIERS_OF_FORTUNE = Y12
 const AOW_YORK_SCOURERS = Y13
 const AOW_YORK_BURGUNDIANS = [ Y14, Y23 ]
-const AOW_YORK_NAVAL_BLOCKADE = Y15 // TODO
+const AOW_YORK_NAVAL_BLOCKADE = Y15 // TODO AFTER ALL OTHER ACTIONS
 const AOW_YORK_BELOVED_WARWICK = Y16
 const AOW_YORK_ALICE_MONTAGU = Y17
 const AOW_YORK_IRISHMEN = Y18
@@ -415,11 +415,11 @@ const AOW_YORK_FIRST_SON = Y28
 const AOW_YORK_STAFFORD_BRANCH = Y29
 const AOW_YORK_CAPTAIN = Y30
 const AOW_YORK_WOODWILLES = Y31
-const AOW_YORK_FINAL_CHARGE = Y32 // TODO
+const AOW_YORK_FINAL_CHARGE = Y32 // TODO AFTER ALL OTHER BATTLE PROMPTS TO SEE WHERE TO PLACE IT
 const AOW_YORK_BLOODY_THOU_ART = Y33
 const AOW_YORK_SO_WISE_SO_YOUNG = Y34
 const AOW_YORK_KINGDOM_UNITED = Y35
-const AOW_YORK_VANGUARD = Y36 // TODO
+const AOW_YORK_VANGUARD = Y36 // TODO AFTER ALL OTHER BATTLE PROMPTS TO SEE WHERE TO PLACE IT
 const AOW_YORK_PERCYS_NORTH2 = Y37
 
 const EVENT_LANCASTER_LEEWARD_BATTLE_LINE = L1 // TODO
@@ -1624,6 +1624,14 @@ function can_add_troops(lordwho, locale) {
 		return false
 	else
 		return true
+}
+
+function can_add_troops_adjacent(lordwho, locale) {
+	for (let next of data.locales[locale].adjacent) {
+		if (!has_exhausted_marker(next) && is_friendly_locale(next))
+			return true
+	}
+	return false
 }
 
 function can_add_troops_beloved_warwick(lordwho, locale) {
@@ -7397,6 +7405,13 @@ function spend_valour(lord) {
 }
 
 function check_protection_capabilities(protection) {
+	if (game.what === MEN_AT_ARMS || game.what === MILITIA) {
+		if (lord_has_capability(game.who, AOW_LANCASTER_PIQUIERS) && 
+		(get_lord_routed_forces(game.who, MILITIA) + get_lord_routed_forces(game.who, MEN_AT_ARMS) < 3)) {
+			protection = 4
+		}
+	}
+
 	if (game.what === MEN_AT_ARMS) {
 		if (lord_has_capability(game.who, AOW_LANCASTER_CHURCH_BLESSINGS)) {
 			protection += 1
