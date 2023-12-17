@@ -544,7 +544,7 @@ const EVENT_YORK_BLOCKED_FORD = Y11 // TODO
 // Blocked ford basically force the player being approached to choose battle rather
 // then exile.
 // Be careful about interaction aswell with EVENT FLANK ATTACK
-const EVENT_YORK_PARLIAMENTS_TRUCE = Y12 // TODO
+const EVENT_YORK_PARLIAMENT_TRUCE = Y12 // TODO
 // Can be played during Levy and Campaign
 // Read L11 Basically it forbids to go to locales where enemy are as long as
 // this event is active (until end of this campaign)
@@ -1886,7 +1886,8 @@ exports.setup = function (seed, scenario, options) {
 			burgundians:0,
 			charity:0,
 			bloody:0,
-			london_for_york:0
+			london_for_york:0,
+			surprise_landing:0
 		},
 
 		command: NOBODY,
@@ -2191,11 +2192,26 @@ function is_leeward_battle_line_in_play() {
 	return false
 }
 
+function is_caltrops_in_play() {
+	if (game.active === YORK)
+		return is_event_in_play(EVENT_YORK_CALTROPS)
+}
+
 function is_escape_ship_in_play() {
 	if (game.active === LANCASTER)
 		return is_event_in_play(EVENT_LANCASTER_ESCAPE_SHIP)
 	if (game.active === YORK)
 		return is_event_in_play(EVENT_YORK_ESCAPE_SHIP)
+}
+
+function is_regroup_in_play() {
+	if (game.active === YORK)
+		return is_event_in_play(EVENT_YORK_REGROUP)	
+}
+
+function is_swift_maneuver_in_play() {
+	if (game.active === YORK)
+		return is_event_in_play(EVENT_YORK_SWIFT_MANEUVER)		
 }
 
 function goto_immediate_event(c) {
@@ -2607,6 +2623,7 @@ function goto_lancaster_event_welsh_rebellion() {
 	let can_play_remove_favour = false
 	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
 		if (is_lord_on_map(lord) && is_lord_in_wales(lord)) {
+			set_lord_moved(lord, 1)
 			can_play_remove_troops = true
 		}
 	}
@@ -2638,7 +2655,7 @@ states.welsh_rebellion_remove_troops = {
 		let done = true
 		if (game.who === NOBODY) {
 			for (let lord = first_enemy_lord; lord  <= last_enemy_lord; lord++) {
-				if (is_lord_on_map(lord) && is_lord_in_wales(lord)) {
+				if (is_lord_on_map(lord) && is_lord_in_wales(lord) && get_lord_moved(lord)) {
 					gen_action_lord(lord)
 					done = false
 				}
@@ -2651,20 +2668,21 @@ states.welsh_rebellion_remove_troops = {
 			if (game.count >= 0) {
 				view.prompt = `Remove ${game.count} Troops from ${data.lords[game.who].name}.`
 				if (game.count === 0) {
+					set_lord_moved(game.who, 0)
 					game.who = NOBODY
 				}
-					else {
-						if (get_lord_forces(game.who, BURGUNDIANS) > 0)
-							gen_action_burgundians(game.who)
-						if (get_lord_forces(game.who, MERCENARIES) > 0)
-							gen_action_mercenaries(game.who)
-						if (get_lord_forces(game.who, LONGBOWMEN) > 0)
-							gen_action_longbowmen(game.who)
-						if (get_lord_forces(game.who, MEN_AT_ARMS) > 0)
-							gen_action_men_at_arms(game.who)
-						if (get_lord_forces(game.who, MILITIA) > 0)
-							gen_action_militia(game.who)
-					}
+				else {
+					if (get_lord_forces(game.who, BURGUNDIANS) > 0)
+						gen_action_burgundians(game.who)
+					if (get_lord_forces(game.who, MERCENARIES) > 0)
+						gen_action_mercenaries(game.who)
+					if (get_lord_forces(game.who, LONGBOWMEN) > 0)
+						gen_action_longbowmen(game.who)
+					if (get_lord_forces(game.who, MEN_AT_ARMS) > 0)
+						gen_action_men_at_arms(game.who)
+					if (get_lord_forces(game.who, MILITIA) > 0)
+						gen_action_militia(game.who)
+				}
 			}
 		}
 	},
@@ -3102,8 +3120,6 @@ states.double_tax_collectors = {
 	inactive: "Tax Collectors",
 	prompt() {
 		view.prompt = "Tax: Select the location to tax for double."
-		console.log(get_lord_locale(game.who))
-		console.log(game.who)
 		if (game.where === NOWHERE) {
 			for (let loc of search_tax_collectors([], get_lord_locale(game.who)))
 				gen_action_locale(loc)
@@ -3481,14 +3497,54 @@ function prompt_held_event_lordship() {
 			gen_action_card(c)
 }
 
+function prompt_held_event_intercept() {
+	for (let c of current_hand())
+		if (can_play_held_event(c) || can_play_held_event_intercept(c))
+			gen_action_card(c)
+}
+
 function can_play_held_event(c) {
 	switch (c) {
+
+	/* APPROACH 
+		case EVENT_LANCASTER_BLOCKED_FORD:
+			return can_play_l_blocked_ford()
+		case EVENT_YORK_BLOCKED_FORD:
+			return can_play_y_blocked_ford()
+	*/
+
+		case EVENT_LANCASTER_ASPIELLES:
+			return can_play_l_aspielles()
+		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
+			return can_play_rebel_supply_depot()
+		case EVENT_LANCASTER_SURPRISE_LANDING:
+			return can_play_surprise_landing()
+		case EVENT_LANCASTER_PARLIAMENT_TRUCE:
+			return can_play_l_parliament_truce()
+		case EVENT_YORK_PARLIAMENT_TRUCE:
+			return can_play_y_parliament_truce()
+		case EVENT_YORK_ASPIELLES:
+			return can_play_y_aspielles()
+		case EVENT_YORK_YORKIST_PARADE:
+			return can_play_yorkist_parade()
+		case EVENT_YORK_SUN_IN_SPLENDOUR:
+			return can_play_sun_in_splendour()
 	}
 	return false
 }
 
 function can_play_held_event_lordship(c) {
 	switch (c) {
+	}
+	return false
+}
+
+function can_play_held_event_intercept(c) {
+	switch (c) {
+		case EVENT_LANCASTER_FLANK_ATTACK:
+			return can_play_l_flank_attack()	
+		case EVENT_YORK_FLANK_ATTACK:
+			return can_play_y_flank_attack()
 	}
 	return false
 }
@@ -3506,6 +3562,76 @@ function goto_held_event(c) {
 }
 
 // === EVENTS: HOLD - UNIQUE ===
+
+function can_play_l_aspielles() {
+	if (game.hand_y.length > 0 || game.hidden === 1) {
+		return true
+	}
+	return false
+}
+
+function can_play_y_aspielles() {
+	if (game.hand_y.length > 0 || game.hidden === 1) {
+		return true
+	}
+	return false
+}
+
+function can_play_l_parliament_truce() {
+	if (game.state !== "battle") {
+		return true
+	}
+	return false
+}
+
+function can_play_y_parliament_truce() {
+	if (game.state === "campaign") {
+		return true
+	}
+	return false
+}
+
+
+function can_play_rebel_supply_depot() {
+	for (let lord of game.group) {
+		if (get_lord_moved(lord) && is_seaport(get_lord_locale(game.command))) {
+			return true
+		}
+	}
+	return false
+}
+
+function can_play_surprise_landing() {
+	if (game.flags.surprise_landing === 1 && is_seaport(get_lord_locale(game.command))) {
+		return true
+	}
+	return false
+}
+
+function can_play_y_parliament_truce() {
+	if (game.state === "campaign") {
+		return true
+	}
+	return false
+}
+
+function can_play_yorkist_parade() {
+
+}
+
+function can_play_l_flank_attack() {
+	if (game.who !== NOBODY && !is_event_in_play(EVENT_YORK_PARLIAMENT_TRUCE) && !is_event_in_play(EVENT_LANCASTER_PARLIAMENT_TRUCE)) {
+		return true
+	}
+	return false
+}
+
+function can_play_y_flank_attack() {
+	if (game.who !== NOBODY && !is_event_in_play(EVENT_YORK_PARLIAMENT_TRUCE) && !is_event_in_play(EVENT_LANCASTER_PARLIAMENT_TRUCE)) {
+		return true
+	}
+	return false
+}
 
 // === EVENTS: HOLD - SHIFT CYLINDER ===
 
@@ -4452,6 +4578,7 @@ function goto_command() {
 
 	game.group = [ game.command ]
 
+	game.flags.surprise_landing = 0
 	game.flags.first_action = 1
 	game.flags.first_march_highway = 0
 
@@ -4463,18 +4590,21 @@ function resume_command() {
 }
 
 function spend_action(cost) {
+	game.flags.surprise_landing = 0
 	game.flags.first_action = 0
 	game.flags.first_march_highway = 0
 	game.actions -= cost
 }
 
 function spend_march_action(cost) {
+	game.flags.surprise_landing = 0
 	game.flags.first_action = 0
 	game.flags.first_march_highway = 0
 	game.actions -= cost
 }
 
 function spend_all_actions() {
+	game.flags.surprise_landing = 0
 	game.flags.first_action = 0
 	game.flags.first_march_highway = 0
 	game.actions = 0
@@ -4620,8 +4750,9 @@ function influence_capabilities(lord, score) {
 		is_friendly_locale(here)
 	)
 		score += 2
-	if (is_friendly_locale(here) && lord_has_capability(lord, AOW_YORK_FAIR_ARBITER))
+	if (has_favoury_marker(here) && lord_has_capability(lord, AOW_YORK_FAIR_ARBITER)) {
 		score += 1
+	}
 	if (lord_has_capability(AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
 		score += 2
 
@@ -4664,7 +4795,7 @@ function do_influence_check() {
 		success = true
 	else if (roll === 6)
 		success = false
-	else if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES) && game.state === "")
+	else if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES) && game.state === "levy_muster_vassal")
 		success = true
 	else
 		success = roll <= rating
@@ -5152,6 +5283,9 @@ states.intercept = {
 	prompt() {
 		view.prompt = `Choose lord to intercept moving lords?`
 		let to = get_lord_locale(game.command)
+
+		prompt_held_event_intercept()
+
 
 		if (game.who === NOBODY) {
 			for (let next of data.locales[to].not_paths)
@@ -5978,6 +6112,7 @@ states.sail = {
 		if (has_unbesieged_enemy_lord(to))
 			goto_confirm_approach_sail()
 		else
+			game.flags.surprise_landing = 1
 			resume_command()
 	},
 }
@@ -6650,13 +6785,67 @@ function could_play_card(c) {
 }
 
 function can_play_battle_events() {
+		if (game.active === LANCASTER) {
+			if (could_play_card(EVENT_LANCASTER_LEEWARD_BATTLE_LINE))
+				return true
+			if (could_play_card(EVENT_LANCASTER_SUSPICION))
+				return true
+			if (could_play_card(EVENT_LANCASTER_FOR_TRUST_NOT_HIM))
+				return true
+			if (could_play_card(EVENT_LANCASTER_RAVINE))
+				return true
+		}
+		if (game.active === YORK) {
+			if (could_play_card(EVENT_YORK_LEEWARD_BATTLE_LINE))
+				return true
+			if (could_play_card(EVENT_YORK_SUSPICION))
+				return true
+			if (could_play_card(EVENT_YORK_CALTROPS))
+				return true
+			if (could_play_card(EVENT_YORK_REGROUP))
+				return true
+			if (could_play_card(EVENT_YORK_SWIFT_MANEUVER))
+				return true
+			if (could_play_card(EVENT_YORK_PATRICK_DE_LA_MOTE))
+				return true
+	}
 	return false
 }
 
 function prompt_battle_events() {
 	// both attacker and defender events
+		if (game.active === LANCASTER) {
+			gen_action_card_if_held(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
+			gen_action_card_if_held(EVENT_LANCASTER_SUSPICION)
+			gen_action_card_if_held(EVENT_LANCASTER_FOR_TRUST_NOT_HIM)
+			gen_action_card_if_held(EVENT_LANCASTER_RAVINE)
 
-	view.actions.done = 1
+		}
+		if (game.active === YORK) {
+			gen_action_card_if_held(EVENT_YORK_LEEWARD_BATTLE_LINE)
+			gen_action_card_if_held(EVENT_YORK_SUSPICION)
+			gen_action_card_if_held(EVENT_YORK_CALTROPS)
+			gen_action_card_if_held(EVENT_YORK_REGROUP)
+			gen_action_card_if_held(EVENT_YORK_SWIFT_MANEUVER)
+			gen_action_card_if_held(EVENT_YORK_PATRICK_DE_LA_MOTE)
+		}	
+		view.actions.done = 1
+}
+
+function prompt_battle_events_death() {
+	// both attacker and defender events
+		if (game.active === LANCASTER) {
+			gen_action_card_if_held(EVENT_LANCASTER_ESCAPE_SHIP)
+			gen_action_card_if_held(EVENT_LANCASTER_WARDEN_OF_THE_MARCHES)
+			gen_action_card_if_held(EVENT_LANCASTER_TALBOT_TO_THE_RESCUE)
+			gen_action_card_if_held(EVENT_YORK_REGROUP)
+			gen_action_card_if_held(EVENT_YORK_SWIFT_MANEUVER)
+			gen_action_card_if_held(EVENT_YORK_PATRICK_DE_LA_MOTE)
+		}
+		if (game.active === YORK) {
+			gen_action_card_if_held(EVENT_YORK_ESCAPE_SHIP)
+		}	
+		view.actions.done = 1
 }
 
 states.attacker_events = {
@@ -6687,14 +6876,23 @@ states.defender_events = {
 }
 
 function action_battle_events(c) {
-	game.what = c
-	set_delete(current_hand(), c)
-	set_add(game.events, c)
-	switch (c) {
-		default:
-			break
-	}
-	resume_battle_events()
+		game.what = c
+		set_delete(current_hand(), c)
+		set_add(game.events, c)
+		switch (c) {
+			case EVENT_LANCASTER_LEEWARD_BATTLE_LINE:
+			case EVENT_LANCASTER_SUSPICION:
+				game.state = "suspicion"
+			case EVENT_LANCASTER_FOR_TRUST_NOT_HIM:
+				game.state = "for_trust_not_him"
+			case EVENT_LANCASTER_RAVINE:
+				game.state = "ravine"
+			case EVENT_YORK_LEEWARD_BATTLE_LINE:
+				game.state = "suspicion"
+			case EVENT_YORK_CALTROPS:
+			case EVENT_YORK_REGROUP:
+			case EVENT_YORK_SWIFT_MANEUVER:
+		}
 }
 
 // === BATTLE: FLEE ===
@@ -7836,6 +8034,8 @@ states.death_or_disband = {
 	inactive: "Death or Disband",
 	prompt() {
 		view.prompt = `Death or Disband: Select lords to roll for Death or Disband.`
+
+		prompt_battle_events_death()
 
 		let done = true
 		for (let lord of game.battle.fled) {
