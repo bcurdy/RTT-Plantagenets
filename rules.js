@@ -428,8 +428,7 @@ const EVENT_LANCASTER_FLANK_ATTACK = L2 // TODO
 // Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
 const EVENT_LANCASTER_ESCAPE_SHIP = L3 // TODO
 // Hold event. Play during the game state death_or_disband if battle locale is friendly and has a route of friendly locales (like supply) to a friendly port
-const EVENT_LANCASTER_BE_SENT_FOR = L4 // TODO
-// This Levy. All Exiled lords on the calendar automatically muster inside their exile boxes (i'm not sure that part is coded yet)
+const EVENT_LANCASTER_BE_SENT_FOR = L4
 const EVENT_LANCASTER_SUSPICION = L5 // TODO
 // Hold Event. Play at start of Battle AFTER ARRAY. Chose one friendly lord.
 // then choose enemy lord with Lower MODIFIED influence rating
@@ -2217,14 +2216,13 @@ function is_swift_maneuver_in_play() {
 function goto_immediate_event(c) {
 	switch (c) {
 		// This Levy / Campaign
-		// No immediate effect
-		/*case EVENT_LANCASTER_BE_SENT_FOR:
+		case EVENT_LANCASTER_BE_SENT_FOR:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_LANCASTER_SEAMANSHIP:
 			set_add(game.events, c)
 			return end_immediate_event()
-		case EVENT_LANCASTER_FORCED_MARCHES:
+		/*case EVENT_LANCASTER_FORCED_MARCHES:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_LANCASTER_RISING_WAGES:
@@ -2296,8 +2294,8 @@ function goto_immediate_event(c) {
 			return end_immediate_event()
 		case EVENT_YORK_PRIVY_COUNCIL:
 			set_add(game.events, c)
-			return end_immediate_event()
-			*/
+			return end_immediate_event()*/
+
 			// Immediate effect
 		// Discard - Immediate Events
 		case EVENT_LANCASTER_SCOTS:
@@ -2496,7 +2494,7 @@ states.french_troops = {
 	},
 	add_militia() {
 		push_undo()
-		add_lord_forces(game.who, MEN_AT_ARMS, 1)
+		add_lord_forces(game.who, MILITIA, 1)
 		let c = pack2_get(game.count, 1)
 		game.count = pack2_set(game.count, 1, c+1)
 	},
@@ -2716,6 +2714,29 @@ states.welsh_rebellion_remove_troops = {
 	},
 }
 
+
+states.welsh_rebellion_remove_favour = {
+	inactive: "Robin's Rebellion",
+	prompt() {
+		view.prompt = `Select up to ${2-game.count} Locales in Wales.`
+		for (let loc = first_locale; loc <= last_locale; loc++) {
+				if (game.count < 2 && in_wales(loc) && has_favoury_marker(loc)) {
+					gen_action_locale(loc)
+				}
+			}
+		view.actions.done = 1
+	},
+	locale(loc) {
+		push_undo()
+		remove_favoury_marker(loc)
+		logi(`Removed favour at ${data.locales[loc].name}`)
+		game.count++
+	},
+	done() {
+		end_immediate_event()
+	}
+}
+
 function end_welsh_rebellion() {
 	game.count = 0
 	game.who = NOBODY
@@ -2815,7 +2836,8 @@ states.yorkist_aragne = {
 
 function goto_aragne_save(other){
 	game.who = other
-	init_influence_check(other)
+	get_vassal_lord(other)
+	init_influence_check(get_vassal_lord(other))
 	game.check.push({
 		cost: 0,
 		modifier: data.vassals[other].influence * (game.active === LANCASTER ? -1 : 1),
@@ -3027,7 +3049,7 @@ function can_action_tax_collectors(lord) {
 	let here = get_lord_locale(lord)
 	if (can_tax_collectors_at(here, lord))
 		return true
-	return search_tax(false, here)
+	return search_tax_collectors(false, here)
 }
 
 function can_tax_collectors_at(here, lord) {
@@ -3136,7 +3158,7 @@ states.double_tax_collectors = {
 
 			log(`Taxed %${game.where}.`)
 			add_lord_assets(game.who, COIN, get_tax_amount(game.where)*2)
-			set_lord_moved(lord, 0)
+			set_lord_moved(game.who, 0)
 			end_tax_lord(game.who)
 		}
 	},
@@ -3379,7 +3401,7 @@ function goto_york_event_yorkist_north() {
 		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord) && is_lord_in_north(lord))
 			influence_gained++
 	}
-	for (let loc of data.locales) {
+	for (let loc = first_locale; loc <= last_locale; loc++) {
 		if (loc !== NOWHERE && loc < CALENDAR && has_favoury_marker(loc) && in_north(loc)) {
 			influence_gained++
 		}
@@ -5455,7 +5477,7 @@ function end_exiles() {
 	} else {
 		// no one left, goto finish marching.
 		set_active_enemy()
-		march_with_group_3()
+		end_command()
 	}
 }
 
@@ -6031,9 +6053,16 @@ function has_enough_available_ships_for_army() {
 }
 
 function can_action_sail() {
-	// Must use whole action
-	if (!is_first_action())
-		return false
+	// Must use whole action except if seamanship in play
+	if (is_lancaster_lord(game.command)) {
+		if (!is_first_action() && !is_event_in_play(EVENT_LANCASTER_SEAMANSHIP))
+			return false
+	}
+
+	if (is_york_lord(game.command)) {
+		if (!is_first_action() && !is_event_in_play(EVENT_YORK_SEAMANSHIP))
+			return false
+	}
 
 	// at a seaport
 	let here = get_lord_locale(game.command)
@@ -8366,6 +8395,33 @@ states.pay = {
 	card: action_held_event,
 }
 
+states.pay_lord_shared = {
+	inactive: "Pay",
+	prompt() {
+		view.prompt = `Pay: You must Feed ${lord_name[game.who]} with Shared Coin.`
+		let loc = get_lord_locale(game.who)
+		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+			if (get_lord_locale(lord) === loc) {
+				if (get_lord_assets(lord, COIN) > 0)
+					gen_action_coin(lord)
+			}
+		}
+	},
+	coin(lord) {
+		push_undo()
+		add_lord_assets(lord, COIN, -1)
+		pay_lord(game.who)
+		resume_pay_lord_shared()
+	},
+}
+
+function resume_pay_lord_shared() {
+	if (!is_lord_unfed(game.who) || !can_pay_from_shared(game.who)) {
+		game.who = NOBODY
+		game.state = "pay"
+	}
+}
+
 function end_pay() {
 	game.who = NOBODY
 	set_active_enemy()
@@ -8533,7 +8589,8 @@ function goto_ready_vassals() {
 
 function goto_muster_exiles() {
 	for (let x = first_friendly_lord; x <= last_friendly_lord; x++) {
-		if (get_lord_locale(x) === current_turn() + CALENDAR && get_lord_in_exile(x)) {
+		if ((get_lord_locale(x) === current_turn() + CALENDAR && get_lord_in_exile(x)) 
+		|| (is_lancaster_lord(x) && is_lord_on_calendar((get_lord_locale(x)) && get_lord_in_exile(x) && is_event_in_play(EVENT_LANCASTER_BE_SENT_FOR)))) {
 			game.state = "muster_exiles"
 			return
 		}
@@ -8561,7 +8618,8 @@ states.muster_exiles = {
 
 		if (game.who === NOBODY) {
 			for (let x = first_friendly_lord; x <= last_friendly_lord; x++) {
-				if (get_lord_locale(x) === current_turn() + CALENDAR && get_lord_in_exile(x)) {
+				if ((get_lord_locale(x) === current_turn() + CALENDAR && get_lord_in_exile(x)) 
+				|| (is_lancaster_lord(x) && is_lord_on_calendar((get_lord_locale(x)) && get_lord_in_exile(x) && is_event_in_play(EVENT_LANCASTER_BE_SENT_FOR)))) {
 					gen_action_lord(x)
 					done = false
 				}
