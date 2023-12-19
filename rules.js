@@ -2252,10 +2252,10 @@ function goto_immediate_event(c) {
 		case EVENT_YORK_SEAMANSHIP:
 			set_add(game.events, c)
 			return end_immediate_event()
-	/*	case EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT:
+		case EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT:
 			set_add(game.events, c)
 			return end_immediate_event()
-		case EVENT_YORK_EXILE_PACT:
+		/*case EVENT_YORK_EXILE_PACT:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_YORK_RICHARD_OF_YORK:
@@ -2590,11 +2590,13 @@ states.warwicks_propaganda_yorkist_choice = {
 		push_undo()
 		remove_favoury_marker(game.who)
 		remove_propaganda_target(game.who)
+		logi(`Removed favour in ${game.who}`)
 		game.who = NOBODY
 	},
 	pay() {
 		push_undo()
 		reduce_influence(2)
+		logi(`Paid 2 to keep ${game.who}`)
 		remove_propaganda_target(game.who)
 		game.who = NOBODY
 	},
@@ -3080,11 +3082,13 @@ function search_tax_collectors(result, start) {
 		let dist = search_dist[here]
 		let next_dist = dist + 1
 
-		if (can_tax_collectors_at(here, game.who)) {
-			if (result)
-				set_add(result, here)
-			else
-				return true
+		if (is_lord_on_map(game.who) && !is_lord_on_calendar(game.who)) {
+			if (can_tax_collectors_at(here, game.who)) {
+				if (result)
+					set_add(result, here)
+				else
+					return true
+			}
 		}
 
 		if (is_friendly_locale(here)) {
@@ -3545,8 +3549,8 @@ function can_play_held_event(c) {
 			return can_play_y_aspielles()
 		case EVENT_YORK_YORKIST_PARADE:
 			return can_play_yorkist_parade()
-		case EVENT_YORK_SUN_IN_SPLENDOUR:
-			return can_play_sun_in_splendour()
+		/*case EVENT_YORK_SUN_IN_SPLENDOUR:
+			return can_play_sun_in_splendour()*/
 	}
 	return false
 }
@@ -4033,7 +4037,7 @@ states.levy_muster_lord = {
 
 				// Muster Ready Vassal Forces
 				for (let vassal = first_vassal; vassal <= last_vassal; vassal++)
-					if (is_vassal_ready(vassal) && is_favour_friendly(data.vassals[vassal].seat))
+					if (eligible_vassal(vassal))
 						gen_action_vassal(vassal)
 
 				// Add Transport
@@ -4381,6 +4385,24 @@ function can_add_lord_capability(lord) {
 	return false
 }
 
+function forbidden_levy_capabilities(c) {
+	if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES)) {
+		if (c === AOW_LANCASTER_THOMAS_STANLEY || AOW_LANCASTER_MY_FATHERS_BLOOD) {
+			return false
+		}
+	} 
+	if (is_event_in_play(EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT)) {
+		if (c === AOW_LANCASTER_THOMAS_STANLEY 
+			|| c === AOW_LANCASTER_EDWARD 
+			|| c === AOW_LANCASTER_MONTAGU 
+			|| c === AOW_LANCASTER_MY_FATHERS_BLOOD 
+			|| c === AOW_LANCASTER_ANDREW_TROLLOPE) {
+				return true
+			}
+	}
+	return false
+}
+
 function add_lord_capability(lord, c) {
 	if (get_lord_capability(lord, 0) < 0)
 		return set_lord_capability(lord, 0, c)
@@ -4420,7 +4442,7 @@ states.muster_capability = {
 		view.arts_of_war = deck
 		for (let c of deck) {
 			if (!data.cards[c].lords || set_has(data.cards[c].lords, game.who)) {
-				if (!lord_already_has_capability(game.who, c))
+				if (!lord_already_has_capability(game.who, c) && !forbidden_levy_capabilities(c))
 					gen_action_card(c)
 			}
 		}
@@ -5059,23 +5081,18 @@ states.parley = {
 
 // === ACTION: LEVY VASSAL ===
 
-// 1) During Levy ONLY
-// 2) game.who location must be friendly and Vassal seat locale must be friendly
-// 3) there need to not be his vassal marker on the calendar (see vassal disband)
-// 4) use INFLUENCE CHECK, except that the cost is always 1 (you don't count way cost) before choosing to add extra influence to the lord
-// 5) In addition, player may chose to raise current influence rating (current influence rating = printed + caps that may change it)
-// by 1 or 2 by spending 1 or 3 IP
-// 6) In addition, substract the left number value (data.vassals.influence) if game.who is Lancaster, add if game.who is yorkist
-// 7) Roll a die : <= current influence rating success, => failure. 1 always success, 6 always failure.
-// 8) Place one vassal marker on the lord mat
-// 9) Place the other vassal marker on the calendar box a number of turn equal to current turn + service (data.vassals.service)
-// 10) When the turn reaches back the face down vassal, the vassal marker on the calendar dissapear and the one on the map is turned face up, ready to be mustered again
-// 11) The vassals with service 0 are capabilities that will never be put on calendar, there will only be one marker on lord's mat.
-
-// VASSAL DISBAND
-// 1) One vassal marker is placed, face down, on his seat
-// 2) The other vassal marker is placed, face down, on the calendar, a number of boxes right to current turn + 6 - service
-// (a service 3 disbanding in turn 8 will come back turn 11)
+function eligible_vassal(vassal) {
+	if (!is_vassal_ready(vassal)) {
+		return false
+	}
+	if (!is_favour_friendly(data.vassals[vassal].seat)) {
+		return false
+	}
+	if (game.active === LANCASTER && is_event_in_play(EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT) && !(is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT) && !is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND))){
+		return false
+	}
+	return true
+}
 
 function goto_levy_muster_vassal(vassal) {
 	let influence_cost = 0
@@ -8777,9 +8794,13 @@ function disband_lord(lord, permanently = false) {
 	if (permanently) {
 		log(`Removed L${lord}.`)
 		set_lord_locale(lord, NOWHERE)
-	} else {
+	} else if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME)) {
 		set_lord_calendar(lord, turn + (extra - data.lords[lord].influence))
-		log(`Disbanded L${lord} to ${get_lord_calendar(lord)}.`)
+		log(`Disbanded L${lord} to turn ${current_turn() + 1}.`)
+	}
+	else	{
+		set_lord_calendar(lord, turn + (extra - data.lords[lord].influence))
+		log(`Disbanded L${lord} to turn ${get_lord_calendar(lord)}.`)
 	}
 
 	discard_lord_capability_n(lord, 0)
