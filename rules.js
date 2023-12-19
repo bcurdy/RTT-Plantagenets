@@ -497,12 +497,10 @@ const EVENT_LANCASTER_TUDOR_BANNERS = L32
 const EVENT_LANCASTER_SURPRISE_LANDING = L33 // TODO
 // After a Sail, allows a free March action. NOT POSSIBLE ON PATH
 const EVENT_LANCASTER_BUCKINGHAMS_PLOT = L34
-const EVENT_LANCASTER_MARGARET_BEAUFORT = L35 // TODO
-// This Levy Can levy any vassal on the map event at Enemy or neutral locale favour.
+const EVENT_LANCASTER_MARGARET_BEAUFORT = L35
 const EVENT_LANCASTER_TALBOT_TO_THE_RESCUE = L36 // TODO
 // Play at Death and Disband state. Highlight to disband rather than rolling for death.
-const EVENT_LANCASTER_THE_EARL_OF_RICHMOND = L37 // TODO
-// This Levy. Works like Capability AOW_LANCASTER_TWO_ROSES.
+const EVENT_LANCASTER_THE_EARL_OF_RICHMOND = L37
 
 const EVENT_YORK_LEEWARD_BATTLE_LINE = Y1 // TODO
 // Hold event. Play at start of battle AFTER ARRAY halve all units in the is_archery() unless enemy also play that event
@@ -522,8 +520,7 @@ const EVENT_YORK_SUSPICION = Y5 // TODO
 // Influence check (cost is always 1)
 // Success = disband enemy lord Failure no effect
 const EVENT_YORK_SEAMANSHIP = Y6
-const EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT = Y7 // TODO
-// No Levy vassal possible except by L7 FOR_TRUST_NOT_HIM
+const EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT = Y7
 const EVENT_YORK_EXILE_PACT = Y8 // TODO
 // Placing = Not considered a march or sail or exile action. Simply move it
 // to the scenario exile box without any other change.
@@ -559,8 +556,7 @@ const EVENT_YORK_CALTROPS = Y19 // TODO
 // Play in Battle after BATTLE ARRAY. Select a FRIENDLY LORD
 // for him to produce 2 more melee hits in his engagements (he may chose 1 on 2 different engagements)
 // the lancastrianw ill himself put the hits between his lords
-const EVENT_YORK_YORKIST_PARADE = Y20 // TODO
-// This Levy York or Warwick_Y in London+ friendly. All Yorkists influence ratings +2
+const EVENT_YORK_YORKIST_PARADE = Y20 
 const EVENT_YORK_SIR_RICHARD_LEIGH = Y21
 const EVENT_YORK_LOYALTY_AND_TRUST = Y22 // TODO
 // Works like the + Lordship events in Nevsky
@@ -2239,14 +2235,14 @@ function goto_immediate_event(c) {
 		case EVENT_LANCASTER_BUCKINGHAMS_PLOT:
 			set_add(game.events, c)
 			return end_immediate_event()
-		/*case EVENT_LANCASTER_MARGARET_BEAUFORT:
+		case EVENT_LANCASTER_MARGARET_BEAUFORT:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_LANCASTER_THE_EARL_OF_RICHMOND:
 			set_add(game.events, c)
 			return end_immediate_event()
 
-		case EVENT_YORK_JACK_CADE:
+		/*case EVENT_YORK_JACK_CADE:
 			set_add(game.events, c)
 			return end_immediate_event()*/
 		case EVENT_YORK_SEAMANSHIP:
@@ -3500,6 +3496,11 @@ function play_held_event(c) {
 		set_delete(game.hand_y, c)
 	else
 		set_delete(game.hand_l, c)
+
+		/* Hold events with This Levy/Campaign */
+	if (c === EVENT_YORK_YORKIST_PARADE) {
+		set_add(game.events, c)
+	}
 }
 
 function end_held_event() {
@@ -3535,7 +3536,7 @@ function can_play_held_event(c) {
 			return can_play_y_blocked_ford()
 	*/
 
-		case EVENT_LANCASTER_ASPIELLES:
+	/*	case EVENT_LANCASTER_ASPIELLES:
 			return can_play_l_aspielles()
 		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
 			return can_play_rebel_supply_depot()
@@ -3546,7 +3547,7 @@ function can_play_held_event(c) {
 		case EVENT_YORK_PARLIAMENT_TRUCE:
 			return can_play_y_parliament_truce()
 		case EVENT_YORK_ASPIELLES:
-			return can_play_y_aspielles()
+			return can_play_y_aspielles()*/
 		case EVENT_YORK_YORKIST_PARADE:
 			return can_play_yorkist_parade()
 		/*case EVENT_YORK_SUN_IN_SPLENDOUR:
@@ -3638,18 +3639,31 @@ function can_play_y_parliament_truce() {
 }
 
 function can_play_yorkist_parade() {
-
+	if (game.active === YORK && is_favour_friendly(LOC_LONDON) && (get_lord_locale(LORD_WARWICK_Y) === LOC_LONDON || get_lord_locale(LORD_YORK) === LOC_LONDON)) {
+		return true
+	}
+	return false
 }
 
 function can_play_l_flank_attack() {
-	if (game.who !== NOBODY && !is_event_in_play(EVENT_YORK_PARLIAMENT_TRUCE) && !is_event_in_play(EVENT_LANCASTER_PARLIAMENT_TRUCE)) {
+	if (game.active === LANCASTER 
+		&& game.state === "intercept"
+		&& game.who !== NOBODY 
+		&& !is_event_in_play(EVENT_YORK_PARLIAMENT_TRUCE) 
+		&& !is_event_in_play(EVENT_LANCASTER_PARLIAMENT_TRUCE)) 
+		{
 		return true
 	}
 	return false
 }
 
 function can_play_y_flank_attack() {
-	if (game.who !== NOBODY && !is_event_in_play(EVENT_YORK_PARLIAMENT_TRUCE) && !is_event_in_play(EVENT_LANCASTER_PARLIAMENT_TRUCE)) {
+	if (game.active === YORK 
+		&& game.state === "intercept" 
+		&& game.who !== NOBODY 
+		&& !is_event_in_play(EVENT_YORK_PARLIAMENT_TRUCE) 
+		&& !is_event_in_play(EVENT_LANCASTER_PARLIAMENT_TRUCE)) 
+		{
 		return true
 	}
 	return false
@@ -4388,7 +4402,7 @@ function can_add_lord_capability(lord) {
 function forbidden_levy_capabilities(c) {
 	if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES)) {
 		if (c === AOW_LANCASTER_THOMAS_STANLEY || AOW_LANCASTER_MY_FATHERS_BLOOD) {
-			return false
+			return true
 		}
 	} 
 	if (is_event_in_play(EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT)) {
@@ -4397,10 +4411,10 @@ function forbidden_levy_capabilities(c) {
 			|| c === AOW_LANCASTER_MONTAGU 
 			|| c === AOW_LANCASTER_MY_FATHERS_BLOOD 
 			|| c === AOW_LANCASTER_ANDREW_TROLLOPE) {
-				return true
+				return false
 			}
 	}
-	return false
+	return true
 }
 
 function add_lord_capability(lord, c) {
@@ -4442,7 +4456,7 @@ states.muster_capability = {
 		view.arts_of_war = deck
 		for (let c of deck) {
 			if (!data.cards[c].lords || set_has(data.cards[c].lords, game.who)) {
-				if (!lord_already_has_capability(game.who, c) && !forbidden_levy_capabilities(c))
+				if (!lord_already_has_capability(game.who, c) && forbidden_levy_capabilities(c))
 					gen_action_card(c)
 			}
 		}
@@ -4778,6 +4792,9 @@ states.command = {
 
 function influence_capabilities(lord, score) {
 	let here = get_lord_locale(game.group)
+	if (game.active === YORK && is_event_in_play(EVENT_YORK_YORKIST_PARADE)) {
+		score +=2
+	}
 	if (game.state === "parley" && lord_has_capability(game.group, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
 		score += 1
 	if (get_lord_locale(LORD_MARGARET) === here && lord_has_capability(game.group, AOW_LANCASTER_LOYAL_SOMERSET))
@@ -4835,7 +4852,7 @@ function do_influence_check() {
 		success = true
 	else if (roll === 6)
 		success = false
-	else if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES) && game.state === "levy_muster_vassal")
+	else if ((is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND) || lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES)) && game.state === "levy_muster_vassal")
 		success = true
 	else
 		success = roll <= rating
@@ -5085,7 +5102,9 @@ function eligible_vassal(vassal) {
 	if (!is_vassal_ready(vassal)) {
 		return false
 	}
-	if (!is_favour_friendly(data.vassals[vassal].seat)) {
+	if (!is_favour_friendly(data.vassals[vassal].seat) 
+	&& (!game.who === LORD_HENRY_TUDOR 
+	|| !is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))) {
 		return false
 	}
 	if (game.active === LANCASTER && is_event_in_play(EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT) && !(is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT) && !is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND))){
@@ -6878,7 +6897,7 @@ function can_play_battle_events() {
 
 function prompt_battle_events() {
 	// both attacker and defender events
-		if (game.active === LANCASTER) {
+	/*	if (game.active === LANCASTER) {
 			gen_action_card_if_held(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
 			gen_action_card_if_held(EVENT_LANCASTER_SUSPICION)
 			gen_action_card_if_held(EVENT_LANCASTER_FOR_TRUST_NOT_HIM)
@@ -6892,23 +6911,23 @@ function prompt_battle_events() {
 			gen_action_card_if_held(EVENT_YORK_REGROUP)
 			gen_action_card_if_held(EVENT_YORK_SWIFT_MANEUVER)
 			gen_action_card_if_held(EVENT_YORK_PATRICK_DE_LA_MOTE)
-		}	
+		}	*/
 		view.actions.done = 1
 }
 
 function prompt_battle_events_death() {
 	// both attacker and defender events
-		if (game.active === LANCASTER) {
+		/*if (game.active === LANCASTER) {
 			gen_action_card_if_held(EVENT_LANCASTER_ESCAPE_SHIP)
 			gen_action_card_if_held(EVENT_LANCASTER_WARDEN_OF_THE_MARCHES)
 			gen_action_card_if_held(EVENT_LANCASTER_TALBOT_TO_THE_RESCUE)
 			gen_action_card_if_held(EVENT_YORK_REGROUP)
 			gen_action_card_if_held(EVENT_YORK_SWIFT_MANEUVER)
 			gen_action_card_if_held(EVENT_YORK_PATRICK_DE_LA_MOTE)
-		}
+			}
 		if (game.active === YORK) {
 			gen_action_card_if_held(EVENT_YORK_ESCAPE_SHIP)
-		}	
+		}	*/
 		view.actions.done = 1
 }
 
@@ -6944,7 +6963,7 @@ function action_battle_events(c) {
 		set_delete(current_hand(), c)
 		set_add(game.events, c)
 		switch (c) {
-			case EVENT_LANCASTER_LEEWARD_BATTLE_LINE:
+		/*	case EVENT_LANCASTER_LEEWARD_BATTLE_LINE:
 			case EVENT_LANCASTER_SUSPICION:
 				game.state = "suspicion"
 			case EVENT_LANCASTER_FOR_TRUST_NOT_HIM:
@@ -6955,7 +6974,7 @@ function action_battle_events(c) {
 				game.state = "suspicion"
 			case EVENT_YORK_CALTROPS:
 			case EVENT_YORK_REGROUP:
-			case EVENT_YORK_SWIFT_MANEUVER:
+			case EVENT_YORK_SWIFT_MANEUVER:*/
 		}
 }
 
