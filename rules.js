@@ -1815,6 +1815,16 @@ function discard_events(when) {
 	}
 }
 
+function discard_extra_levy_events() {
+	for (let i = 0; i < game.events.length; ) {
+		let c = game.events[i]
+		if (data.cards[c].name === "Y20")
+			array_remove(game.events, i)
+		else
+			++i
+	}
+}
+
 function discard_friendly_events(when) {
 	for (let i = 0; i < game.events.length; ) {
 		let c = game.events[i]
@@ -4474,7 +4484,7 @@ states.muster_capability = {
 function goto_levy_discard_events() {
 	// Discard "This Levy" events from play.
 	discard_events("this_levy")
-
+	discard_extra_levy_events()
 	goto_campaign_plan()
 }
 
