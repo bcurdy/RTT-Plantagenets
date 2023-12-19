@@ -1,0 +1,386 @@
+L1
+
+Leeward Battle Line
+
+Hold: Play in Battle to halve all Missile Hits (round up) to Friendly Lords, unless enemy <i>Leeward Battle Line</i>.
+
+Culverins and Falconets
+
+At start of Round 1 of Battle, this Lord may discard this card to add 1 die roll of Missile Hits.
+
+L2
+
+Flank Attack
+
+Hold: Play to Intercept without rolling and become Attacker in that Battle.
+
+Culverins and Falconets
+
+At start of Round 1 of Battle, this Lord may discard this card to add 1 die roll of Missile Hits.
+
+L3
+
+Escape Ship
+
+Hold: Play upon Death check if Lancastrian Route (4.5.1) (4.5.1) to Port for any Routed Lancastrians to go into Exile instead.
+
+Muster'd my soldiers
+Gather'd flocks of friends
+
+Each Battle at a Friendly Stronghold, this Lord adds 2 Men-at-Arms and 1 Longbowmen. Remove them after Battle.
+
+L4
+
+Be sent for
+to return from France with speed
+
+This Levy Muster Lancastrian Exiles from anywhere on the Calendar.
+
+Heralds
+
+This Lord at Port may use full Command card for an Influence check. If successful, shift a Lord cylinder on Calendar to next Turn.
+
+L5
+
+Suspicion
+always haunts the guilty mind
+
+Hold: Play in Battle for participating Lancastrian Lord to check Influence. Success Disbands 1 Yorkist Lord at Yorkist Lord at Battle with lower Influence Rating.
+
+Church Blessing
+
+This Lord's Men-at-Arms have Armour 1-4.
+
+L6
+
+Seamanship
+
+This Campaign Lancastrians may Sail for just 1 Command action.
+
+Great Ships
+
+This Lord's Ships count double for Sail and Supply and connect all Ports of all Seas.
+
+L7
+
+For trust not him
+
+Hold: Play in Battle for a participating Lord to attempt to Levy (3.4.3) a regular Enemy Vassal at Battle onto the Lord's own mat.
+
+Harbingers
+
+This Lord's Supply actions draw twice the usual Provender.
+
+L8
+
+Forced Marches
+
+This Campaign lone Lancastrian Lords (not Groups) March on Road as if Highway.
+
+Hay Wains
+
+This Lord's Carts count double for March and Supply.
+
+L9
+
+Rising Wages
+
+This Levy Yorkist Lords must pay 1 Coin per Levy Troops action.
+
+Quartermasters
+
+This Lord Levies Troops without Depleting or Exhausting Strongholds.
+
+L10
+
+New Act of Parliament
+
+This Campaign Yorkist Parley takes entire Command card.
+
+Chamberlains
+
+This Lord's Supply and Levy Troops do not Deplete the Stronghold at his or her Vassals' Seats.
+
+L11
+
+Blocked Ford
+
+Hold: Play upon Approach to prevent Exile (all Lords there Battle).
+
+In the Name of the King
+Sealed royal letter
+
+This Lord has Influence +1 for Parley.
+
+L12
+
+Ravine
+
+Hold: Play on an Enemy Lord in Battle. Round 1, ignore that Lord for Engage and Strike.
+
+Commission of Array
+
+This Lord can Levy Troops from adjacent Friendly Strongholds where no Enemy Lord.
+
+L13
+
+Aspielles
+Lancastrian spies
+
+Hold: Play to inspect all Yorkist Held cards and 1 Hidden Yorkist Lord mat (1.5.3).
+
+Expert Counsellors
+
+This Lord has Valour +2.
+
+L14
+
+Scots
+
+Each Lancastrian Lord on map may add up to 1 Men-at-Arms and 1 Militia to his or her mat.
+
+Percy's Power
+
+While this Lord is in the North, Lancastrian Pay (3.2) there is free.
+
+L15
+
+Henry Pressures Parliament
+
+Yorkist lose 1 Influence point per Vassal they currently have Mustered.
+
+King's Parley
+
+Upon Yorkist Approach to this Lord, discard this card to cancel that Approach and end Command card.
+
+L16
+
+Warden of the Marches
+
+Hold: Play upon Death check in the North. Move any Routed Lancastrians to a Friendly Stronghold there instead of rolling Death or Disband.
+
+Northmen
+
+Each Tides of War, Lancastrians Dominate the North with this Lord and 3+ Friendly Strongholds there.
+
+L17
+
+My crown is in my heart
+
+This Levy Henry VI may Parley twice twice for for 0 Lordship (with Influence checks).
+
+Margaret
+takes the reins
+
+Each Tides of War, this Lord at a Stronghold outside London or in an Exile box adds +2 Lancastrian Influence points.
+
+L18
+
+Parliament Votes
+
+This Levy 1 Parley action by each Lancastrian Lord costs less by -1 Influence point and automatically succeeds.
+
+Council Member
+
+Each Tides of War, this Lord adds +1 Lancastrian Influence point.
+
+L19
+
+Henry's Proclamation
+
+Yorkists shift all their Vassals' Calendar markers to the current Turn box.
+
+Andrew Trollope
+
+This Lord Levies Special Vassal Trollope (free) and has Valour +1.
+
+L20
+
+Parliament Truce
+
+Hold: Play to prohibit all Approach and Intercept for the rest of this Campaign.
+
+Veteran of French Wars
+
+This Lord has Valour +2.
+
+L21
+
+French Fleet
+
+This Campaign Yorkist Lords may not Sail.
+
+My Father's Blood
+
+This Lord Levies Special Vassal Clifford (free) and has Valour +1.
+
+L22
+
+French Troops
+
+Add 2 Men-at-Arms and 2 Militia to a Lancastrian Lord at a Port.
+
+Stafford Estates
+
+At outset of each Campaign, this Lord receives 1 Coin and 1 Provender.
+
+L23
+
+Warwick's Propaganda
+
+Select 3 Yorkist Strongholds. For each, Yorkists either pay 2 Influence points or remove Favour.
+
+Montagu
+
+This Lord Levies Special Vassal Montagu (free), and his Retinue has Armour 1-5.
+
+L24
+
+Warwick's Propaganda
+
+Select 3 Yorkist Strongholds. For each, Yorkists either pay 2 Influence points or remove Favour.
+
+Married to a Neville
+
+This Lord at a Friendly Locale with Warwick has Influence +2 and Command +1.
+
+L25
+
+Welsh Rebellion
+
+Remove 2 Troops from each Yorkist Lord in Wales OR, if no Yorkist Lords there, 2 Yorkist Favour from Wales.
+
+Welsh Lord
+
+Each Battle in Wales, this Lord adds 2 Longbowmen. Remove them after Battle.
+
+L26
+
+Henry Released
+
+If London Favours Lancastrians, add 5 Lancastrian Influence points.
+
+Edward
+Prince of Wales
+
+This Lord Levies Special Vassal Edward (free) and has Valour +1.
+
+L27
+
+L'Universelle Aragne
+Louis XI of France, a cunning King
+
+Select 2 Yorkist Mustered Yorkist Mustered Vassals. Their Lords check Influence for each - failure Disbands the Vassal.
+
+Barded Horse
+
+This Lord's Retinue and his or her Vassals have Armour 1-3 against Missile but Armour 1-5 against Melee.
+
+L28
+
+Rebel Supply Depot
+
+Hold: Play after a Lord or Group Marches or Sails to a Port for them to receive 4 Provender and ignore their next Feed.
+
+Loyal Somerset
+
+This Lord at the same Locale as Margaret has Influence +1 and Valour +1.
+
+L29
+
+To wilful disobedience
+and rebel!
+
+Remove Yorkist Favour from 2 Strongholds at or adjacent to a Lancastrian Lord and not at or adjacent to Yorkist Lords.
+
+High Admiral
+
+This Lord can Sail to Ports where Enemy Lord(s), triggering Approach (4.3.5).
+
+L30
+
+French War Loans
+
+Add 1 Coin and 1 Provender to each Lancastrian Lord on map.
+
+Merchants
+
+This Lord for 1 Command action and successful Influence check removes 2 Depleted or Exhausted at his location and/or adjacent.
+
+L31
+
+Robin's Rebellion
+
+Place and/or remove up to 3 Favour total in the North.
+
+Yeomen of the Crown
+
+If this Lord's Retinue fails an Armour roll, she may instead Rout 1 of her Unrouted Men-at-arms units.
+
+L32
+
+Tudor Banners
+
+If Henry Tudor is at a Friendly Stronghold, mark all adjacent Strongholds that are free of Yorkist Lords with Lancastrian Favour.
+
+Two Roses
+Henry Tudor, married to a York, enjoys Lancastrian support.
+
+This Lord's Vassal Levy always succeeds
+
+L33
+
+Surprise Landing
+
+Hold: Play after Sailing to a Port to add a free March action.
+
+Philibert de Chandée
+French royal envoy
+
+Each Battle at or adjacent to Friendly English Channel Port, this Lord adds 2 Men-at-Arms. Remove them after Battle.
+
+L34
+
+Buckingham's Plot
+backfires
+
+This Levy each Yorkist Vassal Levy costs +2 extra Influence points.
+
+Piquiers
+French pikemen
+
+This Lord's Men-at-Arms and Militia have Armour 1-4 until 3 of them Rout.
+
+L35
+
+Margaret Beaufort
+Henry Tudor's mother
+
+This Levy Henry Tudor may attempt to Levy any Vassals on the map.
+
+Thomas Stanley
+
+This Lord Levies Special Vassal Stanley (free). Once per Levy, he can Levy Troops for 0 Lordship.
+
+L36
+
+Talbot to the Rescue
+
+Hold: Play upon Death check to Disband any Routed Lancastrians instead of rolling for Death.
+
+Chevaliers
+French knights
+
+This Lord's Men-at-Arms suffer -1 Armour against Missiles but Melee Strike x2.
+
+L37
+
+The Earl of Richmond
+is with a mighty power landed at Milford
+
+This Levy Lancastrian Vassal Levy always succeeds.
+
+Madame La Grande
+Louis XI's daughter Anne finances Tudors
+
+Each Pay segment (3.2) that this Lord at or adjacent to a Friendly English Channel Port, he receives 1 Coin.

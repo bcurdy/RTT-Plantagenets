@@ -1,0 +1,229 @@
+@font-face { font-family: Oldania; src: url(fonts/oldania/OldaniaADFStd-Bold.woff2); }
+
+@font-face { font-family: "B612"; src: url(fonts/b612/B612-Bold.woff2); font-weight: bold; }
+@font-face { font-family: "B612"; src: url(fonts/b612/B612-Italic.woff2); font-style: italic; }
+@font-face { font-family: "B612"; src: url(fonts/b612/B612-BoldItalic.woff2); font-weight: bold; font-style: italic; }
+@font-face { font-family: "B612"; src: url(fonts/b612/B612-Regular.woff2); }
+
+.aow {
+	position: relative;
+	box-sizing: border-box;
+	width: 186px;
+	height: 260px;
+	background-size: 186px 260px;
+	box-shadow: 1px 2px 4px #0004;
+	text-align: center;
+	line-height: 1;
+	border-radius: 6px;
+}
+
+.aow .number {
+	display: none;
+	font: 8px / 8px "B612";
+	position: absolute;
+	right: 12px;
+	bottom: 12px;
+}
+
+.aow.lancaster .event .text { background-color: #eff1db80 }
+.aow.lancaster .capability .text { background-color: #f4e9c980 }
+.aow.york .event .text { background-color: #f3f9f980 }
+.aow.york .capability .text { background-color: #e2f4f880 }
+
+.aow .event {
+	position: absolute;
+	top: 14px;
+	width: 186px;
+}
+
+.aow .capability {
+	position: absolute;
+	top: 148px;
+	width: 186px;
+}
+
+.aow .title {
+	font: 17px Oldania;
+}
+
+.aow .subtitle {
+	font: 10px/10px "Source Serif SmText";
+	font-style: italic;
+	margin-bottom: 2px;
+}
+
+.aow .text {
+	font: 10px / 12px "B612";
+	padding: 4px;
+	text-align: left;
+}
+
+.aow .event .title + .text {
+	margin-top: 6px;
+}
+
+.aow .event .text {
+	margin-left: 12px;
+	margin-right: 12px;
+}
+
+.aow > .sh1 > .text { margin-left: 50px; margin-right: 0; }
+.aow > .sh2 > .text { margin-left: 50px; margin-right: 0; }
+
+.aow > .sh3 > * { margin-left: 45px; }
+.aow > .shr > .text { margin-right: 45px; }
+
+.aow[data-card="L23"] .capability .text { margin-right: 50px; }
+.aow[data-card="L32"] .capability .subtitle { margin-left: 50px; margin-right: 5px; }
+
+.aow.c0 { background-image: url(cards.1x/aow_york_1.jpg) }
+.aow.c1 { background-image: url(cards.1x/aow_york_2.jpg) }
+.aow.c2 { background-image: url(cards.1x/aow_york_3.jpg) }
+.aow.c3 { background-image: url(cards.1x/aow_york_4.jpg) }
+.aow.c4 { background-image: url(cards.1x/aow_york_5.jpg) }
+.aow.c5 { background-image: url(cards.1x/aow_york_6.jpg) }
+.aow.c6 { background-image: url(cards.1x/aow_york_7.jpg) }
+.aow.c7 { background-image: url(cards.1x/aow_york_8.jpg) }
+.aow.c8 { background-image: url(cards.1x/aow_york_9.jpg) }
+.aow.c9 { background-image: url(cards.1x/aow_york_10.jpg) }
+.aow.c10 { background-image: url(cards.1x/aow_york_11.jpg) }
+.aow.c11 { background-image: url(cards.1x/aow_york_12.jpg) }
+.aow.c12 { background-image: url(cards.1x/aow_york_13.jpg) }
+.aow.c13 { background-image: url(cards.1x/aow_york_14.jpg) }
+.aow.c14 { background-image: url(cards.1x/aow_york_15.jpg) }
+.aow.c15 { background-image: url(cards.1x/aow_york_16.jpg) }
+.aow.c16 { background-image: url(cards.1x/aow_york_17.jpg) }
+.aow.c17 { background-image: url(cards.1x/aow_york_18.jpg) }
+.aow.c18 { background-image: url(cards.1x/aow_york_19.jpg) }
+.aow.c19 { background-image: url(cards.1x/aow_york_20.jpg) }
+.aow.c20 { background-image: url(cards.1x/aow_york_21.jpg) }
+.aow.c21 { background-image: url(cards.1x/aow_york_22.jpg) }
+.aow.c22 { background-image: url(cards.1x/aow_york_23.jpg) }
+.aow.c23 { background-image: url(cards.1x/aow_york_24.jpg) }
+.aow.c24 { background-image: url(cards.1x/aow_york_25.jpg) }
+.aow.c25 { background-image: url(cards.1x/aow_york_26.jpg) }
+.aow.c26 { background-image: url(cards.1x/aow_york_27.jpg) }
+.aow.c27 { background-image: url(cards.1x/aow_york_28.jpg) }
+.aow.c28 { background-image: url(cards.1x/aow_york_29.jpg) }
+.aow.c29 { background-image: url(cards.1x/aow_york_30.jpg) }
+.aow.c30 { background-image: url(cards.1x/aow_york_31.jpg) }
+.aow.c31 { background-image: url(cards.1x/aow_york_32.jpg) }
+.aow.c32 { background-image: url(cards.1x/aow_york_33.jpg) }
+.aow.c33 { background-image: url(cards.1x/aow_york_34.jpg) }
+.aow.c34 { background-image: url(cards.1x/aow_york_35.jpg) }
+.aow.c35 { background-image: url(cards.1x/aow_york_36.jpg) }
+.aow.c36 { background-image: url(cards.1x/aow_york_37.jpg) }
+.aow.c37 { background-image: url(cards.1x/aow_lancaster_1.jpg) }
+.aow.c38 { background-image: url(cards.1x/aow_lancaster_2.jpg) }
+.aow.c39 { background-image: url(cards.1x/aow_lancaster_3.jpg) }
+.aow.c40 { background-image: url(cards.1x/aow_lancaster_4.jpg) }
+.aow.c41 { background-image: url(cards.1x/aow_lancaster_5.jpg) }
+.aow.c42 { background-image: url(cards.1x/aow_lancaster_6.jpg) }
+.aow.c43 { background-image: url(cards.1x/aow_lancaster_7.jpg) }
+.aow.c44 { background-image: url(cards.1x/aow_lancaster_8.jpg) }
+.aow.c45 { background-image: url(cards.1x/aow_lancaster_9.jpg) }
+.aow.c46 { background-image: url(cards.1x/aow_lancaster_10.jpg) }
+.aow.c47 { background-image: url(cards.1x/aow_lancaster_11.jpg) }
+.aow.c48 { background-image: url(cards.1x/aow_lancaster_12.jpg) }
+.aow.c49 { background-image: url(cards.1x/aow_lancaster_13.jpg) }
+.aow.c50 { background-image: url(cards.1x/aow_lancaster_14.jpg) }
+.aow.c51 { background-image: url(cards.1x/aow_lancaster_15.jpg) }
+.aow.c52 { background-image: url(cards.1x/aow_lancaster_16.jpg) }
+.aow.c53 { background-image: url(cards.1x/aow_lancaster_17.jpg) }
+.aow.c54 { background-image: url(cards.1x/aow_lancaster_18.jpg) }
+.aow.c55 { background-image: url(cards.1x/aow_lancaster_19.jpg) }
+.aow.c56 { background-image: url(cards.1x/aow_lancaster_20.jpg) }
+.aow.c57 { background-image: url(cards.1x/aow_lancaster_21.jpg) }
+.aow.c58 { background-image: url(cards.1x/aow_lancaster_22.jpg) }
+.aow.c59 { background-image: url(cards.1x/aow_lancaster_23.jpg) }
+.aow.c60 { background-image: url(cards.1x/aow_lancaster_24.jpg) }
+.aow.c61 { background-image: url(cards.1x/aow_lancaster_25.jpg) }
+.aow.c62 { background-image: url(cards.1x/aow_lancaster_26.jpg) }
+.aow.c63 { background-image: url(cards.1x/aow_lancaster_27.jpg) }
+.aow.c64 { background-image: url(cards.1x/aow_lancaster_28.jpg) }
+.aow.c65 { background-image: url(cards.1x/aow_lancaster_29.jpg) }
+.aow.c66 { background-image: url(cards.1x/aow_lancaster_30.jpg) }
+.aow.c67 { background-image: url(cards.1x/aow_lancaster_31.jpg) }
+.aow.c68 { background-image: url(cards.1x/aow_lancaster_32.jpg) }
+.aow.c69 { background-image: url(cards.1x/aow_lancaster_33.jpg) }
+.aow.c70 { background-image: url(cards.1x/aow_lancaster_34.jpg) }
+.aow.c71 { background-image: url(cards.1x/aow_lancaster_35.jpg) }
+.aow.c72 { background-image: url(cards.1x/aow_lancaster_36.jpg) }
+.aow.c73 { background-image: url(cards.1x/aow_lancaster_37.jpg) }
+
+@media (min-resolution: 97dpi) {
+.aow.c0 { background-image: url(cards.2x/aow_york_1.jpg) }
+.aow.c1 { background-image: url(cards.2x/aow_york_2.jpg) }
+.aow.c2 { background-image: url(cards.2x/aow_york_3.jpg) }
+.aow.c3 { background-image: url(cards.2x/aow_york_4.jpg) }
+.aow.c4 { background-image: url(cards.2x/aow_york_5.jpg) }
+.aow.c5 { background-image: url(cards.2x/aow_york_6.jpg) }
+.aow.c6 { background-image: url(cards.2x/aow_york_7.jpg) }
+.aow.c7 { background-image: url(cards.2x/aow_york_8.jpg) }
+.aow.c8 { background-image: url(cards.2x/aow_york_9.jpg) }
+.aow.c9 { background-image: url(cards.2x/aow_york_10.jpg) }
+.aow.c10 { background-image: url(cards.2x/aow_york_11.jpg) }
+.aow.c11 { background-image: url(cards.2x/aow_york_12.jpg) }
+.aow.c12 { background-image: url(cards.2x/aow_york_13.jpg) }
+.aow.c13 { background-image: url(cards.2x/aow_york_14.jpg) }
+.aow.c14 { background-image: url(cards.2x/aow_york_15.jpg) }
+.aow.c15 { background-image: url(cards.2x/aow_york_16.jpg) }
+.aow.c16 { background-image: url(cards.2x/aow_york_17.jpg) }
+.aow.c17 { background-image: url(cards.2x/aow_york_18.jpg) }
+.aow.c18 { background-image: url(cards.2x/aow_york_19.jpg) }
+.aow.c19 { background-image: url(cards.2x/aow_york_20.jpg) }
+.aow.c20 { background-image: url(cards.2x/aow_york_21.jpg) }
+.aow.c21 { background-image: url(cards.2x/aow_york_22.jpg) }
+.aow.c22 { background-image: url(cards.2x/aow_york_23.jpg) }
+.aow.c23 { background-image: url(cards.2x/aow_york_24.jpg) }
+.aow.c24 { background-image: url(cards.2x/aow_york_25.jpg) }
+.aow.c25 { background-image: url(cards.2x/aow_york_26.jpg) }
+.aow.c26 { background-image: url(cards.2x/aow_york_27.jpg) }
+.aow.c27 { background-image: url(cards.2x/aow_york_28.jpg) }
+.aow.c28 { background-image: url(cards.2x/aow_york_29.jpg) }
+.aow.c29 { background-image: url(cards.2x/aow_york_30.jpg) }
+.aow.c30 { background-image: url(cards.2x/aow_york_31.jpg) }
+.aow.c31 { background-image: url(cards.2x/aow_york_32.jpg) }
+.aow.c32 { background-image: url(cards.2x/aow_york_33.jpg) }
+.aow.c33 { background-image: url(cards.2x/aow_york_34.jpg) }
+.aow.c34 { background-image: url(cards.2x/aow_york_35.jpg) }
+.aow.c35 { background-image: url(cards.2x/aow_york_36.jpg) }
+.aow.c36 { background-image: url(cards.2x/aow_york_37.jpg) }
+.aow.c37 { background-image: url(cards.2x/aow_lancaster_1.jpg) }
+.aow.c38 { background-image: url(cards.2x/aow_lancaster_2.jpg) }
+.aow.c39 { background-image: url(cards.2x/aow_lancaster_3.jpg) }
+.aow.c40 { background-image: url(cards.2x/aow_lancaster_4.jpg) }
+.aow.c41 { background-image: url(cards.2x/aow_lancaster_5.jpg) }
+.aow.c42 { background-image: url(cards.2x/aow_lancaster_6.jpg) }
+.aow.c43 { background-image: url(cards.2x/aow_lancaster_7.jpg) }
+.aow.c44 { background-image: url(cards.2x/aow_lancaster_8.jpg) }
+.aow.c45 { background-image: url(cards.2x/aow_lancaster_9.jpg) }
+.aow.c46 { background-image: url(cards.2x/aow_lancaster_10.jpg) }
+.aow.c47 { background-image: url(cards.2x/aow_lancaster_11.jpg) }
+.aow.c48 { background-image: url(cards.2x/aow_lancaster_12.jpg) }
+.aow.c49 { background-image: url(cards.2x/aow_lancaster_13.jpg) }
+.aow.c50 { background-image: url(cards.2x/aow_lancaster_14.jpg) }
+.aow.c51 { background-image: url(cards.2x/aow_lancaster_15.jpg) }
+.aow.c52 { background-image: url(cards.2x/aow_lancaster_16.jpg) }
+.aow.c53 { background-image: url(cards.2x/aow_lancaster_17.jpg) }
+.aow.c54 { background-image: url(cards.2x/aow_lancaster_18.jpg) }
+.aow.c55 { background-image: url(cards.2x/aow_lancaster_19.jpg) }
+.aow.c56 { background-image: url(cards.2x/aow_lancaster_20.jpg) }
+.aow.c57 { background-image: url(cards.2x/aow_lancaster_21.jpg) }
+.aow.c58 { background-image: url(cards.2x/aow_lancaster_22.jpg) }
+.aow.c59 { background-image: url(cards.2x/aow_lancaster_23.jpg) }
+.aow.c60 { background-image: url(cards.2x/aow_lancaster_24.jpg) }
+.aow.c61 { background-image: url(cards.2x/aow_lancaster_25.jpg) }
+.aow.c62 { background-image: url(cards.2x/aow_lancaster_26.jpg) }
+.aow.c63 { background-image: url(cards.2x/aow_lancaster_27.jpg) }
+.aow.c64 { background-image: url(cards.2x/aow_lancaster_28.jpg) }
+.aow.c65 { background-image: url(cards.2x/aow_lancaster_29.jpg) }
+.aow.c66 { background-image: url(cards.2x/aow_lancaster_30.jpg) }
+.aow.c67 { background-image: url(cards.2x/aow_lancaster_31.jpg) }
+.aow.c68 { background-image: url(cards.2x/aow_lancaster_32.jpg) }
+.aow.c69 { background-image: url(cards.2x/aow_lancaster_33.jpg) }
+.aow.c70 { background-image: url(cards.2x/aow_lancaster_34.jpg) }
+.aow.c71 { background-image: url(cards.2x/aow_lancaster_35.jpg) }
+.aow.c72 { background-image: url(cards.2x/aow_lancaster_36.jpg) }
+.aow.c73 { background-image: url(cards.2x/aow_lancaster_37.jpg) }
+}

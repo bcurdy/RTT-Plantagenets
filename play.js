@@ -605,6 +605,7 @@ const ui = {
 	lord_valour: [],
 	lord_feed: [],
 	cards: [],
+	cards2: [],
 	calendar: [],
 	track: [],
 	seat: [],
@@ -630,7 +631,7 @@ const ui = {
 	held_york: document.querySelector("#role_York .role_stat"),
 	held_lancaster: document.querySelector("#role_Lancaster .role_stat"),
 
-	command: document.getElementById("command"),
+	command: document.getElementById("turn_info"),
 	turn: document.getElementById("turn"),
 	end: document.getElementById("end"),
 	victory_check: document.getElementById("victory_check"),
@@ -690,9 +691,9 @@ function build_lord_mat(lord, ix, side, name) {
 	register_action(ui.lord_buttons[ix], "lord", ix)
 }
 
-function build_card(side, c) {
-	let card = ui.cards[c] = document.createElement("div")
-	card.className = `card aow ${side} c${c}`
+function build_card(side, c, id) {
+	let card = ui.cards[c] = document.querySelector(`div[data-card="${id}"]`)
+	ui.cards2[c] = card.cloneNode(true)
 	register_action(card, "card", c)
 }
 
@@ -901,10 +902,20 @@ function build_map() {
 		register_action(ui.battle_grid_array[i], "array", i)
 
 	for (let c = first_york_card; c <= last_york_card; ++c)
-		build_card("york", c)
+		build_card("york", c, "Y" + (1 + c - first_york_card))
 	for (let c = first_lancaster_card; c <= last_lancaster_card; ++c)
-		build_card("lancaster", c)
+		build_card("lancaster", c, "L" + (1 + c - first_lancaster_card))
 
+	ui.card_aow_lancaster_back = build_div(null, "card aow lancaster back")
+	ui.card_aow_york_back = build_div(null, "card aow york back")
+	ui.card_cc_lancaster_back = build_div(null, "card cc lancaster back")
+	ui.card_cc_york_back = build_div(null, "card cc york back")
+
+	ui.card_cc = []
+	for (let i = 0; i < 14; ++i)
+		ui.card_cc[i] = build_div(null, "card cc york " + data.lords[view.command].id)
+	for (let i = 14; i < 28; ++i)
+		ui.card_cc[i] = build_div(null, "card cc lancaster " + data.lords[view.command].id)
 }
 
 // === UPDATE UI ===
@@ -943,26 +954,21 @@ function restart_cache() {
 }
 
 function update_current_card_display() {
+	// TODO: clone card elements instead of using classes
 	if (typeof view.what === "number" && view.what >= 0) {
-		if (view.what <= first_york_card)
-			ui.command.className = `card aow york c${view.what}`
-		else
-			ui.command.className = `card aow lancaster c${view.what}`
+		ui.command.replaceChildren(ui.cards2[view.what])
 	} else if ((view.turn & 1) === 0) {
 		if (player === "Lancaster")
-			ui.command.className = `card aow lancaster back`
+			ui.command.replaceChildren(ui.card_aow_lancaster_back)
 		else
-			ui.command.className = `card aow york back`
+			ui.command.replaceChildren(ui.card_aow_york_back)
 	} else if (view.command < 0) {
 		if (player === "Lancaster")
-			ui.command.className = `card cc lancaster back`
+			ui.command.replaceChildren(ui.card_cc_lancaster_back)
 		else
-			ui.command.className = `card cc york back`
+			ui.command.replaceChildren(ui.card_cc_york_back)
 	} else {
-		if (view.command < 14)
-			ui.command.className = `card cc york ${data.lords[view.command].id}`
-		else
-			ui.command.className = `card cc lancaster ${data.lords[view.command].id}`
+		ui.command.replaceChildren(ui.card_cc[view.command])
 	}
 }
 
