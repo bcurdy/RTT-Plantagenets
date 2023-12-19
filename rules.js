@@ -435,8 +435,7 @@ const EVENT_LANCASTER_SUSPICION = L5 // TODO
 // (through capabilities - function influence_capabilities())
 // Influence check (cost is always 1)
 // Success = disband enemy lord Failure no effect
-const EVENT_LANCASTER_SEAMANSHIP = L6 // TODO
-// This campaign : Sail only 1 action instead of full command
+const EVENT_LANCASTER_SEAMANSHIP = L6
 const EVENT_LANCASTER_FOR_TRUST_NOT_HIM = L7 // TODO
 // Hold Event. Play at start of Battle AFTER ARRAY. Cost is always 1 + vassal modifier (		modifier: data.vassals[vassal].influence * (game.active === LANCASTER ? -1 : 1))
 // Y7 DO NOT override this event.
@@ -480,8 +479,7 @@ const EVENT_LANCASTER_PARLIAMENT_TRUCE = L20 // TODO
 // Can be played during Levy and Campaign
 // Read L11 Basically it forbids to go to locales where enemy are as long as
 // this event is active (until end of this campaign)
-const EVENT_LANCASTER_FRENCH_FLEET = L21 // TODO
-// Forbid sail
+const EVENT_LANCASTER_FRENCH_FLEET = L21
 const EVENT_LANCASTER_FRENCH_TROOPS = L22
 const EVENT_LANCASTER_WARWICKS_PROPAGANDA = L23
 const EVENT_LANCASTER_WARWICKS_PROPAGANDA2 = L24
@@ -498,8 +496,7 @@ const EVENT_LANCASTER_ROBINS_REBELLION = L31
 const EVENT_LANCASTER_TUDOR_BANNERS = L32
 const EVENT_LANCASTER_SURPRISE_LANDING = L33 // TODO
 // After a Sail, allows a free March action. NOT POSSIBLE ON PATH
-const EVENT_LANCASTER_BUCKINGHAMS_PLOT = L34 // TODO
-// This Levy Add +2 to each Yorkist Levy vassal action cost
+const EVENT_LANCASTER_BUCKINGHAMS_PLOT = L34
 const EVENT_LANCASTER_MARGARET_BEAUFORT = L35 // TODO
 // This Levy Can levy any vassal on the map event at Enemy or neutral locale favour.
 const EVENT_LANCASTER_TALBOT_TO_THE_RESCUE = L36 // TODO
@@ -524,8 +521,7 @@ const EVENT_YORK_SUSPICION = Y5 // TODO
 // (through capabilities - function influence_capabilities())
 // Influence check (cost is always 1)
 // Success = disband enemy lord Failure no effect
-const EVENT_YORK_SEAMANSHIP = Y6 // TODO
-// This campaign : Sail only 1 action instead of full command
+const EVENT_YORK_SEAMANSHIP = Y6
 const EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT = Y7 // TODO
 // No Levy vassal possible except by L7 FOR_TRUST_NOT_HIM
 const EVENT_YORK_EXILE_PACT = Y8 // TODO
@@ -2239,11 +2235,11 @@ function goto_immediate_event(c) {
 			return end_immediate_event()
 		case EVENT_LANCASTER_FRENCH_FLEET:
 			set_add(game.events, c)
-			return end_immediate_event()
+			return end_immediate_event()*/
 		case EVENT_LANCASTER_BUCKINGHAMS_PLOT:
 			set_add(game.events, c)
 			return end_immediate_event()
-		case EVENT_LANCASTER_MARGARET_BEAUFORT:
+		/*case EVENT_LANCASTER_MARGARET_BEAUFORT:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_LANCASTER_THE_EARL_OF_RICHMOND:
@@ -2252,11 +2248,11 @@ function goto_immediate_event(c) {
 
 		case EVENT_YORK_JACK_CADE:
 			set_add(game.events, c)
-			return end_immediate_event()
+			return end_immediate_event()*/
 		case EVENT_YORK_SEAMANSHIP:
 			set_add(game.events, c)
 			return end_immediate_event()
-		case EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT:
+	/*	case EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_YORK_EXILE_PACT:
@@ -5082,11 +5078,16 @@ states.parley = {
 // (a service 3 disbanding in turn 8 will come back turn 11)
 
 function goto_levy_muster_vassal(vassal) {
+	let influence_cost = 0
 	game.what = vassal
+
+	if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_BUCKINGHAMS_PLOT))
+		influence += 2
+
 	push_state("levy_muster_vassal")
 	init_influence_check(game.who)
 	game.check.push({
-		cost: 0,
+		cost: influence_cost,
 		modifier: data.vassals[vassal].influence * (game.active === LANCASTER ? -1 : 1),
 		source: "vassal",
 	})
@@ -5163,7 +5164,7 @@ function prompt_march() {
 	}
 
 	if (
-		lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT) &&
+		(lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT) || (is_event_in_play(EVENT_LANCASTER_FORCED_MARCHES) && game.active === LANCASTER)) &&
 		game.actions === 0 &&
 		is_first_march_highway() &&
 		count_group_lords() === 1
@@ -5242,7 +5243,7 @@ function march_with_group_2() {
 				spend_march_action(0)
 			} else {
 				spend_march_action(1)
-				if (alone && lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT))
+				if (alone && (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT) || (is_event_in_play(EVENT_LANCASTER_FORCED_MARCHES) && game.active === LANCASTER)))
 					game.flags.first_march_highway = 1
 			}
 			break
@@ -6054,15 +6055,20 @@ function has_enough_available_ships_for_army() {
 
 function can_action_sail() {
 	// Must use whole action except if seamanship in play
+
+
 	if (is_lancaster_lord(game.command)) {
 		if (!is_first_action() && !is_event_in_play(EVENT_LANCASTER_SEAMANSHIP))
 			return false
 	}
 
 	if (is_york_lord(game.command)) {
-		if (!is_first_action() && !is_event_in_play(EVENT_YORK_SEAMANSHIP))
+		if ((is_event_in_play(EVENT_LANCASTER_FRENCH_FLEET) || !is_first_action() && !is_event_in_play(EVENT_YORK_SEAMANSHIP)))
 			return false
 	}
+
+	if (game.actions === 0)
+		return false
 
 	// at a seaport
 	let here = get_lord_locale(game.command)
@@ -6079,6 +6085,14 @@ function can_action_sail() {
 			if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
 				return true
 	}
+	return false
+}
+
+function is_seamanship_in_play() {
+	if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_SEAMANSHIP))
+		return true
+	if (game.active === YORK && is_event_in_play(EVENT_YORK_SEAMANSHIP))
+		return true
 	return false
 }
 
@@ -6137,7 +6151,11 @@ states.sail = {
 			set_lord_moved(lord, 1)
 		}
 
-		spend_all_actions()
+		if (is_seamanship_in_play())
+			spend_action(1)
+		else 
+			spend_all_actions()
+
 		if (has_unbesieged_enemy_lord(to))
 			goto_confirm_approach_sail()
 		else
