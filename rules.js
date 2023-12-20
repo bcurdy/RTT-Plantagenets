@@ -357,7 +357,7 @@ const AOW_LANCASTER_GREAT_SHIPS = L6
 const AOW_LANCASTER_HARBINGERS = L7
 const AOW_LANCASTER_HAY_WAINS = L8
 const AOW_LANCASTER_QUARTERMASTERS = L9
-const AOW_LANCASTER_CHAMBERLAINS = L10 // TODO
+const AOW_LANCASTER_CHAMBERLAINS = L10
 const AOW_LANCASTER_IN_THE_NAME_OF_THE_KING = L11
 const AOW_LANCASTER_COMMISION_OF_ARRAY = L12 // TODO
 const AOW_LANCASTER_EXPERT_COUNSELLORS = L13
@@ -439,8 +439,7 @@ const EVENT_LANCASTER_SEAMANSHIP = L6
 const EVENT_LANCASTER_FOR_TRUST_NOT_HIM = L7 // TODO
 // Hold Event. Play at start of Battle AFTER ARRAY. Cost is always 1 + vassal modifier (		modifier: data.vassals[vassal].influence * (game.active === LANCASTER ? -1 : 1))
 // Y7 DO NOT override this event.
-const EVENT_LANCASTER_FORCED_MARCHES = L8 // TODO
-// This Campaign, Logic already done through Y11 YORKISTS NEVER WAIT (using first_highway flag)
+const EVENT_LANCASTER_FORCED_MARCHES = L8
 const EVENT_LANCASTER_RISING_WAGES = L9 // TODO
 // This Levy Yorkist can share the coin. Basically pay one coin. I don't know if it's better
 // to use a new state to force the player to spend the coin or not
@@ -466,9 +465,7 @@ const EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT = L15
 const EVENT_LANCASTER_WARDEN_OF_THE_MARCHES = L16	 // TODO
 // Play during Death and Disband step of Battle. All routed (flee or not)
 // select a stronghold in the north and go there (they will need to feed)
-const EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART = L17 // TODO
-// This Levy 2 Parleys available in addition to the other Levy actions.
-// Bypass event Y15
+const EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART = L17
 const EVENT_LANCASTER_PARLIAMENT_VOTES = L18
 const EVENT_LANCASTER_HENRYS_PROCLAMATION = L19
 const EVENT_LANCASTER_PARLIAMENT_TRUCE = L20 // TODO
@@ -1877,6 +1874,7 @@ exports.setup = function (seed, scenario, options) {
 			first_action: 0,
 			first_march_highway: 0,
 			free_levy: 0,
+			free_parley:0,
 			burgundians:0,
 			charity:0,
 			bloody:0,
@@ -2227,9 +2225,9 @@ function goto_immediate_event(c) {
 		case EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT:
 			set_add(game.events, c)
 			return end_immediate_event()
-		/*case EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART:
+		case EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART:
 			set_add(game.events, c)
-			return end_immediate_event()*/
+			return end_immediate_event()
 		case EVENT_LANCASTER_PARLIAMENT_VOTES:
 			set_add(game.events, c)
 			return end_immediate_event()
@@ -2665,7 +2663,7 @@ states.welsh_rebellion_remove_troops = {
 				view.prompt = `Remove ${game.count} Troops from ${data.lords[game.who].name}.`
 				if (game.count === 0) {
 					set_lord_moved(game.who, 0)
-					game.who = NOBODY
+					view.actions.done = 1
 				}
 				else {
 					if (get_lord_forces(game.who, BURGUNDIANS) > 0)
@@ -3957,6 +3955,8 @@ function goto_levy_muster() {
 		clear_lords_moved()
 		if (lord_has_capability(lord, AOW_LANCASTER_THOMAS_STANLEY))
 			game.flags.free_levy = 1
+		if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART))
+			game.flags.free_parley = 2
 	}
 	if (game.active === YORK)
 		log_h2("York Muster")
@@ -3978,7 +3978,7 @@ function end_levy_muster() {
 
 function can_lord_muster(lord) {
 	// already mustered (except free levy)!
-	if (get_lord_moved(lord) && game.flags.free_levy !== 1)
+	if (get_lord_moved(lord) && (game.flags.free_levy !== 1 || lord !== LORD_HENRY_TUDOR) && (game.flags.free_parley === 0 || lord !== LORD_HENRY_VI))
 		return false
 
 	// must be on map
@@ -4019,7 +4019,6 @@ states.levy_muster = {
 		game.who = lord
 		game.count = data.lords[lord].lordship
 		lordship_effects(lord)
-		console.log(game.flags.parliament_votes)
 	},
 	end_muster() {
 		clear_undo()
@@ -4030,7 +4029,6 @@ states.levy_muster = {
 
 function resume_levy_muster_lord() {
 	--game.count
-
 	if (game.count === 0 && game.flags.free_levy === 0 && can_add_troops(game.who, get_lord_locale(game.who))) {
 		set_lord_moved(game.who, 1)
 		pop_state()
@@ -4089,8 +4087,11 @@ states.levy_muster_lord = {
 					view.actions.soldiers_of_fortune = 1
 			}
 
-			if (game.count === 0 && game.flags.free_levy === 1 && can_add_troops(game.who, here)) {
+			if (game.count === 0 && lord_has_capability(AOW_LANCASTER_THOMAS_STANLEY) && can_add_troops(game.who, here)) {
 				view.actions.levy_troops = 1
+			}
+			if (game.count === 0 && game.flags.free_parley > 0 && game.who === LORD_HENRY_VI) {
+				view.actions.parley = 1
 			}
 		} else {
 			// Can only Parley if locale is not friendly.
@@ -5017,7 +5018,7 @@ function list_parley_command() {
 }
 
 function can_action_parley_levy() {
-	if (game.count <= 0)
+	if (game.count <= 0 && (!game.who === LORD_HENRY_VI || game.flags.free_parley === 0))
 		return false
 	let here = get_lord_locale(game.who)
 	if (can_parley_at(here))
@@ -5064,6 +5065,11 @@ function end_parley() {
 	pop_state()
 	game.where = NOWHERE
 	game.parley = NOTHING
+	if (game.flags.free_parley > 0 && game.who === LORD_HENRY_VI) { 
+		console.log("minus free parley")
+		--game.flags.free_parley
+		++game.count
+	}
 	end_influence_check()
 	if (is_campaign_phase()) {
 		if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT)) 
@@ -5139,7 +5145,7 @@ function goto_levy_muster_vassal(vassal) {
 	game.what = vassal
 
 	if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_BUCKINGHAMS_PLOT))
-		influence += 2
+		influence_cost += 2
 
 	push_state("levy_muster_vassal")
 	init_influence_check(game.who)
