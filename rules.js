@@ -444,8 +444,7 @@ const EVENT_LANCASTER_FORCED_MARCHES = L8 // TODO
 const EVENT_LANCASTER_RISING_WAGES = L9 // TODO
 // This Levy Yorkist can share the coin. Basically pay one coin. I don't know if it's better
 // to use a new state to force the player to spend the coin or not
-const EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT = L10 // TODO
-// This Campaign. Entire command card = is_first_action() === true
+const EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT = L10
 const EVENT_LANCASTER_BLOCKED_FORD = L11 // TODO
 // Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
 // basically at best, you want the player that when he approaches,
@@ -470,10 +469,7 @@ const EVENT_LANCASTER_WARDEN_OF_THE_MARCHES = L16	 // TODO
 const EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART = L17 // TODO
 // This Levy 2 Parleys available in addition to the other Levy actions.
 // Bypass event Y15
-const EVENT_LANCASTER_PARLIAMENT_VOTES = L18 // TODO
-// This Levy 1 Parley action each levy for each Lancastrian lord cost 1 less
-// and automatic success (success = true)
-// Bypass event Y15
+const EVENT_LANCASTER_PARLIAMENT_VOTES = L18
 const EVENT_LANCASTER_HENRYS_PROCLAMATION = L19
 const EVENT_LANCASTER_PARLIAMENT_TRUCE = L20 // TODO
 // Can be played during Levy and Campaign
@@ -543,8 +539,7 @@ const EVENT_YORK_PARLIAMENT_TRUCE = Y12 // TODO
 const EVENT_YORK_ASPIELLES = Y13 // TODO
 // Play when you're the active player. Show all enemy Hidden cards and then
 // select one of enemy's Lord mats to show it to you. Perhaps write those in the log ?
-const EVENT_YORK_RICHARD_OF_YORK = Y14 // TODO
-// This Levy, game state parley, score += 1
+const EVENT_YORK_RICHARD_OF_YORK = Y14 
 const EVENT_YORK_LONDON_FOR_YORK = Y15
 const EVENT_YORK_THE_COMMONS = Y16	 // TODO
 // This Levy Same as other add X events. Never mandatory
@@ -594,10 +589,8 @@ const EVENT_YORK_THE_KINGS_NAME = Y32 // TODO
 // But the Depletion from Levy Troops is undone
 const EVENT_YORK_EDWARD_V = Y33 // TODO
 // Hold event : +3 Lordship for Gloucester 1 or 2 (same as nevsky events)
-const EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST = Y34 // TODO
-// This Levy & This Campaign, +1 Extra influence point for all Parley actions (even for free successful cards like
-const EVENT_YORK_PRIVY_COUNCIL = Y35 // TODO
-// This Levy. Yorkists influence ratings +1
+const EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST = Y34
+const EVENT_YORK_PRIVY_COUNCIL = Y35 
 const EVENT_YORK_SWIFT_MANEUVER = Y36 // TODO
 // Hold Event Play in Battle after the BATTLE ARRAY step of the Battle
 // When this event is played, any Lancastrian retinue makes Yorkist able to immediately END THE ROUND
@@ -1888,7 +1881,8 @@ exports.setup = function (seed, scenario, options) {
 			charity:0,
 			bloody:0,
 			london_for_york:0,
-			surprise_landing:0
+			surprise_landing:0,
+			parliament_votes:0
 		},
 
 		command: NOBODY,
@@ -2229,17 +2223,17 @@ function goto_immediate_event(c) {
 			return end_immediate_event()
 		case EVENT_LANCASTER_RISING_WAGES:
 			set_add(game.events, c)
-			return end_immediate_event()
+			return end_immediate_event()*/
 		case EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT:
 			set_add(game.events, c)
 			return end_immediate_event()
-		case EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART:
+		/*case EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART:
 			set_add(game.events, c)
-			return end_immediate_event()
+			return end_immediate_event()*/
 		case EVENT_LANCASTER_PARLIAMENT_VOTES:
 			set_add(game.events, c)
 			return end_immediate_event()
-		case EVENT_LANCASTER_FRENCH_FLEET:
+		/*case EVENT_LANCASTER_FRENCH_FLEET:
 			set_add(game.events, c)
 			return end_immediate_event()*/
 		case EVENT_LANCASTER_BUCKINGHAMS_PLOT:
@@ -2263,11 +2257,11 @@ function goto_immediate_event(c) {
 			return end_immediate_event()
 		/*case EVENT_YORK_EXILE_PACT:
 			set_add(game.events, c)
-			return end_immediate_event()
+			return end_immediate_event()*/
 		case EVENT_YORK_RICHARD_OF_YORK:
 			set_add(game.events, c)
 			return end_immediate_event()
-		case EVENT_YORK_THE_COMMONS:
+		/*case EVENT_YORK_THE_COMMONS:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_YORK_SUCCESSION:
@@ -2290,13 +2284,13 @@ function goto_immediate_event(c) {
 			return end_immediate_event()
 		case EVENT_YORK_EDWARD_V:
 			set_add(game.events, c)
-			return end_immediate_event()
+			return end_immediate_event()*/
 		case EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_YORK_PRIVY_COUNCIL:
 			set_add(game.events, c)
-			return end_immediate_event()*/
+			return end_immediate_event()
 
 			// Immediate effect
 		// Discard - Immediate Events
@@ -3806,6 +3800,9 @@ function lordship_effects(lord) {
 		game.count += 1
 	if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
 		game.count += 1
+	if (is_lancaster_lord(lord) && is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES)) {
+		game.flags.parliament_votes = 1
+	}
 }
 
 // === LEVY: ARTS OF WAR (FIRST TURN) ===
@@ -4022,6 +4019,7 @@ states.levy_muster = {
 		game.who = lord
 		game.count = data.lords[lord].lordship
 		lordship_effects(lord)
+		console.log(game.flags.parliament_votes)
 	},
 	end_muster() {
 		clear_undo()
@@ -4761,6 +4759,8 @@ states.command = {
 			view.actions.merchants = 1
 		if (can_action_agitators())
 			view.actions.agitators = 1
+		if (can_action_exile_pact()) 
+			view.actions.exile_pact = 1
 	},
 
 	pass() {
@@ -4802,10 +4802,11 @@ states.command = {
 
 function influence_capabilities(lord, score) {
 	let here = get_lord_locale(game.group)
-	if (game.active === YORK && is_event_in_play(EVENT_YORK_YORKIST_PARADE)) {
+	if (game.active === YORK && is_event_in_play(EVENT_YORK_YORKIST_PARADE))
 		score +=2
-	}
-	if (game.state === "parley" && lord_has_capability(game.group, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
+	if (game.active === YORK && is_event_in_play(EVENT_YORK_PRIVY_COUNCIL))
+		score +=1
+	if (game.state === "parley" && ((is_event_in_play(EVENT_YORK_RICHARD_OF_YORK) && game.active === YORK) || lord_has_capability(game.group, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING)))
 		score += 1
 	if (get_lord_locale(LORD_MARGARET) === here && lord_has_capability(game.group, AOW_LANCASTER_LOYAL_SOMERSET))
 		score += 1
@@ -4817,9 +4818,8 @@ function influence_capabilities(lord, score) {
 		is_friendly_locale(here)
 	)
 		score += 2
-	if (has_favoury_marker(here) && lord_has_capability(lord, AOW_YORK_FAIR_ARBITER)) {
+	if (has_favoury_marker(here) && lord_has_capability(lord, AOW_YORK_FAIR_ARBITER))
 		score += 1
-	}
 	if (lord_has_capability(AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
 		score += 2
 
@@ -4830,6 +4830,16 @@ function init_influence_check(lord) {
 	game.check = []
 	game.check.push({ cost: 1, modifier: 0, source: "base" })
 	game.check.push({ cost: 0, modifier: data.lords[lord].influence, source: "lord" })
+	if (game.active === LANCASTER 
+		&& is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
+		game.check.push({ cost: 1,  modifier: 0, source:"An Honest tale speeds best"})
+	}
+	if (game.active === LANCASTER
+		&& is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES)
+		&& game.flags.parliament_votes === 1) {
+		game.check.push({ cost: -1,  modifier: 0, source:"Parliament Votes"})
+	}
+
 }
 
 function end_influence_check() {
@@ -4844,7 +4854,12 @@ function count_influence_score() {
 		score = 5
 	if (score < 1)
 		score = 1
-
+	if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES))
+		score = 6
+	if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND) && game.state === "levy_muster_vassal")
+		score = 6
+	if (game.active === LANCASTER && game.flags.parliament_votes === 1 && game.state === "parley")
+		score = 6
 	return score
 }
 
@@ -4862,8 +4877,6 @@ function do_influence_check() {
 		success = true
 	else if (roll === 6)
 		success = false
-	else if ((is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND) || lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES)) && game.state === "levy_muster_vassal")
-		success = true
 	else
 		success = roll <= rating
 
@@ -4897,30 +4910,11 @@ function prompt_influence_check() {
 		gen_action_locale(game.where)
 	view.actions.check = 1
 
+
 	view.prompt += `Cost: ${count_influence_cost()} - Range (${range(count_influence_score())})`
 }
 
 // === ACTION: PARLEY ===
-
-// 1) During Levy / game.who -- Campaign / game.command
-// 2) During Levy / Can reach any locale that has a route of friendly locale (except the target stronghold)
-// Campaign / here and adjacent
-// The route can go through ports on same sea if the group has ships (note that there is one card that connect all port on all seas)
-// 3) Condition : Always parley at lord's locale if not friendly
-// 4) Not where any enemy lord, always at stronghold (not at sea or exile box)
-// 5) Not where it is already friendly
-// 6) Same port on same sea (port_1, port_2, port_3 on data.js)
-// 7) From exile, all port on same sea (exile_1 can target port_1, exile_2 can target port_2, exile_3 can target port_3)
-// 8) Cost : Levy / 1 always + 1 per way (by land or sea) -- Campaign / No cost here, 1 always + 1 due to the way
-// 9) In addition, player may chose to raise current influence rating (current influence rating = printed + caps that may change it)
-// by 1 or 2 by spending 1 or 3 IP
-// 10) Roll a die : <= current influence rating success, => failure. 1 always success, 6 always failure. always success at no cost if campaign here
-// 11) If success, remove enemy marker if currently enemy, add your marker if there is no marker.
-// 12) If success, move the Town or City or Fortress marker one step to succeeding side if the locale just parleyed was a Town / City / Fortress
-// 13) The current influence is put back to where it was before the expenditure
-// (he needs to pay again if he wants to improve his influence for a following parley action)
-
-// INFLUENCE CHECK = 8) and 9) and 10) Will happen a lot in the game, so a own function is best that will be modified depending on exceptions
 
 function can_parley_at(loc) {
 	return !is_exile(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc)
@@ -4979,6 +4973,9 @@ function search_parley(result, start) {
 
 function can_action_parley_command() {
 	if (game.actions <= 0)
+		return false
+
+	if (!is_first_action() && game.active === YORK && is_event_in_play(EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT))
 		return false
 
 	let here = get_lord_locale(game.command)
@@ -5047,6 +5044,9 @@ function goto_parley() {
 		if (game.parley.length === 2 && get_lord_locale(game.command) === game.parley[0]) {
 			log(`Parley.`)
 			shift_favour_toward(game.parley[0])
+			if (is_lancaster_card(game.command) && is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
+				reduce_lancaster_influence(1)
+			}
 			end_parley()
 			return
 		}
@@ -5066,7 +5066,11 @@ function end_parley() {
 	game.parley = NOTHING
 	end_influence_check()
 	if (is_campaign_phase()) {
-		spend_action(1)
+		if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT)) 
+			spend_all_actions()
+		else 
+			spend_action(1)
+
 		resume_command()
 	} else {
 		resume_levy_muster_lord()
@@ -5096,6 +5100,11 @@ states.parley = {
 		clear_undo()
 
 		let results = do_influence_check()
+		
+		if (game.flags.parliament_votes === 1) {
+			log(`Automatic Success. C${EVENT_LANCASTER_PARLIAMENT_VOTES}.`)
+			game.flags.parliament_votes = 0
+		}
 
 		log(`Attempt to Parley with %${game.where} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
@@ -5117,6 +5126,8 @@ function eligible_vassal(vassal) {
 	|| !is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))) {
 		return false
 	}
+	if (!is_favour_friendly(data.vassals[vassal].seat))
+		return false
 	if (game.active === LANCASTER && is_event_in_play(EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT) && !(is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT) && !is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND))){
 		return false
 	}
@@ -5158,7 +5169,11 @@ states.levy_muster_vassal = {
 
 		if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES)) {
 			log(`Automatic Success. C${AOW_LANCASTER_TWO_ROSES}.`)
-		} else {
+		} 
+		else if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND) && game.state === "levy_muster_vassal") {
+			log(`Automatic Success. C${EVENT_LANCASTER_THE_EARL_OF_RICHMOND}.`)
+		}
+		else {
 			log(`Attempt to levy V${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		}
 
@@ -6365,6 +6380,16 @@ function can_levy_burgundians(lord) {
 		add_lord_forces(lord, BURGUNDIANS, 2)
 		game.flags.burgundians = 1
 	}
+}
+
+// === EVENT ACTION : EXILE PACT === 
+
+function can_action_exile_pact() {
+	if (game.actions <= 0 || !is_event_in_play(EVENT_YORK_EXILE_PACT))
+		return false
+	else
+		return true
+
 }
 
 // === CAPABILITY : AGITATORS ===

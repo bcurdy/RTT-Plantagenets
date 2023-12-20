@@ -1626,6 +1626,7 @@ function on_update() {
 	action_button("tax", "Tax")
 	action_button("merchants", "Merchants")
 	action_button("agitators", "Agitators")
+	action_button("exile_pact", "Exile Pact")
 
 	// Muster & Spoils
 	action_button("take_prov", "Provender")
