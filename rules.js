@@ -541,9 +541,7 @@ const EVENT_YORK_LONDON_FOR_YORK = Y15
 const EVENT_YORK_THE_COMMONS = Y16	 // TODO
 // This Levy Same as other add X events. Never mandatory
 const EVENT_YORK_SHEWOLF_OF_FRANCE = Y17
-const EVENT_YORK_SUCCESSION = Y18 // TODO
-// This Levy 1 Parley action each levy for each Lancastrian lord cost 1 less
-// and automatic success (success = true)
+const EVENT_YORK_SUCCESSION = Y18
 const EVENT_YORK_CALTROPS = Y19 // TODO
 // Play in Battle after BATTLE ARRAY. Select a FRIENDLY LORD
 // for him to produce 2 more melee hits in his engagements (he may chose 1 on 2 different engagements)
@@ -563,15 +561,8 @@ const EVENT_YORK_DUBIOUS_CLARENCE = Y26 // TODO
 // If both Edward IV and Clarence on map (on map = not calendar) Yorkist may influence check
 // to disband clarence (usual disband rules)
 const EVENT_YORK_YORKIST_NORTH = Y27
-const EVENT_YORK_GLOUCESTER_AS_HEIR = Y28 // TODO
-// +3 Parley actions for Gloucester (still need to pay for them)
-// Note that this event is very important for the I-III scenario (will need to put a flag if that card has been played or not)
-const EVENT_YORK_DORSET = Y29 // TODO
-// This Campaign. Devon free successful parley at
-// Wells, Dorchester, Launceston, and Plymouth
-// If he/group has a ship, all stronghold adjacent to the English channel (data.way_port_2)
-// If he/group has ship and GREAT SHIPS CAPABILITY (Y6), all stronghold adjacent to all seats
-// (data.way_port_2, data.way_port_1, data.way_port_3)
+const EVENT_YORK_GLOUCESTER_AS_HEIR = Y28
+const EVENT_YORK_DORSET = Y29
 const EVENT_YORK_REGROUP = Y30 // TODO
 // Play in Battle at Battle Array step.
 // If played when Yorkist active they pay click on that event to make the lord recover his TROOPS (no vassals/retinue)
@@ -1874,13 +1865,15 @@ exports.setup = function (seed, scenario, options) {
 			first_action: 0,
 			first_march_highway: 0,
 			free_levy: 0,
-			free_parley:0,
+			free_parley_henry:0,
+			free_parley_gloucester:0,
 			burgundians:0,
 			charity:0,
 			bloody:0,
 			london_for_york:0,
 			surprise_landing:0,
-			parliament_votes:0
+			parliament_votes:0,
+			succession:0
 		},
 
 		command: NOBODY,
@@ -2231,9 +2224,9 @@ function goto_immediate_event(c) {
 		case EVENT_LANCASTER_PARLIAMENT_VOTES:
 			set_add(game.events, c)
 			return end_immediate_event()
-		/*case EVENT_LANCASTER_FRENCH_FLEET:
+		case EVENT_LANCASTER_FRENCH_FLEET:
 			set_add(game.events, c)
-			return end_immediate_event()*/
+			return end_immediate_event()
 		case EVENT_LANCASTER_BUCKINGHAMS_PLOT:
 			set_add(game.events, c)
 			return end_immediate_event()
@@ -2261,23 +2254,23 @@ function goto_immediate_event(c) {
 			return end_immediate_event()
 		/*case EVENT_YORK_THE_COMMONS:
 			set_add(game.events, c)
-			return end_immediate_event()
+			return end_immediate_event()*/
 		case EVENT_YORK_SUCCESSION:
 			set_add(game.events, c)
 			return end_immediate_event()
-		case EVENT_YORK_LOYALTY_AND_TRUST:
+		/*case EVENT_YORK_LOYALTY_AND_TRUST:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_YORK_OWAIN_GLYNDWR:
 			set_add(game.events, c)
-			return end_immediate_event()
+			return end_immediate_event()*/
 		case EVENT_YORK_GLOUCESTER_AS_HEIR:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_YORK_DORSET:
 			set_add(game.events, c)
 			return end_immediate_event()
-		case EVENT_YORK_THE_KINGS_NAME:
+		/*case EVENT_YORK_THE_KINGS_NAME:
 			set_add(game.events, c)
 			return end_immediate_event()
 		case EVENT_YORK_EDWARD_V:
@@ -3798,8 +3791,13 @@ function lordship_effects(lord) {
 		game.count += 1
 	if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
 		game.count += 1
+	if (is_event_in_play(EVENT_YORK_EDWARD_V) && (lord === LORD_GLOUCESTER_1 || lord ===LORD_GLOUCESTER_2))
+		game.count +=3
 	if (is_lancaster_lord(lord) && is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES)) {
 		game.flags.parliament_votes = 1
+	}
+	if (is_york_lord(lord) && is_event_in_play(EVENT_YORK_SUCCESSION)) {
+		game.flags.succession = 1
 	}
 }
 
@@ -3956,7 +3954,9 @@ function goto_levy_muster() {
 		if (lord_has_capability(lord, AOW_LANCASTER_THOMAS_STANLEY))
 			game.flags.free_levy = 1
 		if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART))
-			game.flags.free_parley = 2
+			game.flags.free_parley_henry = 2
+		if (is_event_in_play(EVENT_YORK_GLOUCESTER_AS_HEIR))
+			game.flags.free_parley_gloucester = 3
 	}
 	if (game.active === YORK)
 		log_h2("York Muster")
@@ -3978,7 +3978,10 @@ function end_levy_muster() {
 
 function can_lord_muster(lord) {
 	// already mustered (except free levy)!
-	if (get_lord_moved(lord) && (game.flags.free_levy !== 1 || lord !== LORD_HENRY_TUDOR) && (game.flags.free_parley === 0 || lord !== LORD_HENRY_VI))
+	if (get_lord_moved(lord) 
+	&& (game.flags.free_levy !== 1 || lord !== LORD_HENRY_TUDOR) 
+	&& (game.flags.free_parley_henry === 0 || lord !== LORD_HENRY_VI)
+	&& (game.flags.free_parley_gloucester === 0 || (lord !== LORD_GLOUCESTER_1 || lord !== LORD_GLOUCESTER_2)))
 		return false
 
 	// must be on map
@@ -4090,9 +4093,13 @@ states.levy_muster_lord = {
 			if (game.count === 0 && lord_has_capability(AOW_LANCASTER_THOMAS_STANLEY) && can_add_troops(game.who, here)) {
 				view.actions.levy_troops = 1
 			}
-			if (game.count === 0 && game.flags.free_parley > 0 && game.who === LORD_HENRY_VI) {
+			if (game.count === 0 && game.flags.free_parley_henry > 0 && game.who === LORD_HENRY_VI) {
 				view.actions.parley = 1
 			}
+			if (game.count === 0 && game.flags.free_parley_gloucester > 0 && (game.who === LORD_GLOUCESTER_2 || game.who === LORD_GLOUCESTER_1)) {
+				view.actions.parley = 1
+			}
+
 		} else {
 			// Can only Parley if locale is not friendly.
 			if (game.count > 0) {
@@ -4804,9 +4811,9 @@ states.command = {
 function influence_capabilities(lord, score) {
 	let here = get_lord_locale(game.group)
 	if (game.active === YORK && is_event_in_play(EVENT_YORK_YORKIST_PARADE))
-		score +=2
+		score += 2
 	if (game.active === YORK && is_event_in_play(EVENT_YORK_PRIVY_COUNCIL))
-		score +=1
+		score += 1
 	if (game.state === "parley" && ((is_event_in_play(EVENT_YORK_RICHARD_OF_YORK) && game.active === YORK) || lord_has_capability(game.group, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING)))
 		score += 1
 	if (get_lord_locale(LORD_MARGARET) === here && lord_has_capability(game.group, AOW_LANCASTER_LOYAL_SOMERSET))
@@ -4827,20 +4834,53 @@ function influence_capabilities(lord, score) {
 	return score
 }
 
+function automatic_success(lord, score) {	
+
+	if (lord_has_capability(lord, AOW_LANCASTER_TWO_ROSES))
+		score = 6
+	if (game.active === LANCASTER 
+		&& is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND) 
+		&& game.state === "levy_muster_vassal")
+		score = 6
+	if (game.active === LANCASTER 
+		&& game.flags.parliament_votes === 1 
+		&& game.state === "parley") 
+		score = 6
+	if (game.active === YORK 
+		&& game.flags.succession === 1 
+		&& game.state === "parley") 
+		score = 6
+	if (is_campaign_phase()
+		&& game.command === LORD_DEVON 
+		&& get_lord_locale(LORD_DEVON) === LOC_EXETER 
+		&& is_event_in_play(EVENT_YORK_DORSET) 
+		&& game.state === "parley") 
+		score = 6
+
+	return score
+}
+
 function init_influence_check(lord) {
 	game.check = []
 	game.check.push({ cost: 1, modifier: 0, source: "base" })
 	game.check.push({ cost: 0, modifier: data.lords[lord].influence, source: "lord" })
 	if (game.active === LANCASTER 
-		&& is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
+		&& is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)
+		&& game.state === "parley"){
 		game.check.push({ cost: 1,  modifier: 0, source:"An Honest tale speeds best"})
 	}
 	if (game.active === LANCASTER
 		&& is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES)
-		&& game.flags.parliament_votes === 1) {
+		&& game.flags.parliament_votes === 1
+		&& game.state === "parley") {
 		game.check.push({ cost: -1,  modifier: 0, source:"Parliament Votes"})
 	}
-
+	if (game.active === YORK
+		&& is_event_in_play(EVENT_YORK_SUCCESSION)
+		&& game.flags.succession === 1
+		&& game.state === "parley") {
+		game.check.push({ cost: -1,  modifier: 0, source:"Succession"})
+	}
 }
 
 function end_influence_check() {
@@ -4855,16 +4895,19 @@ function count_influence_score() {
 		score = 5
 	if (score < 1)
 		score = 1
-	if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES))
-		score = 6
-	if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND) && game.state === "levy_muster_vassal")
-		score = 6
-	if (game.active === LANCASTER && game.flags.parliament_votes === 1 && game.state === "parley")
-		score = 6
+
+	score = automatic_success(game.who, score)
 	return score
 }
 
 function count_influence_cost() {
+	if (is_campaign_phase()
+		&& game.command === LORD_DEVON 
+		&& get_lord_locale(LORD_DEVON) === LOC_EXETER 
+		&& is_event_in_play(EVENT_YORK_DORSET) 
+		&& game.state === "parley") {
+			return 0
+		}
 	return game.check.reduce((p, c) => p + c.cost, 0)
 }
 
@@ -5018,7 +5061,9 @@ function list_parley_command() {
 }
 
 function can_action_parley_levy() {
-	if (game.count <= 0 && (!game.who === LORD_HENRY_VI || game.flags.free_parley === 0))
+	if (game.count <= 0 
+		&& (!game.who === LORD_HENRY_VI || game.flags.free_parley_henry === 0)
+		&& ((!game.who === LORD_GLOUCESTER_1 && !game.who === LORD_GLOUCESTER_2) || game.flags.free_parley_gloucester === 0))
 		return false
 	let here = get_lord_locale(game.who)
 	if (can_parley_at(here))
@@ -5065,9 +5110,12 @@ function end_parley() {
 	pop_state()
 	game.where = NOWHERE
 	game.parley = NOTHING
-	if (game.flags.free_parley > 0 && game.who === LORD_HENRY_VI) { 
-		console.log("minus free parley")
-		--game.flags.free_parley
+	if (game.flags.free_parley_henry > 0 && game.who === LORD_HENRY_VI) { 
+		--game.flags.free_parley_henry
+		++game.count
+	}
+	if (game.flags.free_parley_gloucester > 0 && (game.who === LORD_GLOUCESTER_1 || game.who === LORD_GLOUCESTER_2)) { 
+		--game.flags.free_parley_gloucester
 		++game.count
 	}
 	end_influence_check()
@@ -5108,11 +5156,22 @@ states.parley = {
 		let results = do_influence_check()
 		
 		if (game.flags.parliament_votes === 1) {
-			log(`Automatic Success. C${EVENT_LANCASTER_PARLIAMENT_VOTES}.`)
+			log(`Parley at ${game.where}. Automatic Success. C${EVENT_LANCASTER_PARLIAMENT_VOTES}.`)
 			game.flags.parliament_votes = 0
 		}
-
-		log(`Attempt to Parley with %${game.where} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		if (game.flags.succession === 1) {
+			log(`Parley at ${game.where}. Automatic Success. C${EVENT_YORK_SUCCESSION}.`)
+			game.flags.succession = 0
+		}
+		else if (is_campaign_phase()
+		&& game.command === LORD_DEVON 
+		&& get_lord_locale(LORD_DEVON) === LOC_EXETER 
+		&& is_event_in_play(EVENT_YORK_DORSET) 
+		&& game.state === "parley") {
+			log(`Parley at ${data.locales[game.where].name}. Automatic Success. C${EVENT_YORK_DORSET}.`)
+		}
+		else 
+			log(`Attempt to Parley with %${game.where} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
 		if (results.success) {
 			shift_favour_toward(game.where)
