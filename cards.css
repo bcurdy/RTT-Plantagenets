@@ -75,6 +75,7 @@
 
 .aow[data-card="L23"] .capability .text { margin-right: 50px; }
 .aow[data-card="L32"] .capability .subtitle { margin-left: 50px; margin-right: 5px; }
+.aow[data-card="L35"] .capability .text { margin-left: 47px; margin-right: 43px; padding-right: 0;}
 
 .aow.c0 { background-image: url(cards.1x/aow_york_1.jpg) }
 .aow.c1 { background-image: url(cards.1x/aow_york_2.jpg) }
