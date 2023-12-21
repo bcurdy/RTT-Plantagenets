@@ -204,7 +204,7 @@ cards:[
 {"name":"Y5","event":"Suspicion","when":"hold","capability":"Thomas Bourchier","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
 {"name":"Y6","event":"Seamanship","when":"this_campaign","capability":"Great Ships","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
 {"name":"Y7","event":"Yorkists Block Parliament","when":"this_levy","capability":"Harbingers","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
-{"name":"Y8","event":"Exile Pact","when":"this_levy","capability":"England is my home","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
+{"name":"Y8","event":"Exile Pact","when":"this_campaign","capability":"England is my home","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
 {"name":"Y9","event":"Escape Ship","when":"hold","capability":"Barricades","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
 {"name":"Y10","event":"Tax Collectors","when":"now","capability":"Agitators","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
 {"name":"Y11","event":"Blocked Ford","when":"hold","capability":"Yorkists Never Wait","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},

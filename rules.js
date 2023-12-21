@@ -514,10 +514,7 @@ const EVENT_YORK_SUSPICION = Y5 // TODO
 // Success = disband enemy lord Failure no effect
 const EVENT_YORK_SEAMANSHIP = Y6
 const EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT = Y7
-const EVENT_YORK_EXILE_PACT = Y8 // TODO
-// Placing = Not considered a march or sail or exile action. Simply move it
-// to the scenario exile box without any other change.
-// Marshall/Lieutenant may not take group (because no sail or march)
+const EVENT_YORK_EXILE_PACT = Y8
 const EVENT_YORK_TAX_COLLECTORS = Y10
 const EVENT_YORK_BLOCKED_FORD = Y11 // TODO
 // Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
@@ -554,12 +551,8 @@ const EVENT_YORK_CHARLES_THE_BOLD = Y23
 const EVENT_YORK_SUN_IN_SPLENDOUR = Y24 // TODO
 // Hold event only available in Levy.
 // Muster Edward IV at Any friendly locale (no seat needed) with no enemy lord
-const EVENT_YORK_OWAIN_GLYNDWR = Y25 // TODO
-// Impossible for Lancastrians to select stronghold in Wales after clicking on Sail or
-// for any March action. (even for "free march" or other sail enabling events)
-const EVENT_YORK_DUBIOUS_CLARENCE = Y26 // TODO
-// If both Edward IV and Clarence on map (on map = not calendar) Yorkist may influence check
-// to disband clarence (usual disband rules)
+const EVENT_YORK_OWAIN_GLYNDWR = Y25
+const EVENT_YORK_DUBIOUS_CLARENCE = Y26
 const EVENT_YORK_YORKIST_NORTH = Y27
 const EVENT_YORK_GLOUCESTER_AS_HEIR = Y28
 const EVENT_YORK_DORSET = Y29
@@ -575,8 +568,7 @@ const EVENT_YORK_THE_KINGS_NAME = Y32 // TODO
 // The cancellation happens AFTER the result of the action is done.
 // The influence point expenditure from Levy other lord, vassals, troops is still done
 // But the Depletion from Levy Troops is undone
-const EVENT_YORK_EDWARD_V = Y33 // TODO
-// Hold event : +3 Lordship for Gloucester 1 or 2 (same as nevsky events)
+const EVENT_YORK_EDWARD_V = Y33 
 const EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST = Y34
 const EVENT_YORK_PRIVY_COUNCIL = Y35 
 const EVENT_YORK_SWIFT_MANEUVER = Y36 // TODO
@@ -2209,10 +2201,10 @@ function goto_immediate_event(c) {
 		case EVENT_LANCASTER_SEAMANSHIP:
 			set_add(game.events, c)
 			return end_immediate_event()
-		/*case EVENT_LANCASTER_FORCED_MARCHES:
+		case EVENT_LANCASTER_FORCED_MARCHES:
 			set_add(game.events, c)
 			return end_immediate_event()
-		case EVENT_LANCASTER_RISING_WAGES:
+		/*case EVENT_LANCASTER_RISING_WAGES:
 			set_add(game.events, c)
 			return end_immediate_event()*/
 		case EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT:
@@ -2246,9 +2238,9 @@ function goto_immediate_event(c) {
 		case EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT:
 			set_add(game.events, c)
 			return end_immediate_event()
-		/*case EVENT_YORK_EXILE_PACT:
+		case EVENT_YORK_EXILE_PACT:
 			set_add(game.events, c)
-			return end_immediate_event()*/
+			return end_immediate_event()
 		case EVENT_YORK_RICHARD_OF_YORK:
 			set_add(game.events, c)
 			return end_immediate_event()
@@ -2260,10 +2252,10 @@ function goto_immediate_event(c) {
 			return end_immediate_event()
 		/*case EVENT_YORK_LOYALTY_AND_TRUST:
 			set_add(game.events, c)
-			return end_immediate_event()
+			return end_immediate_event()*/
 		case EVENT_YORK_OWAIN_GLYNDWR:
 			set_add(game.events, c)
-			return end_immediate_event()*/
+			return end_immediate_event()
 		case EVENT_YORK_GLOUCESTER_AS_HEIR:
 			set_add(game.events, c)
 			return end_immediate_event()
@@ -2272,10 +2264,10 @@ function goto_immediate_event(c) {
 			return end_immediate_event()
 		/*case EVENT_YORK_THE_KINGS_NAME:
 			set_add(game.events, c)
-			return end_immediate_event()
+			return end_immediate_event()*/
 		case EVENT_YORK_EDWARD_V:
 			set_add(game.events, c)
-			return end_immediate_event()*/
+			return end_immediate_event()
 		case EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST:
 			set_add(game.events, c)
 			return end_immediate_event()
@@ -2321,6 +2313,8 @@ function goto_immediate_event(c) {
 			return goto_york_event_sir_richard_leigh()
 		case EVENT_YORK_CHARLES_THE_BOLD:
 			return goto_york_event_charles_the_bold()
+		case EVENT_YORK_DUBIOUS_CLARENCE:
+			return goto_dubious_clarence()
 		case EVENT_YORK_YORKIST_NORTH:
 			return goto_york_event_yorkist_north()
 		case EVENT_YORK_EARL_RIVERS:
@@ -2337,7 +2331,6 @@ function end_immediate_event() {
 }
 
 // === EVENTS: UNIQUE IMMEDIATE EVENTS ===
-
 
 
 // === EVENTS: LANCASTER SCOTS EVENT ===
@@ -3363,6 +3356,47 @@ function goto_york_event_charles_the_bold() {
 	}
 	end_immediate_event()
 }
+
+// === EVENTS: DUBIOUS CLARENCE === 
+
+function goto_dubious_clarence() {
+	let can_play = false
+	if ((is_lord_on_map(LORD_EDWARD_IV) && !is_lord_on_calendar(LORD_EDWARD_IV)) 
+	&& is_lord_on_map(LORD_CLARENCE) && !is_lord_on_calendar(LORD_CLARENCE))		
+		can_play = true
+
+	if (can_play) {
+		game.state = "dubious_clarence"
+		game.who = LORD_EDWARD_IV
+		init_influence_check(LORD_EDWARD_IV)
+	} else {
+		logi(`No Effect`)
+		end_immediate_event()
+	}
+}
+
+states.dubious_clarence = {
+	inactive: "Dubious Clarence",
+	prompt() {
+		view.prompt = `You may Influence check with Edward to disband Clarence `
+		prompt_influence_check()
+	},
+	spend1: add_influence_check_modifier_1,
+	spend3: add_influence_check_modifier_2,
+	check() {
+		let results = do_influence_check()
+		log(`Attempt to disband Clarence ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+
+		if (results.success) {	
+			disband_lord(LORD_CLARENCE, false)
+			end_immediate_event()
+		} else {
+			end_immediate_event()
+		}
+	},
+}
+
+
 
 // === EVENTS: YORKIST NORTH ===
 function goto_york_event_yorkist_north() {
@@ -4789,6 +4823,7 @@ states.command = {
 	heralds: goto_heralds,
 	merchants: goto_merchants,
 	agitators: goto_agitators,
+	exile_pact: goto_exile_pact,
 
 	locale: goto_march,
 
@@ -5267,28 +5302,41 @@ function format_group_move() {
 	return ""
 }
 
+function is_wales_forbidden(loc) {
+	if (game.active === LANCASTER && is_event_in_play(EVENT_YORK_OWAIN_GLYNDWR) && data.locales[loc].region === "Wales") 
+		return true
+	return false
+}
+
 function prompt_march() {
 	let from = get_lord_locale(game.command)
 
 	if (is_first_action()) {
 		for (let to of data.locales[from].paths) {
-			gen_action_locale(to)
+			if (!is_wales_forbidden(to)) {
+				gen_action_locale(to)
+			}
 		}
 	}
-
 	if (game.actions > 0) {
 		for (let to of data.locales[from].roads) {
-			gen_action_locale(to)
+			if (!is_wales_forbidden(to)) {
+				gen_action_locale(to)
+			}
+
 		}
 		for (let to of data.locales[from].highways) {
-			gen_action_locale(to)
+			if (!is_wales_forbidden(to)) {
+				gen_action_locale(to)
+			}		
 		}
 	} else if (game.actions === 0 && is_first_march_highway()) {
 		for (let to of data.locales[from].highways) {
-			gen_action_locale(to)
+			if (!is_wales_forbidden(to)) {
+				gen_action_locale(to)
+			}		
 		}
 	}
-
 	if (
 		(lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT) || (is_event_in_play(EVENT_LANCASTER_FORCED_MARCHES) && game.active === LANCASTER)) &&
 		game.actions === 0 &&
@@ -5296,7 +5344,9 @@ function prompt_march() {
 		count_group_lords() === 1
 	) {
 		for (let to of data.locales[from].roads) {
-			gen_action_locale(to)
+			if (!is_wales_forbidden(to)) {
+				gen_action_locale(to)
+			}		
 		}
 	}
 }
@@ -5409,14 +5459,16 @@ function goto_intercept() {
 	let here = get_lord_locale(game.command)
 	for (let next of data.locales[here].not_paths) {
 		if (has_enemy_lord(next)) {
-			game.state = "intercept"
-			set_active_enemy()
-			game.intercept_group = []
-			game.who = NOBODY
-			return
+			if (is_wales_forbidden(next)) {
+				clear_undo()
+				game.state = "intercept"
+				set_active_enemy()
+				game.intercept_group = []
+				game.who = NOBODY
+				return
+			}
 		}
 	}
-
 	goto_exiles()
 }
 
@@ -6208,8 +6260,11 @@ function can_action_sail() {
 	// and a valid destination
 	for (let to of find_sail_locales(here)) {
 		if (to !== here)
-			if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
-				return true
+			if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL)) {
+				if (!is_wales_forbidden(to)) {
+					return true
+				}
+			}
 	}
 	return false
 }
@@ -6244,9 +6299,12 @@ states.sail = {
 			view.prompt = `Sail: Select a destination Port.`
 			for (let to of find_sail_locales(here)) {
 				if (to !== here)
-					if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
-						gen_action_locale(to)
-			}
+					if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL)) {
+						if (!is_wales_forbidden(to)) {
+							gen_action_locale(to)
+						}			
+					}
+				}
 		} else if (overflow_cart > 0) {
 			view.prompt = `Sailing with ${ships} Ships. Please discard ${overflow_cart} Cart`
 			if (cart > 0) {
@@ -6338,6 +6396,7 @@ states.tow_extra_ip = {
 	},
 	done() {
 		increase_york_influence(game.flags.charity)
+		logi("We done deeds of Charity")
 		log("York paid " + game.flags.charity + " provender to add " + game.flags.charity + " Influence Points")
 		game.flags.charity = 0
 		goto_disembark()
@@ -6454,7 +6513,34 @@ function can_action_exile_pact() {
 		return false
 	else
 		return true
+}
 
+function goto_exile_pact() {
+	push_undo()
+	game.state = "exile_pact"
+}
+
+states.exile_pact = {
+	inactive: "Exile pact",
+	prompt() {
+		view.prompt = "Exile Pact : place your cylinder in one of your Exile boxes"
+			for (let loc of data.exile_boxes) {
+				if (has_favour_in_locale(game.active, loc))
+				gen_action_locale(loc)
+}
+	},
+	locale(loc) {
+		push_undo()
+		set_lord_locale(game.command, loc)
+		end_exile_pact()
+	}
+}
+
+
+function end_exile_pact() {
+	spend_action(1)
+	push_undo()
+	resume_command()
 }
 
 // === CAPABILITY : AGITATORS ===
