@@ -501,11 +501,7 @@ const EVENT_YORK_FLANK_ATTACK = Y2 // TODO
 // Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
 const EVENT_YORK_ESCAPE_SHIP = [ Y3, Y9 ] // TODO
 // Hold event. Play during the game state death_or_disband if battle locale is friendly and has a route of friendly locales (like supply) to a friendly port
-const EVENT_YORK_JACK_CADE = Y4 // TODO
-// Each yorkist lord adjacent to dominated areas (inside tides_calc - you can probably add function about
-// directly checking if a region is dominated rather than checking individual cases.
-// The bottom line  is that capability affects the Domination status
-// ( adds 2 free successful parleys (no influence cost exceot if EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST active)
+const EVENT_YORK_JACK_CADE = Y4
 const EVENT_YORK_SUSPICION = Y5 // TODO
 // Hold Event. Play at start of Battle AFTER ARRAY. Chose one friendly lord.
 // then choose enemy lord with Lower MODIFIED influence rating
@@ -535,8 +531,7 @@ const EVENT_YORK_ASPIELLES = Y13 // TODO
 // select one of enemy's Lord mats to show it to you. Perhaps write those in the log ?
 const EVENT_YORK_RICHARD_OF_YORK = Y14 
 const EVENT_YORK_LONDON_FOR_YORK = Y15
-const EVENT_YORK_THE_COMMONS = Y16	 // TODO
-// This Levy Same as other add X events. Never mandatory
+const EVENT_YORK_THE_COMMONS = Y16
 const EVENT_YORK_SHEWOLF_OF_FRANCE = Y17
 const EVENT_YORK_SUCCESSION = Y18
 const EVENT_YORK_CALTROPS = Y19 // TODO
@@ -1865,7 +1860,9 @@ exports.setup = function (seed, scenario, options) {
 			london_for_york:0,
 			surprise_landing:0,
 			parliament_votes:0,
-			succession:0
+			succession:0,
+			jack_cade:0,
+			commons_militia:0
 		},
 
 		command: NOBODY,
@@ -2162,10 +2159,10 @@ function is_event_in_play(c) {
 
 function is_leeward_battle_line_in_play() {
 	if (is_archery_step()) {
-		if (game.active === LANCASTER)
-			return is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
-		if (game.active === YORK)
+		if (game.active === LANCASTER && !is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE))
 			return is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE)
+		if (game.active === YORK && !is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE))
+			return is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
 	}
 	return false
 }
@@ -2190,6 +2187,98 @@ function is_regroup_in_play() {
 function is_swift_maneuver_in_play() {
 	if (game.active === YORK)
 		return is_event_in_play(EVENT_YORK_SWIFT_MANEUVER)		
+}
+
+function is_york_dominating_north() {
+	let dom = 0
+	for (let loc of data.locales) {
+		if (loc.region === "North") {
+			if (has_favoury_marker(loc)) {
+				dom++
+			}
+		}
+	}
+	if (dom > 5) 
+		return true
+
+	return false
+}
+
+function is_york_dominating_south() {
+	let dom = 0
+	for (let loc of data.locales) {
+		if (loc.region === "South") {
+			if (has_favoury_marker(loc)) {
+				dom++
+			}
+		}
+	}
+	if (dom > 9) 
+		return true
+	if (dom > 4 
+		&& (lord_has_capability(LORD_MARCH, AOW_YORK_SOUTHERNERS) 
+		|| lord_has_capability(LORD_RUTLAND, AOW_YORK_SOUTHERNERS) 
+		|| lord_has_capability(LORD_YORK, AOW_YORK_SOUTHERNERS)))
+		return true
+
+	return false
+}
+
+function is_york_dominating_wales() {
+	let dom = 0
+	for (let loc of data.locales) {
+		if (loc.region === "Wales") {
+			if (has_favoury_marker(loc)) {
+				dom++
+			}
+		}
+	}
+	if (dom > 5) 
+		return true
+	if (dom > 2 
+		&& (lord_has_capability(LORD_MARCH, AOW_YORK_WELSHMEN) 
+		|| lord_has_capability(LORD_YORK, AOW_YORK_WELSHMEN)))
+		return true
+
+	return false
+}
+
+function is_adjacent_to_north(lord) {
+	for (let loc of data.locales[get_lord_locale(lord)].adjacent) {
+		if (data.locales[loc].region === "North") {
+			return true
+		}
+	}
+	return false
+}
+
+function is_adjacent_to_south(lord) {
+	for (let loc of data.locales[get_lord_locale(lord)].adjacent) {
+		if (data.locales[loc].region === "South") {
+			return true
+		}
+	}
+	return false
+}
+function is_adjacent_to_wales(lord) {
+	for (let loc of data.locales[get_lord_locale(lord)].adjacent) {
+		if (data.locales[loc].region === "Wales") {
+			return true
+		}
+	}
+	return false
+}
+
+function is_jack_cade_eligible(lord) {
+	if (!is_event_in_play(EVENT_YORK_JACK_CADE))
+		return false
+	if (is_york_dominating_south() && (is_adjacent_to_south(lord) || is_lord_in_south(lord)))
+		return true
+	if (is_york_dominating_north() && (is_adjacent_to_north(lord) || is_lord_in_north(lord))) 
+		return true
+	if (is_york_dominating_wales() && (is_adjacent_to_wales(lord) || is_lord_in_wales(lord)))
+		return true	
+	return false
 }
 
 function goto_immediate_event(c) {
@@ -2229,9 +2318,9 @@ function goto_immediate_event(c) {
 			set_add(game.events, c)
 			return end_immediate_event()
 
-		/*case EVENT_YORK_JACK_CADE:
+		case EVENT_YORK_JACK_CADE:
 			set_add(game.events, c)
-			return end_immediate_event()*/
+			return end_immediate_event()
 		case EVENT_YORK_SEAMANSHIP:
 			set_add(game.events, c)
 			return end_immediate_event()
@@ -2244,9 +2333,9 @@ function goto_immediate_event(c) {
 		case EVENT_YORK_RICHARD_OF_YORK:
 			set_add(game.events, c)
 			return end_immediate_event()
-		/*case EVENT_YORK_THE_COMMONS:
+		case EVENT_YORK_THE_COMMONS:
 			set_add(game.events, c)
-			return end_immediate_event()*/
+			return end_immediate_event()
 		case EVENT_YORK_SUCCESSION:
 			set_add(game.events, c)
 			return end_immediate_event()
@@ -3830,6 +3919,9 @@ function lordship_effects(lord) {
 	if (is_lancaster_lord(lord) && is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES)) {
 		game.flags.parliament_votes = 1
 	}
+	if (is_york_lord(lord) && is_jack_cade_eligible(lord)) {
+		game.flags.jack_cade = 2
+	}	
 	if (is_york_lord(lord) && is_event_in_play(EVENT_YORK_SUCCESSION)) {
 		game.flags.succession = 1
 	}
@@ -4010,6 +4102,10 @@ function end_levy_muster() {
 		goto_levy_discard_events()
 }
 
+function reset_flags() {
+	game.flags.jack_cade = 0
+}
+
 function can_lord_muster(lord) {
 	// already mustered (except free levy)!
 	if (get_lord_moved(lord) 
@@ -4036,7 +4132,6 @@ states.levy_muster = {
 		view.prompt = "Levy: Muster with your Lords."
 
 		prompt_held_event()
-
 		let done = true
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 			if (can_lord_muster(lord)) {
@@ -4055,6 +4150,7 @@ states.levy_muster = {
 		push_state("levy_muster_lord")
 		game.who = lord
 		game.count = data.lords[lord].lordship
+		reset_flags()	
 		lordship_effects(lord)
 	},
 	end_muster() {
@@ -4066,7 +4162,7 @@ states.levy_muster = {
 
 function resume_levy_muster_lord() {
 	--game.count
-	if (game.count === 0 && game.flags.free_levy === 0 && can_add_troops(game.who, get_lord_locale(game.who))) {
+	if (game.count === 0 && game.flags.jack_cade === 0 && game.flags.free_levy === 0 && can_add_troops(game.who, get_lord_locale(game.who))) {
 		set_lord_moved(game.who, 1)
 		pop_state()
 	}
@@ -4131,6 +4227,9 @@ states.levy_muster_lord = {
 				view.actions.parley = 1
 			}
 			if (game.count === 0 && game.flags.free_parley_gloucester > 0 && (game.who === LORD_GLOUCESTER_2 || game.who === LORD_GLOUCESTER_1)) {
+				view.actions.parley = 1
+			}
+			if (game.count === 0 && game.flags.jack_cade > 0) {
 				view.actions.parley = 1
 			}
 
@@ -4208,6 +4307,11 @@ states.levy_muster_lord = {
 			++game.count
 			game.flags.free_levy = 0
 		}
+		if (is_event_in_play(EVENT_YORK_THE_COMMONS)) {
+			push_undo()
+			game.flags.commons_militia = 2
+			game.state = "the_commons"
+		}
 
 		resume_levy_muster_lord()
 	},
@@ -4253,6 +4357,27 @@ function chamberlains_eligible_levy(locale) {
 	lord_has_capability(game.who, AOW_LANCASTER_CHAMBERLAINS)) {
 		if (locale === data.vassals[vassal].seat)
 			return true
+	}
+}
+
+
+states.the_commons = {
+	inactive: "The Commons",
+	prompt() {
+		view.prompt = `Add up to ${game.flags.commons_militia} Militias.`
+		if (game.flags.commons_militia > 0) {
+			gen_action("add_militia")
+		}
+
+		view.actions.done = 1
+	},
+	add_militia() {
+		push_undo()
+		add_lord_forces(game.who, MILITIA, 1)
+		--game.flags.commons_militia
+	},
+	done() {
+		resume_levy_muster_lord()
 	}
 }
 
@@ -4332,6 +4457,7 @@ function end_soldiers_of_fortune() {
 		pop_state()
 		resume_levy_muster_lord()
 }
+
 states.muster_lord_at_seat = {
 	inactive: "Muster",
 	prompt() {
@@ -4882,6 +5008,10 @@ function automatic_success(lord, score) {
 		&& game.state === "parley") 
 		score = 6
 	if (game.active === YORK 
+		&& game.flags.jack_cade > 0 
+		&& game.state === "parley") 
+		score = 6
+	if (game.active === YORK 
 		&& game.flags.succession === 1 
 		&& game.state === "parley") 
 		score = 6
@@ -4941,6 +5071,10 @@ function count_influence_cost() {
 		&& get_lord_locale(LORD_DEVON) === LOC_EXETER 
 		&& is_event_in_play(EVENT_YORK_DORSET) 
 		&& game.state === "parley") {
+			return 0
+		}
+		if (is_levy_phase()
+		&& game.flags.jack_cade > 0) {
 			return 0
 		}
 	return game.check.reduce((p, c) => p + c.cost, 0)
@@ -5098,8 +5232,9 @@ function list_parley_command() {
 function can_action_parley_levy() {
 	if (game.count <= 0 
 		&& (!game.who === LORD_HENRY_VI || game.flags.free_parley_henry === 0)
-		&& ((!game.who === LORD_GLOUCESTER_1 && !game.who === LORD_GLOUCESTER_2) || game.flags.free_parley_gloucester === 0))
-		return false
+		&& ((!game.who === LORD_GLOUCESTER_1 && !game.who === LORD_GLOUCESTER_2) || game.flags.free_parley_gloucester === 0)
+		&& (!game.flags.jack_cade))
+		return true
 	let here = get_lord_locale(game.who)
 	if (can_parley_at(here))
 		return true
@@ -5153,6 +5288,10 @@ function end_parley() {
 		--game.flags.free_parley_gloucester
 		++game.count
 	}
+	if (game.flags.jack_cade > 0) {
+		--game.flags.jack_cade
+		++game.count		
+	}
 	end_influence_check()
 	if (is_campaign_phase()) {
 		if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT)) 
@@ -5191,11 +5330,14 @@ states.parley = {
 		let results = do_influence_check()
 		
 		if (game.flags.parliament_votes === 1) {
-			log(`Parley at ${game.where}. Automatic Success. C${EVENT_LANCASTER_PARLIAMENT_VOTES}.`)
+			log(`Parley at ${data.locales[game.where].name}. Automatic Success. C${EVENT_LANCASTER_PARLIAMENT_VOTES}.`)
 			game.flags.parliament_votes = 0
 		}
-		if (game.flags.succession === 1) {
-			log(`Parley at ${game.where}. Automatic Success. C${EVENT_YORK_SUCCESSION}.`)
+		else if (game.flags.jack_cade > 0) {
+			log(`Parley at ${data.locales[game.where].name}. Automatic Success. C${EVENT_YORK_JACK_CADE}.`)
+		}
+		else if (game.flags.succession === 1) {
+			log(`Parley at ${data.locales[game.where].name}. Automatic Success. C${EVENT_YORK_SUCCESSION}.`)
 			game.flags.succession = 0
 		}
 		else if (is_campaign_phase()
@@ -6379,10 +6521,16 @@ states.tow_extra_ip = {
 	inactive: "We done needs of charity",
 	prompt() {
 		let done = true
+		let loc = 0
 		view.prompt = "We done deeds of charity, spend one or two Provender to add one or two influence points"
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+			if (lord_has_capability(lord, AOW_YORK_WE_DONE_DEEDS_OF_CHARITY)) {
+				loc = get_lord_locale(lord)
+			}
+		}
+		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 			let here = get_lord_locale(lord)
-			if (game.flags.charity < 2 && get_lord_locale(lord) === here && (get_lord_assets(lord, PROV) > 0)) {
+			if (game.flags.charity < 2 && get_lord_locale(lord) === loc && (get_lord_assets(lord, PROV) > 0)) {
 					gen_action_prov(lord)
 			}
 		}
@@ -7083,7 +7231,7 @@ function can_play_battle_events() {
 
 function prompt_battle_events() {
 	// both attacker and defender events
-	/*	if (game.active === LANCASTER) {
+		if (game.active === LANCASTER) {
 			gen_action_card_if_held(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
 			gen_action_card_if_held(EVENT_LANCASTER_SUSPICION)
 			gen_action_card_if_held(EVENT_LANCASTER_FOR_TRUST_NOT_HIM)
@@ -7097,7 +7245,7 @@ function prompt_battle_events() {
 			gen_action_card_if_held(EVENT_YORK_REGROUP)
 			gen_action_card_if_held(EVENT_YORK_SWIFT_MANEUVER)
 			gen_action_card_if_held(EVENT_YORK_PATRICK_DE_LA_MOTE)
-		}	*/
+		}
 		view.actions.done = 1
 }
 
@@ -7149,7 +7297,7 @@ function action_battle_events(c) {
 		set_delete(current_hand(), c)
 		set_add(game.events, c)
 		switch (c) {
-		/*	case EVENT_LANCASTER_LEEWARD_BATTLE_LINE:
+			case EVENT_LANCASTER_LEEWARD_BATTLE_LINE:
 			case EVENT_LANCASTER_SUSPICION:
 				game.state = "suspicion"
 			case EVENT_LANCASTER_FOR_TRUST_NOT_HIM:
@@ -7157,10 +7305,11 @@ function action_battle_events(c) {
 			case EVENT_LANCASTER_RAVINE:
 				game.state = "ravine"
 			case EVENT_YORK_LEEWARD_BATTLE_LINE:
+			case EVENT_YORK_SUSPICION:
 				game.state = "suspicion"
 			case EVENT_YORK_CALTROPS:
 			case EVENT_YORK_REGROUP:
-			case EVENT_YORK_SWIFT_MANEUVER:*/
+			case EVENT_YORK_SWIFT_MANEUVER:
 		}
 }
 
@@ -7409,6 +7558,8 @@ function count_archery_hits(lord) {
 	hits += get_lord_forces(lord, BURGUNDIANS) << 2
 	hits += get_lord_forces(lord, MILITIA)
 	hits += get_lord_forces(lord, MERCENARIES)
+	if (is_leeward_battle_line_in_play())
+		hits = hits/2
 
 	return hits
 }
@@ -8708,7 +8859,7 @@ states.pay_lords = {
 		view.prompt = "Pay Lords in Influence or Disband them."
 		prompt_held_event()
 		let done = true
-
+		game.count = 0
 		if (game.who === NOBODY) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
 				if (is_lord_on_map(lord) && is_lord_unfed(lord)) {
@@ -8716,15 +8867,15 @@ states.pay_lords = {
 					done = false
 				}
 			}
-
 			if (done) {
 				view.actions.done = 1
 			}
+			if (!done)
+				view.actions.pay_all = 1
 		} else {
 			view.actions.disband = 1
 			view.actions.pay = 1
-		}
-	},
+		}	},
 	lord(lord) {
 		game.who = lord
 	},
@@ -8738,6 +8889,21 @@ states.pay_lords = {
 		reduce_influence(is_exile(get_lord_locale(game.who)) ? 2 : 1)
 		set_lord_moved(game.who, 0)
 		game.who = NOBODY
+	},
+	pay_all() {
+		push_undo()
+		for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
+			if (is_lord_on_map(lord) && is_lord_unfed(lord)) {
+				++game.count	
+				set_lord_moved(lord, 0)
+				if (is_exile(get_lord_locale(lord))) {
+					++game.count
+				}
+			}
+		}
+		reduce_influence(game.count)
+		game.who = NOBODY
+
 	},
 	done() {
 		end_pay_lords()
@@ -8793,12 +8959,15 @@ states.pay_vassals = {
 			if (done) {
 				view.actions.done = 1
 			}
+			if (!done)
+				view.actions.pay_all = 1
 		} else {
 			view.actions.pay = 1
 			view.actions.disband = 1
 		}
 	},
 	vassal(v) {
+		push_undo()
 		game.what = v
 	},
 	pay() {
@@ -8806,6 +8975,17 @@ states.pay_vassals = {
 		pay_vassal(game.what)
 		reduce_influence(1)
 		game.what = NOBODY
+	},
+	pay_all() {
+		push_undo()
+		for (let v = first_vassal; v <= last_vassal; v++) {
+			if (is_vassal_mustered_with_friendly_lord(v) 
+			&& get_vassal_service(v) === current_turn()) {
+				pay_vassal(v)
+				reduce_influence(1)
+				game.what = NOBODY
+		}
+		}
 	},
 	disband() {
 		push_undo()
@@ -9293,6 +9473,20 @@ states.reset = {
 	inactive: "Reset",
 	prompt() {
 		view.prompt = "Reset: You may discard any held Arts of War cards desired."
+		if (game.active === YORK) {
+			for (let c = first_york_card; c <= last_york_card; ++c) {
+				if (set_has(game.hand_y, c)) {
+					gen_action_card(c)
+				}
+			}
+		}
+		if (game.active === LANCASTER) {
+			for (let c = first_lancaster_card; c <= last_lancaster_card; ++c) {
+				if (set_has(game.hand_l, c)) {
+					gen_action_card(c)
+				}
+			}
+		}
 		view.actions.end_discard = 1
 	},
 	card(c) {
@@ -9478,18 +9672,18 @@ function tides_calc() {
 	// WALES
 
 	if (domwl === 5) {
-		log(`South Domination 2 Influence for Lancaster`)
+		log(`Wales Domination 2 Influence for Lancaster`)
 		doml += 2
 	}
 
 	if (domwy === 5) {
-		log(`South Domination 2 Influence for York`)
+		log(`Wales Domination 2 Influence for York`)
 		domy += 2
 	} else if (
 		domwy >= 3 &&
 		(lord_has_capability(LORD_MARCH, AOW_YORK_WELSHMEN) || lord_has_capability(LORD_YORK, AOW_YORK_WELSHMEN))
 	) {
-		log(`South Domination 2 Influence for York`)
+		log(`Wales Domination 2 Influence for York`)
 		domy += 2
 	}
 

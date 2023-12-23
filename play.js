@@ -1656,6 +1656,7 @@ function on_update() {
 	action_button("port", "Port")
 
 	// Pay or Disband
+	action_button("pay_all", "Pay All")
 	action_button("pay", "Pay")
 	action_button("disband", "Disband")
 	action_button("pillage", "Pillage")
