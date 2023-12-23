@@ -19,10 +19,17 @@
 
 .aow .number {
 	display: none;
-	font: 8px / 8px "B612";
+	font: 8px "B612";
 	position: absolute;
-	right: 12px;
+	width: 16px;
+	text-align: center;
+	right: 9px;
 	bottom: 12px;
+	color: #000a;
+}
+
+body.shift .aow .number {
+	display: block;
 }
 
 .aow.lancaster .event .text { background-color: #eff1db80 }
