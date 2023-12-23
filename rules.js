@@ -10069,19 +10069,6 @@ states.game_over = {
 	},
 }
 
-exports.resign = function (state, current) {
-	load_state(state)
-	if (game.state !== "game_over") {
-		for (let opponent of exports.roles) {
-			if (opponent !== current) {
-				goto_game_over(opponent, current + " resigned.")
-				break
-			}
-		}
-	}
-	return game
-}
-
 // === UNCOMMON TEMPLATE ===
 
 function log_br() {
@@ -10362,10 +10349,6 @@ exports.action = function (state, current, action, arg) {
 			throw new Error("Invalid action: " + action)
 	}
 	return game
-}
-
-exports.is_checkpoint = function (a, b) {
-	return a.turn !== b.turn
 }
 
 // === COMMON TEMPLATE ===
