@@ -353,7 +353,8 @@ const AOW_LANCASTER_CULVERINS_AND_FALCONETS = [ L1, L2 ] // TODO
 const AOW_LANCASTER_MUSTERD_MY_SOLDIERS = L3
 const AOW_LANCASTER_HERALDS = L4
 const AOW_LANCASTER_CHURCH_BLESSINGS = L5
-const AOW_LANCASTER_GREAT_SHIPS = L6
+const AOW_LANCASTER_GREAT_SHIPS = L6 // TODO Resolve bug about not correctly 
+// targeting ports on other seats and further
 const AOW_LANCASTER_HARBINGERS = L7
 const AOW_LANCASTER_HAY_WAINS = L8
 const AOW_LANCASTER_QUARTERMASTERS = L9
@@ -422,8 +423,7 @@ const AOW_YORK_KINGDOM_UNITED = Y35
 const AOW_YORK_VANGUARD = Y36 // TODO AFTER ALL OTHER BATTLE PROMPTS TO SEE WHERE TO PLACE IT
 const AOW_YORK_PERCYS_NORTH2 = Y37
 
-const EVENT_LANCASTER_LEEWARD_BATTLE_LINE = L1 // TODO
-// Hold event. Play at start of battle AFTER ARRAY halve all units in the is_archery() unless enemy also play that event
+const EVENT_LANCASTER_LEEWARD_BATTLE_LINE = L1
 const EVENT_LANCASTER_FLANK_ATTACK = L2 // TODO
 // Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
 const EVENT_LANCASTER_ESCAPE_SHIP = L3 // TODO
@@ -495,11 +495,10 @@ const EVENT_LANCASTER_TALBOT_TO_THE_RESCUE = L36 // TODO
 // Play at Death and Disband state. Highlight to disband rather than rolling for death.
 const EVENT_LANCASTER_THE_EARL_OF_RICHMOND = L37
 
-const EVENT_YORK_LEEWARD_BATTLE_LINE = Y1 // TODO
-// Hold event. Play at start of battle AFTER ARRAY halve all units in the is_archery() unless enemy also play that event
+const EVENT_YORK_LEEWARD_BATTLE_LINE = Y1
 const EVENT_YORK_FLANK_ATTACK = Y2 // TODO
 // Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
-const EVENT_YORK_ESCAPE_SHIP = [ Y3, Y9 ] // TODO
+const EVENT_YORK_ESCAPE_SHIP = Y3// TODO
 // Hold event. Play during the game state death_or_disband if battle locale is friendly and has a route of friendly locales (like supply) to a friendly port
 const EVENT_YORK_JACK_CADE = Y4
 const EVENT_YORK_SUSPICION = Y5 // TODO
@@ -574,6 +573,8 @@ const EVENT_YORK_PATRICK_DE_LA_MOTE = Y37 // TODO
 // Y1/Y2 2 dices rather than 1
 
 // Check all push/clear_undo
+// TODO : Check BUG done visible in Death of Disband despite being false
+
 
 const NOBODY = -1
 const NOWHERE = -1
@@ -975,8 +976,6 @@ function pay_lord(lord) {
 	// reuse "moved" flag for hunger
 	let n = get_lord_moved(lord) - 1
 	set_lord_moved(lord, n)
-	if (n === 0)
-		log(`Pay L${lord}.`)
 }
 
 function get_lord_array_position(lord) {
@@ -1309,10 +1308,6 @@ function is_lancaster_lord(lord) {
 	return lord >= first_lancaster_lord && lord <= last_lancaster_lord
 }
 
-function is_york_lord(lord) {
-	return lord >= first_york_lord && lord <= last_york_lord
-}
-
 function is_friendly_lord(lord) {
 	return lord >= first_friendly_lord && lord <= last_friendly_lord
 }
@@ -1366,14 +1361,6 @@ function is_adjacent_friendly_port_english_channel(loc) {
 	}
 }
 
-/*
-function has_besieged_friendly_lord(loc) {
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		if (get_lord_locale(lord) === loc && is_lord_besieged(lord))
-			return true
-	return false
-}*/
-
 function has_enemy_lord(loc) {
 	for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord)
 		if (get_lord_locale(lord) === loc)
@@ -1388,31 +1375,12 @@ function has_unbesieged_enemy_lord(loc) {
 	return false
 }
 
-/*function has_unbesieged_friendly_lord(loc) {
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-		if (get_lord_locale(lord) === loc && is_lord_unbesieged(lord))
-			return true
-	return false
-}
-*/
 function is_york_locale(loc) {
 	return loc >= first_york_locale && loc <= last_york_locale
 }
 
 function is_lancaster_locale(loc) {
 	return loc >= first_lancaster_locale && loc <= last_lancaster_locale
-}
-// Will be used to determine friendly favour
-function is_friendly_territory(loc) {
-	if (game.active === YORK)
-		return loc >= first_york_locale && loc <= last_york_locale
-	return loc >= first_lancaster_locale && loc <= last_lancaster_locale
-}
-
-function is_enemy_territory(loc) {
-	if (game.active === YORK)
-		return loc >= first_lancaster_locale && loc <= last_lancaster_locale
-	return loc >= first_york_locale && loc <= last_york_locale
 }
 
 function is_seaport(loc) {
@@ -1862,7 +1830,8 @@ exports.setup = function (seed, scenario, options) {
 			parliament_votes:0,
 			succession:0,
 			jack_cade:0,
-			commons_militia:0
+			commons_militia:0,
+			swap_battle_attacker:0
 		},
 
 		command: NOBODY,
@@ -2157,12 +2126,23 @@ function is_event_in_play(c) {
 	return set_has(game.events, c)
 }
 
-function is_leeward_battle_line_in_play() {
+function is_leeward_battle_line_in_play(lord) {
 	if (is_archery_step()) {
-		if (game.active === LANCASTER && !is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE))
-			return is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE)
-		if (game.active === YORK && !is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE))
-			return is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
+		if (is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE) 
+		&& !is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE)
+		&& is_york_lord(lord)) {
+			logevent(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
+			return true
+
+		}
+		if (is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE) 
+		&& !is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
+		&& is_lancaster_lord(lord)) {
+			logevent(EVENT_YORK_LEEWARD_BATTLE_LINE)
+			return true
+		}
+	
+		
 	}
 	return false
 }
@@ -2440,8 +2420,6 @@ states.scots = {
 	inactive: "Scots",
 	prompt() {
 		view.prompt = "Scots: You may add 1 Men-at-Arms and 1 Militia to each Lord."
-		view.actions.done = 1
-
 		for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; lord++) {
 			if (is_lord_on_map(lord) && map_get(game.count, lord, 0) < 3) {
 				gen_action_lord(lord)
@@ -2455,6 +2433,7 @@ states.scots = {
 			if ((troops & 2) === 0)
 				gen_action("add_men_at_arms")
 		}
+		view.actions.done = 1
 	},
 	done() {
 		end_lancaster_event_scots()
@@ -2837,6 +2816,7 @@ function goto_lancaster_event_luniverselle_aragne() {
 		game.who = NOBODY
 		game.count = 0
 	} else {
+		logi("No Effect")
 		end_immediate_event()
 	}
 }
@@ -3699,6 +3679,14 @@ function action_held_event(c) {
 
 function goto_held_event(c) {
 	switch (c) {
+		case EVENT_YORK_ESCAPE_SHIP:
+			break
+		case EVENT_LANCASTER_ESCAPE_SHIP:
+			break
+		case EVENT_LANCASTER_TALBOT_TO_THE_RESCUE:
+			break
+		case EVENT_LANCASTER_WARDEN_OF_THE_MARCHES:
+			break
 	}
 }
 
@@ -3744,13 +3732,6 @@ function can_play_rebel_supply_depot() {
 
 function can_play_surprise_landing() {
 	if (game.flags.surprise_landing === 1 && is_seaport(get_lord_locale(game.command))) {
-		return true
-	}
-	return false
-}
-
-function can_play_y_parliament_truce() {
-	if (game.state === "campaign") {
 		return true
 	}
 	return false
@@ -4130,7 +4111,7 @@ states.levy_muster = {
 	inactive: "Muster",
 	prompt() {
 		view.prompt = "Levy: Muster with your Lords."
-
+		
 		prompt_held_event()
 		let done = true
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
@@ -4177,7 +4158,6 @@ states.levy_muster_lord = {
 			view.prompt = `Levy: ${lord_name[game.who]} has ${game.count} actions.`
 
 		prompt_held_event_lordship()
-
 		let here = get_lord_locale(game.who)
 
 		if (is_friendly_locale(here)) {
@@ -4247,7 +4227,7 @@ states.levy_muster_lord = {
 	card: action_held_event_lordship,
 
 	lord(other) {
-		clear_undo()
+		push_undo()
 		goto_levy_muster_lord_attempt(other)
 	},
 
@@ -4927,7 +4907,7 @@ states.command = {
 			view.actions.merchants = 1
 		if (can_action_agitators())
 			view.actions.agitators = 1
-		if (can_action_exile_pact()) 
+		if (can_action_exile_pact() && is_york_lord(game.command)) 
 			view.actions.exile_pact = 1
 	},
 
@@ -5054,7 +5034,7 @@ function end_influence_check() {
 
 function count_influence_score() {
 	let score = game.check.reduce((p, c) => p + c.modifier, 0)
-	score = influence_capabilities(game.group, score)
+	score = influence_capabilities(game.who, score)
 
 	if (score > 5)
 		score = 5
@@ -5258,7 +5238,7 @@ function goto_parley() {
 
 		// Campaign phase, and current location is no cost (except some events), and always successful.
 		if (game.parley.length === 2 && get_lord_locale(game.command) === game.parley[0]) {
-			log(`Parley.`)
+			log(`Parley at ${data.locales[get_lord_locale(game.command)]}`)
 			shift_favour_toward(game.parley[0])
 			if (is_lancaster_card(game.command) && is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
 				reduce_lancaster_influence(1)
@@ -5330,14 +5310,17 @@ states.parley = {
 		let results = do_influence_check()
 		
 		if (game.flags.parliament_votes === 1) {
-			log(`Parley at ${data.locales[game.where].name}. Automatic Success. C${EVENT_LANCASTER_PARLIAMENT_VOTES}.`)
+			log(`Parley at ${data.locales[game.where].name}. Automatic Success.`)
+			logevent(EVENT_LANCASTER_PARLIAMENT_VOTES)
 			game.flags.parliament_votes = 0
 		}
 		else if (game.flags.jack_cade > 0) {
-			log(`Parley at ${data.locales[game.where].name}. Automatic Success. C${EVENT_YORK_JACK_CADE}.`)
+			log(`Parley at ${data.locales[game.where].name}. Automatic Success.`)
+			logevent(EVENT_YORK_JACK_CADE)
 		}
 		else if (game.flags.succession === 1) {
-			log(`Parley at ${data.locales[game.where].name}. Automatic Success. C${EVENT_YORK_SUCCESSION}.`)
+			log(`Parley at ${data.locales[game.where].name}. Automatic Success.`)
+			logevent(EVENT_YORK_SUCCESSION)
 			game.flags.succession = 0
 		}
 		else if (is_campaign_phase()
@@ -5348,7 +5331,7 @@ states.parley = {
 			log(`Parley at ${data.locales[game.where].name}. Automatic Success. C${EVENT_YORK_DORSET}.`)
 		}
 		else 
-			log(`Attempt to Parley with %${game.where} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+			log(`Attempt to Parley at %${game.where} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
 		if (results.success) {
 			shift_favour_toward(game.where)
@@ -5629,7 +5612,6 @@ states.intercept = {
 
 		prompt_held_event_intercept()
 
-
 		if (game.who === NOBODY) {
 			for (let next of data.locales[to].not_paths)
 				for_each_friendly_lord_in_locale(next, gen_action_lord)
@@ -5641,7 +5623,6 @@ states.intercept = {
 						gen_action_lord(lord)
 				})
 			}
-
 			view.actions.intercept = 1
 		}
 
@@ -5664,8 +5645,15 @@ states.intercept = {
 	},
 	intercept() {
 		let valour = data.lords[game.who].valour
-		let roll = roll_die()
-		let success = roll <= valour
+		let success = false
+		if (is_event_in_play(EVENT_LANCASTER_FLANK_ATTACK || is_event_in_play(EVENT_YORK_FLANK_ATTACK))) {
+			success = true
+			swap_battle_attacker = 1
+		}
+		else {
+			let roll = roll_die()
+			success = roll <= valour
+		}
 		log(`Intercept ${success ? "Succeeded." : "Failed."} (${range(valour)}): ${success ? HIT[roll] : MISS[roll]}`)
 
 		if (success) {
@@ -6317,7 +6305,7 @@ states.tax = {
 			// Auto succeed without influence check at Lords seat.
 			deplete_locale(game.where)
 
-			log(`Taxed %${game.where}.`)
+			log(`Taxed automatically successful at %${game.where}.`)
 			add_lord_assets(game.command, COIN, get_tax_amount(game.where))
 			end_tax()
 		}
@@ -6328,7 +6316,8 @@ states.tax = {
 		clear_undo()
 
 		let results = do_influence_check()
-
+		logi(`Tax : ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		
 		if (lord_has_capability(game.command, AOW_YORK_SO_WISE_SO_YOUNG)) {
 			log(`C${AOW_YORK_SO_WISE_SO_YOUNG}.`)
 			add_lord_assets(game.command, COIN, 1)
@@ -6531,10 +6520,10 @@ states.tow_extra_ip = {
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 			let here = get_lord_locale(lord)
 			if (game.flags.charity < 2 && get_lord_locale(lord) === loc && (get_lord_assets(lord, PROV) > 0)) {
-					gen_action_prov(lord)
+				gen_action_prov(lord)
 			}
 		}
-	if (done)
+		if (done)
 			view.actions.done = 1
 	},
 	prov(lord) {
@@ -6544,7 +6533,7 @@ states.tow_extra_ip = {
 	},
 	done() {
 		increase_york_influence(game.flags.charity)
-		logi("We done deeds of Charity")
+		logi(`${AOW_YORK_WE_DONE_DEEDS_OF_CHARITY}`)
 		log("York paid " + game.flags.charity + " provender to add " + game.flags.charity + " Influence Points")
 		game.flags.charity = 0
 		goto_disembark()
@@ -7236,7 +7225,6 @@ function prompt_battle_events() {
 			gen_action_card_if_held(EVENT_LANCASTER_SUSPICION)
 			gen_action_card_if_held(EVENT_LANCASTER_FOR_TRUST_NOT_HIM)
 			gen_action_card_if_held(EVENT_LANCASTER_RAVINE)
-
 		}
 		if (game.active === YORK) {
 			gen_action_card_if_held(EVENT_YORK_LEEWARD_BATTLE_LINE)
@@ -7251,18 +7239,88 @@ function prompt_battle_events() {
 
 function prompt_battle_events_death() {
 	// both attacker and defender events
-		/*if (game.active === LANCASTER) {
-			gen_action_card_if_held(EVENT_LANCASTER_ESCAPE_SHIP)
-			gen_action_card_if_held(EVENT_LANCASTER_WARDEN_OF_THE_MARCHES)
-			gen_action_card_if_held(EVENT_LANCASTER_TALBOT_TO_THE_RESCUE)
-			gen_action_card_if_held(EVENT_YORK_REGROUP)
-			gen_action_card_if_held(EVENT_YORK_SWIFT_MANEUVER)
-			gen_action_card_if_held(EVENT_YORK_PATRICK_DE_LA_MOTE)
-			}
+		if (game.active === LANCASTER) {
+			if (can_play_escape_ship()) 
+				gen_action_card_if_held(EVENT_LANCASTER_ESCAPE_SHIP)
+			if (can_play_warden_of_the_marches()) 
+				gen_action_card_if_held(EVENT_LANCASTER_WARDEN_OF_THE_MARCHES)
+			if (can_play_talbot_to_the_rescue()) 
+				gen_action_card_if_held(EVENT_LANCASTER_TALBOT_TO_THE_RESCUE)
+		}
 		if (game.active === YORK) {
-			gen_action_card_if_held(EVENT_YORK_ESCAPE_SHIP)
-		}	*/
+			if (can_play_escape_ship())
+				gen_action_card_if_held(EVENT_YORK_ESCAPE_SHIP)	
+		}
 		view.actions.done = 1
+}
+
+
+// === EVENT : ESCAPE SHIP === 
+
+function can_play_escape_ship() {
+	return true
+}
+
+function can_escape_at(here) {
+	if (!is_friendly_locale(here)) 
+		return false
+
+	return true
+}
+
+function search_route(result, start) {
+	search_seen.fill(0)
+	search_seen[start] = 1
+
+
+	let queue = [ start ]
+	while (queue.length > 0) {
+		let here = queue.shift()
+		let dist = search_dist[here]
+		let next_dist = dist + 1
+
+		if (can_escape_at(here)) {
+			if (result)
+				set_add(result, here)
+			else
+				return true
+		}
+
+		if (is_friendly_locale(here)) {
+			for (let next of data.locales[here].adjacent) {
+				if (!search_seen[next]) {
+					search_seen[next] = 1
+					queue.push(next)
+				}
+			}
+			if (is_seaport(here)) {
+				for (let next of find_ports(here)) {
+					if (!search_seen[next]) {
+						search_seen[next] = 1
+						queue.push(next)
+					}
+				}
+			}
+		}
+	}
+	if (result)
+		return result
+	else
+		return false
+}
+
+// === EVENT : WARDEN OF THE MARCHES === 
+
+function can_play_warden_of_the_marches() {
+	if (data.locales[game.battle.where].region === "North") 
+		return true
+	return false
+}
+
+// === EVENT : TALBOT TO THE RESCUE === 
+
+function can_play_talbot_to_the_rescue() {
+	return true
 }
 
 states.attacker_events = {
@@ -7299,18 +7357,30 @@ function action_battle_events(c) {
 		switch (c) {
 			case EVENT_LANCASTER_LEEWARD_BATTLE_LINE:
 			case EVENT_LANCASTER_SUSPICION:
-				game.state = "suspicion"
+			//	game.state = "suspicion"
 			case EVENT_LANCASTER_FOR_TRUST_NOT_HIM:
-				game.state = "for_trust_not_him"
+			//	game.state = "for_trust_not_him"
 			case EVENT_LANCASTER_RAVINE:
-				game.state = "ravine"
+			//	game.state = "ravine"
 			case EVENT_YORK_LEEWARD_BATTLE_LINE:
 			case EVENT_YORK_SUSPICION:
-				game.state = "suspicion"
+			//	game.state = "suspicion"
 			case EVENT_YORK_CALTROPS:
 			case EVENT_YORK_REGROUP:
 			case EVENT_YORK_SWIFT_MANEUVER:
 		}
+}
+
+states.suspicion = {
+	inactive: "Flee",
+	prompt() {
+		view.prompt = "Battle: Select Lords to Flee from the Field?"
+		view.actions.done = 1
+		
+	},
+	done() {
+		end_defender_events()
+	},
 }
 
 // === BATTLE: FLEE ===
@@ -7344,18 +7414,18 @@ states.flee_battle = {
 	inactive: "Flee",
 	prompt() {
 		view.prompt = "Battle: Select Lords to Flee from the Field?"
-		view.actions.done = 1
-
 		for (let p = 0; p < 6; ++p) {
 			if (is_friendly_lord(game.battle.array[p])) {
 				gen_action_lord(game.battle.array[p])
 			}
 		}
+		view.actions.done = 1
 	},
 	done() {
 		end_flee()
 	},
 	lord(lord) {
+		push_undo()
 		log(`${lord_name[lord]} Fled the battle of %${game.battle.where}.`)
 		set_add(game.battle.fled, lord)
 		if (set_has(game.battle.reserves, lord)) {
@@ -7548,18 +7618,14 @@ const battle_steps = [
 
 function count_archery_hits(lord) {
 	let hits = 0
-	let die = 0
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-		if (lord_has_capability(lord, AOW_YORK_CULVERINS_AND_FALCONETS) || lord_has_capability(lord, AOW_LANCASTER_CULVERINS_AND_FALCONETS))
-			die = roll_die()
-	}
-
 	hits += get_lord_forces(lord, LONGBOWMEN) << 2
 	hits += get_lord_forces(lord, BURGUNDIANS) << 2
 	hits += get_lord_forces(lord, MILITIA)
 	hits += get_lord_forces(lord, MERCENARIES)
-	if (is_leeward_battle_line_in_play())
-		hits = hits/2
+
+	if (is_leeward_battle_line_in_play(lord)) {
+		return hits/2
+	}
 
 	return hits
 }
@@ -8456,25 +8522,27 @@ states.death_or_disband = {
 		view.prompt = `Death or Disband: Select lords to roll for Death or Disband.`
 
 		prompt_battle_events_death()
-
 		let done = true
 		for (let lord of game.battle.fled) {
 			if (is_friendly_lord(lord)) {
 				gen_action_lord(lord)
 				done = false
+				view.actions.done = 0 // That shouldn't necessary but it is 
 			}
 		}
 		for (let lord of game.battle.routed) {
 			if (is_friendly_lord(lord)) {
 				gen_action_lord(lord)
 				done = false
+				view.actions.done = 0 // That shouldn't necessary but it is ?
 			}
 		}
-
-		if (done)
+		if (done) {
 			view.actions.done = 1
+		}
 	},
-	lord(lord) {
+	lord(lord) {	
+		push_undo()
 		let here = get_lord_locale(lord)
 		let threshold = 2
 		let modifier = 0
@@ -8486,17 +8554,20 @@ states.death_or_disband = {
 			set_delete(game.battle.fled, lord)
 			set_delete(game.battle.routed, lord)
 		}
+		else if (is_escape_ship_in_play())
+		{
+			exile_lord(lord)
+			set_delete(game.battle.fled, lord)
+			set_delete(game.battle.routed, lord)
+		}
 		else {
-			let roll = roll_die()
+		let roll = roll_die()
 		if (set_has(game.battle.fled, lord))
 			modifier = -2
 
 		let success = threshold >= roll + modifier
-
 		log(`Lord ${lord_name[lord]} ${success ? "Survived" : "Died"}: (${range(2)}) ${success ? HIT[roll] : MISS[roll]} ${modifier < 0 ? "(-2 Fled)" : ""}`)
-
 		disband_lord(lord, !success)
-
 		set_delete(game.battle.fled, lord)
 		set_delete(game.battle.routed, lord)
 		}
@@ -8504,9 +8575,10 @@ states.death_or_disband = {
 	done() {
 		end_death_or_disband()
 	},
+	card: action_held_event,
 }
 
-// === ENDING THE BATTLE: SERVICE (LOSER) ===
+// === ENDING THE BATTLE: VASSAL DISBAND ===
 
 function goto_battle_aftermath() {
 	set_active(game.battle.attacker)
@@ -8870,13 +8942,14 @@ states.pay_lords = {
 			if (done) {
 				view.actions.done = 1
 			}
-			if (!done)
+			if (!done)	
 				view.actions.pay_all = 1
 		} else {
 			view.actions.disband = 1
 			view.actions.pay = 1
 		}	},
 	lord(lord) {
+		push_undo()
 		game.who = lord
 	},
 	disband() {
@@ -8899,9 +8972,10 @@ states.pay_lords = {
 				if (is_exile(get_lord_locale(lord))) {
 					++game.count
 				}
+				reduce_influence(game.count)
+				game.count = 0
 			}
 		}
-		reduce_influence(game.count)
 		game.who = NOBODY
 
 	},
@@ -9159,7 +9233,7 @@ states.pillage_locale = {
 		let num = get_tax_amount(game.where)
 		add_lord_assets(lord, COIN, num)
 		add_lord_assets(lord, PROV, num)
-		reduce_influence(2 * num)
+		reduce_influence(4 * num)
 
 		add_exhausted_marker(game.where)
 		set_favour_enemy(game.where)
@@ -9357,108 +9431,6 @@ function do_lord_waste(lord) {
 function remove_half(lord, type) {
 	set_lord_assets(lord, type, Math.ceil(get_lord_assets(lord, type) / 2))
 }
-
-// === END CAMPAIGN: WASTAGE ===
-// TODO : WASTE
-// function goto_wastage() {
-// 	if (game.turn === 5 || game.turn === 10) {
-// 	clear_lords_moved()
-// 	let done = true
-// 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-// 		if (check_lord_wastage(lord)) {
-// 			set_lord_moved(lord, 3)
-// 			done = false
-// 		}
-// 	}
-// 	if (done)
-// 		end_wastage()
-// 	else
-// 		game.state = "wastage"
-// }
-// 	else {
-// 		push_undo()
-// 		goto_reset()
-// 	}
-// }
-
-// function check_lord_wastage(lord) {
-// 	if (get_lord_assets(lord, PROV) > 1)
-// 		return true
-// 	if (get_lord_assets(lord, COIN) > 1)
-// 		return true
-// 	if (get_lord_assets(lord, CART) > 1)
-// 		return true
-// 	if (get_lord_assets(lord, SHIP) > 1)
-// 		return true
-// 	return false
-// }
-
-// function prompt_wastage(lord) {
-// 	if (get_lord_assets(lord, PROV) > 0)
-// 		gen_action_prov(lord)
-// 	if (get_lord_assets(lord, COIN) > 0)
-// 		gen_action_coin(lord)
-// 	if (get_lord_assets(lord, CART) > 0)
-// 		gen_action_cart(lord)
-// 	if (get_lord_assets(lord, SHIP) > 0)
-// 		gen_action_ship(lord)
-// 	for (let i = 0; i < 2; ++i) {
-// 		let c = get_lord_capability(lord, i)
-// 		if (c !== NOTHING)
-// 			gen_action_card(c)
-// 	}
-// }
-
-// function action_wastage(lord, type) {
-// 	push_undo()
-// 	set_lord_moved(lord, 0)
-// 	add_lord_assets(lord, type, -1)
-// }
-
-// function find_lord_with_capability_card(c) {
-// 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
-// 		if (lord_has_capability_card(lord, c))
-// 			return lord
-// 	return NOBODY
-// }
-
-// states.wastage = {
-// 	inactive: "Wastage",
-// 	prompt() {
-// 		let done = true
-// 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-// 			if (get_lord_moved(lord)) {
-// 				prompt_wastage(lord)
-// 				done = false
-// 			}
-// 		}
-// 		if (done) {
-// 			view.prompt = "Wastage: All done."
-// 			view.actions.end_wastage = 1
-// 		} else {
-// 			view.prompt = "Wastage: Discard one Asset or Capability from each affected Lord."
-// 		}
-// 	},
-// 	card(c) {
-// 		push_undo()
-// 		let lord = find_lord_with_capability_card(c)
-// 		set_lord_moved(lord, 0)
-// 		discard_lord_capability(lord, c)
-// 	},
-// 	prov(lord) { action_wastage(lord, PROV) },
-// 	coin(lord) { action_wastage(lord, COIN) },
-// 	cart(lord) { action_wastage(lord, CART) },
-// 	ship(lord) { action_wastage(lord, SHIP) },
-// 	end_wastage() {
-// 		end_wastage()
-// 	},
-// }
-
-// function end_wastage() {
-// 	push_undo()
-// 	set_active_enemy()
-// 	goto_reset()
-// }
 
 // === END CAMPAIGN: RESET (DISCARD ARTS OF WAR) ===
 
@@ -9783,12 +9755,14 @@ function tides_calc() {
 		for (let y = first_york_lord; y <= last_york_lord; y++) {
 			if (is_lord_on_map(y)) {
 				domy += data.lords[y].influence
+				log(`Gain Lords Influence : Yorkists gain ${data.lords[y].influence} for ${data.lords[y].name}`)
 			}
 		}
 
 		for (let l = first_lancaster_lord; l <= last_lancaster_lord; l++) {
 			if (is_lord_on_map(l)) {
 				doml += data.lords[l].influence
+				log(`Gain Lords Influence : Lancastrians gain ${data.lords[l].influence} for ${data.lords[l].name}`)
 			}
 		}
 	}
