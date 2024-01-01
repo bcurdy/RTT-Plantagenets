@@ -1710,10 +1710,7 @@ function on_update() {
 // === LOG ===
 
 function on_focus_card_tip(c) {
-	if (c <= first_york_card)
-		ui.command.className = `card aow york c${c}`
-	else
-		ui.command.className = `card aow lancaster c${c}`
+	ui.command.replaceChildren(ui.cards2[c])
 }
 
 function on_blur_card_tip() {
