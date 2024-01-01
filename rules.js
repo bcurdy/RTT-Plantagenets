@@ -2458,7 +2458,7 @@ states.scots = {
 	}
 }
 
-// === EVENTS: LANCASTER HENRY PRESSURES PARLIMENT EVENT ===
+// === EVENTS: LANCASTER HENRY PRESSURES PARLIAMENT EVENT ===
 
 function goto_lancaster_event_henry_pressures_parliament() {
 	let count = 0
@@ -3634,18 +3634,18 @@ function can_play_held_event(c) {
 			return can_play_y_blocked_ford()
 	*/
 
-	/*	case EVENT_LANCASTER_ASPIELLES:
+		case EVENT_LANCASTER_ASPIELLES:
 			return can_play_l_aspielles()
-		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
-			return can_play_rebel_supply_depot()
+	/*	case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
+			return can_play_rebel_supply_depot()*/
 		case EVENT_LANCASTER_SURPRISE_LANDING:
 			return can_play_surprise_landing()
-		case EVENT_LANCASTER_PARLIAMENT_TRUCE:
+	/*	case EVENT_LANCASTER_PARLIAMENT_TRUCE:
 			return can_play_l_parliament_truce()
 		case EVENT_YORK_PARLIAMENT_TRUCE:
-			return can_play_y_parliament_truce()
+			return can_play_y_parliament_truce()*/
 		case EVENT_YORK_ASPIELLES:
-			return can_play_y_aspielles()*/
+			return can_play_y_aspielles()
 		case EVENT_YORK_YORKIST_PARADE:
 			return can_play_yorkist_parade()
 		/*case EVENT_YORK_SUN_IN_SPLENDOUR:
@@ -3681,11 +3681,19 @@ function goto_held_event(c) {
 	switch (c) {
 		case EVENT_YORK_ESCAPE_SHIP:
 			break
+		case EVENT_YORK_ASPIELLES:
+			goto_play_aspielles()
 		case EVENT_LANCASTER_ESCAPE_SHIP:
 			break
 		case EVENT_LANCASTER_TALBOT_TO_THE_RESCUE:
 			break
 		case EVENT_LANCASTER_WARDEN_OF_THE_MARCHES:
+			break
+		case EVENT_LANCASTER_SURPRISE_LANDING:
+			goto_play_surprise_landing()
+			break
+		case EVENT_LANCASTER_ASPIELLES:
+			goto_play_aspielles()
 			break
 	}
 }
@@ -3693,14 +3701,14 @@ function goto_held_event(c) {
 // === EVENTS: HOLD - UNIQUE ===
 
 function can_play_l_aspielles() {
-	if (game.hand_y.length > 0 || game.hidden === 1) {
+	if (game.hand_y.length > 0 || game.hidden) {
 		return true
 	}
 	return false
 }
 
 function can_play_y_aspielles() {
-	if (game.hand_y.length > 0 || game.hidden === 1) {
+	if (game.hand_l.length > 0 || game.hidden) {
 		return true
 	}
 	return false
@@ -3766,6 +3774,98 @@ function can_play_y_flank_attack() {
 		return true
 	}
 	return false
+}
+
+// === EVENTS: HOLD - ASPIELLES ===
+
+function goto_play_aspielles() {
+	push_state("aspielles")
+	game.who = NOBODY
+}
+
+states.aspielles = {
+	inactive: "Aspielles",
+	prompt() {
+		let done = false
+		view.prompt = "Aspielles: You may see enemy held cards"
+		if (game.hidden) {
+			view.prompt += " and an enemy lord to see his mat"
+		}
+		prompt_held_event()
+		if (game.hidden) {
+			for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord)
+				gen_action_lord(lord)
+				done = true
+		}
+		if (game.active === YORK) {
+			view.hand = game.hand_l
+		}
+		if (game.active === LANCASTER) {
+			view.hand = game.hand_y
+		}
+		view.actions.done = 1
+
+
+	},
+	lord(lord) {
+		clear_undo()
+		log(`${lord_name[lord]} Spied`)
+		view.reveal |= (1 << lord)
+	},
+	card: action_held_event,
+	done() {
+		resume_command()
+	},	
+}
+
+
+
+// === EVENTS: HOLD - SURPRISE LANDING ===
+
+function goto_play_surprise_landing() {
+	push_state("surprise_landing")
+	game.who = NOBODY
+}
+
+states.surprise_landing = {
+	inactive: "Surprise Landing",
+	prompt() {
+		view.prompt = "Surprise Landing : You may march once (no path)."
+		prompt_held_event()
+
+
+		view.group = game.group
+		let here = get_lord_locale(game.command)
+		// 4.3.2 Marshals MAY take other lords
+		if (
+			is_marshal(game.command) ||
+			(lord_has_capability(game.command, AOW_YORK_CAPTAIN) && !other_marshal_or_lieutenant(game.command, here))
+		) {
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+				if (lord !== game.command)
+					if (get_lord_locale(lord) === here)
+						gen_action_lord(lord)
+		}
+
+		// Lieutenant may not take marshall
+		if (is_lieutenant(game.command)) {
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+				if (lord !== game.command)
+					if (get_lord_locale(lord) === here && !is_marshal(lord)) {
+						gen_action_lord(lord)
+					}
+		}
+		prompt_march()
+	},
+	locale: goto_march_surprise_landing,
+	card: action_held_event,
+}
+
+function goto_march_surprise_landing(to) {
+	push_undo()
+	let from = get_lord_locale(game.command)
+	game.march = { from, to, avoid: -1 }
+	march_with_group_1()
 }
 
 // === EVENTS: HOLD - SHIFT CYLINDER ===
@@ -5034,14 +5134,22 @@ function end_influence_check() {
 
 function count_influence_score() {
 	let score = game.check.reduce((p, c) => p + c.modifier, 0)
-	score = influence_capabilities(game.who, score)
+	let lord = 0
+	if (is_levy_phase())
+		lord = game.who
+	if (is_campaign_phase())
+		lord = game.command
+
+	// Space for whose lord has been selected for SUSPICION EVENT
+
+	score = influence_capabilities(lord, score)
 
 	if (score > 5)
 		score = 5
 	if (score < 1)
 		score = 1
 
-	score = automatic_success(game.who, score)
+	score = automatic_success(lord, score)
 	return score
 }
 
@@ -5054,7 +5162,8 @@ function count_influence_cost() {
 			return 0
 		}
 		if (is_levy_phase()
-		&& game.flags.jack_cade > 0) {
+		&& game.flags.jack_cade > 0
+		&& game.state === "parley") {
 			return 0
 		}
 	return game.check.reduce((p, c) => p + c.cost, 0)
@@ -5443,7 +5552,7 @@ function prompt_march() {
 			}
 		}
 	}
-	if (game.actions > 0) {
+	if (game.actions > 0 || game.flags.surprise_landing === 1) {
 		for (let to of data.locales[from].roads) {
 			if (!is_wales_forbidden(to)) {
 				gen_action_locale(to)
@@ -5455,7 +5564,7 @@ function prompt_march() {
 				gen_action_locale(to)
 			}		
 		}
-	} else if (game.actions === 0 && is_first_march_highway()) {
+	} else if ((game.actions === 0 && is_first_march_highway()) || game.flags.surprise_landing === 1) {
 		for (let to of data.locales[from].highways) {
 			if (!is_wales_forbidden(to)) {
 				gen_action_locale(to)
@@ -5531,7 +5640,7 @@ function march_with_group_2() {
 
 	switch (type) {
 		case "highway":
-			if (is_first_march_highway()) {
+			if (is_first_march_highway() || game.flags.surprise_landing === 1) {
 				spend_march_action(0)
 			} else {
 				spend_march_action(1)
@@ -5540,7 +5649,7 @@ function march_with_group_2() {
 			break
 
 		case "road":
-			if (alone && is_first_march_highway()) {
+			if ((alone && is_first_march_highway()) || game.flags.surprise_landing === 1) {
 				spend_march_action(0)
 			} else {
 				spend_march_action(1)
@@ -7372,11 +7481,33 @@ function action_battle_events(c) {
 }
 
 states.suspicion = {
-	inactive: "Flee",
+	inactive: "Suspicion",
 	prompt() {
-		view.prompt = "Battle: Select Lords to Flee from the Field?"
+		view.prompt = "Suspicion: Check enemy lord to disband him"
 		view.actions.done = 1
-		
+	},
+	done() {
+		end_defender_events()
+	},
+}
+
+states.for_trust_not_him = {
+	inactive: "For trust not him",
+	prompt() {
+		view.prompt = "Select a friendly and then an enemy vassal to levy him."
+		view.actions.done = 1
+	},
+	done() {
+		end_defender_events()
+	},
+}
+
+
+states.ravine = {
+	inactive: "Ravine",
+	prompt() {
+		view.prompt = "Ravine: Select an enemy lord : he is ignored Round 1"
+		view.actions.done = 1
 	},
 	done() {
 		end_defender_events()
