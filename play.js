@@ -913,9 +913,9 @@ function build_map() {
 
 	ui.card_cc = []
 	for (let i = 0; i < 14; ++i)
-		ui.card_cc[i] = build_div(null, "card cc york " + data.lords[view.command].id)
+		ui.card_cc[i] = build_div(null, "card cc york " + data.lords[i].id)
 	for (let i = 14; i < 28; ++i)
-		ui.card_cc[i] = build_div(null, "card cc lancaster " + data.lords[view.command].id)
+		ui.card_cc[i] = build_div(null, "card cc lancaster " + data.lords[i].id)
 }
 
 // === UPDATE UI ===
