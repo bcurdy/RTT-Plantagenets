@@ -349,7 +349,7 @@ const VASSAL_TROLLOPE = find_vassal("Trollope")
 
 // TODO: log end victory conditions at scenario start
 
-const AOW_LANCASTER_CULVERINS_AND_FALCONETS = [ L1, L2 ] // TODO
+const AOW_LANCASTER_CULVERINS_AND_FALCONETS = [L1 , L2] // TODO
 const AOW_LANCASTER_MUSTERD_MY_SOLDIERS = L3
 const AOW_LANCASTER_HERALDS = L4
 const AOW_LANCASTER_CHURCH_BLESSINGS = L5
@@ -387,7 +387,7 @@ const AOW_LANCASTER_THOMAS_STANLEY = L35
 const AOW_LANCASTER_CHEVALIERS = L36
 const AOW_LANCASTER_MADAME_LA_GRANDE = L37
 
-const AOW_YORK_CULVERINS_AND_FALCONETS = [ Y1, Y2 ] // TODO
+const AOW_YORK_CULVERINS_AND_FALCONETS = [Y1, Y2] // TODO
 const AOW_YORK_MUSTERD_MY_SOLDIERS = Y3
 const AOW_YORK_WE_DONE_DEEDS_OF_CHARITY = Y4
 const AOW_YORK_THOMAS_BOURCHIER = Y5
@@ -496,7 +496,7 @@ const EVENT_LANCASTER_THE_EARL_OF_RICHMOND = L37
 const EVENT_YORK_LEEWARD_BATTLE_LINE = Y1
 const EVENT_YORK_FLANK_ATTACK = Y2 // TODO
 // Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
-const EVENT_YORK_ESCAPE_SHIP = Y3
+const EVENT_YORK_ESCAPE_SHIP = [Y3 , Y9]
 const EVENT_YORK_JACK_CADE = Y4
 const EVENT_YORK_SUSPICION = Y5 // TODO
 // Hold Event. Play at start of Battle AFTER ARRAY. Chose one friendly lord.
@@ -507,7 +507,6 @@ const EVENT_YORK_SUSPICION = Y5 // TODO
 const EVENT_YORK_SEAMANSHIP = Y6
 const EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT = Y7
 const EVENT_YORK_EXILE_PACT = Y8
-const EVENT_YORK_ESCAPE_SHIP2 = Y9
 const EVENT_YORK_TAX_COLLECTORS = Y10
 const EVENT_YORK_BLOCKED_FORD = Y11 // TODO
 // Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
@@ -567,8 +566,7 @@ const EVENT_YORK_SWIFT_MANEUVER = Y36 // TODO
 // Hold Event Play in Battle after the BATTLE ARRAY step of the Battle
 // When this event is played, any Lancastrian retinue makes Yorkist able to immediately END THE ROUND
 // All other engagements, hits, etc. are skipped
-const EVENT_YORK_PATRICK_DE_LA_MOTE = Y37 // TODO
-// Y1/Y2 2 dices rather than 1
+const EVENT_YORK_PATRICK_DE_LA_MOTE = Y37
 
 // Check all push/clear_undo
 // TODO : Check BUG done visible in Death of Disband despite being false
@@ -1174,6 +1172,15 @@ function can_discard_card(c) {
 	if (map_has_value(game.pieces.capabilities, c))
 		return true
 }
+
+// Used in CULVERINS AND FALCONETS
+function find_lord_with_capability_card(c) {
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+		if (lord_has_capability_card(lord, c))
+			return lord
+	return NOBODY
+}
+
 
 function is_lord_on_map(lord) {
 	let loc = get_lord_locale(lord)
@@ -2124,6 +2131,8 @@ function is_leeward_battle_line_in_play(lord) {
 	}
 	return false
 }
+
+
 
 function is_caltrops_in_play() {
 	if (game.active === YORK)
@@ -3651,9 +3660,6 @@ function action_held_event(c) {
 function goto_held_event(c) {
 	switch (c) {
 		case EVENT_YORK_ESCAPE_SHIP:
-			goto_play_escape_ship()
-			break
-		case EVENT_YORK_ESCAPE_SHIP2:
 			goto_play_escape_ship()
 			break
 		case EVENT_YORK_ASPIELLES:
@@ -7298,7 +7304,6 @@ function prompt_battle_events_death() {
 		if (game.active === YORK) {
 			if (can_play_escape_ship())
 				gen_action_card_if_held(EVENT_YORK_ESCAPE_SHIP)	
-				gen_action_card_if_held(EVENT_YORK_ESCAPE_SHIP2)	
 		}
 		view.actions.done = 1
 }
@@ -7903,21 +7908,101 @@ states.select_engagement = {
 		array_remove(game.battle.engagements, idx)
 		game.battle.engagements.unshift(eng)
 		set_active_defender()
-		goto_engagement_total_hits()
+		if (game.battle.round === 1 && is_archery_step()) {
+			goto_culverins()
+		}
+		else {
+			goto_engagement_total_hits()
+		}
 	},
 }
 
 function resume_engagement() {
 	if (game.battle.engagements.length === 1 || is_melee_step()) {
+		if (game.battle.round === 1 && is_archery_step()) {
+			goto_culverins()
+		}
+		else {
+			goto_engagement_total_hits()
+		}
 		// only one engagement, so no choices on order
-		goto_engagement_total_hits()
 	} else {
 		set_active_attacker()
 		game.state = "select_engagement"
 	}
 }
 
-// === BATTLE: TOTAL HITS (ROUND UP) ===
+// === BATTLE: CULVERINS AND FALCONETS ===
+
+function goto_culverins() {
+	let can_play = false
+	for (let lord of game.battle.array) {
+		if (is_lancaster_lord(lord) && lord_has_capability(lord, AOW_LANCASTER_CULVERINS_AND_FALCONETS))
+			can_play = true
+		if (is_york_lord(lord) && lord_has_capability(lord, AOW_YORK_CULVERINS_AND_FALCONETS))
+			can_play = true
+	}
+	if (can_play) {
+		set_active_defender()
+		game.state = "culverins_and_falconets"
+		game.who = NOBODY
+	}
+	else {
+		goto_engagement_total_hits()
+	}
+}
+
+states.culverins_and_falconets = {
+	inactive: "Culverins and Falconets",
+	prompt() {
+		let done = true
+		view.prompt = `Use Culverin and Falconets ?`
+		for (let lord of game.battle.array) {
+			if (lord !== NOBODY) {
+				if (is_friendly_lord(lord) && (lord_has_capability(lord, AOW_YORK_CULVERINS_AND_FALCONETS))) {
+					gen_action_card(AOW_YORK_CULVERINS_AND_FALCONETS)
+					done = false
+				}
+				if (is_friendly_lord(lord) && (lord_has_capability(lord, AOW_LANCASTER_CULVERINS_AND_FALCONETS))) {
+					gen_action_card(AOW_LANCASTER_CULVERINS_AND_FALCONETS)
+					done = false
+				}	
+			}		
+		}
+		if (done) {
+			view.prompt = "Culverins and Falconets : Done"
+		}
+		view.actions.done = 1
+	},
+	card(c) {
+		let die = roll_die()
+		let lord = find_lord_with_capability_card(c)
+		if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE)) {
+			let die2 = roll_die()
+			die += die2
+		}
+		logi(`${data.lords[lord].name} Artillery does ${die} hits`)
+		artillery_hits(die)
+		discard_lord_capability(lord, c)
+	},
+	done() {
+		if (is_defender(game.active)) {
+			set_active_enemy()
+		}
+		else {
+			goto_engagement_total_hits()
+		}
+	}
+}
+
+function artillery_hits(ahits) {
+	if (is_attacker(game.active)) {
+		game.battle.attacker_artillery = ahits*2
+	}
+	if (is_defender(game.active)) {
+		game.battle.defender_artillery = ahits*2
+	}
+}
 
 // === BATTLE: TOTAL HITS (ROUND UP) ===
 
@@ -7927,9 +8012,14 @@ function goto_engagement_total_hits() {
 
 	for (let pos of game.battle.engagements[0]) {
 		if (pos === A1 || pos === A2 || pos === A3) {
+			console.log(ahits)
 			ahits += game.battle.ah[pos]
+			console.log(ahits)
+			ahits += game.battle.attacker_artillery
+			console.log(ahits)
 		} else {
 			dhits += game.battle.ah[pos]
+			dhits += game.battle.defender_artillery
 		}
 	}
 
@@ -10149,8 +10239,12 @@ function gen_action_vassal(vassal) {
 	gen_action("vassal", vassal)
 }
 
-function gen_action_card(c) {
-	gen_action("card", c)
+function gen_action_card(card_or_list) {
+	if (Array.isArray(card_or_list))
+			for (let c of card_or_list)
+					gen_action("card", c)
+	else
+			gen_action("card", card_or_list)
 }
 
 function gen_action_plan(lord) {
