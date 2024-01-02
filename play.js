@@ -1690,6 +1690,8 @@ function on_update() {
 	action_button("end_setup", "End Setup")
 	action_button("end_spoils", "End Spoils")
 	action_button("end_supply", "End Supply")
+	action_button("escape_ship", "End Escape Ship")
+
 	action_button("end_wastage", "End Wastage")
 	action_button("end_withdraw", "End Withdraw")
 

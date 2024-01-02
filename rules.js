@@ -426,8 +426,7 @@ const AOW_YORK_PERCYS_NORTH2 = Y37
 const EVENT_LANCASTER_LEEWARD_BATTLE_LINE = L1
 const EVENT_LANCASTER_FLANK_ATTACK = L2 // TODO
 // Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
-const EVENT_LANCASTER_ESCAPE_SHIP = L3 // TODO
-// Hold event. Play during the game state death_or_disband if battle locale is friendly and has a route of friendly locales (like supply) to a friendly port
+const EVENT_LANCASTER_ESCAPE_SHIP = L3
 const EVENT_LANCASTER_BE_SENT_FOR = L4
 const EVENT_LANCASTER_SUSPICION = L5 // TODO
 // Hold Event. Play at start of Battle AFTER ARRAY. Chose one friendly lord.
@@ -487,8 +486,7 @@ const EVENT_LANCASTER_TO_WILFUL_DISOBEDIANCE = L29
 const EVENT_LANCASTER_FRENCH_WAR_LOANS = L30
 const EVENT_LANCASTER_ROBINS_REBELLION = L31
 const EVENT_LANCASTER_TUDOR_BANNERS = L32
-const EVENT_LANCASTER_SURPRISE_LANDING = L33 // TODO
-// After a Sail, allows a free March action. NOT POSSIBLE ON PATH
+const EVENT_LANCASTER_SURPRISE_LANDING = L33
 const EVENT_LANCASTER_BUCKINGHAMS_PLOT = L34
 const EVENT_LANCASTER_MARGARET_BEAUFORT = L35
 const EVENT_LANCASTER_TALBOT_TO_THE_RESCUE = L36 // TODO
@@ -498,8 +496,7 @@ const EVENT_LANCASTER_THE_EARL_OF_RICHMOND = L37
 const EVENT_YORK_LEEWARD_BATTLE_LINE = Y1
 const EVENT_YORK_FLANK_ATTACK = Y2 // TODO
 // Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
-const EVENT_YORK_ESCAPE_SHIP = Y3// TODO
-// Hold event. Play during the game state death_or_disband if battle locale is friendly and has a route of friendly locales (like supply) to a friendly port
+const EVENT_YORK_ESCAPE_SHIP = Y3
 const EVENT_YORK_JACK_CADE = Y4
 const EVENT_YORK_SUSPICION = Y5 // TODO
 // Hold Event. Play at start of Battle AFTER ARRAY. Chose one friendly lord.
@@ -510,6 +507,7 @@ const EVENT_YORK_SUSPICION = Y5 // TODO
 const EVENT_YORK_SEAMANSHIP = Y6
 const EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT = Y7
 const EVENT_YORK_EXILE_PACT = Y8
+const EVENT_YORK_ESCAPE_SHIP2 = Y9
 const EVENT_YORK_TAX_COLLECTORS = Y10
 const EVENT_YORK_BLOCKED_FORD = Y11 // TODO
 // Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
@@ -674,22 +672,6 @@ function current_hand() {
 	if (game.active === YORK)
 		return game.hand_y
 	return game.hand_l
-}
-
-function is_summer() {
-	return current_season() === SUMMER
-}
-
-function is_winter() {
-	return current_season() === WINTER
-}
-
-function is_spring() {
-	return current_season() === SPRING
-}
-
-function is_autumn() {
-	return current_season() === AUTUMN
 }
 
 function is_campaign_phase() {
@@ -883,6 +865,8 @@ function get_force_name(lord, n, x) {
 	return FORCE_TYPE_NAME[n]
 }
 
+
+// TODO: can be removed (no cylinder shift, only set)
 function shift_lord_cylinder(lord, dir) {
 	set_lord_calendar(lord, get_lord_calendar(lord) + dir)
 }
@@ -957,8 +941,6 @@ function is_lord_unfed(lord) {
 }
 
 
-
-
 function feed_lord_skip(lord) {
 	// reuse "moved" flag for hunger
 	set_lord_moved(lord, 0)
@@ -973,7 +955,7 @@ function feed_lord(lord) {
 }
 
 function pay_lord(lord) {
-	// reuse "moved" flag for hunger
+	// reuse "moved" flag for pay
 	let n = get_lord_moved(lord) - 1
 	set_lord_moved(lord, n)
 }
@@ -1140,10 +1122,6 @@ function is_lieutenant(lord) {
 		default:
 			return false
 	}
-}
-
-function is_armored_force(type) {
-	return type === MEN_AT_ARMS || type === BURGUNDIANS || type === RETINUE || type === VASSAL || type === MERCENARIES
 }
 
 function is_york_card(c) {
@@ -2150,13 +2128,6 @@ function is_leeward_battle_line_in_play(lord) {
 function is_caltrops_in_play() {
 	if (game.active === YORK)
 		return is_event_in_play(EVENT_YORK_CALTROPS)
-}
-
-function is_escape_ship_in_play() {
-	if (game.active === LANCASTER)
-		return is_event_in_play(EVENT_LANCASTER_ESCAPE_SHIP)
-	if (game.active === YORK)
-		return is_event_in_play(EVENT_YORK_ESCAPE_SHIP)
 }
 
 function is_regroup_in_play() {
@@ -3680,6 +3651,10 @@ function action_held_event(c) {
 function goto_held_event(c) {
 	switch (c) {
 		case EVENT_YORK_ESCAPE_SHIP:
+			goto_play_escape_ship()
+			break
+		case EVENT_YORK_ESCAPE_SHIP2:
+			goto_play_escape_ship()
 			break
 		case EVENT_YORK_ASPIELLES:
 			goto_play_aspielles()
@@ -3799,9 +3774,11 @@ states.aspielles = {
 		}
 		if (game.active === YORK) {
 			view.hand = game.hand_l
+			log("Lancaster hand shown to the York player")
 		}
 		if (game.active === LANCASTER) {
 			view.hand = game.hand_y
+			log("York hand shown to the Lancaster player")
 		}
 		view.actions.done = 1
 
@@ -3868,7 +3845,7 @@ function goto_march_surprise_landing(to) {
 	march_with_group_1()
 }
 
-// === EVENTS: HOLD - SHIFT CYLINDER ===
+// === EVENTS: HOLD - ADD LORDSHIP ===
 
 function action_held_event_lordship(c) {
 	push_undo()
@@ -3897,59 +3874,10 @@ states.lordship = {
 	}
 }*/
 
-/*
-function prompt_shift_cylinder(list, boxes) {
-	// HACK: look at parent state to see if this can be used as a +2 Lordship event
-	let lordship = NOBODY
-	let parent = game.stack[game.stack.length - 1]
-	if (parent[0] === "levy_muster_lord")
-		lordship = parent[1]
-
-	let names
-	if (game.what === EVENT_RUSSIAN_PRINCE_OF_POLOTSK) {
-		names = "a Russian Lord"
-	} else {
-		names = []
-		for (let lord of list)
-			if (is_lord_on_calendar(lord))
-				names.push(lord_name[lord])
-		names = names.join(" or ")
-	}
-
-	if (boxes === 1)
-		view.prompt = `${data.cards[game.what].event}: Shift ${names} 1 Calendar box`
-	else
-		view.prompt = `${data.cards[game.what].event}: Shift ${names} 2 Calendar boxes`
-
-	for (let lord of list) {
-		if (lord === lordship) {
-			view.prompt += " or +2 Lordship"
-			view.actions.lordship = 1
-		}
-		if (is_lord_on_calendar(lord))
-			prompt_select_lord(lord)
-	}
-
-	view.prompt += "."
-
-	prompt_shift_lord_on_calendar(boxes)
-}
-
-function action_shift_cylinder_calendar(turn) {
-	log(`Shifted L${game.who} to ${turn}.`)
-	set_lord_calendar(game.who, turn)
-	game.who = NOBODY
-	end_held_event()
-}
-
-function action_shift_cylinder_lordship() {
-	end_held_event()
-	log("+2 Lordship")
-	game.count += 2
-}*/
-
 // === CAPABILITIES ===
 
+// When a lord levy a capability, its + Lordship 
+// effects and muster vassal applies instantly
 function capability_muster_effects(lord, c) {
 	if (c === AOW_LANCASTER_MONTAGU)
 		muster_vassal(VASSAL_MONTAGU, lord)
@@ -4158,6 +4086,7 @@ function end_levy_arts_of_war() {
 function goto_levy_muster() {
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 		clear_lords_moved()
+		// additionnal free specific actions
 		if (lord_has_capability(lord, AOW_LANCASTER_THOMAS_STANLEY))
 			game.flags.free_levy = 1
 		if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART))
@@ -4184,7 +4113,9 @@ function end_levy_muster() {
 }
 
 function reset_flags() {
+	// to avoid some flags affecting campaign
 	game.flags.jack_cade = 0
+	game.flags.parliament_votes = 0
 }
 
 function can_lord_muster(lord) {
@@ -4243,6 +4174,7 @@ states.levy_muster = {
 
 function resume_levy_muster_lord() {
 	--game.count
+	// muster over only if the lord has not spend their free levy actions
 	if (game.count === 0 && game.flags.jack_cade === 0 && game.flags.free_levy === 0 && can_add_troops(game.who, get_lord_locale(game.who))) {
 		set_lord_moved(game.who, 1)
 		pop_state()
@@ -4560,10 +4492,6 @@ states.muster_lord_at_seat = {
 	},
 	locale(loc) {
 		push_undo()
-
-		// FIXME: clean up these transitions
-		// TODO : INFLUENCE FAVOURING CURRENT SIDE
-		// TODO : IF SEAT WITH ENEMY LORD GOES WITH ANY FRIENDLY SEAT
 		set_lord_moved(game.who, 1)
 		muster_lord(game.who, loc)
 		if (game.active === YORK) {
@@ -4656,11 +4584,13 @@ function can_add_lord_capability(lord) {
 }
 
 function forbidden_levy_capabilities(c) {
+	// Some capabilities override the forbidden levy vassals 
 	if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES)) {
 		if (c === AOW_LANCASTER_THOMAS_STANLEY || AOW_LANCASTER_MY_FATHERS_BLOOD) {
 			return true
 		}
 	} 
+	// Forbids levy vassals, even through  capabilities
 	if (is_event_in_play(EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT)) {
 		if (c === AOW_LANCASTER_THOMAS_STANLEY 
 			|| c === AOW_LANCASTER_EDWARD 
@@ -4735,6 +4665,8 @@ function goto_levy_discard_events() {
 }
 
 // === CAMPAIGN: CAPABILITY DISCARD ===
+
+// NONE in Plantagenet. No Global Cap, only discard when disband
 
 // === CAMPAIGN: PLAN ===
 
@@ -4866,10 +4798,13 @@ function is_active_command() {
 		return game.active === LANCASTER
 }
 
+// First action vs actions that take full command card
 function is_first_action() {
 	return game.flags.first_action
 }
 
+// If march on a highway, set the flag so the lord can go through 
+// a second highway at no cost
 function is_first_march_highway() {
 	if (game.flags.first_march_highway === 1)
 		return true
@@ -4899,6 +4834,7 @@ function resume_command() {
 	game.state = "command"
 }
 
+// Spending an action reset some flags
 function spend_action(cost) {
 	game.flags.surprise_landing = 0
 	game.flags.first_action = 0
@@ -4924,7 +4860,6 @@ function end_command() {
 	log_br()
 
 	game.group = 0
-
 	game.flags.first_action = 0
 	game.flags.first_march_highway = 0
 	game.flags.famine = 0
@@ -4934,6 +4869,8 @@ function end_command() {
 	goto_feed()
 }
 
+
+// Captain capability (lieutenant/marshall only if no other)
 function other_marshal_or_lieutenant(lord, loc) {
 	let here = loc
 	let n = 0
@@ -5035,8 +4972,6 @@ states.command = {
 
 	lord(lord) {
 		set_toggle(game.group, lord)
-		/*if (is_upper_lord(lord))
-			set_toggle(game.group, get_lower_lord(lord))*/
 	},
 
 	card: action_held_event,
@@ -5049,6 +4984,7 @@ states.command = {
 
 // === INFLUENCE CHECKS ===
 
+// Bonus score but still maxed at 5
 function influence_capabilities(lord, score) {
 	let here = get_lord_locale(game.group)
 	if (game.active === YORK && is_event_in_play(EVENT_YORK_YORKIST_PARADE))
@@ -5075,6 +5011,7 @@ function influence_capabilities(lord, score) {
 	return score
 }
 
+// Cards that allows automatic success
 function automatic_success(lord, score) {	
 
 	if (lord_has_capability(lord, AOW_LANCASTER_TWO_ROSES))
@@ -5105,6 +5042,9 @@ function automatic_success(lord, score) {
 	return score
 }
 
+
+// Initiate influence check with cards influencing the cost overriding all others
+// (even automatic at no cost)
 function init_influence_check(lord) {
 	game.check = []
 	game.check.push({ cost: 1, modifier: 0, source: "base" })
@@ -5218,6 +5158,8 @@ function prompt_influence_check() {
 
 // === ACTION: PARLEY ===
 
+
+// TODO : FIX Parley through strongholds overseas
 function can_parley_at(loc) {
 	return !is_exile(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc)
 }
@@ -5536,6 +5478,8 @@ function format_group_move() {
 	return ""
 }
 
+
+// Wales forbidden to the lancastrians for march, sail, intercept
 function is_wales_forbidden(loc) {
 	if (game.active === LANCASTER && is_event_in_play(EVENT_YORK_OWAIN_GLYNDWR) && data.locales[loc].region === "Wales") 
 		return true
@@ -5601,6 +5545,8 @@ function march_with_group_1() {
 		march_with_group_2()
 }
 
+
+// No laden but re-used to discard extra provender
 states.march_laden = {
 	inactive: "March",
 	prompt() {
@@ -5719,6 +5665,9 @@ states.intercept = {
 		view.prompt = `Choose lord to intercept moving lords?`
 		let to = get_lord_locale(game.command)
 
+
+		// TODO : FLANK ATTACK through the held intercept 
+		// or held event but with more conditions (for example state = "intercept")
 		prompt_held_event_intercept()
 
 		if (game.who === NOBODY) {
@@ -5969,14 +5918,6 @@ function take_spoils(type) {
 }
 
 // === ACTION: SUPPLY (SEARCHING) ===
-
-// If Lord is in Exile: use ships and a port on the same sea.
-// If Lord is not in Exile or is in Scotland: use carts by way.
-// If Lord is in Exile in Scotland: may use carts by way to stronghold.
-// If source is stronghold: must use way.
-// Record number of carts needed in result map.
-
-// TODO: supply from scotland with carts? no ways defined in data
 
 function can_supply_at(loc, ships) {
 	// if theoretically possible to supply (does not check carts or ships)
@@ -6314,6 +6255,7 @@ function can_tax_at(here) {
 	return false
 }
 
+// adjacent friendly locales to an eligible stronghold (can_tax_at)
 function search_tax(result, start) {
 	let ships = get_shared_assets(start, SHIP)
 
@@ -6579,7 +6521,7 @@ states.sail = {
 			spend_action(1)
 		else 
 			spend_all_actions()
-
+		// you can go to unbesieged enemy lord with norfolk capability
 		if (has_unbesieged_enemy_lord(to))
 			goto_confirm_approach_sail()
 		else
@@ -6600,12 +6542,11 @@ states.confirm_approach_sail = {
 		view.actions.approach = 1
 	},
 	approach() {
-		push_undo() // TODO: why confirm if undo?
+		push_undo()
 		goto_battle()
 	},
 }
 // === CAPABILITY : WE DONE DEEDS OF CHARITY ===
-
 function tow_extra_ip() {
 	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
 		if (lord_has_capability(lord, AOW_YORK_WE_DONE_DEEDS_OF_CHARITY) && (get_lord_assets(lord, PROV) > 0 || get_shared_assets(lord, PROV) > 0))
@@ -6929,8 +6870,6 @@ function set_active_defender() {
 
 function goto_battle() {
 	start_battle()
-
-	//march_with_group_3()
 }
 
 function init_battle(here) {
@@ -6962,6 +6901,7 @@ function init_battle(here) {
 	}
 }
 
+// Capabilities adding troops at start of the battle
 function add_battle_capability_troops() {
 	let here = get_lord_locale(game.command)
 
@@ -7000,6 +6940,7 @@ function add_battle_capability_troops() {
 	}
 }
 
+//... And removing them at the end of the battle
 function remove_battle_capability_troops() {
 	let here = get_lord_locale(game.command)
 
@@ -7180,8 +7121,6 @@ function goto_array_defender() {
 		end_array_defender()
 }
 
-// NOTE: The order here can be easily change to attacker/sally/defender/rearguard if desired.
-
 function end_array_attacker() {
 	goto_defender_events()
 }
@@ -7359,6 +7298,7 @@ function prompt_battle_events_death() {
 		if (game.active === YORK) {
 			if (can_play_escape_ship())
 				gen_action_card_if_held(EVENT_YORK_ESCAPE_SHIP)	
+				gen_action_card_if_held(EVENT_YORK_ESCAPE_SHIP2)	
 		}
 		view.actions.done = 1
 }
@@ -7367,56 +7307,76 @@ function prompt_battle_events_death() {
 // === EVENT : ESCAPE SHIP === 
 
 function can_play_escape_ship() {
-	return true
+	return can_escape_at(game.battle.where)
 }
 
 function can_escape_at(here) {
-	if (!is_friendly_locale(here)) 
-		return false
-
-	return true
+	if (game.active === YORK && has_favoury_marker(here) && is_seaport(here)) 
+		return true
+	if (game.active === LANCASTER && has_favourl_marker(here) && is_seaport(here))
+		return true
+	if (search_escape_route(false, here))
+		return true
+	return false
 }
 
-function search_route(result, start) {
-	search_seen.fill(0)
-	search_seen[start] = 1
+function search_escape_route(start) {
+    search_seen.fill(0);
+    search_seen[start] = 1;
+    let queue = [start];
+    
+    while (queue.length > 0) {
+        let here = queue.shift();
+        let dist = search_dist[here];
+        let next_dist = dist + 1;
 
+        // Check if the current locale is a seaport
+        if (is_seaport(here)) {
+            return true;
+        }
 
-	let queue = [ start ]
-	while (queue.length > 0) {
-		let here = queue.shift()
-		let dist = search_dist[here]
-		let next_dist = dist + 1
-
-		if (can_escape_at(here)) {
-			if (result)
-				set_add(result, here)
-			else
-				return true
-		}
-
-		if (is_friendly_locale(here)) {
-			for (let next of data.locales[here].adjacent) {
-				if (!search_seen[next]) {
-					search_seen[next] = 1
-					queue.push(next)
-				}
-			}
-			if (is_seaport(here)) {
-				for (let next of find_ports(here)) {
-					if (!search_seen[next]) {
-						search_seen[next] = 1
-						queue.push(next)
-					}
-				}
-			}
-		}
-	}
-	if (result)
-		return result
-	else
-		return false
+        if (is_friendly_locale(here)) {
+            for (let next of data.locales[here].adjacent) {
+                if (!search_seen[next]) {
+                    search_seen[next] = 1;
+                    queue.push(next);
+                }
+            }
+        }
+    }
+    return false;
 }
+
+function goto_play_escape_ship() {
+	push_state("escape_ship")
+	game.who = NOBODY
+}
+
+
+states.escape_ship = {
+	inactive: `Escape ship`,
+	prompt() {
+		view.prompt = "Escape Ship: Your lords go to Exile."
+		gen_action("escape_ship")
+	},
+	escape_ship() {
+		push_undo()
+			for (let lord of game.battle.fled) {
+			log(`${lord_name[lord]} went to exile.`)
+			exile_lord(lord)
+			set_delete(game.battle.fled, lord)
+		}
+		for (let lord of game.battle.routed) {
+			log(`${lord_name[lord]} went to exile.`)
+			exile_lord(lord)
+			set_delete(game.battle.routed, lord)			
+		}
+		goto_battle_aftermath()
+	},
+}
+
+
+
 
 // === EVENT : WARDEN OF THE MARCHES === 
 
@@ -8682,12 +8642,6 @@ states.death_or_disband = {
 		if (is_lancaster_lord(lord) && game.flags.bloody === 1) {
 			log('BLOODY THOU ART, BLOODY WILL BE THE END')
 			disband_lord(lord, true)
-			set_delete(game.battle.fled, lord)
-			set_delete(game.battle.routed, lord)
-		}
-		else if (is_escape_ship_in_play())
-		{
-			exile_lord(lord)
 			set_delete(game.battle.fled, lord)
 			set_delete(game.battle.routed, lord)
 		}
