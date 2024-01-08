@@ -529,12 +529,9 @@ const EVENT_YORK_CALTROPS = Y19 // TODO
 // the lancastrianw ill himself put the hits between his lords
 const EVENT_YORK_YORKIST_PARADE = Y20 
 const EVENT_YORK_SIR_RICHARD_LEIGH = Y21
-const EVENT_YORK_LOYALTY_AND_TRUST = Y22 // TODO
-// Works like the + Lordship events in Nevsky
+const EVENT_YORK_LOYALTY_AND_TRUST = Y22
 const EVENT_YORK_CHARLES_THE_BOLD = Y23
-const EVENT_YORK_SUN_IN_SPLENDOUR = Y24 // TODO
-// Hold event only available in Levy.
-// Muster Edward IV at Any friendly locale (no seat needed) with no enemy lord
+const EVENT_YORK_SUN_IN_SPLENDOUR = Y24
 const EVENT_YORK_OWAIN_GLYNDWR = Y25
 const EVENT_YORK_DUBIOUS_CLARENCE = Y26
 const EVENT_YORK_YORKIST_NORTH = Y27
@@ -2287,9 +2284,9 @@ function goto_immediate_event(c) {
 		case EVENT_YORK_SUCCESSION:
 			set_add(game.events, c)
 			return end_immediate_event()
-		/*case EVENT_YORK_LOYALTY_AND_TRUST:
+		case EVENT_YORK_LOYALTY_AND_TRUST:
 			set_add(game.events, c)
-			return end_immediate_event()*/
+			return end_immediate_event()
 		case EVENT_YORK_OWAIN_GLYNDWR:
 			set_add(game.events, c)
 			return end_immediate_event()
@@ -3616,8 +3613,8 @@ function can_play_held_event(c) {
 			return can_play_y_aspielles()
 		case EVENT_YORK_YORKIST_PARADE:
 			return can_play_yorkist_parade()
-		/*case EVENT_YORK_SUN_IN_SPLENDOUR:
-			return can_play_sun_in_splendour()*/
+		case EVENT_YORK_SUN_IN_SPLENDOUR:
+			return can_play_sun_in_splendour()
 	}
 	return false
 }
@@ -3666,6 +3663,9 @@ function goto_held_event(c) {
 			break
 		case EVENT_LANCASTER_ASPIELLES:
 			goto_play_aspielles()
+			break
+		case EVENT_YORK_SUN_IN_SPLENDOUR:
+			goto_play_sun_in_splendour()
 			break
 	}
 }
@@ -3726,6 +3726,13 @@ function can_play_yorkist_parade() {
 	return false
 }
 
+function can_play_sun_in_splendour() {
+	if (is_levy_phase() && is_lord_on_calendar(LORD_EDWARD_IV)) {
+		return true
+	}
+	return false
+}
+
 function can_play_l_flank_attack() {
 	if (game.active === LANCASTER 
 		&& game.state === "intercept"
@@ -3749,6 +3756,44 @@ function can_play_y_flank_attack() {
 	}
 	return false
 }
+// === EVENTS : HOLD - SUN IN SPLENDOUR
+
+function goto_play_sun_in_splendour() {
+	push_state("sun_in_splendour")
+}
+
+states.sun_in_splendour = {
+	inactive: "Sun in splendour",
+	prompt() {
+		let done = true
+		view.prompt = "Sun in Splendour: Muster Edward IV in any friendly locale with no enemy lord"
+		if (is_lord_on_calendar(LORD_EDWARD_IV)) {
+			for (let loc = first_locale; loc <= last_locale; loc++) {
+				if (is_friendly_locale(loc)) {
+					done = false		
+					gen_action_locale(loc)
+				}
+			}
+		}
+		else {
+			view.actions.done = 1
+		}
+	},
+	locale(loc) {
+		push_undo()
+		muster_lord(LORD_EDWARD_IV, loc)
+		logi(`Mustered Edward IV at ${data.locales[loc].name}`)
+	},
+	done() {
+		end_sun_in_splendour()
+	},
+}
+
+function end_sun_in_splendour() {
+	game.who = NOBODY
+	pop_state()
+}
+
 
 // === EVENTS : HOLD - REBEL SUPPLY DEPOT ===
 
@@ -3953,6 +3998,7 @@ function capability_muster_effects(lord, c) {
 	if (c === AOW_YORK_BURGUNDIANS) {
 		if (is_seaport(get_lord_locale(lord) && !is_exile(get_lord_locale(lord)))) {
 			add_lord_forces(lord, BURGUNDIANS, 2)
+			logi(AOW_YORK_BURGUNDIANS)
 			game.flags.burgundians = 1
 		}
 		else {
@@ -4232,7 +4278,6 @@ states.levy_muster_lord = {
 		else
 			view.prompt = `Levy: ${lord_name[game.who]} has ${game.count} actions.`
 
-		prompt_held_event_lordship()
 		let here = get_lord_locale(game.who)
 
 		if (is_friendly_locale(here)) {
@@ -6732,6 +6777,7 @@ function count_deplete(loc) {
 function can_levy_burgundians(lord) {
 	if (is_seaport(get_lord_locale(lord)) && !is_exile(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_BURGUNDIANS) && game.flags.burgundians === 0) {
 		add_lord_forces(lord, BURGUNDIANS, 2)
+		logi(AOW_YORK_BURGUNDIANS)
 		game.flags.burgundians = 1
 	}
 }
@@ -8049,11 +8095,8 @@ function goto_engagement_total_hits() {
 
 	for (let pos of game.battle.engagements[0]) {
 		if (pos === A1 || pos === A2 || pos === A3) {
-			console.log(ahits)
 			ahits += game.battle.ah[pos]
-			console.log(ahits)
 			ahits += game.battle.attacker_artillery
-			console.log(ahits)
 		} else {
 			dhits += game.battle.ah[pos]
 			dhits += game.battle.defender_artillery
@@ -9226,6 +9269,7 @@ states.pay_lords = {
 		game.who = NOBODY
 
 	},
+	card: action_held_event,
 	done() {
 		end_pay_lords()
 	},
@@ -10257,23 +10301,9 @@ function gen_action_card_if_held(c) {
 		gen_action_card(c)
 }
 
-function prompt_select_lord_on_calendar(lord) {
-	if (lord !== game.who) {
-		if (is_lord_on_calendar(lord))
-			gen_action_lord(lord)
-		else
-			gen_action_service(lord)
-	}
-}
-
 function prompt_select_lord(lord) {
 	if (lord !== game.who)
 		gen_action_lord(lord)
-}
-
-function prompt_select_service(lord) {
-	if (lord !== game.who)
-		gen_action_service(lord)
 }
 
 function action_select_lord(lord) {
