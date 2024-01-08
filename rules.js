@@ -456,9 +456,7 @@ const EVENT_LANCASTER_BLOCKED_FORD = L11 // TODO
 // also note that there is a confirm_approach_sail state aswell.
 const EVENT_LANCASTER_RAVINE = L12 // TODO
 // Play at start of Battle after BATTLE ARRAY basically like Nevsky's Ambush
-const EVENT_LANCASTER_ASPIELLES = L13 // TODO
-// Play when you're the active player. Show all enemy Hidden cards and then
-// select one of enemy's Lord mats to show it to you. Perhaps write those in the log ?
+const EVENT_LANCASTER_ASPIELLES = L13
 const EVENT_LANCASTER_SCOTS = L14
 const EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT = L15
 const EVENT_LANCASTER_WARDEN_OF_THE_MARCHES = L16	 // TODO
@@ -478,10 +476,7 @@ const EVENT_LANCASTER_WARWICKS_PROPAGANDA2 = L24
 const EVENT_LANCASTER_WELSH_REBELLION = L25
 const EVENT_LANCASTER_HENRY_RELEASED = L26
 const EVENT_LANCASTER_LUNIVERSELLE_ARAGNE = L27
-const EVENT_LANCASTER_REBEL_SUPPLY_DEPOT = L28 // TODO
-// Hold event, play when active. After a March or a Sail action the card becomes
-// available to play and the lord (+ same as locale, like spoils), gain 4 provender
-// No feed at the end of the card.
+const EVENT_LANCASTER_REBEL_SUPPLY_DEPOT = L28
 const EVENT_LANCASTER_TO_WILFUL_DISOBEDIANCE = L29
 const EVENT_LANCASTER_FRENCH_WAR_LOANS = L30
 const EVENT_LANCASTER_ROBINS_REBELLION = L31
@@ -522,9 +517,7 @@ const EVENT_YORK_PARLIAMENT_TRUCE = Y12 // TODO
 // Can be played during Levy and Campaign
 // Read L11 Basically it forbids to go to locales where enemy are as long as
 // this event is active (until end of this campaign)
-const EVENT_YORK_ASPIELLES = Y13 // TODO
-// Play when you're the active player. Show all enemy Hidden cards and then
-// select one of enemy's Lord mats to show it to you. Perhaps write those in the log ?
+const EVENT_YORK_ASPIELLES = Y13
 const EVENT_YORK_RICHARD_OF_YORK = Y14 
 const EVENT_YORK_LONDON_FOR_YORK = Y15
 const EVENT_YORK_THE_COMMONS = Y16
@@ -562,10 +555,7 @@ const EVENT_YORK_THE_KINGS_NAME = Y32 // TODO
 const EVENT_YORK_EDWARD_V = Y33 
 const EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST = Y34
 const EVENT_YORK_PRIVY_COUNCIL = Y35 
-const EVENT_YORK_SWIFT_MANEUVER = Y36 // TODO
-// Hold Event Play in Battle after the BATTLE ARRAY step of the Battle
-// When this event is played, any Lancastrian retinue makes Yorkist able to immediately END THE ROUND
-// All other engagements, hits, etc. are skipped
+const EVENT_YORK_SWIFT_MANEUVER = Y36
 const EVENT_YORK_PATRICK_DE_LA_MOTE = Y37
 
 // Check all push/clear_undo
@@ -1816,7 +1806,8 @@ exports.setup = function (seed, scenario, options) {
 			succession:0,
 			jack_cade:0,
 			commons_militia:0,
-			swap_battle_attacker:0
+			swap_battle_attacker:0,
+			supply_depot:0
 		},
 
 		command: NOBODY,
@@ -2132,8 +2123,6 @@ function is_leeward_battle_line_in_play(lord) {
 	return false
 }
 
-
-
 function is_caltrops_in_play() {
 	if (game.active === YORK)
 		return is_event_in_play(EVENT_YORK_CALTROPS)
@@ -2145,8 +2134,7 @@ function is_regroup_in_play() {
 }
 
 function is_swift_maneuver_in_play() {
-	if (game.active === YORK)
-		return is_event_in_play(EVENT_YORK_SWIFT_MANEUVER)		
+	return is_event_in_play(EVENT_YORK_SWIFT_MANEUVER)		
 }
 
 function is_york_dominating_north() {
@@ -3616,8 +3604,8 @@ function can_play_held_event(c) {
 
 		case EVENT_LANCASTER_ASPIELLES:
 			return can_play_l_aspielles()
-	/*	case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
-			return can_play_rebel_supply_depot()*/
+		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
+			return can_play_rebel_supply_depot()
 		case EVENT_LANCASTER_SURPRISE_LANDING:
 			return can_play_surprise_landing()
 	/*	case EVENT_LANCASTER_PARLIAMENT_TRUCE:
@@ -3670,6 +3658,9 @@ function goto_held_event(c) {
 			break
 		case EVENT_LANCASTER_WARDEN_OF_THE_MARCHES:
 			break
+		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
+			goto_rebel_supply_depot()
+			break
 		case EVENT_LANCASTER_SURPRISE_LANDING:
 			goto_play_surprise_landing()
 			break
@@ -3711,9 +3702,11 @@ function can_play_y_parliament_truce() {
 
 
 function can_play_rebel_supply_depot() {
-	for (let lord of game.group) {
-		if (get_lord_moved(lord) && is_seaport(get_lord_locale(game.command))) {
-			return true
+	if (game.group) {
+		for (let lord of game.group) {
+			if (get_lord_moved(lord) && is_seaport(get_lord_locale(game.command))) {
+				return true
+			}
 		}
 	}
 	return false
@@ -3757,9 +3750,53 @@ function can_play_y_flank_attack() {
 	return false
 }
 
+// === EVENTS : HOLD - REBEL SUPPLY DEPOT ===
+
+function goto_rebel_supply_depot() {
+	game.flags.supply_depot = 1
+	add_spoils(PROV, 4)
+	push_state("rebel_supply_depot")
+}
+
+
+states.rebel_supply_depot = {
+	inactive: "Rebel Supply depot",
+	prompt() {
+		if (has_any_spoils()) {
+			view.prompt = "Divide " + list_spoils() + "."
+			let here = get_lord_locale(game.command)
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+				if (get_lord_locale(lord) === here)
+					prompt_select_lord(lord)
+				if (game.who !== NOBODY)
+					prompt_spoils()
+			}
+		} else {
+		view.prompt = "Rebel Supply Depot: All done."
+		view.actions.end_spoils = 1
+		}
+	},
+	lord: action_select_lord,
+	take_prov() {
+		push_undo_without_who()
+		take_spoils(PROV)
+	},
+	end_spoils() {
+		clear_undo()
+		end_rebel_supply_depot()
+	},
+}
+
+function end_rebel_supply_depot() {
+	game.who = NOBODY
+	game.spoils = 0
+	resume_command()
+}
+
 // === EVENTS: HOLD - ASPIELLES ===
 
 function goto_play_aspielles() {
+	clear_undo()
 	push_state("aspielles")
 	game.who = NOBODY
 }
@@ -6103,7 +6140,7 @@ states.supply_source = {
 		if (carts > 0)
 			view.prompt += ` ${carts} Cart.`
 		if (ships > 0)
-			view.prompt += ` ${carts} Ship.`
+			view.prompt += ` ${ships} Ship.`
 
 		for (let i = 0; i < game.supply.length; i += 2)
 			gen_action_locale(game.supply[i])
@@ -8327,6 +8364,11 @@ function action_assign_hits(lord, type, special) {
 				game.where = special
 		} else {
 			rout_unit(lord, type, special)
+			// Switf Maneuver event
+			if (is_swift_maneuver_in_play() && type === RETINUE) {
+				set_active_enemy()
+				push_state("swift_maneuver")
+			}
 			finish_action_assign_hits(lord)
 		}
 	} else {
@@ -8372,6 +8414,31 @@ states.spend_valour = {
 		} else {
 			finish_action_assign_hits(game.who)
 		}
+	},
+}
+
+
+
+states.swift_maneuver = {
+	inactive: "Swift Maneuver",
+	prompt() {
+		view.prompt = "Swift Maneuver: You may end the round now"
+		view.actions.end_battle_round = 1
+		view.actions.pass = 1
+	},
+	end_battle_round() {
+		clear_undo()
+		logi(EVENT_YORK_SWIFT_MANEUVER)
+		log("Ended Action Round.")
+		set_active_enemy()
+		goto_end_battle_round()
+	},
+	pass() {
+		clear_undo()
+		logi(EVENT_YORK_SWIFT_MANEUVER)
+		log("Passed.")
+		set_active_enemy()
+		pop_state()
 	},
 }
 
@@ -8793,6 +8860,11 @@ function can_pay_from_shared(lord) {
 }
 
 function has_friendly_lord_who_must_feed() {
+	if (is_campaign_phase() && game.flags.supply_depot === 1 && game.active === LANCASTER) {
+		game.flags.supply_depot = 0
+		logi(`No feed ${EVENT_LANCASTER_REBEL_SUPPLY_DEPOT}`)
+		return false
+	}
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
 		if (is_lord_unfed(lord))
 			return true

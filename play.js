@@ -1694,6 +1694,7 @@ function on_update() {
 
 	action_button("end_wastage", "End Wastage")
 	action_button("end_withdraw", "End Withdraw")
+	action_button("end_battle_round", "End Round")
 
 	// ADDING TROOPS THROUGH EVENTS
 	action_button("add_militia", "Add Militia")
