@@ -1804,7 +1804,9 @@ exports.setup = function (seed, scenario, options) {
 			jack_cade:0,
 			commons_militia:0,
 			swap_battle_attacker:0,
-			supply_depot:0
+			supply_depot:0,
+			loyalty_and_trust:0,
+			warden_of_the_marches:0
 		},
 
 		command: NOBODY,
@@ -3577,12 +3579,6 @@ function prompt_held_event() {
 			gen_action_card(c)
 }
 
-function prompt_held_event_lordship() {
-	for (let c of current_hand())
-		if (can_play_held_event(c) || can_play_held_event_lordship(c))
-			gen_action_card(c)
-}
-
 function prompt_held_event_intercept() {
 	for (let c of current_hand())
 		if (can_play_held_event(c) || can_play_held_event_intercept(c))
@@ -3654,6 +3650,7 @@ function goto_held_event(c) {
 		case EVENT_LANCASTER_TALBOT_TO_THE_RESCUE:
 			break
 		case EVENT_LANCASTER_WARDEN_OF_THE_MARCHES:
+			goto_play_warden_of_the_marches()
 			break
 		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
 			goto_rebel_supply_depot()
@@ -3933,35 +3930,6 @@ function goto_march_surprise_landing(to) {
 	march_with_group_1()
 }
 
-// === EVENTS: HOLD - ADD LORDSHIP ===
-
-function action_held_event_lordship(c) {
-	push_undo()
-	play_held_event(c)
-	if (can_play_held_event(c)) {
-		goto_held_event(c)
-		game.what = c
-	} else {
-		push_state("lordship")
-		game.what = c
-	}
-}
-/*
-states.lordship = {
-	get inactive() {
-		return data.cards[game.what].event
-	},
-	prompt() {
-		view.prompt = `${data.cards[game.what].event}: Play for +2 Lordship.`
-		view.actions.lordship = 1
-	},
-	lordship() {
-		end_held_event()
-		log("+2 Lordship")
-		game.count += 2
-	}
-}*/
-
 // === CAPABILITIES ===
 
 // When a lord levy a capability, its + Lordship 
@@ -4013,7 +3981,7 @@ function lordship_effects(lord) {
 	if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
 		game.count += 1
 	if (is_event_in_play(EVENT_YORK_EDWARD_V) && (lord === LORD_GLOUCESTER_1 || lord ===LORD_GLOUCESTER_2))
-		game.count +=3
+		game.count += 3
 	if (is_lancaster_lord(lord) && is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES)) {
 		game.flags.parliament_votes = 1
 	}
@@ -4182,6 +4150,8 @@ function goto_levy_muster() {
 			game.flags.free_parley_henry = 2
 		if (is_event_in_play(EVENT_YORK_GLOUCESTER_AS_HEIR))
 			game.flags.free_parley_gloucester = 3
+		if (is_event_in_play(EVENT_YORK_LOYALTY_AND_TRUST))
+			game.flags.loyalty_and_trust = 1
 	}
 	if (game.active === YORK)
 		log_h2("York Muster")
@@ -4258,6 +4228,7 @@ states.levy_muster = {
 		clear_undo()
 		end_levy_muster()
 	},
+
 	card: action_held_event,
 }
 
@@ -4323,6 +4294,10 @@ states.levy_muster_lord = {
 			if (game.count === 0 && lord_has_capability(AOW_LANCASTER_THOMAS_STANLEY) && can_add_troops(game.who, here)) {
 				view.actions.levy_troops = 1
 			}
+			// Rising wages event
+			if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && !can_pay_from_shared(game.who)) {
+				view.actions.levy_troops = 0
+			}
 			if (game.count === 0 && game.flags.free_parley_henry > 0 && game.who === LORD_HENRY_VI) {
 				view.actions.parley = 1
 			}
@@ -4340,12 +4315,12 @@ states.levy_muster_lord = {
 					view.actions.parley = 1
 			}
 		}
+		if (is_event_in_play(EVENT_YORK_LOYALTY_AND_TRUST) && game.flags.loyalty_and_trust) {
+			view.actions.loyalty_and_trust = 1
+		}
 
 		view.actions.done = 1
 	},
-
-	card: action_held_event_lordship,
-
 	lord(other) {
 		push_undo()
 		goto_levy_muster_lord_attempt(other)
@@ -4368,6 +4343,9 @@ states.levy_muster_lord = {
 	},
 	levy_troops() {
 		push_undo()
+		if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && game.active === YORK) {
+			push_state("rising_wages")
+		}
 		let locale = data.locales[get_lord_locale(game.who)].type
 		if (
 			!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS) &&
@@ -4407,7 +4385,7 @@ states.levy_muster_lord = {
 			++game.count
 			game.flags.free_levy = 0
 		}
-		if (is_event_in_play(EVENT_YORK_THE_COMMONS)) {
+		if (is_event_in_play(EVENT_YORK_THE_COMMONS) && game.flags.loyalty_and_trust) {
 			push_undo()
 			game.flags.commons_militia = 2
 			game.state = "the_commons"
@@ -4444,12 +4422,43 @@ states.levy_muster_lord = {
 		push_undo()
 		goto_parley()
 	},
-
+	loyalty_and_trust() {
+		push_undo()
+		game.count += 3
+		game.flags.loyalty_and_trust = 0
+	},
 	done() {
 		set_lord_moved(game.who, 1)
 		pop_state()
 	},
 }
+
+// === EVENT : RISING WAGES ===
+
+
+
+states.rising_wages = {
+	inactive: "Rising Wages",
+	prompt() {
+		let done = true
+		let here = get_lord_locale(game.who)
+		view.prompt = "Rising Wages: Pay 1 extra coin to levy troops"
+		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+			loc = get_lord_locale(lord)
+			if (here === loc && (get_lord_assets(lord, COIN) > 0)) {
+				gen_action_coin(lord)
+			}
+		}
+	},
+	coin(lord) {
+		push_undo()
+		add_lord_assets(lord, PROV, -1)
+		logi(`${EVENT_LANCASTER_RISING_WAGES}`)
+		log("York paid 1 Coin to Levy troops")
+	},
+}
+
+// Check if the levy troops is at vassal seat 
 
 function chamberlains_eligible_levy(locale) {
 	for (let vassal = first_vassal; vassal <= last_vassal; ++vassal)
@@ -4460,6 +4469,7 @@ function chamberlains_eligible_levy(locale) {
 	}
 }
 
+// === EVENT: THE COMMONS ===
 
 states.the_commons = {
 	inactive: "The Commons",
@@ -4481,6 +4491,7 @@ states.the_commons = {
 	}
 }
 
+// === CAPABILITY: SOLDIERS OF FORTUNE
 
 states.soldier_of_fortune = {
 	inactive: "Levy Troops",
@@ -7391,6 +7402,55 @@ function prompt_battle_events_death() {
 		view.actions.done = 1
 }
 
+// === EVENT : WARDEN OF THE MARCHES === 
+
+function can_play_warden_of_the_marches() {
+	if (data.locales[game.battle.where].region === "North") 
+		return true
+	return false
+}
+
+function goto_play_warden_of_the_marches() {
+	push_undo()
+	push_state("warden_of_the_marches")
+}
+
+
+states.warden_of_the_marches = {
+	inactive: "Warden of the Marches",
+	prompt() {
+		let done = true
+		view.prompt = "Warden of the Marches: Select a friendly locale in the North to move routed lords there"
+		for (let loc = first_locale; loc <= last_locale; loc++) {
+			if (is_friendly_locale(loc) && in_north(loc) && loc !== game.battle.where) {
+				done = false		
+				gen_action_locale(loc)
+			}
+		}
+		if (done) {
+			view.actions.done = 1
+		}
+	},
+	locale(loc) {
+		push_undo()
+		for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; lord++) {
+			if (get_lord_locale(lord) === game.battle.where) {
+				set_lord_locale(lord, loc)
+			}
+		}
+		logi(`Moved to ${data.locales[loc].name}`)
+		end_warden_of_the_marches()
+	},
+	done() {
+		end_warden_of_the_marches()
+	},
+}
+
+function end_warden_of_the_marches() {
+	game.flags.warden_of_the_marches = 1
+	game.who = NOBODY
+	pop_state()
+}
 
 // === EVENT : ESCAPE SHIP === 
 
@@ -7464,15 +7524,6 @@ states.escape_ship = {
 }
 
 
-
-
-// === EVENT : WARDEN OF THE MARCHES === 
-
-function can_play_warden_of_the_marches() {
-	if (data.locales[game.battle.where].region === "North") 
-		return true
-	return false
-}
 
 // === EVENT : TALBOT TO THE RESCUE === 
 
@@ -8813,6 +8864,7 @@ states.death_or_disband = {
 		view.prompt = `Death or Disband: Select lords to roll for Death or Disband.`
 
 		prompt_battle_events_death()
+
 		let done = true
 		for (let lord of game.battle.fled) {
 			if (is_friendly_lord(lord)) {
@@ -8828,6 +8880,9 @@ states.death_or_disband = {
 				view.actions.done = 0 // That shouldn't necessary but it is ?
 			}
 		}
+		if (game.flags.warden_of_the_marches && game.active === LANCASTER) {
+			done = true
+		} 
 		if (done) {
 			view.actions.done = 1
 		}
