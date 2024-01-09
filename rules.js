@@ -5725,7 +5725,7 @@ function goto_intercept() {
 	let here = get_lord_locale(game.command)
 	for (let next of data.locales[here].not_paths) {
 		if (has_enemy_lord(next)) {
-			if (is_wales_forbidden(next)) {
+			if (!is_wales_forbidden(next)) {
 				clear_undo()
 				game.state = "intercept"
 				set_active_enemy()
