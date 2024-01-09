@@ -387,7 +387,7 @@ const AOW_LANCASTER_THOMAS_STANLEY = L35
 const AOW_LANCASTER_CHEVALIERS = L36
 const AOW_LANCASTER_MADAME_LA_GRANDE = L37
 
-const AOW_YORK_CULVERINS_AND_FALCONETS = [Y1, Y2] // TODO
+const AOW_YORK_CULVERINS_AND_FALCONETS = [Y1, Y2]
 const AOW_YORK_MUSTERD_MY_SOLDIERS = Y3
 const AOW_YORK_WE_DONE_DEEDS_OF_CHARITY = Y4
 const AOW_YORK_THOMAS_BOURCHIER = Y5
@@ -428,20 +428,13 @@ const EVENT_LANCASTER_FLANK_ATTACK = L2 // TODO
 // Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
 const EVENT_LANCASTER_ESCAPE_SHIP = L3
 const EVENT_LANCASTER_BE_SENT_FOR = L4
-const EVENT_LANCASTER_SUSPICION = L5 // TODO
-// Hold Event. Play at start of Battle AFTER ARRAY. Chose one friendly lord.
-// then choose enemy lord with Lower MODIFIED influence rating
-// (through capabilities - function influence_capabilities())
-// Influence check (cost is always 1)
-// Success = disband enemy lord Failure no effect
+const EVENT_LANCASTER_SUSPICION = L5
 const EVENT_LANCASTER_SEAMANSHIP = L6
 const EVENT_LANCASTER_FOR_TRUST_NOT_HIM = L7 // TODO
 // Hold Event. Play at start of Battle AFTER ARRAY. Cost is always 1 + vassal modifier (		modifier: data.vassals[vassal].influence * (game.active === LANCASTER ? -1 : 1))
 // Y7 DO NOT override this event.
 const EVENT_LANCASTER_FORCED_MARCHES = L8
-const EVENT_LANCASTER_RISING_WAGES = L9 // TODO
-// This Levy Yorkist can share the coin. Basically pay one coin. I don't know if it's better
-// to use a new state to force the player to spend the coin or not
+const EVENT_LANCASTER_RISING_WAGES = L9
 const EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT = L10
 const EVENT_LANCASTER_BLOCKED_FORD = L11 // TODO
 // Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
@@ -459,9 +452,7 @@ const EVENT_LANCASTER_RAVINE = L12 // TODO
 const EVENT_LANCASTER_ASPIELLES = L13
 const EVENT_LANCASTER_SCOTS = L14
 const EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT = L15
-const EVENT_LANCASTER_WARDEN_OF_THE_MARCHES = L16	 // TODO
-// Play during Death and Disband step of Battle. All routed (flee or not)
-// select a stronghold in the north and go there (they will need to feed)
+const EVENT_LANCASTER_WARDEN_OF_THE_MARCHES = L16
 const EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART = L17
 const EVENT_LANCASTER_PARLIAMENT_VOTES = L18
 const EVENT_LANCASTER_HENRYS_PROCLAMATION = L19
@@ -493,12 +484,7 @@ const EVENT_YORK_FLANK_ATTACK = Y2 // TODO
 // Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
 const EVENT_YORK_ESCAPE_SHIP = [Y3 , Y9]
 const EVENT_YORK_JACK_CADE = Y4
-const EVENT_YORK_SUSPICION = Y5 // TODO
-// Hold Event. Play at start of Battle AFTER ARRAY. Chose one friendly lord.
-// then choose enemy lord with Lower MODIFIED influence rating
-// (through capabilities - function influence_capabilities())
-// Influence check (cost is always 1)
-// Success = disband enemy lord Failure no effect
+const EVENT_YORK_SUSPICION = Y5
 const EVENT_YORK_SEAMANSHIP = Y6
 const EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT = Y7
 const EVENT_YORK_EXILE_PACT = Y8
@@ -2240,9 +2226,9 @@ function goto_immediate_event(c) {
 		case EVENT_LANCASTER_FORCED_MARCHES:
 			set_add(game.events, c)
 			return end_immediate_event()
-		/*case EVENT_LANCASTER_RISING_WAGES:
+		case EVENT_LANCASTER_RISING_WAGES:
 			set_add(game.events, c)
-			return end_immediate_event()*/
+			return end_immediate_event()
 		case EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT:
 			set_add(game.events, c)
 			return end_immediate_event()
@@ -4444,7 +4430,7 @@ states.rising_wages = {
 		let here = get_lord_locale(game.who)
 		view.prompt = "Rising Wages: Pay 1 extra coin to levy troops"
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			loc = get_lord_locale(lord)
+			let loc = get_lord_locale(lord)
 			if (here === loc && (get_lord_assets(lord, COIN) > 0)) {
 				gen_action_coin(lord)
 			}
@@ -4452,9 +4438,10 @@ states.rising_wages = {
 	},
 	coin(lord) {
 		push_undo()
-		add_lord_assets(lord, PROV, -1)
+		add_lord_assets(lord, COIN, -1)
 		logi(`${EVENT_LANCASTER_RISING_WAGES}`)
 		log("York paid 1 Coin to Levy troops")
+		pop_state()
 	},
 }
 
@@ -5181,7 +5168,7 @@ function count_influence_score() {
 
 	// Space for whose lord has been selected for SUSPICION EVENT
 
-	score = influence_capabilities(lord, score)
+	score = (lord, score)
 
 	if (score > 5)
 		score = 5
@@ -7565,30 +7552,108 @@ function action_battle_events(c) {
 		switch (c) {
 			case EVENT_LANCASTER_LEEWARD_BATTLE_LINE:
 			case EVENT_LANCASTER_SUSPICION:
-			//	game.state = "suspicion"
+				game.state = "suspicion"
 			case EVENT_LANCASTER_FOR_TRUST_NOT_HIM:
 			//	game.state = "for_trust_not_him"
 			case EVENT_LANCASTER_RAVINE:
 			//	game.state = "ravine"
 			case EVENT_YORK_LEEWARD_BATTLE_LINE:
 			case EVENT_YORK_SUSPICION:
-			//	game.state = "suspicion"
+				game.state = "suspicion"
 			case EVENT_YORK_CALTROPS:
 			case EVENT_YORK_REGROUP:
 			case EVENT_YORK_SWIFT_MANEUVER:
 		}
 }
 
+// === EVENT : SUSPICION ===
+
 states.suspicion = {
 	inactive: "Suspicion",
 	prompt() {
-		view.prompt = "Suspicion: Check enemy lord to disband him"
-		view.actions.done = 1
+		view.prompt = "Suspicion: Check one of your lords to influence check"
+		for (let lord of game.battle.array) {
+			if (is_friendly_lord(lord)) {
+				gen_action_lord(lord)
+			}
+		}
+		for (let lord of game.battle.reserves) {
+			if (is_friendly_lord(lord)) {
+				gen_action_lord(lord)
+			}
+		}
 	},
-	done() {
-		end_defender_events()
+	lord(lord) {
+		game.who = lord
+		push_undo()
+		push_state("suspicion_enemy_lord")
 	},
 }
+
+states.suspicion_enemy_lord = {
+	inactive: "Suspicion",
+	prompt() {
+		view.prompt = "Suspicion: Select one enemy lord to influence check"
+		for (let lord of game.battle.array) {
+			if (is_enemy_lord(lord)) {
+				if (suspicion_lord_score(game.who, data.lords[game.who].influence) > data.lords[lord].influence) {
+					gen_action_lord(lord)
+				}
+			}
+		}
+	},
+	lord(lord) {
+		push_undo()
+		push_state("influence_check_suspicion")
+		init_influence_check(game.who)
+		game.who = lord
+	},
+}
+
+function suspicion_lord_score(lord, score) {
+	influence_capabilities(lord, score)
+		return score
+}
+
+states.influence_check_suspicion = {
+	inactive: `Influence check`,
+	prompt() {
+		view.prompt = `Influence check : Success disbands enemy lord `
+		prompt_influence_check()
+	},
+	spend1: add_influence_check_modifier_1,
+	spend3: add_influence_check_modifier_2,
+	check() {
+		let lord = game.who
+		let results = do_influence_check()
+		logi(`Attempt to disband ${data.lords[lord].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		if (results.success) {
+			clear_undo()
+			log(`${data.lords[lord].name} disbanded`)
+			for (let x = 0; x < 6; x++) {
+				if (game.battle.array[x] === lord) {
+					game.battle.array[x] = NOBODY
+					break
+				}
+				else if (set_has(game.battle.reserves, lord)) {
+					array_remove(game.battle.reserves, lord)
+				}
+			}
+			disband_lord(lord)
+			game.who = NOBODY
+			end_influence_check()
+			resume_battle_events()
+		} else {
+			clear_undo()
+			log(`${data.lords[lord].name} stays`)
+			game.who = NOBODY
+			end_influence_check()
+			resume_battle_events()
+		}
+	},
+}
+
+// === EVENT : FOR TRUST NOT HIM ===
 
 states.for_trust_not_him = {
 	inactive: "For trust not him",
@@ -8602,7 +8667,6 @@ function end_battle() {
 		log_h4(`${game.battle.loser} Lost`)
 
 	game.battle.array = 0
-
 	goto_battle_influence()
 }
 
