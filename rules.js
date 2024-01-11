@@ -475,8 +475,7 @@ const EVENT_LANCASTER_TUDOR_BANNERS = L32
 const EVENT_LANCASTER_SURPRISE_LANDING = L33
 const EVENT_LANCASTER_BUCKINGHAMS_PLOT = L34
 const EVENT_LANCASTER_MARGARET_BEAUFORT = L35
-const EVENT_LANCASTER_TALBOT_TO_THE_RESCUE = L36 // TODO
-// Play at Death and Disband state. Highlight to disband rather than rolling for death.
+const EVENT_LANCASTER_TALBOT_TO_THE_RESCUE = L36
 const EVENT_LANCASTER_THE_EARL_OF_RICHMOND = L37
 
 const EVENT_YORK_LEEWARD_BATTLE_LINE = Y1
@@ -4320,11 +4319,17 @@ states.levy_muster_lord = {
 	take_ship() {
 		push_undo()
 		add_lord_assets(game.who, SHIP, 1)
+		if (eligible_kings_name()) {
+			goto_kings_name("levy ship")
+		}
 		resume_levy_muster_lord()
 	},
 	take_cart() {
 		push_undo()
 		add_lord_assets(game.who, CART, 2)
+		if (eligible_kings_name()) {
+			goto_kings_name("levy cart")
+		}
 		resume_levy_muster_lord()
 	},
 	levy_troops() {
@@ -4419,9 +4424,58 @@ states.levy_muster_lord = {
 	},
 }
 
+// === EVENT : THE KINGS NAME ===
+
+function eligible_kings_name() {
+	if ((!is_lord_on_calendar(LORD_GLOUCESTER_1) && is_lord_on_map(LORD_GLOUCESTER_1))
+	|| (!is_lord_on_calendar(LORD_GLOUCESTER_2) && is_lord_on_map(LORD_GLOUCESTER_2))) {
+			if (is_event_in_play(EVENT_YORK_THE_KINGS_NAME) && game.active === LANCASTER)
+				return true 
+	}
+	return false
+}
+
+function goto_kings_name(action) {
+	clear_undo()
+	set_active_enemy()
+	game.what = action
+	push_state("kings_name")
+}
+
+
+states.kings_name = {
+	inactive: `King's name`,
+	prompt() {
+		view.prompt = `King's Name: You pay may 1 Influence to cancel last ${game.what}`
+	},
+	pay() {
+		push_undo()
+		reduce_influence(1)
+		goto_kings_name_cancel()
+	},
+		pass() {
+		set_active_enemy()
+		resume_levy_muster_lord()
+	}
+}
+
+
+function goto_kings_name_cancel() {
+	switch(game.what) {
+		case "levy cart":
+			add_lord_assets(game.who, CART, -2)
+		case "levy ship":
+			add_lord_assets(game.who, SHIP, -1)
+		
+
+	logi(EVENT_YORK_THE_KINGS_NAME)
+	log(`${game.what} action cancelled`)
+
+}
+
+
+}
 // === EVENT : RISING WAGES ===
-
-
 
 states.rising_wages = {
 	inactive: "Rising Wages",
@@ -4618,6 +4672,8 @@ states.levy_muster_lord_attempt = {
 		log(`Attempt to levy L${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
 		if (results.success) {
+			if (eligible_kings_name())
+				goto_kings_name("levy lord")
 			push_state("muster_lord_at_seat")
 			game.who = game.what
 		} else {
@@ -5540,6 +5596,9 @@ states.levy_muster_vassal = {
 		}
 
 		if (results.success) {
+			if (eligible_kings_name("levy_vassal")) {
+				goto_kings_name()
+			}
 			muster_vassal(game.what, game.who)
 		}
 
