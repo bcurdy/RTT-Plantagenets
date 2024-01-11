@@ -527,13 +527,7 @@ const EVENT_YORK_REGROUP = Y30 // TODO
 // If played when Yorkist active they pay click on that event to make the lord recover his TROOPS (no vassals/retinue)
 // for recover per armour
 const EVENT_YORK_EARL_RIVERS = Y31
-const EVENT_YORK_THE_KINGS_NAME = Y32 // TODO
-// This Levy, Probably most annoying event.
-// Gloucester 1 or 2 may cancel each lancastrian Levy action by paying 1 influence point
-// Parley, Levy Troops, Levy vassals, Levy other Lord, Levy Transport or Capability)
-// The cancellation happens AFTER the result of the action is done.
-// The influence point expenditure from Levy other lord, vassals, troops is still done
-// But the Depletion from Levy Troops is undone
+const EVENT_YORK_THE_KINGS_NAME = Y32 // TODO CHECK ALL CASES, IMPROVE PROMPTS/QOL
 const EVENT_YORK_EDWARD_V = Y33 
 const EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST = Y34
 const EVENT_YORK_PRIVY_COUNCIL = Y35 
@@ -2283,9 +2277,9 @@ function goto_immediate_event(c) {
 		case EVENT_YORK_DORSET:
 			set_add(game.events, c)
 			return end_immediate_event()
-		/*case EVENT_YORK_THE_KINGS_NAME:
+		case EVENT_YORK_THE_KINGS_NAME:
 			set_add(game.events, c)
-			return end_immediate_event()*/
+			return end_immediate_event()
 		case EVENT_YORK_EDWARD_V:
 			set_add(game.events, c)
 			return end_immediate_event()
@@ -4388,27 +4382,34 @@ states.levy_muster_lord = {
 	levy_beloved_warwick() {
 		push_undo()
 		add_lord_forces(game.who, MILITIA, 5)
+		if (eligible_kings_name()) {
+			goto_kings_name("levy beloved warwick")
+		}
 		resume_levy_muster_lord()
 	},
 
 	levy_irishmen() {
 		push_undo()
 		add_lord_forces(game.who, MILITIA, 5)
+		if (eligible_kings_name()) {
+			goto_kings_name("levy irishmen")
+		}
 		resume_levy_muster_lord()
 	},
 
 	soldiers_of_fortune() {
 		push_undo()
+		if (eligible_kings_name()) {
+			goto_kings_name("levy irishmen")
+		}
 		set_lord_unfed(game.who, 1)
 		push_state("soldier_of_fortune")
-
 	},
 
 	capability() {
-		push_undo()
+		push_undo()		
 		push_state("muster_capability")
 	},
-
 	parley() {
 		push_undo()
 		goto_parley()
@@ -4446,19 +4447,18 @@ function goto_kings_name(action) {
 states.kings_name = {
 	inactive: `King's name`,
 	prompt() {
-		view.prompt = `King's Name: You pay may 1 Influence to cancel last ${game.what}`
+		view.prompt = `King's Name: You pay may 1 Influence to cancel last ${game.what} action`
 	},
 	pay() {
 		push_undo()
 		reduce_influence(1)
 		goto_kings_name_cancel()
 	},
-		pass() {
+	pass() {
 		set_active_enemy()
-		resume_levy_muster_lord()
+		pop_state()
 	}
 }
-
 
 function goto_kings_name_cancel() {
 	switch(game.what) {
@@ -4466,14 +4466,17 @@ function goto_kings_name_cancel() {
 			add_lord_assets(game.who, CART, -2)
 		case "levy ship":
 			add_lord_assets(game.who, SHIP, -1)
-		
+		case "levy beloved warwick":
+			add_lord_forces(game.who, MILITIA, -5)
+		case "levy irishmen":
+			add_lord_forces(game.who, MILITIA, -5)
+
+		default:
 
 	logi(EVENT_YORK_THE_KINGS_NAME)
 	log(`${game.what} action cancelled`)
-
-}
-
-
+	}
+	resume_levy_muster_lord()
 }
 // === EVENT : RISING WAGES ===
 
@@ -4790,6 +4793,10 @@ states.muster_capability = {
 		}
 	},
 	card(c) {
+		if (eligible_kings_name()) {
+			log(`${game.who} is mustering ${c}`)
+			goto_kings_name("capability")
+		}
 		add_lord_capability(game.who, c)
 		capability_muster_effects(game.who, c)
 		pop_state()
@@ -4797,7 +4804,7 @@ states.muster_capability = {
 	},
 }
 
-// === LEVY: CALL TO ARMS ===
+// === LEVY: DISCARD EVENTS ===
 
 function goto_levy_discard_events() {
 	// Discard "This Levy" events from play.
@@ -4805,10 +4812,6 @@ function goto_levy_discard_events() {
 	discard_extra_levy_events()
 	goto_campaign_plan()
 }
-
-// === CAMPAIGN: CAPABILITY DISCARD ===
-
-// NONE in Plantagenet. No Global Cap, only discard when disband
 
 // === CAMPAIGN: PLAN ===
 
@@ -5527,6 +5530,10 @@ states.parley = {
 			log(`Attempt to Parley at %${game.where} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
 		if (results.success) {
+			if (eligible_kings_name()) {
+				log(`${game.who} is mustering ${c}`)
+				goto_kings_name("parley")
+			}
 			shift_favour_toward(game.where)
 		}
 		end_parley()
