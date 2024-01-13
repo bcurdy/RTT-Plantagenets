@@ -3896,17 +3896,11 @@ states.surprise_landing = {
 						gen_action_lord(lord)
 					}
 		}
+
 		prompt_march()
 	},
-	locale: goto_march_surprise_landing,
+	locale: goto_march,
 	card: action_held_event,
-}
-
-function goto_march_surprise_landing(to) {
-	push_undo()
-	let from = get_lord_locale(game.command)
-	game.march = { from, to, avoid: -1 }
-	march_with_group_1()
 }
 
 // === CAPABILITIES ===
@@ -5766,7 +5760,7 @@ function march_with_group_2() {
 	for (let lord of game.group) {
 		set_lord_locale(lord, to)
 		set_lord_moved(lord, 1)
-		can_levy_burgundians(lord)
+		levy_burgundians(lord)
 	}
 
 	goto_intercept()
@@ -5876,11 +5870,7 @@ states.intercept = {
 
 function goto_intercept_march() {
 	if (count_group_transport(game.intercept_group) >= count_group_assets(PROV, game.intercept_group)) {
-		for (let lord of game.intercept_group) {
-			set_lord_locale(lord, get_lord_locale(game.command))
-			set_lord_moved(lord, 1)
-		}
-		end_intercept_march()
+		do_intercept_march()
 	} else {
 		game.state = "intercept_march"
 	}
@@ -5896,6 +5886,7 @@ function do_intercept_march() {
 	for (let lord of game.intercept_group) {
 		set_lord_locale(lord, get_lord_locale(game.command))
 		set_lord_moved(lord, 1)
+		levy_burgundians(lord)
 	}
 	end_intercept_march()
 }
@@ -6667,12 +6658,14 @@ states.sail = {
 		for (let lord of game.group) {
 			set_lord_locale(lord, to)
 			set_lord_moved(lord, 1)
+			levy_burgundians(lord)
 		}
 
 		if (is_seamanship_in_play())
 			spend_action(1)
 		else 
 			spend_all_actions()
+
 		// you can go to unbesieged enemy lord with norfolk capability
 		if (has_unbesieged_enemy_lord(to))
 			goto_confirm_approach_sail()
@@ -6838,7 +6831,7 @@ function count_deplete(loc) {
 }
 // === CAPABILITY : BURGUNDIANS ===
 
-function can_levy_burgundians(lord) {
+function levy_burgundians(lord) {
 	if (is_seaport(get_lord_locale(lord)) && !is_exile(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_BURGUNDIANS) && game.flags.burgundians === 0) {
 		add_lord_forces(lord, BURGUNDIANS, 2)
 		logi(AOW_YORK_BURGUNDIANS)
@@ -10358,6 +10351,7 @@ states.disembark = {
 function successful_disembark(lord, loc) {
 	set_lord_locale(lord, loc)
 	set_lord_moved(lord, 1)
+	levy_burgundians(lord)
 	game.who = NOBODY
 	goto_feed()
 }
