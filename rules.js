@@ -4310,7 +4310,9 @@ states.levy_muster_lord = {
 		if (eligible_kings_name()) {
 			goto_kings_name("levy ship")
 		}
+		else {
 		resume_levy_muster_lord()
+		}
 	},
 	take_cart() {
 		push_undo()
@@ -4318,56 +4320,63 @@ states.levy_muster_lord = {
 		if (eligible_kings_name()) {
 			goto_kings_name("levy cart")
 		}
+		else {
 		resume_levy_muster_lord()
+		}
 	},
 	levy_troops() {
 		push_undo()
 		if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && game.active === YORK) {
 			push_state("rising_wages")
 		}
-		let locale = data.locales[get_lord_locale(game.who)].type
-		if (
-			!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS) &&
-			!lord_has_capability(game.who, AOW_YORK_WOODWILLES) &&
-			!chamberlains_eligible_levy(locale)
-		)
-			deplete_locale(get_lord_locale(game.who))
-
-		switch (locale) {
-			case "calais":
-				add_lord_forces(game.who, MEN_AT_ARMS, 2)
-				add_lord_forces(game.who, LONGBOWMEN, 1)
-				break
-			case "london":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, LONGBOWMEN, 1)
-				add_lord_forces(game.who, MILITIA, 1)
-				break
-			case "harlech":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, LONGBOWMEN, 2)
-				break
-			case "city":
-				add_lord_forces(game.who, LONGBOWMEN, 1)
-				add_lord_forces(game.who, MILITIA, 1)
-				break
-			case "town":
-				add_lord_forces(game.who, MILITIA, 2)
-				break
-			case "fortress":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, MILITIA, 1)
-				break
+		if (eligible_kings_name()) {
+			goto_kings_name("levy troops")
 		}
+		else {
+			let locale = data.locales[get_lord_locale(game.who)].type
+			if (
+				!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS) &&
+				!lord_has_capability(game.who, AOW_YORK_WOODWILLES) &&
+				!chamberlains_eligible_levy(locale)
+			)
+				deplete_locale(get_lord_locale(game.who))
 
-		if (game.flags.free_levy === 1) {
-			++game.count
-			game.flags.free_levy = 0
-		}
-		if (is_event_in_play(EVENT_YORK_THE_COMMONS) && game.flags.loyalty_and_trust) {
-			push_undo()
-			game.flags.commons_militia = 2
-			game.state = "the_commons"
+			switch (locale) {
+				case "calais":
+					add_lord_forces(game.who, MEN_AT_ARMS, 2)
+					add_lord_forces(game.who, LONGBOWMEN, 1)
+					break
+				case "london":
+					add_lord_forces(game.who, MEN_AT_ARMS, 1)
+					add_lord_forces(game.who, LONGBOWMEN, 1)
+					add_lord_forces(game.who, MILITIA, 1)
+					break
+				case "harlech":
+					add_lord_forces(game.who, MEN_AT_ARMS, 1)
+					add_lord_forces(game.who, LONGBOWMEN, 2)
+					break
+				case "city":
+					add_lord_forces(game.who, LONGBOWMEN, 1)
+					add_lord_forces(game.who, MILITIA, 1)
+					break
+				case "town":
+					add_lord_forces(game.who, MILITIA, 2)
+					break
+				case "fortress":
+					add_lord_forces(game.who, MEN_AT_ARMS, 1)
+					add_lord_forces(game.who, MILITIA, 1)
+					break
+			}
+
+			if (game.flags.free_levy === 1) {
+				++game.count
+				game.flags.free_levy = 0
+			}
+			if (is_event_in_play(EVENT_YORK_THE_COMMONS) && game.flags.loyalty_and_trust) {
+				push_undo()
+				game.flags.commons_militia = 2
+				game.state = "the_commons"
+			}
 		}
 
 		resume_levy_muster_lord()
@@ -4376,26 +4385,17 @@ states.levy_muster_lord = {
 	levy_beloved_warwick() {
 		push_undo()
 		add_lord_forces(game.who, MILITIA, 5)
-		if (eligible_kings_name()) {
-			goto_kings_name("levy beloved warwick")
-		}
 		resume_levy_muster_lord()
 	},
 
 	levy_irishmen() {
 		push_undo()
 		add_lord_forces(game.who, MILITIA, 5)
-		if (eligible_kings_name()) {
-			goto_kings_name("levy irishmen")
-		}
 		resume_levy_muster_lord()
 	},
 
 	soldiers_of_fortune() {
 		push_undo()
-		if (eligible_kings_name()) {
-			goto_kings_name("levy irishmen")
-		}
 		set_lord_unfed(game.who, 1)
 		push_state("soldier_of_fortune")
 	},
@@ -4427,14 +4427,14 @@ function eligible_kings_name() {
 			if (is_event_in_play(EVENT_YORK_THE_KINGS_NAME) && game.active === LANCASTER)
 				return true 
 	}
-	return false
+	return true
 }
 
 function goto_kings_name(action) {
 	clear_undo()
-	set_active_enemy()
 	game.what = action
-	push_state("kings_name")
+	set_active_enemy()
+	push_state('kings_name')
 }
 
 
@@ -4442,7 +4442,9 @@ states.kings_name = {
 	inactive: `King's name`,
 	prompt() {
 		view.prompt = `King's Name: You pay may 1 Influence to cancel last ${game.what} action`
-	},
+		view.actions.pass = 1
+		view.actions.pay = 1
+	},	
 	pay() {
 		push_undo()
 		reduce_influence(1)
@@ -4451,6 +4453,11 @@ states.kings_name = {
 	pass() {
 		set_active_enemy()
 		pop_state()
+		if (game.state === "parley") {
+			game.what === NOTHING
+			pop_state()
+		}
+		resume_levy_muster_lord()
 	}
 }
 
@@ -4458,20 +4465,31 @@ function goto_kings_name_cancel() {
 	switch(game.what) {
 		case "levy cart":
 			add_lord_assets(game.who, CART, -2)
+			pop_state()
+			resume_levy_muster_lord()
+			break;
 		case "levy ship":
 			add_lord_assets(game.who, SHIP, -1)
-		case "levy beloved warwick":
-			add_lord_forces(game.who, MILITIA, -5)
-		case "levy irishmen":
-			add_lord_forces(game.who, MILITIA, -5)
-
+			pop_state()
+			resume_levy_muster_lord()
+			break;
+		case "levy vassal":
+		case "parley":
+			shift_favour_toward_york(game.where)
+			pop_state()
+			end_parley()
+			break;
 		default:
+			break;
 
-	logi(EVENT_YORK_THE_KINGS_NAME)
-	log(`${game.what} action cancelled`)
+
+		
 	}
-	resume_levy_muster_lord()
+	log(`${game.what} action cancelled at ${game.where}`)
+	logevent(`${EVENT_YORK_THE_KINGS_NAME}`)
+	set_active_enemy()
 }
+
 // === EVENT : RISING WAGES ===
 
 states.rising_wages = {
@@ -5522,15 +5540,18 @@ states.parley = {
 		}
 		else 
 			log(`Attempt to Parley at %${game.where} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
-
 		if (results.success) {
+			shift_favour_toward(game.where)
 			if (eligible_kings_name()) {
-				log(`${game.who} is mustering ${c}`)
 				goto_kings_name("parley")
 			}
-			shift_favour_toward(game.where)
+			else {
+				end_parley()
+			}
 		}
-		end_parley()
+		else {
+			end_parley()
+		}
 	}
 }
 
@@ -5597,10 +5618,12 @@ states.levy_muster_vassal = {
 		}
 
 		if (results.success) {
-			if (eligible_kings_name("levy_vassal")) {
-				goto_kings_name()
+			if (eligible_kings_name("levy vassal")) {
+				goto_kings_name("levy vassal")
 			}
+			else {
 			muster_vassal(game.what, game.who)
+			}
 		}
 
 		end_levy_muster_vassal()
@@ -8646,14 +8669,14 @@ states.swift_maneuver = {
 	},
 	end_battle_round() {
 		clear_undo()
-		logi(EVENT_YORK_SWIFT_MANEUVER)
+		logevent(`${EVENT_YORK_SWIFT_MANEUVER}`)
 		log("Ended Action Round.")
 		set_active_enemy()
 		goto_end_battle_round()
 	},
 	pass() {
 		clear_undo()
-		logi(EVENT_YORK_SWIFT_MANEUVER)
+		logevent(`${EVENT_YORK_SWIFT_MANEUVER}`)
 		log("Passed.")
 		set_active_enemy()
 		pop_state()
