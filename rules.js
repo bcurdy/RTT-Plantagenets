@@ -8993,6 +8993,7 @@ function find_lone_victor() {
 }
 
 function goto_battle_spoils() {
+	clear_undo()
 	set_active_victor()
 	// determine Battle Spoils
 	calculate_spoils()
@@ -9048,6 +9049,7 @@ states.battle_spoils = {
 }
 
 function goto_death_or_disband() {
+	clear_undo()
 	remove_battle_capability_troops()
 	if (has_defeated_lords()) {
 		if (game.battle.loser === LANCASTER && lord_has_capability(LORD_RICHARD_III, AOW_YORK_BLOODY_THOU_ART) && get_lord_locale(LORD_RICHARD_III) === game.battle.where) {
