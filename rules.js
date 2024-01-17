@@ -709,12 +709,9 @@ function set_active(new_active) {
 	}
 }
 
-function set_active(new_active) {
-    if (game.active !== new_active) {
-                clear_undo() // here
-        game.active = new_active
-        update_aliases()
-    }
+function set_active_enemy() {
+	clear_undo()
+	set_active(enemy_player())
 }
 
 function enemy_player() {
