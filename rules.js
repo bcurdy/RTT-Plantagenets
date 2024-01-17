@@ -9410,7 +9410,7 @@ states.pay = {
 		goto_pillage_coin()
 	},
 	end_pay() {
-		push_undo()
+		clear_undo()
 		end_pay()
 	},
 	card: action_held_event,
