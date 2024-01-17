@@ -709,8 +709,12 @@ function set_active(new_active) {
 	}
 }
 
-function set_active_enemy() {
-	set_active(enemy_player())
+function set_active(new_active) {
+    if (game.active !== new_active) {
+                clear_undo() // here
+        game.active = new_active
+        update_aliases()
+    }
 }
 
 function enemy_player() {
@@ -5887,6 +5891,7 @@ function goto_intercept() {
 function end_intercept() {
 	game.intercept_group = 0
 	game.who = NOBODY
+	clear_undo()
 	set_active_enemy()
 	goto_exiles()
 }
@@ -6026,6 +6031,7 @@ function goto_intercept_exiles() {
 }
 
 function end_intercept_exiles() {
+	clear_undo()
 	set_active_enemy()
 	end_intercept()
 }
@@ -6396,9 +6402,11 @@ states.select_supply_type = {
 	},
 	stronghold() {
 		use_stronghold_supply(game.where, get_stronghold_supply_amount(game.where))
+		game.where = NOWHERE
 	},
 	port() {
 		use_port_supply(game.where, get_port_supply_amount(game.where))
+		game.where = NOWHERE
 	},
 }
 
@@ -7844,7 +7852,6 @@ function end_flee() {
 		end_battle_round()
 		return
 	}
-
 	set_active_enemy()
 
 	if (game.active !== game.battle.attacker) {
