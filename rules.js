@@ -3400,10 +3400,11 @@ states.dubious_clarence = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
+		clear_undo()
 		let results = do_influence_check()
 		log(`Attempt to disband Clarence ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
-		if (results.success) {	
+		if (results.success) {
 			disband_lord(LORD_CLARENCE, false)
 			end_immediate_event()
 		} else {
@@ -4729,6 +4730,7 @@ states.levy_muster_lord_attempt = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
+		clear_undo()
 		let results = do_influence_check()
 		log(`Attempt to levy L${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
@@ -5657,6 +5659,7 @@ states.levy_muster_vassal = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
+		clear_undo()
 		let results = do_influence_check()
 
 		if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES)) {
@@ -7060,6 +7063,7 @@ states.heralds_attempt = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
+		clear_undo()
 		let results = do_influence_check()
 		log(`Attempt to shift L${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
