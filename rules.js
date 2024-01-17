@@ -5937,8 +5937,8 @@ states.intercept = {
 		else {
 			let roll = roll_die()
 			success = roll <= valour
+			log(`Intercept ${success ? "Succeeded." : "Failed."} (${range(valour)}): ${success ? HIT[roll] : MISS[roll]}`)
 		}
-		log(`Intercept ${success ? "Succeeded." : "Failed."} (${range(valour)}): ${success ? HIT[roll] : MISS[roll]}`)
 
 		if (success) {
 			goto_intercept_march()
