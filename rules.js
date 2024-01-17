@@ -2834,6 +2834,7 @@ states.yorkist_aragne = {
 
 function goto_aragne_save(other){
 	game.who = other
+	game.where = NOWHERE
 	get_vassal_lord(other)
 	init_influence_check(get_vassal_lord(other))
 	game.check.push({
@@ -5939,7 +5940,6 @@ states.intercept = {
 			success = roll <= valour
 			log(`Intercept ${success ? "Succeeded." : "Failed."} (${range(valour)}): ${success ? HIT[roll] : MISS[roll]}`)
 		}
-
 		if (success) {
 			goto_intercept_march()
 		} else {
@@ -9096,7 +9096,7 @@ states.death_or_disband = {
 		}
 	},
 	lord(lord) {	
-		push_undo()
+		clear_undo()
 		let here = get_lord_locale(lord)
 		let threshold = 2
 		let modifier = 0
