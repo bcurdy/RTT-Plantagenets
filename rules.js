@@ -4302,6 +4302,7 @@ states.levy_muster_lord = {
 
 	vassal(vassal) {
 		push_undo()
+		game.which = vassal
 		goto_levy_muster_vassal(vassal)
 	},
 
@@ -4448,6 +4449,14 @@ states.kings_name = {
 	pass() {
 		set_active_enemy()
 		pop_state()
+		if (game.state === "levy_muster_lord_attempt") {
+			console.log(data.lords[game.who].name)
+			push_state("muster_lord_at_seat")
+		}
+		if (game.state === "levy_muster_vassal") {
+			muster_vassal(game.which, game.who)
+			pop_state()
+		}
 		if (game.state === "muster_capability") {
 			add_lord_capability(game.who, game.which)
 			capability_muster_effects(game.who, game.which)
@@ -4464,6 +4473,10 @@ states.kings_name = {
 
 function goto_kings_name_cancel() {
 	switch(game.what) {
+		case "Levy Lord":
+			pop_state()
+			end_levy_muster_lord_attempt()
+			break;
 		case "Levy Cart":
 			add_lord_assets(game.who, CART, -2)
 			pop_state()
@@ -4475,7 +4488,7 @@ function goto_kings_name_cancel() {
 			resume_levy_muster_lord()
 			break;
 		case "Levy Vassal":
-			pop_state()
+			game.which = NOTHING
 			end_levy_muster_vassal() 
 		case "Levy Troops":
 			kings_name_reset_troops()
@@ -4488,7 +4501,8 @@ function goto_kings_name_cancel() {
 			game.where = NOWHERE
 			end_parley()
 			break;
-		case "Cpability":
+		case "Capability":
+			game.which = NOTHING
 			pop_state()
 			pop_state()
 			resume_levy_muster_lord()
@@ -4499,6 +4513,7 @@ function goto_kings_name_cancel() {
 			resume_levy_muster_lord()
 			break;
 		default:
+			throw Error("No King's name cancel state found")
 			break;
 	}
 	log(`${game.what} action cancelled`)
@@ -4681,7 +4696,6 @@ states.muster_lord_at_seat = {
 	prompt() {
 		view.prompt = `Muster: Select Locale for ${lord_name[game.who]}.`
 		let found = false
-
 		let seat = data.lords[game.who].seat
 		if (!has_enemy_lord(seat)) {
 			gen_action_locale(seat)
@@ -4738,11 +4752,15 @@ states.levy_muster_lord_attempt = {
 		log(`Attempt to levy L${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
 		if (results.success) {
-			if (eligible_kings_name())
-				goto_kings_name("Levy Lord")
-			push_state("muster_lord_at_seat")
 			game.who = game.what
-		} else {
+			if (eligible_kings_name()) {
+				goto_kings_name("Levy Lord")
+			}
+			else {
+				push_state("muster_lord_at_seat")
+			}
+		}
+		else {
 			end_levy_muster_lord_attempt()
 		}
 	},
@@ -5630,8 +5648,6 @@ function eligible_vassal(vassal) {
 
 function goto_levy_muster_vassal(vassal) {
 	let influence_cost = 0
-	game.what = vassal
-
 	if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_BUCKINGHAMS_PLOT))
 		influence_cost += 2
 
@@ -5654,7 +5670,7 @@ function end_levy_muster_vassal() {
 states.levy_muster_vassal = {
 	inactive: "Levy Vassal",
 	prompt() {
-		view.prompt = `Levy Vassal ${data.vassals[game.what].name}. `
+		view.prompt = `Levy Vassal ${data.vassals[game.which].name}. `
 		prompt_influence_check()
 	},
 	spend1: add_influence_check_modifier_1,
@@ -5669,7 +5685,7 @@ states.levy_muster_vassal = {
 			log(`Automatic Success. C${EVENT_LANCASTER_THE_EARL_OF_RICHMOND}.`)
 		}
 		else {
-			log(`Attempt to levy V${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+			log(`Attempt to levy V${game.which} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		}
 
 		if (results.success) {
@@ -5677,11 +5693,13 @@ states.levy_muster_vassal = {
 				goto_kings_name("Levy Vassal")
 			}
 			else {
-			muster_vassal(game.what, game.who)
+				muster_vassal(game.which, game.who)
+				end_levy_muster_vassal()
 			}
 		}
-
-		end_levy_muster_vassal()
+		else {
+			end_levy_muster_vassal()
+		}
 	},
 }
 
