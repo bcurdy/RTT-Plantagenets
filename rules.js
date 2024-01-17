@@ -3415,26 +3415,6 @@ states.dubious_clarence = {
 
 
 // === EVENTS: YORKIST NORTH ===
-function goto_york_event_yorkist_north() {
-	let can_play = false
-	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
-		if (is_lord_in_north(lord))
-		can_play = true
-	}
-	for (let loc of data.locales) {
-		if (in_north(loc) && has_favoury_marker(loc)) {
-			can_play = true
-		}
-	}
-	if (can_play) {
-		game.state = "yorkist_north"
-		game.who = NOBODY
-		game.count = 0
-	} else {
-		logi(`No Effect`)
-		end_immediate_event()
-	}
-}
 
 function goto_york_event_yorkist_north() {
 	let influence_gained = 0
@@ -4424,7 +4404,7 @@ function eligible_kings_name() {
 			if (is_event_in_play(EVENT_YORK_THE_KINGS_NAME) && game.active === LANCASTER)
 				return true 
 	}
-	return true
+	return false
 }
 
 function goto_kings_name(action) {
@@ -4518,6 +4498,7 @@ function goto_kings_name_cancel() {
 	}
 	log(`${game.what} action cancelled`)
 	logevent(`${EVENT_YORK_THE_KINGS_NAME}`)
+	clear_undo()
 	set_active_enemy()
 }
 
@@ -6444,19 +6425,23 @@ function goto_forage() {
 	if (!has_adjacent_enemy(here) && is_neutral_locale(here)) {
 		let die = roll_die()
 		if (die <= 4) {
+			clear_undo()
 			add_lord_assets(game.command, PROV, 1)
 			log(`${HIT[die]}, Foraged at %${here}`)
 			deplete_locale(here)
 		} else {
+			clear_undo()
 			log(`${MISS[die]}, Forage Failure`)
 		}
 	} else if (has_adjacent_enemy(here) || is_favour_enemy(here)) {
 		let die = roll_die()
 		if (die <= 3) {
+			clear_undo()
 			add_lord_assets(game.command, PROV, 1)
 			log(`${HIT[die]}, Foraged at %${here}`)
 			deplete_locale(here)
 		} else {
+			clear_undo()
 			log(`${MISS[die]}, Forage Failure`)
 		}
 	} else {
