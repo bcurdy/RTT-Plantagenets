@@ -3838,7 +3838,12 @@ states.aspielles = {
 	},
 	card: action_held_event,
 	done() {
+		if (is_campaign_phase()) {
 		resume_command()
+		}
+		else {
+			pop_state()
+		}
 	},	
 }
 
