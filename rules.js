@@ -4369,7 +4369,7 @@ states.levy_muster_lord = {
 		if (eligible_kings_name()) {
 			goto_kings_name("Levy Troops")
 		}
-		if (is_event_in_play(EVENT_YORK_THE_COMMONS) && game.flags.loyalty_and_trust) {
+		if (is_event_in_play(EVENT_YORK_THE_COMMONS)) {
 			push_undo()
 			game.flags.commons_militia = 2
 			game.state = "the_commons"
