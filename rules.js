@@ -349,7 +349,7 @@ const VASSAL_TROLLOPE = find_vassal("Trollope")
 
 // TODO: log end victory conditions at scenario start
 
-const AOW_LANCASTER_CULVERINS_AND_FALCONETS = [L1 , L2] // TODO
+const AOW_LANCASTER_CULVERINS_AND_FALCONETS = [L1 , L2]
 const AOW_LANCASTER_MUSTERD_MY_SOLDIERS = L3
 const AOW_LANCASTER_HERALDS = L4
 const AOW_LANCASTER_CHURCH_BLESSINGS = L5
@@ -527,7 +527,7 @@ const EVENT_YORK_REGROUP = Y30 // TODO
 // If played when Yorkist active they pay click on that event to make the lord recover his TROOPS (no vassals/retinue)
 // for recover per armour
 const EVENT_YORK_EARL_RIVERS = Y31
-const EVENT_YORK_THE_KINGS_NAME = Y32 // TODO CHECK ALL CASES, IMPROVE PROMPTS/QOL
+const EVENT_YORK_THE_KINGS_NAME = Y32 // TODO IMPROVE PROMPTS/QOL
 const EVENT_YORK_EDWARD_V = Y33 
 const EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST = Y34
 const EVENT_YORK_PRIVY_COUNCIL = Y35 
@@ -2042,6 +2042,16 @@ function setup_ItoIII() {
 	set_lord_calendar(LORD_WARWICK_Y, 3)
 	set_lord_calendar(LORD_RUTLAND, 5)
 
+	add_favourl_marker(LOC_LONDON)
+	add_favourl_marker(LOC_WELLS)
+	add_favourl_marker(LOC_SCOTLAND)
+	add_favourl_marker(LOC_FRANCE)
+
+	add_favoury_marker(LOC_ELY)
+	add_favoury_marker(LOC_LUDLOW)
+	add_favoury_marker(LOC_BURGUNDY)
+	add_favoury_marker(LOC_IRELAND)
+
 	setup_vassals()
 }
 
@@ -3544,7 +3554,7 @@ function prompt_held_event() {
 
 function prompt_held_event_intercept() {
 	for (let c of current_hand())
-		if (can_play_held_event(c) || can_play_held_event_intercept(c))
+		if (can_play_held_event_intercept(c))
 			gen_action_card(c)
 }
 
@@ -3854,6 +3864,7 @@ states.aspielles = {
 
 function goto_play_surprise_landing() {
 	push_state("surprise_landing")
+	game.flags.surprise_landing = 2
 	game.who = NOBODY
 }
 
@@ -3862,7 +3873,6 @@ states.surprise_landing = {
 	prompt() {
 		view.prompt = "Surprise Landing : You may march once (no path)."
 		prompt_held_event()
-
 
 		view.group = game.group
 		let here = get_lord_locale(game.command)
@@ -4589,7 +4599,6 @@ states.the_commons = {
 		if (game.flags.commons_militia > 0) {
 			gen_action("add_militia")
 		}
-
 		view.actions.done = 1
 	},
 	add_militia() {
@@ -4916,12 +4925,14 @@ states.campaign_plan = {
 
 		if (plan.length < max_plan_length()) {
 			view.actions.end_plan = 0
-			if (count_cards_in_plan(plan, NOBODY) < 3)
-				gen_action_plan(NOBODY)
+			if (count_cards_in_plan(plan, NOBODY) < 7)
+				gen_action_plan(NOBODY)		
+
 			for (let lord = first; lord <= last; ++lord) {
 				if (is_lord_on_map(lord) && count_cards_in_plan(plan, lord) < 3)
 					gen_action_plan(lord)
 			}
+			
 		} else {
 			view.actions.end_plan = 1
 		}
@@ -5637,6 +5648,7 @@ function eligible_vassal(vassal) {
 }
 
 function goto_levy_muster_vassal(vassal) {
+	game.where = NOWHERE
 	let influence_cost = 0
 	if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_BUCKINGHAMS_PLOT))
 		influence_cost += 2
@@ -5729,7 +5741,7 @@ function prompt_march() {
 			}
 		}
 	}
-	if (game.actions > 0 || game.flags.surprise_landing === 1) {
+	if (game.actions > 0 || game.flags.surprise_landing === 2) {
 		for (let to of data.locales[from].roads) {
 			if (!is_wales_forbidden(to)) {
 				gen_action_locale(to)
@@ -5741,7 +5753,7 @@ function prompt_march() {
 				gen_action_locale(to)
 			}		
 		}
-	} else if ((game.actions === 0 && is_first_march_highway()) || game.flags.surprise_landing === 1) {
+	} else if ((game.actions === 0 && is_first_march_highway()) || game.flags.surprise_landing === 2) {
 		for (let to of data.locales[from].highways) {
 			if (!is_wales_forbidden(to)) {
 				gen_action_locale(to)
@@ -5819,7 +5831,7 @@ function march_with_group_2() {
 
 	switch (type) {
 		case "highway":
-			if (is_first_march_highway() || game.flags.surprise_landing === 1) {
+			if (is_first_march_highway() || game.flags.surprise_landing === 2) {
 				spend_march_action(0)
 			} else {
 				spend_march_action(1)
@@ -5828,7 +5840,7 @@ function march_with_group_2() {
 			break
 
 		case "road":
-			if ((alone && is_first_march_highway()) || game.flags.surprise_landing === 1) {
+			if ((alone && is_first_march_highway()) || game.flags.surprise_landing === 2) {
 				spend_march_action(0)
 			} else {
 				spend_march_action(1)
@@ -6385,6 +6397,7 @@ function end_supply() {
 	spend_action(1)
 	resume_command()
 	game.supply = 0
+	game.where = NOWHERE
 }
 
 states.select_supply_type = {
@@ -6399,11 +6412,9 @@ states.select_supply_type = {
 	},
 	stronghold() {
 		use_stronghold_supply(game.where, get_stronghold_supply_amount(game.where))
-		game.where = NOWHERE
 	},
 	port() {
 		use_port_supply(game.where, get_port_supply_amount(game.where))
-		game.where = NOWHERE
 	},
 }
 
@@ -6860,7 +6871,7 @@ states.merchants = {
 	check() {
 		clear_undo()
 		let results = do_influence_check()
-		log(`Attempt to Merchants with %${game.command} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		log(`Attempt to C${AOW_LANCASTER_MERCHANTS} with %${game.command} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		if (results.success) {
 			merchants_success(game.command)
 		}
@@ -6878,6 +6889,9 @@ states.merchants_success = {
 	prompt() {
 		view.prompt = `Remove Depleted/Exhausted markers`
 		deplete_merchants()
+		if (game.count === 0) {
+			view.actions.done = 1
+		}
 	},
 	locale(loc) {
 		push_undo()
@@ -6887,6 +6901,9 @@ states.merchants_success = {
 		if (game.count === 0) {
 			end_merchants_attempt()
 		}
+	},
+	done(){
+		end_merchants_attempt()
 	}
 }
 
@@ -6909,6 +6926,7 @@ function deplete_merchants(){
 }
 
 function count_deplete(loc) {
+	game.count = 0
 	for (let next of data.locales[loc].adjacent) {
 		if (has_exhausted_marker(next) || has_depleted_marker(next)) {
 			++game.count
@@ -6921,8 +6939,8 @@ function count_deplete(loc) {
 		return game.count = 2
 	else
 		return game.count
-
 }
+
 // === CAPABILITY : BURGUNDIANS ===
 
 function levy_burgundians(lord) {
@@ -6975,9 +6993,12 @@ function end_exile_pact() {
 function can_action_agitators() {
 	if (game.actions <= 0)
 		return false
-
-	if (lord_has_capability(game.command, AOW_YORK_AGITATORS))
-		return true
+	if (lord_has_capability(game.command, AOW_YORK_AGITATORS)) {
+		for (let next of data.locales[here].adjacent) {
+			if (!has_exhausted_marker(next) && !is_friendly_locale(next))
+				return true
+		}
+	}
 	else
 		return false
 }
@@ -7036,7 +7057,11 @@ function can_action_heralds() {
 	if (!lord_has_capability(game.command, AOW_LANCASTER_HERALDS))
 		return false
 
-	return true
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+		if (is_lord_on_calendar(lord))
+			return true
+	}
+	return false
 }
 
 function goto_heralds(){
@@ -9141,6 +9166,7 @@ states.death_or_disband = {
 
 function goto_battle_aftermath() {
 	set_active(game.battle.attacker)
+	game.where = NOWHERE
 
 	// Routed Vassals get disbanded
 	for (let lord = first_lord; lord <= last_lord; lord++) {
@@ -9218,9 +9244,6 @@ states.feed = {
 		view.prompt = "Feed: You must Feed Lords who Moved or Fought."
 
 		let done = true
-
-		prompt_held_event()
-
 		// Feed from own mat
 		if (done) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
@@ -9779,6 +9802,7 @@ function goto_pillage_locale() {
 
 function end_pillage_locale() {
 	pop_state()
+	game.where = NOWHERE
 	end_pillage()
 }
 
