@@ -75,6 +75,11 @@ function should_remove_Y28_event_card() {
 	return game.scenario !== "I-III. Wars of the Roses"
 }
 
+function has_Y28_happened() {
+	//TODO: Scenario IIY and IIL when Y28 happens.
+	return false
+}
+
 // unit types
 const RETINUE = 0
 const VASSAL = 1
@@ -1109,12 +1114,25 @@ function is_card_in_use(c) {
 	return false
 }
 
+function add_card_scenario(c) {
+	// TODO: Add card in scenario
+}
+
+function remove_card_scenario(c) {
+	//TODO: Remove card in scenario
+}
+
+function is_card_in_scenario() {
+	// TODO: Cards setup
+		return true
+}
+
 function list_deck() {
 	let deck = []
 	let first_card = game.active === YORK ? first_york_card : first_lancaster_card
 	let last_card = game.active === YORK ? last_york_card : last_lancaster_card
 	for (let c = first_card; c <= last_card; ++c)
-		if (!is_card_in_use(c))
+		if (!is_card_in_use(c) && is_card_in_scenario() )
 			deck.push(c)
 	return deck
 }
@@ -1919,7 +1937,7 @@ function setup_Ic() {
 
 	game.rebel = YORK
 	game.active = YORK
-	game.victory_check = 45
+	game.victory_check = 40
 	game.influence = 6
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LONDON)
@@ -1965,8 +1983,10 @@ function setup_II() {
 
 	game.rebel = LANCASTER
 	game.active = LANCASTER
+	game.victory_check = 40
+	game.influence = 0
 	muster_lord(LORD_EDWARD_IV, LOC_LONDON)
-	muster_lord(LORD_PEMBROKE, LOC_LONDON)
+	muster_lord(LORD_PEMBROKE, LOC_PEMBROKE)
 	muster_lord(LORD_WARWICK_L, LOC_CALAIS)
 	muster_lord(LORD_CLARENCE, LOC_YORK)
 	muster_lord(LORD_JASPER_TUDOR_1, LOC_HARLECH)
@@ -1975,9 +1995,13 @@ function setup_II() {
 	set_lord_calendar(LORD_GLOUCESTER_1, 9)
 	set_lord_calendar(LORD_NORTHUMBERLAND_Y1, 9)
 	set_lord_calendar(LORD_MARGARET, 9)
+	set_lord_in_exile(LORD_MARGARET)
 	set_lord_calendar(LORD_SOMERSET_2, 9)
+	set_lord_in_exile(LORD_SOMERSET_2)
 	set_lord_calendar(LORD_OXFORD, 9)
+	set_lord_in_exile(LORD_OXFORD)
 	set_lord_calendar(LORD_EXETER_2, 9)
+	set_lord_in_exile(LORD_EXETER_2)
 
 	add_favourl_marker(LOC_CALAIS)
 	add_favourl_marker(LOC_YORK)
@@ -1995,6 +2019,9 @@ function setup_II() {
 	add_favoury_marker(LOC_BURGUNDY)
 
 	setup_vassals([ VASSAL_DEVON, VASSAL_OXFORD ])
+
+	// TODO: Add Foreign Haven rule
+	// TODO: Add Skaky Allies rules
 }
 
 function setup_III() {
@@ -2002,6 +2029,8 @@ function setup_III() {
 
 	game.rebel = LANCASTER
 	game.active = LANCASTER
+	game.victory_check = 40
+	game.influence = 0
 	muster_lord(LORD_RICHARD_III, LOC_LONDON)
 	muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
 	muster_lord(LORD_NORFOLK, LOC_ARUNDEL)
@@ -2030,6 +2059,8 @@ function setup_ItoIII() {
 
 	game.rebel = YORK
 	game.active = YORK
+	game.victory_check = 45
+	game.influence = 0
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
 	muster_lord(LORD_HENRY_VI, LOC_LONDON)
@@ -2054,6 +2085,661 @@ function setup_ItoIII() {
 
 	setup_vassals()
 }
+
+function setup_II_Y() {
+	game.turn = 1 << 1
+	game.scenario = "IIY. The Kingmaker"
+	game.rebel = LANCASTER
+	game.active = LANCASTER
+	game.victory_check = 45
+	game.influence = 0
+	
+	for (let lord = first_lord; lord <= last_lord; lord++) {
+		if (is_lord_in_play(lord)) {
+			disband_lord(lord, false)
+		}
+	}
+	for (let loc = first_locale; loc <= last_locale; loc++) {
+		remove_exhausted_marker(loc)
+		remove_depleted_marker(loc)
+		remove_favourl_marker(loc)
+		remove_favoury_marker(loc)
+	}
+	discard_events("this_levy")
+	discard_events("hold")
+	discard_events("this_campaign")
+
+	// Setup
+	// Yorkist setup
+	// TODO: Add cards Y1-Y13, Y25, Y26, Y27, Y29, Y30
+
+	if (is_lord_in_play(LORD_RUTLAND) && main_york_heir !== LORD_RUTLAND) {
+		muster_lord(LORD_RUTLAND, LOC_CANTERBURY)
+		add_favoury_marker(LOC_CANTERBURY)
+	}
+
+	set_lord_calendar(LORD_DEVON, 1)
+	set_lord_calendar(LORD_GLOUCESTER_1, 9)
+	set_lord_calendar(LORD_NORTHUMBERLAND_Y1, 9)
+
+	if (main_york_heir === LORD_YORK) {
+		muster_lord(LORD_YORK, LOC_CANTERBURY)
+		add_favoury_marker(LOC_LONDON)
+		if (is_lord_in_play(LORD_MARCH)) {
+			muster_lord(LORD_MARCH, LOC_LUDLOW)
+		}
+		// TODO: Add cards Y14, Y18, Y19, Y20
+	}	
+	
+	if (main_york_heir === LORD_MARCH) {
+		muster_lord(LORD_EDWARD_IV, LOC_LONDON)
+		// Removed because he can't appear in scenario III
+		disband_lord(LORD_MARCH, true)
+		// TODO: Add cards Y23, Y24, Y28, Y31
+	}
+
+	if (main_york_heir === LORD_RUTLAND) {
+		muster_lord(LORD_RUTLAND, LOC_LONDON)
+		// TODO: Add cards Y20, Y21, Y28, Y35	
+	}
+
+	// If < 2 heirs, muster Pembroke
+	if ((main_york_heir === LORD_RUTLAND || main_york_heir === LORD_GLOUCESTER_1) 
+	|| (main_york_heir === LORD_EDWARD_IV && !is_lord_in_play(LORD_RUTLAND))) {
+		muster_lord(LORD_PEMBROKE, LOC_PEMBROKE)
+	}
+
+	// Lancaster setup 
+	// TODO: Add cards L1-L3, L5-L13, L23, L24, L25, L29, L30, L36
+
+	if (main_lancaster_heir === LORD_HENRY_VI) {
+		set_lord_calendar(LORD_HENRY_VI, 9)
+		set_lord_in_exile(LORD_HENRY_VI)
+		// TODO: Add L17, L18, L20, L21
+	}
+	if (main_lancaster_heir === LORD_MARGARET) {
+		set_lord_calendar(LORD_MARGARET, 9)
+		set_lord_in_exile(LORD_MARGARET)
+
+		// TODO: Add L27, L28, L31 + L26 Special rule
+	}
+	if (main_lancaster_heir === LORD_SOMERSET_1 || main_lancaster_heir === LORD_SOMERSET_2) {
+		// TODO: Add cards L20, L21, L27
+	}
+
+	if (is_lord_in_play(LORD_SOMERSET_1)) {
+		set_lord_calendar(LORD_SOMERSET_1, 9)
+		set_lord_in_exile(LORD_SOMERSET_1)
+	}
+	else if (is_lord_in_play(LORD_SOMERSET_2)) {
+		set_lord_calendar(LORD_SOMERSET_2, 9)
+		set_lord_in_exile(LORD_SOMERSET_2)
+	}
+
+	muster_lord(LORD_WARWICK_L, LOC_CALAIS)
+	muster_lord(LORD_CLARENCE, LOC_YORK)
+	muster_lord(LORD_JASPER_TUDOR_1, LOC_HARLECH)
+	set_lord_calendar(LORD_OXFORD, 9)
+	set_lord_in_exile(LORD_OXFORD)
+	set_lord_calendar(LORD_EXETER_2, 9)
+	set_lord_in_exile(LORD_EXETER_2)
+
+
+	add_favourl_marker(LOC_CALAIS)
+	add_favourl_marker(LOC_YORK)
+	add_favourl_marker(LOC_HARLECH)
+	add_favourl_marker(LOC_COVENTRY)
+	add_favourl_marker(LOC_WELLS)
+
+	
+	add_favoury_marker(LOC_LONDON)
+	add_favoury_marker(LOC_ELY)
+	add_favoury_marker(LOC_LUDLOW)
+	add_favoury_marker(LOC_CARLISLE)
+	add_favoury_marker(LOC_PEMBROKE)
+	add_favoury_marker(LOC_EXETER)
+
+	// Exile box setup
+	add_favourl_marker(LOC_FRANCE)
+	add_favoury_marker(LOC_BURGUNDY)
+
+	setup_vassals([ VASSAL_DEVON, VASSAL_OXFORD ])
+
+// TODO: Add Foreign Haven rule
+// TODO: Add Skaky Allies rules
+// TODO: Natural causes rule
+
+}
+
+function setup_II_L() {
+	game.turn = 1 << 1
+	game.scenario = "IIL. Lancastrian Legitimacy Fades"
+	game.rebel = YORK
+	game.active = YORK
+	game.victory_check = 40
+	game.influence = 0
+	
+	for (let lord = first_lord; lord <= last_lord; lord++) {
+		if (is_lord_in_play(lord)) {
+			disband_lord(lord, false)
+		}
+	}
+	for (let loc = first_locale; loc <= last_locale; loc++) {
+		remove_exhausted_marker(loc)
+		remove_depleted_marker(loc)
+		remove_favourl_marker(loc)
+		remove_favoury_marker(loc)
+	}
+	discard_events("this_levy")
+	discard_events("hold")
+	discard_events("this_campaign")
+
+	// Setup
+	// Lancaster setup 
+	// TODO: Add cards L1-L3, L5-L13, L18, L19, L20, L21, L25, L29, L34
+
+	if (main_lancaster_heir === LORD_HENRY_VI) {
+		muster_lord(LORD_HENRY_VI, LOC_LONDON)		
+		// TODO: Add L15, L17
+		if (is_lord_in_play(LORD_SOMERSET_1)) {
+			muster_lord(LORD_SOMERSET_1, LOC_WELLS)
+		}
+		if (is_lord_in_play(LORD_SOMERSET_2)) {
+			muster_lord(LORD_SOMERSET_2, LOC_WELLS)
+		}
+	}
+
+	if (main_lancaster_heir === LORD_MARGARET) {
+		set_lord_calendar(LORD_MARGARET, 1)
+		// TODO: Add L27, L31 + L26 Special rule
+		if (is_lord_in_play(LORD_SOMERSET_1)) {
+			muster_lord(LORD_SOMERSET_1, LOC_WELLS)
+		}
+		if (is_lord_in_play(LORD_SOMERSET_2)) {
+			muster_lord(LORD_SOMERSET_2, LOC_WELLS)
+		}
+	}
+	if (main_lancaster_heir === LORD_SOMERSET_1 || main_lancaster_heir === LORD_SOMERSET_2) {
+		// TODO: Add cards L16, L27
+		muster_lord(LORD_SOMERSET_1, LOC_LONDON)
+		if (main_lancaster_heir === LORD_SOMERSET_2) {
+			// Somerset 2 cylinder replaced by Somerset 1 cylinder
+			disband_lord(LORD_SOMERSET_2, true)
+		}
+	}
+
+
+
+	// Yorkist setup
+	// TODO: Add cards Y1-Y13, Y15, Y16, Y17, Y22, Y28, Y29, Y31, Y34
+
+	if (main_york_heir === LORD_YORK) {
+		set_lord_calendar(LORD_YORK, 7)
+		set_lord_in_exile(LORD_YORK)
+		// TODO: Add cards Y14, Y20
+	}	
+	
+	if (main_york_heir === LORD_MARCH) {
+		set_lord_calendar(LORD_MARCH, 7)
+		set_lord_in_exile(LORD_MARCH)
+		// TODO: Add cards Y20, 21
+	}
+
+	if (main_york_heir === LORD_RUTLAND) {
+		set_lord_calendar(LORD_MARCH, 7)
+		// TODO: Add cards Y20, Y21	
+	}
+
+	if (main_york_heir === LORD_GLOUCESTER_1) {
+		// TODO: Add cards Y25, Y30
+	}
+
+	if (is_lord_in_play(LORD_MARCH) && main_york_heir !== LORD_MARCH) {
+		set_lord_calendar(LORD_MARCH, 7)
+		set_lord_in_exile(LORD_MARCH)
+	}
+
+	if (is_lord_in_play(LORD_RUTLAND) && main_york_heir !== LORD_RUTLAND) {
+		set_lord_calendar(LORD_RUTLAND, 7)
+		set_lord_in_exile(LORD_RUTLAND)
+	}
+	if (is_lord_in_play(LORD_GLOUCESTER_1) && main_york_heir !== LORD_GLOUCESTER_1) {
+		set_lord_calendar(LORD_GLOUCESTER_1, 7)
+		set_lord_in_exile(LORD_GLOUCESTER_1)
+	}
+
+	muster_lord(LORD_WARWICK_Y, LOC_CALAIS)
+	muster_lord(LORD_SALISBURY, LOC_YORK)
+	muster_lord(LORD_PEMBROKE, LOC_PEMBROKE)
+	muster_lord(LORD_JASPER_TUDOR_1, LOC_HARLECH)
+	set_lord_calendar(LORD_DEVON, 1)
+	set_lord_calendar(LORD_OXFORD, 2)
+	set_lord_calendar(LORD_EXETER_2, 2)
+	set_lord_calendar(LORD_NORTHUMBERLAND_L, 8)
+
+	add_favourl_marker(LOC_LONDON)
+	add_favourl_marker(LOC_HARLECH)
+	add_favourl_marker(LOC_OXFORD)
+	add_favourl_marker(LOC_WELLS)
+	add_favourl_marker(LOC_EXETER)
+	add_favourl_marker(LOC_CARLISLE)
+
+	add_favoury_marker(LOC_CALAIS)
+	add_favoury_marker(LOC_YORK)
+	add_favoury_marker(LOC_ELY)
+	add_favoury_marker(LOC_LUDLOW)
+	add_favoury_marker(LOC_PEMBROKE)
+
+	// Exile box setup
+	add_favourl_marker(LOC_FRANCE)
+	add_favoury_marker(LOC_BURGUNDY)
+
+	setup_vassals([ VASSAL_DEVON, VASSAL_OXFORD ])
+
+// TODO: Add Foreign Haven rule
+// TODO: Add Shaky Allies rules
+// TODO: Natural causes rule
+
+}
+
+
+function setup_III_Y() {
+	game.turn = 1 << 1
+	game.scenario = "IIIY. New Rivals"
+	game.rebel = LANCASTER
+	game.active = LANCASTER
+	game.victory_check = 45
+	game.influence = 0
+	
+	if (!is_lord_in_play(LORD_YORK)) {
+		game.influence += 8
+	}
+	if (!is_lord_in_play(LORD_MARCH) && !is_lord_in_play(LORD_EDWARD_IV)) {
+		game.influence += 8
+	}
+	if (!is_lord_in_play(LORD_RUTLAND)) {
+		game.influence += 8
+	}
+	if (!is_lord_in_play(LORD_GLOUCESTER_1) && !is_lord_in_play(LORD_GLOUCESTER_2) && !is_lord_in_play(LORD_RICHARD_III)) {
+		game.influence += 8
+	}
+	if (!is_lord_in_play(LORD_HENRY_VI)) {
+		game.influence -= 8
+	}
+	if (!is_lord_in_play(LORD_HENRY_VI) && !is_lord_in_play(LORD_MARGARET)) {
+		game.influence -= 8
+	}
+	if (!is_lord_in_play(LORD_SOMERSET_1)) {
+		game.influence -= 8
+	}
+	if (!is_lord_in_play(LORD_SOMERSET_1) && !is_lord_in_play(LORD_SOMERSET_2)) {
+		game.influence -= 8
+	}
+	
+
+	for (let lord = first_lord; lord <= last_lord; lord++) {
+		if (is_lord_in_play(lord)) {
+			disband_lord(lord, false)
+		}
+	}
+	for (let loc = first_locale; loc <= last_locale; loc++) {
+		remove_exhausted_marker(loc)
+		remove_depleted_marker(loc)
+		remove_favourl_marker(loc)
+		remove_favoury_marker(loc)
+	}
+	discard_events("this_levy")
+	discard_events("hold")
+	discard_events("this_campaign")
+
+	// Yorkist Setup
+	// TODO: Add Y1-Y13, Y36
+
+	if (has_Y28_happened()) {
+		if (is_lord_in_play(LORD_RUTLAND) && (is_lord_in_play(LORD_GLOUCESTER_1) || is_lord_in_play(LORD_GLOUCESTER_2) || is_lord_in_play(LORD_RICHARD_III))) {
+			// If Gloucester (any) and Rutland, Rutland dies
+			disband_lord(LORD_RUTLAND, true)	
+		}
+	}
+
+	if (main_york_heir === LORD_RUTLAND && (!is_lord_in_play(LORD_GLOUCESTER_1) && !is_lord_in_play(LORD_GLOUCESTER_2))) {
+		// If Rutland is lone heir, Rutland dies
+		disband_lord(LORD_RUTLAND, true)	
+		//Warwick becomes king
+		muster_lord(LORD_WARWICK_Y,LOC_LONDON)
+		add_favoury_marker(LOC_LONDON)
+		muster_lord(LORD_SALISBURY,LOC_YORK)
+		add_favoury_marker(LOC_YORK)
+
+		// TODO: Add Y16, Y17, Y22
+	}
+
+	// If only 1 is alive
+	if (main_york_heir === LORD_YORK && !is_lord_in_play(LORD_MARCH) && !is_lord_in_play(LORD_RUTLAND) && !is_lord_in_play(LORD_GLOUCESTER_1)) {
+		muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
+		add_favoury_marker(LOC_CARLISLE)
+
+		// TODO: Add Y37
+	}
+	if ((main_york_heir === LORD_MARCH || main_york_heir === LORD_EDWARD_IV) && !is_lord_in_play(LORD_RUTLAND) && !is_lord_in_play(LORD_GLOUCESTER_1)) {
+		muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
+		add_favoury_marker(LOC_CARLISLE)
+		// TODO: Add Y37
+	}
+	if (main_york_heir === LORD_GLOUCESTER_1 || main_york_heir(LORD_RICHARD_III)) {
+		muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
+		add_favoury_marker(LOC_CARLISLE)
+		// TODO: Add Y37
+	}
+	muster_lord(LORD_NORFOLK,LOC_ARUNDEL)
+	add_favoury_marker(LOC_ARUNDEL)
+
+
+	if (main_york_heir === LORD_YORK) {
+		// TODO: Add Y14, Y21
+		if (is_lord_in_play(LORD_MARCH)) {
+			muster_lord(LORD_MARCH, LOC_LUDLOW)
+			add_favoury_marker(LOC_LUDLOW)
+			// Add Y20
+			// Only 2 heirs can stay
+			disband_lord(LORD_RUTLAND, true)
+			disband_lord(LORD_GLOUCESTER_1, true)
+		}
+		if (!is_lord_in_play(LORD_MARCH) && is_lord_in_play(LORD_RUTLAND)) {
+			muster_lord(LORD_RUTLAND, LOC_CANTERBURY)
+			add_favoury_marker(LOC_CANTERBURY)
+
+			// TODO: Add Y20
+		if (is_lord_in_play(LORD_GLOUCESTER_1)) {
+			muster_lord(LORD_GLOUCESTER_1, LOC_GLOUCESTER)
+			add_favoury_marker(LOC_GLOUCESTER)
+			// TODO: Y34
+			}
+		}
+	}
+	if (main_york_heir === MARCH || main_york_heir === LORD_EDWARD_IV) {
+		muster_lord(LORD_EDWARD_IV, LOC_LONDON)
+		add_favoury_marker(LOC_LONDON)
+
+		// If Edward IV is on the map, remove March
+		disband_lord(LORD_MARCH, true)
+		// TODO: Add Y23, Y24
+		if (is_lord_in_play(LORD_RUTLAND)) {
+			muster_lord(LORD_RUTLAND, LOC_CANTERBURY)
+			add_favoury_marker(LOC_CANTERBURY)
+			// TODO: Add Y31
+		}
+		if (is_lord_in_play(LORD_GLOUCESTER_1)) {
+			muster_lord(LORD_GLOUCESTER_1, LOC_GLOUCESTER)
+			add_favoury_marker(LOC_GLOUCESTER)
+			// TODO: Add Y28, Y34
+		}
+
+	}
+	if (main_york_heir === LORD_RUTLAND) {
+		muster_lord(LORD_RUTLAND, LOC_LONDON)
+		add_favoury_marker(LOC_LONDON)
+		// TODO: Add Y20, Y21
+		if (is_lord_in_play(LORD_GLOUCESTER_1)) {
+			muster_lord(LORD_GLOUCESTER_2, LOC_LONDON)
+			// If Rutland is King, golden gloucester 2 arrives and gloucester 1 is gone
+			disband_lord(LORD_GLOUCESTER_1, true)
+			// TODO: Add Y34
+		}
+	}
+	if (main_york_heir === LORD_GLOUCESTER_1) {
+		muster_lord(LORD_RICHARD_III, LOC_LONDON)
+		add_favoury_marker(LOC_LONDON)
+		// if Richard III is here, both gloucester are gone
+		disband_lord(LORD_GLOUCESTER_1, true)
+		disband_lord(LORD_GLOUCESTER_2, true)
+		// TODO: Add Y32, Y33
+	}
+
+	// Lancaster setup
+	// TODO: Add L1-L13, L34, L35, L36, L37
+
+	if (main_lancaster_heir === LORD_HENRY_VI || main_lancaster_heir === LORD_MARGARET) {
+		muster_lord(LORD_MARGARET, LOC_FRANCE)
+		// TODO: Add L27, L31 + L26 Edward
+		// Only one heir
+		disband_lord(LORD_HENRY_VI,true)
+		disband_lord(LORD_SOMERSET_1,true)
+		disband_lord(LORD_SOMERSET_2,true)
+	}
+		// If Margaret not here and Edward IV not king
+	if (!is_lord_on_map(LORD_MARGARET) && main_york_heir !== LORD_EDWARD_IV) {
+		muster_lord(LORD_HENRY_TUDOR, LOC_FRANCE)
+		// TODO: Add L32, L35
+		disband_lord(LORD_SOMERSET_1,true)
+		disband_lord(LORD_SOMERSET_2,true)
+	}
+	if (!is_lord_on_map(LORD_MARGARET) && !is_lord_on_map(LORD_HENRY_TUDOR)) {
+		muster_lord(LORD_WARWICK_L, LOC_CALAIS)
+		add_favourl_marker(LOC_CALAIS)
+		// TODO: Add L23, L30
+	}
+
+	if (is_lord_on_map(LORD_MARGARET) || is_lord_on_map(LORD_HENRY_TUDOR)) {
+		muster_lord(LORD_OXFORD, LOC_FRANCE)
+		add_favourl_marker(LOC_OXFORD)
+		muster_lord(LORD_JASPER_TUDOR_2, LOC_FRANCE)
+		add_favoury_marker(LOC_PEMBROKE)
+	}
+	else if (is_lord_on_map(LORD_WARWICK_L)) {
+		muster_lord(LORD_OXFORD, LOC_CALAIS)
+		add_favourl_marker(LOC_OXFORD)
+		muster_lord(LORD_JASPER_TUDOR_2, LOC_CALAIS)	
+		add_favoury_marker(LOC_PEMBROKE)
+	}
+	else {
+		throw Error("Error Lancastrian setup III.Y")
+	}
+
+	// Exile box setup
+	add_favourl_marker(LOC_FRANCE)
+	add_favoury_marker(LOC_BURGUNDY)
+
+	setup_vassals([ VASSAL_OXFORD, VASSAL_NORFOLK ])
+}
+
+function setup_III_L() {
+	game.turn = 1 << 1
+	game.scenario = "IIIL. Yorkists Last Stand"
+	game.rebel = YORK
+	game.active = YORK
+	game.victory_check = 45
+	game.influence = 0
+	
+	if (!is_lord_in_play(LORD_YORK)) {
+		game.influence += 8
+	}
+	if (!is_lord_in_play(LORD_MARCH) && !is_lord_in_play(LORD_EDWARD_IV)) {
+		game.influence += 8
+	}
+	if (!is_lord_in_play(LORD_RUTLAND)) {
+		game.influence += 8
+	}
+	if (!is_lord_in_play(LORD_GLOUCESTER_1) && !is_lord_in_play(LORD_GLOUCESTER_2) && !is_lord_in_play(LORD_RICHARD_III)) {
+		game.influence += 8
+	}
+	if (!is_lord_in_play(LORD_HENRY_VI)) {
+		game.influence -= 8
+	}
+	if (!is_lord_in_play(LORD_HENRY_VI) && !is_lord_in_play(LORD_MARGARET)) {
+		game.influence -= 8
+	}
+	if (!is_lord_in_play(LORD_SOMERSET_1)) {
+		game.influence -= 8
+	}
+	if (!is_lord_in_play(LORD_SOMERSET_1) && !is_lord_in_play(LORD_SOMERSET_2)) {
+		game.influence -= 8
+	}
+	
+
+	for (let lord = first_lord; lord <= last_lord; lord++) {
+		if (is_lord_in_play(lord)) {
+			disband_lord(lord, false)
+		}
+	}
+	for (let loc = first_locale; loc <= last_locale; loc++) {
+		remove_exhausted_marker(loc)
+		remove_depleted_marker(loc)
+		remove_favourl_marker(loc)
+		remove_favoury_marker(loc)
+	}
+	discard_events("this_levy")
+	discard_events("hold")
+	discard_events("this_campaign")
+
+	// Lancaster Setup
+	// TODO: Add L1-L13, L25, L34, L36
+
+	if (main_lancaster_heir === LORD_HENRY_VI) {
+		muster_lord(LORD_HENRY_VI, LOC_LONDON)
+		// TOOD: Add L15, L17
+	}
+	if (main_lancaster_heir === LORD_MARGARET) {
+		muster_lord(LORD_MARGARET, LOC_LONDON)
+		// TODO: Add L27, L31
+	}
+	if (main_lancaster_heir === LORD_SOMERSET_1) {
+		muster_lord(LORD_SOMERSET_1, LOC_LONDON)
+		add_favourl_marker(LOC_WELLS)
+		// TODO: Add L18, L20, L27
+	}
+	// Should never happen but as a failsafe
+	if (main_lancaster_heir === LORD_SOMERSET_2) {
+		muster_lord(LORD_SOMERSET_1, LOC_LONDON)
+		add_favourl_marker(LOC_WELLS)
+		disband_lord(LORD_SOMERSET_2, true)
+		// TODO: Add L18, L20, L27
+	}	
+	muster_lord(LORD_OXFORD, LOC_OXFORD)
+	muster_lord(LORD_JASPER_TUDOR_2, LOC_PEMBROKE)
+	add_favourl_marker(LOC_OXFORD)
+	add_favourl_marker(LOC_PEMBROKE)
+	add_favourl_marker(LOC_LONDON)
+
+	// York Setup
+	// TOOD: Add Y1-Y13, Y36
+
+	if (has_Y28_happened()) {
+		if (is_lord_in_play(LORD_GLOUCESTER_1) || is_lord_in_play(LORD_GLOUCESTER_2) || is_lord_in_play(LORD_RICHARD_III)) {
+			// If Gloucester (any), all other yorkist heir dies
+			disband_lord(LORD_YORK, true)
+			disband_lord(LORD_RUTLAND, true)
+			disband_lord(LORD_MARCH, true)
+			disband_lord(LORD_EDWARD_IV, true)
+			disband_lord(LORD_GLOUCESTER_1, true)
+			disband_lord(LORD_RICHARD_III, true)
+			muster_lord(LORD_GLOUCESTER_2, LOC_BURGUNDY)
+			// TODO: Add Y35
+		}
+	}
+
+	if (main_york_heir === LORD_YORK) {	
+		muster_lord(LORD_YORK, LOC_BURGUNDY)
+		add_favoury_marker(LOC_ELY)
+		// TODO: Add Y14, Y18
+		if (is_lord_in_play(LORD_MARCH)) {
+			// Only next highest heir alive
+			disband_lord(LORD_RUTLAND, true)
+			disband_lord(LORD_GLOUCESTER_1, true)
+			disband_lord(LORD_GLOUCESTER_2, true)
+			muster_lord(LORD_MARCH, LOC_BURGUNDY)
+			add_favoury_marker(LOC_LUDLOW)
+			//TODO: Add Y20
+		}
+		else if (!is_lord_in_play(LORD_MARCH) && is_lord_in_play(LORD_RUTLAND)) {
+			// Only next highest heir alive
+			disband_lord(LORD_GLOUCESTER_1, true)
+			disband_lord(LORD_GLOUCESTER_2, true)	
+			muster_lord(LORD_RUTLAND, LOC_BURGUNDY)
+			add_favoury_marker(LOC_CANTERBURY)
+			//TODO: Add Y20	
+		}
+		else if (!is_lord_in_play(LORD_MARCH) && !is_lord_in_play(LORD_RUTLAND) && (is_lord_in_play(LORD_GLOUCESTER_1) || is_lord_in_play(LORD_GLOUCESTER_2))) {
+			// Final Scenario, and no succession rule
+			disband_lord(LORD_GLOUCESTER_2, true)
+			muster_lord(LORD_GLOUCESTER_1, LOC_BURGUNDY)
+			add_favoury_marker(LOC_GLOUCESTER)
+			// TODO: Add Y4
+		}
+		else {
+			// If York alone
+			muster_lord(LORD_SALISBURY, LOC_BURGUNDY)
+			add_favoury_marker(LOC_YORK)
+			//TODO: Add Y17, Y22
+		}
+	}
+	if (main_york_heir === LORD_MARCH || main_york_heir === LORD_RUTLAND) {
+		// If March or Rutland is highest heir, Warwick takes the lead
+		disband_lord(LORD_MARCH, true)
+		disband_lord(LORD_RUTLAND, true)
+		muster_lord(LORD_WARWICK_Y, LOC_CALAIS)
+		add_favoury_marker(LOC_CALAIS)
+		//TODO: Add Y16
+	}
+
+	if (main_york_heir === LORD_WARWICK_Y) {
+		muster_lord(LORD_NORFOLK, LOC_CALAIS)
+		muster_lord(LORD_SALISBURY, LOC_CALAIS)
+		add_favoury_marker(LOC_CALAIS)
+		//TODO: Add Y17, Y22
+	}
+	else (
+		muster_lord(LORD_NORFOLK, LOC_BURGUNDY)
+	)
+
+	if (main_york_heir === LORD_GLOUCESTER_1) {
+		disband_lord(LORD_GLOUCESTER_1, true)
+		muster_lord(LORD_GLOUCESTER_2, LOC_BURGUNDY)
+		muster_lord(LORD_SALISBURY, LOC_BURGUNDY)
+		//TODO: Add Y17, Y22
+	}
+
+	add_favoury_marker(LOC_ARUNDEL)
+
+	// Exile box setup
+	add_favourl_marker(LOC_FRANCE)
+	add_favoury_marker(LOC_BURGUNDY)
+
+	setup_vassals([ VASSAL_OXFORD, VASSAL_NORFOLK ])
+}
+
+
+// FULL SCENARIO HEIR
+function main_york_heir() {
+	if (is_lord_in_play(LORD_YORK))
+		return LORD_YORK
+	if (!is_lord_in_play(LORD_YORK) && is_lord_in_play(LORD_MARCH))
+		return LORD_MARCH
+	if (!is_lord_in_play(LORD_YORK) && !is_lord_in_play(LORD_MARCH) && is_lord_in_play(LORD_EDWARD_IV))
+		return LORD_EDWARD_IV
+	if (!is_lord_in_play(LORD_YORK) && !is_lord_in_play(LORD_MARCH) && !is_lord_in_play(LORD_EDWARD_IV) && is_lord_in_play(LORD_RUTLAND))
+		return LORD_RUTLAND
+	if (!is_lord_in_play(LORD_YORK) && !is_lord_in_play(LORD_MARCH) && !is_lord_in_play(LORD_EDWARD_IV) && !is_lord_in_play(LORD_RUTLAND) && (is_lord_in_play(LORD_GLOUCESTER_1) || is_lord_in_play(LORD_GLOUCESTER_2) || is_lord_in_play(LORD_RICHARD_III)))
+		return LORD_GLOUCESTER_1	
+	if (!is_lord_in_play(LORD_YORK) && !is_lord_in_play(LORD_MARCH) && !is_lord_in_play(LORD_EDWARD_IV) && !is_lord_in_play(LORD_RUTLAND) && !is_lord_in_play(LORD_GLOUCESTER_1) && !is_lord_in_play(LORD_GLOUCESTER_2) && !is_lord_in_play(LORD_RICHARD_III))
+		return LORD_WARWICK_Y
+}
+
+function main_lancaster_heir() {
+	if (is_lord_in_play(LORD_HENRY_VI))
+		return LORD_HENRY_VI
+	if (!is_lord_in_play(LORD_HENRY_VI) && is_lord_in_play(LORD_MARGARET))
+		return LORD_MARGARET
+	if (!is_lord_in_play(LORD_HENRY_VI) && !is_lord_in_play(LORD_MARGARET) && is_lord_in_play(LORD_SOMERSET_1))
+		return LORD_SOMERSET_1
+	if (!is_lord_in_play(LORD_HENRY_VI) && !is_lord_in_play(LORD_MARGARET) && !is_lord_in_play(LORD_SOMERSET_1) && is_lord_in_play(LORD_SOMERSET_2))
+		return LORD_SOMERSET_2
+	if (!is_lord_in_play(LORD_HENRY_VI) && !is_lord_in_play(LORD_MARGARET) && !is_lord_in_play(LORD_SOMERSET_1) && !is_lord_in_play(LORD_SOMERSET_2) && is_lord_in_play(LORD_HENRY_TUDOR))
+		return LORD_HENRY_TUDOR
+	if (!is_lord_in_play(LORD_HENRY_VI) && !is_lord_in_play(LORD_MARGARET) && !is_lord_in_play(LORD_SOMERSET_1) && !is_lord_in_play(LORD_SOMERSET_2) && !is_lord_in_play(LORD_HENRY_TUDOR) && is_lord_in_play(LORD_WARWICK_L))
+		return LORD_WARWICK_L		
+}
+
 
 function goto_setup_lords() {
 	// setup will be used in some scenarios
@@ -6991,6 +7677,7 @@ function end_exile_pact() {
 // === CAPABILITY : AGITATORS ===
 
 function can_action_agitators() {
+	let here = get_lord_locale(game.command)
 	if (game.actions <= 0)
 		return false
 	if (lord_has_capability(game.command, AOW_YORK_AGITATORS)) {
@@ -9296,7 +9983,6 @@ states.feed = {
 	},
 	pillage() {
 		push_undo()
-		check_london_protected()
 		set_lord_feed_requirements()
 		goto_pillage_food()
 	},
@@ -11139,4 +11825,3 @@ exports.fuzz_log = function (fuzz_info) {
 	// 		console.log(log_sanity[x])
 	// 	}
 	// }
-
