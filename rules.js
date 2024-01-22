@@ -8156,6 +8156,7 @@ function end_attacker_events() {
 }
 
 function goto_defender_events() {
+	clear_undo()
 	set_active_defender()
 	log_br()
 	if (can_play_battle_events())
@@ -8417,18 +8418,27 @@ function action_battle_events(c) {
 		set_add(game.events, c)
 		switch (c) {
 			case EVENT_LANCASTER_LEEWARD_BATTLE_LINE:
+				break;
 			case EVENT_LANCASTER_SUSPICION:
 				game.state = "suspicion"
+				break;
 			case EVENT_LANCASTER_FOR_TRUST_NOT_HIM:
-			//	game.state = "for_trust_not_him"
+			 	game.state = "for_trust_not_him"
+				break;
 			case EVENT_LANCASTER_RAVINE:
 			//	game.state = "ravine"
+				break;
 			case EVENT_YORK_LEEWARD_BATTLE_LINE:
+				break;
 			case EVENT_YORK_SUSPICION:
 				game.state = "suspicion"
+				break;
 			case EVENT_YORK_CALTROPS:
+				break;
 			case EVENT_YORK_REGROUP:
+				break;
 			case EVENT_YORK_SWIFT_MANEUVER:
+				break;
 		}
 }
 
@@ -8522,16 +8532,94 @@ states.influence_check_suspicion = {
 // === EVENT : FOR TRUST NOT HIM ===
 
 states.for_trust_not_him = {
-	inactive: "For trust not him",
+	inactive: "For trust not him \u2014 Select Lord",
 	prompt() {
-		view.prompt = "Select a friendly and then an enemy vassal to levy him."
-		view.actions.done = 1
+		let done = true
+		view.prompt = "Select a friendly lord"
+		for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; lord++) {
+			if (is_lancaster_lord(lord) && get_lord_locale(lord) === game.battle.where) {
+				done = false
+				gen_action_lord(lord)
+			}
+		}
+		if (done) {
+			view.actions.done = 1
+		}
 	},
-	done() {
-		end_defender_events()
+	lord(lord) {
+		push_undo()
+		game.who = lord
+		push_state("for_trust_not_him_vassal")
 	},
 }
 
+states.for_trust_not_him_vassal = {
+	inactive: "For trust not him \u2014 Select Vassal",
+	prompt() {
+		view.prompt = "Select an enemy Vassal"
+		for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
+			if (is_vassal_mustered_with_york_lord(vassal)) {
+				// Hastings & Salisbury with Alice Montagu capability are immune.
+				if ((get_vassal_lord(vassal) !== LORD_SALISBURY || !lord_has_capability(LORD_SALISBURY, AOW_YORK_ALICE_MONTAGU)) && data.vassals[vassal].name !== "Hastings") {
+					gen_action_vassal(vassal)
+				}
+			}
+		}
+	},
+	vassal(v) {
+		push_undo()
+		game.which = v
+		goto_influence_check_for_trust_not_him()
+	},
+}
+
+function goto_influence_check_for_trust_not_him() {
+	init_influence_check(game.who)
+	game.check.push({
+		cost: 0,
+		modifier: data.vassals[game.which].influence * (game.active === LANCASTER ? -1 : 1),
+		source: "vassal",
+	})
+	push_state("for_trust_not_him_bribe")
+}
+
+
+states.for_trust_not_him_bribe = {
+	inactive: `Influence check`,
+	prompt() {
+		view.prompt = `Influence check : Success bribes ${data.vassals[game.which].name} `
+		prompt_influence_check()
+	},
+	spend1: add_influence_check_modifier_1,
+	spend3: add_influence_check_modifier_2,
+	check() {
+		let results = do_influence_check()
+		if (game.who === LORD_HENRY_TUDOR && lord_has_capability(LORD_HENRY_TUDOR, AOW_LANCASTER_TWO_ROSES)) {
+			logi(`Automatic success C${AOW_LANCASTER_TWO_ROSES}`)
+		}
+		else {
+			logi(`Attempt to bribe ${data.vassals[game.which].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		}
+		if (results.success) {
+			clear_undo()
+			muster_vassal(game.which, game.who)
+			end_influence_check()		
+			end_for_trust_not_him()
+		} else {
+			clear_undo()
+			end_influence_check()
+			end_for_trust_not_him()
+		}
+	},
+}
+
+function end_for_trust_not_him() {
+	game.who = NOBODY
+	game.which = NOTHING
+	resume_battle_events()
+}
+
+// === BATTLE: RAVINE ===
 
 states.ravine = {
 	inactive: "Ravine",
