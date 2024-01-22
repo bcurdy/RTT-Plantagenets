@@ -8434,6 +8434,7 @@ function action_battle_events(c) {
 				game.state = "suspicion"
 				break;
 			case EVENT_YORK_CALTROPS:
+				game.state = "caltrops"
 				break;
 			case EVENT_YORK_REGROUP:
 				break;
@@ -8442,6 +8443,26 @@ function action_battle_events(c) {
 		}
 }
 
+// === EVENT : CALTROPS ===
+
+states.caltrops = {
+	inactive: "Caltrops",
+	prompt() {
+		view.prompt = "Caltrops: Select a friendly lord to Add +2 Hits each Melee phase to his engagement"
+		for (let lord of game.battle.array) {
+			if (is_friendly_lord(lord)) {
+				gen_action_lord(lord)
+			}
+		}
+	},
+	lord(lord) {
+		push_undo()
+		game.battle.caltrops = lord
+		resume_battle_events()
+		logi(`2 Hits added to ${data.lords[lord].name} each Melee round`)
+		logevent(EVENT_YORK_CALTROPS)
+	},
+}
 // === EVENT : SUSPICION ===
 
 states.suspicion = {
@@ -8890,6 +8911,10 @@ function count_melee_hits(lord) {
 	hits += get_lord_forces(lord, MERCENARIES)
 	hits += get_lord_forces(lord, BURGUNDIANS) << 1
 
+	if (lord === game.battle.caltrops) {
+		hits += 2
+	}
+	
 	return hits
 }
 
@@ -9129,7 +9154,7 @@ states.culverins_and_falconets = {
 	card(c) {
 		let die = roll_die()
 		let lord = find_lord_with_capability_card(c)
-		if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE)) {
+		if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE) && game.active === YORK) {
 			let die2 = roll_die()
 			die += die2
 		}
@@ -9620,6 +9645,7 @@ function end_battle() {
 		log_h4(`${game.battle.loser} Lost`)
 
 	game.battle.array = 0
+	game.battle.caltrops = -1
 	goto_battle_influence()
 }
 
