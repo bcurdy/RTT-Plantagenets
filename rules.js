@@ -7416,9 +7416,10 @@ states.sail = {
 		// you can go to unbesieged enemy lord with norfolk capability
 		if (has_unbesieged_enemy_lord(to))
 			goto_confirm_approach_sail()
-		else
+		else {
 			game.flags.surprise_landing = 1
 			resume_command()
+		}
 	},
 }
 
