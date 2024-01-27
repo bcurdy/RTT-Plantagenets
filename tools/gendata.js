@@ -783,7 +783,7 @@ let exile_3 = locmap["Ireland"]
 let port_1 = ["Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich"].map(name => locmap[name]).sort(cmpnum)
 let port_2 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
 let port_3 = ["Bristol","Pembroke","Harlech"].map(name => locmap[name]).sort(cmpnum)
-
+let all_ports = [ ...port_1, ...port_2, ...port_3 ].sort(cmpnum)
 
 let seaports = [
 	"English Channel", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea", "Burgundy", "Dover", "Hastings", "Calais", "France", "Arundel", "Southampton","Dorchester","Exeter","Plymouth","Truro","Bristol","Pembroke","Harlech", "Ireland", "Irish Sea"
@@ -1717,6 +1717,7 @@ print("sea_3:" + JSON.stringify(sea_3) + ",")
 print("port_1:" + JSON.stringify(port_1) + ",")
 print("port_2:" + JSON.stringify(port_2) + ",")
 print("port_3:" + JSON.stringify(port_3) + ",")
+print("all_ports:" + JSON.stringify(all_ports) + ",")
 print("way_exile_1:" + JSON.stringify(way_exile_1) + ",")
 print("way_exile_2:" + JSON.stringify(way_exile_2) + ",")
 print("way_exile_3:" + JSON.stringify(way_exile_3) + ",")

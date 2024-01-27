@@ -598,7 +598,8 @@ const TURN_NAME = [
 ]
 
 function find_ports(here) {
-	if ((lord_has_capability(game.group, AOW_YORK_GREAT_SHIPS) || lord_has_capability(game.group, AOW_LANCASTER_GREAT_SHIPS))) return data.port_1.concat(data.port_2, data.port_3)
+	if ((lord_has_capability(game.group, AOW_YORK_GREAT_SHIPS) || lord_has_capability(game.group, AOW_LANCASTER_GREAT_SHIPS)))
+		return data.all_ports
 	if (here === data.sea_1) return data.port_1
 	if (here === data.sea_2) return data.port_2
 	if (here === data.sea_3) return data.port_3
