@@ -3212,10 +3212,10 @@ states.warwicks_propaganda = {
 	prompt() {
 		view.prompt = `Select up to ${3-game.count} Yorkists Locales.`
 		for (let loc = first_locale; loc <= last_locale; loc++) {
-				if (game.count < 3 && has_favoury_marker(loc) && !is_exile(loc) && !is_propaganda_target(loc)) {
-					gen_action_locale(loc)
-				}
+			if (game.count < 3 && has_favoury_marker(loc) && !is_exile(loc) && !is_propaganda_target(loc)) {
+				gen_action_locale(loc)
 			}
+		}
 		view.actions.done = 1
 	},
 	locale(loc) {
@@ -4363,7 +4363,7 @@ function can_play_l_flank_attack() {
 		&& game.who !== NOBODY
 		&& !is_event_in_play(EVENT_YORK_PARLIAMENT_TRUCE)
 		&& !is_event_in_play(EVENT_LANCASTER_PARLIAMENT_TRUCE))
-		{
+	{
 		return true
 	}
 	return false
@@ -4375,7 +4375,7 @@ function can_play_y_flank_attack() {
 		&& game.who !== NOBODY
 		&& !is_event_in_play(EVENT_YORK_PARLIAMENT_TRUCE)
 		&& !is_event_in_play(EVENT_LANCASTER_PARLIAMENT_TRUCE))
-		{
+	{
 		return true
 	}
 	return false
@@ -4480,7 +4480,7 @@ states.aspielles = {
 		if (game.hidden) {
 			for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord)
 				gen_action_lord(lord)
-				done = true
+			done = true
 		}
 		if (game.active === YORK) {
 			view.hand = game.hand_l
@@ -5469,8 +5469,8 @@ function forbidden_levy_capabilities(c) {
 			|| c === AOW_LANCASTER_MONTAGU
 			|| c === AOW_LANCASTER_MY_FATHERS_BLOOD
 			|| c === AOW_LANCASTER_ANDREW_TROLLOPE) {
-				return false
-			}
+			return false
+		}
 	}
 	return true
 }
@@ -5968,18 +5968,16 @@ function count_influence_score() {
 }
 
 function count_influence_cost() {
-	if (is_campaign_phase()
-		&& game.command === LORD_DEVON
-		&& get_lord_locale(LORD_DEVON) === LOC_EXETER
-		&& is_event_in_play(EVENT_YORK_DORSET)
-		&& game.state === "parley") {
-			return 0
+	if (game.state === "parley") {
+		if (is_campaign_phase()) {
+			if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
+				return 0
 		}
-		if (is_levy_phase()
-		&& game.flags.jack_cade > 0
-		&& game.state === "parley") {
-			return 0
+		if (is_levy_phase()) {
+			if (game.flags.jack_cade > 0)
+				return 0
 		}
+	}
 	return game.check.reduce((p, c) => p + c.cost, 0)
 }
 
@@ -8273,30 +8271,30 @@ function can_escape_at(here) {
 }
 
 function search_escape_route(start) {
-    search_seen.fill(0);
-    search_seen[start] = 1;
-    let queue = [start];
+	search_seen.fill(0);
+	search_seen[start] = 1;
+	let queue = [start];
 
-    while (queue.length > 0) {
-        let here = queue.shift();
-        let dist = search_dist[here];
-        let next_dist = dist + 1;
+	while (queue.length > 0) {
+		let here = queue.shift();
+		let dist = search_dist[here];
+		let next_dist = dist + 1;
 
-        // Check if the current locale is a seaport
-        if (is_seaport(here)) {
-            return true;
-        }
+		// Check if the current locale is a seaport
+		if (is_seaport(here)) {
+			return true;
+		}
 
-        if (is_friendly_locale(here)) {
-            for (let next of data.locales[here].adjacent) {
-                if (!search_seen[next]) {
-                    search_seen[next] = 1;
-                    queue.push(next);
-                }
-            }
-        }
-    }
-    return false;
+		if (is_friendly_locale(here)) {
+			for (let next of data.locales[here].adjacent) {
+				if (!search_seen[next]) {
+					search_seen[next] = 1;
+					queue.push(next);
+				}
+			}
+		}
+	}
+	return false;
 }
 
 function goto_play_escape_ship() {
@@ -9889,15 +9887,15 @@ states.death_or_disband = {
 			set_delete(game.battle.routed, lord)
 		}
 		else {
-		let roll = roll_die()
-		if (set_has(game.battle.fled, lord))
-			modifier = -2
+			let roll = roll_die()
+			if (set_has(game.battle.fled, lord))
+				modifier = -2
 
-		let success = threshold >= roll + modifier
-		log(`Lord ${lord_name[lord]} ${success ? "Survived" : "Died"}: (${range(2)}) ${success ? HIT[roll] : MISS[roll]} ${modifier < 0 ? "(-2 Fled)" : ""}`)
-		disband_lord(lord, !success)
-		set_delete(game.battle.fled, lord)
-		set_delete(game.battle.routed, lord)
+			let success = threshold >= roll + modifier
+			log(`Lord ${lord_name[lord]} ${success ? "Survived" : "Died"}: (${range(2)}) ${success ? HIT[roll] : MISS[roll]} ${modifier < 0 ? "(-2 Fled)" : ""}`)
+			disband_lord(lord, !success)
+			set_delete(game.battle.fled, lord)
+			set_delete(game.battle.routed, lord)
 		}
 	},
 	done() {
@@ -10103,8 +10101,8 @@ function goto_pay() {
 			lord_has_capability(lord, AOW_LANCASTER_MADAME_LA_GRANDE) &&
 			(((is_friendly_locale(data.locales[here])) && data.port_2.includes(here)) ||
 			is_adjacent_friendly_port_english_channel(here))) {
-				add_lord_assets(lord, COIN, 1)
-			}
+			add_lord_assets(lord, COIN, 1)
+		}
 		if (
 			game.active === LANCASTER &&
 			is_lord_on_map(lord) &&
@@ -10390,7 +10388,7 @@ states.pay_vassals = {
 				pay_vassal(v)
 				reduce_influence(1)
 				game.what = NOBODY
-		}
+			}
 		}
 	},
 	disband() {
