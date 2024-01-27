@@ -2430,13 +2430,12 @@ function setup_III_Y() {
 		if (!is_lord_in_play(LORD_MARCH) && is_lord_in_play(LORD_RUTLAND)) {
 			muster_lord(LORD_RUTLAND, LOC_CANTERBURY)
 			add_favoury_marker(LOC_CANTERBURY)
-
 			// TODO: Add Y20
+		}
 		if (is_lord_in_play(LORD_GLOUCESTER_1)) {
 			muster_lord(LORD_GLOUCESTER_1, LOC_GLOUCESTER)
 			add_favoury_marker(LOC_GLOUCESTER)
 			// TODO: Y34
-			}
 		}
 	}
 	if (main_york_heir === MARCH || main_york_heir === LORD_EDWARD_IV) {
