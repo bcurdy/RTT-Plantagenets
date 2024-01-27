@@ -981,8 +981,8 @@ function count_group_ships() {
 		n += count_lord_ships(lord)
 		if (lord_has_capability(AOW_YORK_GREAT_SHIPS) || lord_has_capability(AOW_LANCASTER_GREAT_SHIPS))
 			n += count_lord_ships(lord)
-	return n
 	}
+	return n
 }
 
 function count_group_assets(type, group = game.group) {
