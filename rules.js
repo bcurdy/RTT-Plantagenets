@@ -598,7 +598,7 @@ const TURN_NAME = [
 ]
 
 function find_ports(here) {
-	if ((lord_has_capability(game.group, AOW_YORK_GREAT_SHIPS) || lord_has_capability(game.group, AOW_LANCASTER_GREAT_SHIPS))) return data.port_1.concat(data.port_2, data.port_3);
+	if ((lord_has_capability(game.group, AOW_YORK_GREAT_SHIPS) || lord_has_capability(game.group, AOW_LANCASTER_GREAT_SHIPS))) return data.port_1.concat(data.port_2, data.port_3)
 	if (here === data.sea_1) return data.port_1
 	if (here === data.sea_2) return data.port_2
 	if (here === data.sea_3) return data.port_3
@@ -5121,17 +5121,17 @@ function goto_kings_name_cancel() {
 		case "Levy Lord":
 			pop_state()
 			end_levy_muster_lord_attempt()
-			break;
+			break
 		case "Levy Cart":
 			add_lord_assets(game.who, CART, -2)
 			pop_state()
 			resume_levy_muster_lord()
-			break;
+			break
 		case "Levy Ship":
 			add_lord_assets(game.who, SHIP, -1)
 			pop_state()
 			resume_levy_muster_lord()
-			break;
+			break
 		case "Levy Vassal":
 			game.which = NOTHING
 			end_levy_muster_vassal()
@@ -5139,27 +5139,27 @@ function goto_kings_name_cancel() {
 			kings_name_reset_troops()
 			pop_state()
 			resume_levy_muster_lord()
-			break;
+			break
 		case "Parley":
 			shift_favour_toward_york(game.where)
 			pop_state()
 			game.where = NOWHERE
 			end_parley()
-			break;
+			break
 		case "Capability":
 			game.which = NOTHING
 			pop_state()
 			pop_state()
 			resume_levy_muster_lord()
-			break;
+			break
 		case "Levy Beloved Warwick":
 			add_lord_forces(game.who, MILITIA, -5)
 			pop_state()
 			resume_levy_muster_lord()
-			break;
+			break
 		default:
 			throw Error("No King's name cancel state found")
-			break;
+			break
 	}
 	log(`${game.what} action cancelled`)
 	logevent(`${EVENT_YORK_THE_KINGS_NAME}`)
@@ -8270,30 +8270,30 @@ function can_escape_at(here) {
 }
 
 function search_escape_route(start) {
-	search_seen.fill(0);
-	search_seen[start] = 1;
-	let queue = [start];
+	search_seen.fill(0)
+	search_seen[start] = 1
+	let queue = [start]
 
 	while (queue.length > 0) {
-		let here = queue.shift();
-		let dist = search_dist[here];
-		let next_dist = dist + 1;
+		let here = queue.shift()
+		let dist = search_dist[here]
+		let next_dist = dist + 1
 
 		// Check if the current locale is a seaport
 		if (is_seaport(here)) {
-			return true;
+			return true
 		}
 
 		if (is_friendly_locale(here)) {
 			for (let next of data.locales[here].adjacent) {
 				if (!search_seen[next]) {
-					search_seen[next] = 1;
-					queue.push(next);
+					search_seen[next] = 1
+					queue.push(next)
 				}
 			}
 		}
 	}
-	return false;
+	return false
 }
 
 function goto_play_escape_ship() {
