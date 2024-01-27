@@ -138,10 +138,6 @@ const vassal_count = data.vassals.length
 const first_lord = 0
 const last_lord = lord_count - 1
 
-const first_york_locale = 0
-const last_york_locale = 73
-const first_lancaster_locale = 0
-const last_lancaster_locale = 73
 const first_locale = 0
 const last_locale = data.locales.length - 1
 
@@ -9060,8 +9056,6 @@ function end_assign_hits() {
 }
 
 function for_each_target(fn) {
-	let target = game.battle.target
-
 	for (let target of game.battle.target) {
 		fn(game.battle.array[target])
 	}
