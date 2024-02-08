@@ -423,9 +423,7 @@ const EVENT_LANCASTER_ESCAPE_SHIP = L3
 const EVENT_LANCASTER_BE_SENT_FOR = L4
 const EVENT_LANCASTER_SUSPICION = L5
 const EVENT_LANCASTER_SEAMANSHIP = L6
-const EVENT_LANCASTER_FOR_TRUST_NOT_HIM = L7 // TODO
-// Hold Event. Play at start of Battle AFTER ARRAY. Cost is always 1 + vassal modifier (		modifier: data.vassals[vassal].influence * (game.active === LANCASTER ? -1 : 1))
-// Y7 DO NOT override this event.
+const EVENT_LANCASTER_FOR_TRUST_NOT_HIM = L7
 const EVENT_LANCASTER_FORCED_MARCHES = L8
 const EVENT_LANCASTER_RISING_WAGES = L9
 const EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT = L10
@@ -8940,13 +8938,17 @@ function goto_engagement_total_hits() {
 	for (let pos of game.battle.engagements[0]) {
 		if (pos === A1 || pos === A2 || pos === A3) {
 			ahits += game.battle.ah[pos]
-			ahits += game.battle.attacker_artillery
-		} else {
+			if (game.battle.attacker_artillery > 0) {
+				ahits += game.battle.attacker_artillery
+			}
+		} 
+		else {
 			dhits += game.battle.ah[pos]
-			dhits += game.battle.defender_artillery
+			if (game.battle.defender_artillery > 0) {
+				dhits += game.battle.defender_artillery
+			} 			
 		}
 	}
-
 	if (ahits & 1)
 		ahits = (ahits >> 1) + 1
 	else
