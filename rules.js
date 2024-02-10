@@ -418,7 +418,7 @@ const AOW_YORK_PERCYS_NORTH2 = Y37
 
 const EVENT_LANCASTER_LEEWARD_BATTLE_LINE = L1
 const EVENT_LANCASTER_FLANK_ATTACK = L2 // TODO
-// Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
+// Hold event. Play during the intercept state EXCEPT when Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
 const EVENT_LANCASTER_ESCAPE_SHIP = L3
 const EVENT_LANCASTER_BE_SENT_FOR = L4
 const EVENT_LANCASTER_SUSPICION = L5
@@ -433,7 +433,7 @@ const EVENT_LANCASTER_BLOCKED_FORD = L11 // TODO
 // he plays BLOCKED ford or not.
 // but without the enemy knowing this.
 // Then, the opponent may play PARLIAMENT'S TRUCE/KING'S PARLEY to cancel that approach
-// and  consider BLOCKED FORD to not have been used.
+// and consider BLOCKED FORD to not have been used.
 // Blocked ford basically force the player being approached to choose battle rather
 // then exile.
 // Be careful about interaction aswell with EVENT FLANK ATTACK
@@ -471,7 +471,7 @@ const EVENT_LANCASTER_THE_EARL_OF_RICHMOND = L37
 
 const EVENT_YORK_LEEWARD_BATTLE_LINE = Y1
 const EVENT_YORK_FLANK_ATTACK = Y2 // TODO
-// Hold event. Play during the intercept state EXCEPT when  Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
+// Hold event. Play during the intercept state EXCEPT when Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
 const EVENT_YORK_ESCAPE_SHIP = [Y3 , Y9]
 const EVENT_YORK_JACK_CADE = Y4
 const EVENT_YORK_SUSPICION = Y5
@@ -485,7 +485,7 @@ const EVENT_YORK_BLOCKED_FORD = Y11 // TODO
 // he plays BLOCKED ford or not.
 // but without the enemy knowing this.
 // Then, the opponent may play PARLIAMENT'S TRUCE/KING'S PARLEY to cancel that approach
-// and  consider BLOCKED FORD to not have been used.
+// and consider BLOCKED FORD to not have been used.
 // Blocked ford basically force the player being approached to choose battle rather
 // then exile.
 // Be careful about interaction aswell with EVENT FLANK ATTACK
@@ -3161,7 +3161,7 @@ states.welsh_rebellion_remove_troops = {
 		view.prompt = `Remove 2 Troops from each enemy Lord in Wales.`
 		let done = true
 		if (game.who === NOBODY) {
-			for (let lord = first_enemy_lord; lord  <= last_enemy_lord; lord++) {
+			for (let lord = first_enemy_lord; lord <= last_enemy_lord; lord++) {
 				if (is_lord_on_map(lord) && is_lord_in_wales(lord) && get_lord_moved(lord)) {
 					gen_action_lord(lord)
 					done = false
@@ -5291,7 +5291,7 @@ function forbidden_levy_capabilities(c) {
 			return true
 		}
 	}
-	// Forbids levy vassals, even through  capabilities
+	// Forbids levy vassals, even through capabilities
 	if (is_event_in_play(EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT)) {
 		if (c === AOW_LANCASTER_THOMAS_STANLEY
 			|| c === AOW_LANCASTER_EDWARD
@@ -5737,19 +5737,19 @@ function init_influence_check(lord) {
 	if (game.active === LANCASTER
 		&& is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)
 		&& game.state === "parley"){
-		game.check.push({ cost: 1,  modifier: 0, source:"An Honest tale speeds best"})
+		game.check.push({ cost: 1, modifier: 0, source:"An Honest tale speeds best"})
 	}
 	if (game.active === LANCASTER
 		&& is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES)
 		&& game.flags.parliament_votes === 1
 		&& game.state === "parley") {
-		game.check.push({ cost: -1,  modifier: 0, source:"Parliament Votes"})
+		game.check.push({ cost: -1, modifier: 0, source:"Parliament Votes"})
 	}
 	if (game.active === YORK
 		&& is_event_in_play(EVENT_YORK_SUCCESSION)
 		&& game.flags.succession === 1
 		&& game.state === "parley") {
-		game.check.push({ cost: -1,  modifier: 0, source:"Succession"})
+		game.check.push({ cost: -1, modifier: 0, source:"Succession"})
 	}
 }
 
@@ -6422,7 +6422,7 @@ function goto_intercept_march() {
 }
 
 function end_intercept_march() {
-	// successfully intercepted by here.  Make sure to clear out actions
+	// successfully intercepted by here. Make sure to clear out actions
 	spend_all_actions()
 	goto_intercept_exiles()
 }
@@ -6533,7 +6533,7 @@ function end_exiles() {
 	} else {
 		// no one left, goto finish marching.
 		set_active_enemy()
-		end_command()
+		march_with_group_3()
 	}
 }
 
