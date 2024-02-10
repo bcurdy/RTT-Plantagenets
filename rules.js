@@ -449,7 +449,7 @@ const EVENT_LANCASTER_WARDEN_OF_THE_MARCHES = L16
 const EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART = L17
 const EVENT_LANCASTER_PARLIAMENT_VOTES = L18
 const EVENT_LANCASTER_HENRYS_PROCLAMATION = L19
-const EVENT_LANCASTER_PARLIAMENT_TRUCE = L20 // TODO
+const EVENT_LANCASTER_PARLIAMENTS_TRUCE = L20 // TODO
 // Can be played during Levy and Campaign
 // Read L11 Basically it forbids to go to locales where enemy are as long as
 // this event is active (until end of this campaign)
@@ -491,7 +491,7 @@ const EVENT_YORK_BLOCKED_FORD = Y11 // TODO
 // Blocked ford basically force the player being approached to choose battle rather
 // then exile.
 // Be careful about interaction aswell with EVENT FLANK ATTACK
-const EVENT_YORK_PARLIAMENT_TRUCE = Y12 // TODO
+const EVENT_YORK_PARLIAMENTS_TRUCE = Y12 // TODO
 // Can be played during Levy and Campaign
 // Read L11 Basically it forbids to go to locales where enemy are as long as
 // this event is active (until end of this campaign)
@@ -4066,9 +4066,9 @@ function can_play_held_event(c) {
 			return can_play_rebel_supply_depot()
 		case EVENT_LANCASTER_SURPRISE_LANDING:
 			return can_play_surprise_landing()
-	/*	case EVENT_LANCASTER_PARLIAMENT_TRUCE:
+	/*	case EVENT_LANCASTER_PARLIAMENTS_TRUCE:
 			return can_play_l_parliament_truce()
-		case EVENT_YORK_PARLIAMENT_TRUCE:
+		case EVENT_YORK_PARLIAMENTS_TRUCE:
 			return can_play_y_parliament_truce()*/
 		case EVENT_YORK_ASPIELLES:
 			return can_play_y_aspielles()
@@ -4195,8 +4195,8 @@ function can_play_l_flank_attack() {
 	if (game.active === LANCASTER
 		&& game.state === "intercept"
 		&& game.who !== NOBODY
-		&& !is_event_in_play(EVENT_YORK_PARLIAMENT_TRUCE)
-		&& !is_event_in_play(EVENT_LANCASTER_PARLIAMENT_TRUCE))
+		&& !is_event_in_play(EVENT_YORK_PARLIAMENTS_TRUCE)
+		&& !is_event_in_play(EVENT_LANCASTER_PARLIAMENTS_TRUCE))
 	{
 		return true
 	}
@@ -4207,8 +4207,8 @@ function can_play_y_flank_attack() {
 	if (game.active === YORK
 		&& game.state === "intercept"
 		&& game.who !== NOBODY
-		&& !is_event_in_play(EVENT_YORK_PARLIAMENT_TRUCE)
-		&& !is_event_in_play(EVENT_LANCASTER_PARLIAMENT_TRUCE))
+		&& !is_event_in_play(EVENT_YORK_PARLIAMENTS_TRUCE)
+		&& !is_event_in_play(EVENT_LANCASTER_PARLIAMENTS_TRUCE))
 	{
 		return true
 	}
