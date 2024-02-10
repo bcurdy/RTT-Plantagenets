@@ -6312,7 +6312,7 @@ function march_with_group_2() {
 	goto_intercept()
 }
 
-function march_with_group_3() {
+function end_march() {
 	// Disbanded in battle!
 	if (!is_lord_on_map(game.command)) {
 		game.march = 0
@@ -6483,7 +6483,7 @@ function goto_exiles() {
 		game.state = "exiles"
 		set_active_enemy()
 	} else {
-		march_with_group_3()
+		end_march()
 	}
 }
 
@@ -6497,7 +6497,7 @@ function end_exiles() {
 	} else {
 		// no one left, goto finish marching.
 		set_active_enemy()
-		march_with_group_3()
+		end_march()
 	}
 }
 
@@ -9691,7 +9691,7 @@ function goto_battle_aftermath() {
 
 	game.battle = 0
 	game.flags.bloody = 0
-	march_with_group_3()
+	end_march()
 }
 
 // === CAMPAIGN: FEED ===
