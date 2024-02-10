@@ -6307,7 +6307,7 @@ function march_with_group_2() {
 
 	for (let lord of game.group) {
 		set_lord_locale(lord, to)
-		// Note: We flag the lords moved and levy burgundians after king's parley has resolved.
+		// Note: We flag the lords moved and levy burgundians after king's parley and parliament's truce have resolved.
 		// See end_kings_parley.
 	}
 
@@ -6332,6 +6332,7 @@ function end_march() {
 function goto_intercept() {
 	let here = get_lord_locale(game.command)
 	for (let next of data.locales[here].not_paths) {
+		// TODO: forbid lancaster intercept into york moving to york, and vice versa
 		if (has_enemy_lord(next)) {
 			if (!is_wales_forbidden(next)) {
 				clear_undo()
@@ -6350,54 +6351,6 @@ function end_intercept() {
 	game.intercept_group = 0
 	game.who = NOBODY
 	goto_kings_parley()
-}
-
-function goto_kings_parley() {
-	// If Henry VI in space, with King's Parley capability
-	if (game.active === YORK) {
-		if (get_lord_locale(LORD_HENRY_VI) === game.march.to) {
-			if (lord_has_capability(LORD_HENRY_VI, AOW_LANCASTER_KINGS_PARLEY)) {
-				set_active_enemy()
-				game.state = "kings_parley"
-				return
-			}
-		}
-	}
-	end_kings_parley()
-}
-
-states.kings_parley = {
-	inactive: "King's Parley?",
-	prompt() {
-		view.prompt = "You may discard King's Parley to cancel Yorkist approach."
-		gen_action_card(AOW_LANCASTER_KINGS_PARLEY)
-		view.actions.pass = 1
-	},
-	card(c) {
-		push_undo()
-		discard_lord_capability(LORD_HENRY_VI, AOW_LANCASTER_KINGS_PARLEY)
-
-		// Cancel approach!
-		for (let lord of game.group)
-			set_lord_locale(lord, game.march.from)
-
-		set_active_enemy()
-		end_march()
-	},
-	pass() {
-		set_active_enemy()
-		end_kings_parley()
-	},
-}
-
-function end_kings_parley() {
-	// Note: we flag the lords moved and levy burgundians after king's parley has resolved
-	for (let lord of game.group) {
-		set_lord_moved(lord, 1)
-		levy_burgundians(lord)
-	}
-
-	goto_exiles()
 }
 
 states.intercept = {
@@ -6519,6 +6472,81 @@ function for_each_friendly_lord_in_locale(loc, f) {
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++)
 		if (get_lord_locale(lord) === loc)
 			f(lord)
+}
+
+// === King's Parley / Parliament's Truce -- cancel Approach ===
+
+// TODO: merge states into one question
+
+function goto_kings_parley() {
+	// If Henry VI in space, with King's Parley capability
+	// TODO: ... unless he intercepted York lords already present ?
+	// TODO: ... or remove possibility for above case.
+	if (game.active === YORK) {
+		if (get_lord_locale(LORD_HENRY_VI) === game.march.to) {
+			if (lord_has_capability(LORD_HENRY_VI, AOW_LANCASTER_KINGS_PARLEY)) {
+				set_active_enemy()
+				game.state = "kings_parley"
+				return
+			}
+		}
+	}
+	end_kings_parley()
+}
+
+states.kings_parley = {
+	inactive: "King's Parley?",
+	prompt() {
+		view.prompt = "You may discard King's Parley to cancel Yorkist approach."
+		gen_action_card(AOW_LANCASTER_KINGS_PARLEY)
+		view.actions.pass = 1
+	},
+	card(c) {
+		push_undo()
+		discard_lord_capability(LORD_HENRY_VI, AOW_LANCASTER_KINGS_PARLEY)
+
+		// Cancel approach!
+		for (let lord of game.group)
+			set_lord_locale(lord, game.march.from)
+
+		set_active_enemy()
+		end_march()
+	},
+	pass() {
+		set_active_enemy()
+		end_kings_parley()
+	},
+}
+
+function end_kings_parley() {
+	goto_parliaments_truce()
+}
+
+function goto_parliaments_truce() {
+
+	// The non-active player can cancel approach with parliament's truce
+
+	// We don't allow the active player to cancel an intercept -- if they want to cancel
+	// an interception, they should have played the event before marching.
+
+	end_parliaments_truce()
+}
+
+function end_parliaments_truce() {
+
+	// Note: we flag the lords moved and levy burgundians after king's parley and parliament's truce have resolved
+	for (let lord of game.group) {
+		set_lord_moved(lord, 1)
+		levy_burgundians(lord)
+	}
+
+	goto_blocked_ford()
+}
+
+function goto_blocked_ford() {
+	// The marching lord can now play blocked ford to prevent going into exile.
+
+	goto_exiles()
 }
 
 // === Exile ===
