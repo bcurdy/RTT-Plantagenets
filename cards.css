@@ -17,6 +17,10 @@
 	border-radius: 6px;
 }
 
+.aow * {
+	pointer-events: none;
+}
+
 .aow .number {
 	display: none;
 	font: 8px "B612";
