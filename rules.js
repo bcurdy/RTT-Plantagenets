@@ -6341,7 +6341,7 @@ function goto_intercept() {
 			}
 		}
 	}
-	goto_exiles()
+	end_intercept()
 }
 
 function end_intercept() {
@@ -6421,12 +6421,6 @@ function goto_intercept_march() {
 	}
 }
 
-function end_intercept_march() {
-	// successfully intercepted by here. Make sure to clear out actions
-	spend_all_actions()
-	goto_intercept_exiles()
-}
-
 function do_intercept_march() {
 	for (let lord of game.intercept_group) {
 		set_lord_locale(lord, get_lord_locale(game.command))
@@ -6434,6 +6428,12 @@ function do_intercept_march() {
 		levy_burgundians(lord)
 	}
 	end_intercept_march()
+}
+
+function end_intercept_march() {
+	// back to originally marching lord
+	set_active_enemy()
+	end_intercept()
 }
 
 states.intercept_march = {
@@ -6471,51 +6471,15 @@ function for_each_friendly_lord_in_locale(loc, f) {
 			f(lord)
 }
 
-function goto_intercept_exiles() {
-	let here = get_lord_locale(game.command)
-	for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord) {
-		if (get_lord_locale(lord) === here) {
-			if (!set_has(game.group, lord)) {
-				game.state = "intercept_exiles"
-				set_active_enemy()
-				return
-			}
-		}
-	}
-	end_intercept()
-}
-
-function end_intercept_exiles() {
-	clear_undo()
-	set_active_enemy()
-	end_intercept()
-}
-
-states.intercept_exiles = {
-	inactive: "Intercept Exiles",
-	prompt() {
-		view.prompt = "???"
-		for_each_friendly_lord_in_locale(get_lord_locale(game.command), lord => {
-			if (!set_has(game.group, lord))
-				gen_action_lord(lord)
-		})
-		view.actions.done = 1
-	},
-	lord(lord) {
-		push_undo()
-		exile_lord(lord)
-	},
-	done() {
-		end_intercept_exiles()
-	},
-}
-
 // === Exile ===
 
 function goto_exiles() {
 	let here = get_lord_locale(game.command)
 	if (has_enemy_lord(here)) {
 		clear_undo()
+
+		spend_all_actions() // end command upon any approach
+
 		game.state = "exiles"
 		set_active_enemy()
 	} else {
