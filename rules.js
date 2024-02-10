@@ -427,6 +427,7 @@ const EVENT_LANCASTER_FOR_TRUST_NOT_HIM = L7
 const EVENT_LANCASTER_FORCED_MARCHES = L8
 const EVENT_LANCASTER_RISING_WAGES = L9
 const EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT = L10
+
 const EVENT_LANCASTER_BLOCKED_FORD = L11 // TODO
 // Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
 // basically at best, you want the player that when he approaches,
@@ -438,6 +439,7 @@ const EVENT_LANCASTER_BLOCKED_FORD = L11 // TODO
 // then exile.
 // Be careful about interaction aswell with EVENT FLANK ATTACK
 // also note that there is a confirm_approach_sail state aswell.
+
 const EVENT_LANCASTER_RAVINE = L12 // TODO
 // Play at start of Battle after BATTLE ARRAY basically like Nevsky's Ambush
 const EVENT_LANCASTER_ASPIELLES = L13
@@ -6349,6 +6351,46 @@ function end_intercept() {
 	game.who = NOBODY
 	clear_undo()
 	set_active_enemy()
+
+	goto_kings_parley()
+}
+
+function goto_kings_parley() {
+	// If Henry VI in space, with King's Parley capability
+	if (game.active === LANCASTER) {
+		if (get_lord_locale(LORD_HENRY_VI) === game.march.to) {
+			if (lord_has_capability(LORD_HENRY_VI, AOW_LANCASTER_KINGS_PARLEY)) {
+				game.state = "kings_parley"
+				return
+			}
+		}
+	}
+	end_kings_parley()
+}
+
+states.kings_parley = {
+	inactive: "King's Parley?",
+	prompt() {
+		view.prompt = "You may discard King's Parley to cancel Yorkist approach."
+		gen_action_card(AOW_LANCASTER_KINGS_PARLEY)
+		view.actions.pass = 1
+	},
+	card(c) {
+		push_undo()
+		discard_lord_capability(LORD_HENRY_VI, AOW_LANCASTER_KINGS_PARLEY)
+
+		// Cancel approach!
+		for (let lord of game.group)
+			set_lord_locale(lord, game.march.from)
+
+		end_march()
+	},
+	pass() {
+		end_kings_parley()
+	},
+}
+
+function end_kings_parley() {
 	goto_exiles()
 }
 
