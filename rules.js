@@ -6349,17 +6349,15 @@ function goto_intercept() {
 function end_intercept() {
 	game.intercept_group = 0
 	game.who = NOBODY
-	clear_undo()
-	set_active_enemy()
-
 	goto_kings_parley()
 }
 
 function goto_kings_parley() {
 	// If Henry VI in space, with King's Parley capability
-	if (game.active === LANCASTER) {
+	if (game.active === YORK) {
 		if (get_lord_locale(LORD_HENRY_VI) === game.march.to) {
 			if (lord_has_capability(LORD_HENRY_VI, AOW_LANCASTER_KINGS_PARLEY)) {
+				set_active_enemy()
 				game.state = "kings_parley"
 				return
 			}
@@ -6383,9 +6381,11 @@ states.kings_parley = {
 		for (let lord of game.group)
 			set_lord_locale(lord, game.march.from)
 
+		set_active_enemy()
 		end_march()
 	},
 	pass() {
+		set_active_enemy()
 		end_kings_parley()
 	},
 }
@@ -6433,6 +6433,7 @@ states.intercept = {
 		}
 	},
 	pass() {
+		set_active_enemy()
 		end_intercept()
 	},
 	intercept() {
@@ -6450,6 +6451,7 @@ states.intercept = {
 		if (success) {
 			goto_intercept_march()
 		} else {
+			set_active_enemy()
 			end_intercept()
 		}
 	},
