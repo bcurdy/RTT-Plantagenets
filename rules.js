@@ -6307,8 +6307,8 @@ function march_with_group_2() {
 
 	for (let lord of game.group) {
 		set_lord_locale(lord, to)
-		set_lord_moved(lord, 1)
-		levy_burgundians(lord)
+		// Note: We flag the lords moved and levy burgundians after king's parley has resolved.
+		// See end_kings_parley.
 	}
 
 	goto_intercept()
@@ -6391,6 +6391,12 @@ states.kings_parley = {
 }
 
 function end_kings_parley() {
+	// Note: we flag the lords moved and levy burgundians after king's parley has resolved
+	for (let lord of game.group) {
+		set_lord_moved(lord, 1)
+		levy_burgundians(lord)
+	}
+
 	goto_exiles()
 }
 
