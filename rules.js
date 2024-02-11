@@ -699,13 +699,13 @@ function pop_state() {
 
 function set_active(new_active) {
 	if (game.active !== new_active) {
+		clear_undo()
 		game.active = new_active
 		update_aliases()
 	}
 }
 
 function set_active_enemy() {
-	clear_undo()
 	set_active(enemy_player())
 }
 
@@ -894,6 +894,7 @@ function get_lord_array_position(lord) {
 // === GAME STATE HELPERS ===
 
 function roll_die() {
+	clear_undo()
 	return random(6) + 1
 }
 
@@ -1539,6 +1540,7 @@ function muster_lord(lord, locale) {
 }
 
 function draw_card(deck) {
+	clear_undo()
 	let i = random(deck.length)
 	let c = deck[i]
 	set_delete(deck, c)
@@ -2581,7 +2583,6 @@ states.setup_lords = {
 		}
 	},
 	end_setup() {
-		clear_undo()
 		end_setup_lords()
 	},
 }
@@ -2861,7 +2862,6 @@ function goto_immediate_event(c) {
 }
 
 function end_immediate_event() {
-	clear_undo()
 	resume_levy_arts_of_war()
 }
 
@@ -3073,7 +3073,6 @@ states.warwicks_propaganda = {
 }
 
 function goto_yorkist_choice() {
-	clear_undo()
 	game.who = NOBODY
 	set_active_enemy()
 	game.state = "warwicks_propaganda_yorkist_choice"
@@ -3310,7 +3309,6 @@ states.aragne = {
 }
 
 function goto_yorkist_aragne() {
-	clear_undo()
 	game.who = NOBODY
 	set_active_enemy()
 	game.state = "yorkist_aragne"
@@ -3368,13 +3366,11 @@ states.aragne_save = {
 		logi(`Attempt to save ${data.vassals[game.who].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
 		if (results.success) {
-			clear_undo()
 			set_vassal_moved(game.who, 0)
 			game.who = NOBODY
 			end_influence_check()
 			push_state("yorkist_aragne")
 		} else {
-			clear_undo()
 			set_vassal_moved(game.who, 0)
 			disband_vassal(game.who)
 			if (game.who === VASSAL_HASTINGS) {
@@ -3677,8 +3673,6 @@ states.double_tax_collectors = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
-		clear_undo()
-
 		let results = do_influence_check()
 		logi(`Tax : ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
@@ -3909,7 +3903,6 @@ states.dubious_clarence = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
-		clear_undo()
 		let results = do_influence_check()
 		log(`Attempt to disband Clarence ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
@@ -4252,7 +4245,6 @@ states.rebel_supply_depot = {
 		take_spoils(PROV)
 	},
 	end_spoils() {
-		clear_undo()
 		end_rebel_supply_depot()
 	},
 }
@@ -4266,7 +4258,6 @@ function end_rebel_supply_depot() {
 // === EVENTS: HOLD - ASPIELLES ===
 
 function goto_play_aspielles() {
-	clear_undo()
 	push_state("aspielles")
 	game.who = NOBODY
 }
@@ -4295,7 +4286,6 @@ states.aspielles = {
 
 	},
 	lord(lord) {
-		clear_undo()
 		log(`${lord_name[lord]} Spied`)
 		view.reveal |= (1 << lord)
 	},
@@ -4480,7 +4470,6 @@ states.levy_arts_of_war_first = {
 }
 
 function end_levy_arts_of_war_first() {
-	clear_undo()
 	game.what = NOTHING
 	set_active_enemy()
 	if (game.active === P2)
@@ -4646,7 +4635,6 @@ states.levy_muster = {
 		lordship_effects(lord)
 	},
 	end_muster() {
-		clear_undo()
 		end_levy_muster()
 	},
 
@@ -4875,7 +4863,6 @@ function eligible_kings_name() {
 }
 
 function goto_kings_name(action) {
-	clear_undo()
 	game.what = action
 	set_active_enemy()
 	push_state("kings_name")
@@ -4965,7 +4952,6 @@ function goto_kings_name_cancel() {
 	}
 	log(`${game.what} action cancelled`)
 	logevent(`${EVENT_YORK_THE_KINGS_NAME}`)
-	clear_undo()
 	set_active_enemy()
 }
 
@@ -5178,7 +5164,6 @@ function goto_levy_muster_lord_attempt(lord) {
 
 function end_levy_muster_lord_attempt() {
 	pop_state()
-	clear_undo()
 	end_influence_check()
 	resume_levy_muster_lord()
 }
@@ -5193,7 +5178,6 @@ states.levy_muster_lord_attempt = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
-		clear_undo()
 		let results = do_influence_check()
 		log(`Attempt to levy L${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
@@ -5410,8 +5394,6 @@ function end_campaign_plan() {
 // === CAMPAIGN: COMMAND ACTIVATION ===
 
 function goto_command_activation() {
-	clear_undo()
-
 	if (game.plan_y.length === 0 && game.plan_l.length === 0) {
 		game.command = NOBODY
 		goto_end_campaign()
@@ -6006,8 +5988,6 @@ states.parley = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
-		clear_undo()
-
 		let results = do_influence_check()
 
 		if (game.flags.parliament_votes === 1) {
@@ -6084,7 +6064,6 @@ function goto_levy_muster_vassal(vassal) {
 
 function end_levy_muster_vassal() {
 	pop_state()
-	clear_undo()
 	end_influence_check()
 	resume_levy_muster_lord()
 }
@@ -6098,7 +6077,6 @@ states.levy_muster_vassal = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
-		clear_undo()
 		let results = do_influence_check()
 
 		if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES)) {
@@ -6322,7 +6300,6 @@ function goto_intercept() {
 	if (can_intercept_to(here)) {
 		for (let next of data.locales[here].not_paths) {
 			if (has_enemy_lord(next)) {
-				clear_undo()
 				game.state = "intercept"
 				set_active_enemy()
 				game.intercept_group = []
@@ -6488,7 +6465,7 @@ states.kings_parley = {
 		gen_action_card(AOW_LANCASTER_KINGS_PARLEY)
 		view.actions.pass = 1
 	},
-	card(c) {
+	card(_) {
 		push_undo()
 		discard_lord_capability(LORD_HENRY_VI, AOW_LANCASTER_KINGS_PARLEY)
 
@@ -6616,8 +6593,6 @@ states.blocked_ford = {
 function goto_exiles() {
 	let here = get_lord_locale(game.command)
 	if (has_enemy_lord(here)) {
-		clear_undo()
-
 		spend_all_actions() // end command upon any approach
 
 		game.state = "exiles"
@@ -6628,8 +6603,6 @@ function goto_exiles() {
 }
 
 function end_exiles() {
-	clear_undo()
-
 	if (has_friendly_lord(get_lord_locale(game.command))) {
 		// still some lords not exiled to fight.
 		set_active_enemy()
@@ -7003,23 +6976,19 @@ function goto_forage() {
 	if (!has_adjacent_enemy(here) && is_neutral_locale(here)) {
 		let die = roll_die()
 		if (die <= 4) {
-			clear_undo()
 			add_lord_assets(game.command, PROV, 1)
 			log(`${HIT[die]}, Foraged at %${here}`)
 			deplete_locale(here)
 		} else {
-			clear_undo()
 			log(`${MISS[die]}, Forage Failure`)
 		}
 	} else if (has_adjacent_enemy(here) || is_favour_enemy(here)) {
 		let die = roll_die()
 		if (die <= 3) {
-			clear_undo()
 			add_lord_assets(game.command, PROV, 1)
 			log(`${HIT[die]}, Foraged at %${here}`)
 			deplete_locale(here)
 		} else {
-			clear_undo()
 			log(`${MISS[die]}, Forage Failure`)
 		}
 	} else {
@@ -7164,8 +7133,6 @@ states.tax = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
-		clear_undo()
-
 		let results = do_influence_check()
 		logi(`Tax : ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
@@ -7427,7 +7394,6 @@ states.merchants = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
-		clear_undo()
 		let results = do_influence_check()
 		log(`Attempt to C${AOW_LANCASTER_MERCHANTS} with %${game.command} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		if (results.success) {
@@ -7634,7 +7600,6 @@ states.heralds = {
 		}
 	},
 	lord(other) {
-		clear_undo()
 		goto_heralds_attempt(other)
 	},
 }
@@ -7654,7 +7619,6 @@ states.heralds_attempt = {
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
-		clear_undo()
 		let results = do_influence_check()
 		log(`Attempt to shift L${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
@@ -7671,7 +7635,6 @@ states.heralds_attempt = {
 function end_heralds_attempt() {
 	spend_all_actions()
 	pop_state()
-	clear_undo()
 	end_influence_check()
 	resume_command()
 }
@@ -7915,7 +7878,6 @@ function action_array_place(pos) {
 }
 
 function goto_array_attacker() {
-	clear_undo()
 	set_active_attacker()
 	game.state = "array_attacker"
 	game.who = NOBODY
@@ -7929,7 +7891,6 @@ function goto_array_attacker() {
 }
 
 function goto_array_defender() {
-	clear_undo()
 	set_active_defender()
 	game.state = "array_defender"
 	game.who = NOBODY
@@ -8010,7 +7971,6 @@ states.array_defender = {
 // === BATTLE: EVENTS ===
 
 function goto_attacker_events() {
-	clear_undo()
 	set_active_attacker()
 	log_br()
 	if (can_play_battle_events())
@@ -8024,7 +7984,6 @@ function end_attacker_events() {
 }
 
 function goto_defender_events() {
-	clear_undo()
 	set_active_defender()
 	log_br()
 	if (can_play_battle_events())
@@ -8387,7 +8346,6 @@ states.influence_check_suspicion = {
 		let results = do_influence_check()
 		logi(`Attempt to disband ${data.lords[lord].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		if (results.success) {
-			clear_undo()
 			log(`${data.lords[lord].name} disbanded`)
 			for (let x = 0; x < 6; x++) {
 				if (game.battle.array[x] === lord) {
@@ -8403,7 +8361,6 @@ states.influence_check_suspicion = {
 			end_influence_check()
 			resume_battle_events()
 		} else {
-			clear_undo()
 			log(`${data.lords[lord].name} stays`)
 			game.who = NOBODY
 			end_influence_check()
@@ -8483,12 +8440,10 @@ states.for_trust_not_him_bribe = {
 			logi(`Attempt to bribe ${data.vassals[game.which].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		}
 		if (results.success) {
-			clear_undo()
 			muster_vassal(game.which, game.who)
 			end_influence_check()
 			end_for_trust_not_him()
 		} else {
-			clear_undo()
 			end_influence_check()
 			end_for_trust_not_him()
 		}
@@ -9417,14 +9372,12 @@ states.swift_maneuver = {
 		view.actions.pass = 1
 	},
 	end_battle_round() {
-		clear_undo()
 		logevent(`${EVENT_YORK_SWIFT_MANEUVER}`)
 		log("Ended Action Round.")
 		set_active_enemy()
 		goto_end_battle_round()
 	},
 	pass() {
-		clear_undo()
 		logevent(`${EVENT_YORK_SWIFT_MANEUVER}`)
 		log("Passed.")
 		set_active_enemy()
@@ -9541,7 +9494,6 @@ function has_battle_losses() {
 }
 
 function goto_battle_losses_victor() {
-	clear_undo()
 	set_active_victor()
 	game.who = NOBODY
 	if (has_battle_losses())
@@ -9676,7 +9628,6 @@ function find_lone_victor() {
 }
 
 function goto_battle_spoils() {
-	clear_undo()
 	set_active_victor()
 	// determine Battle Spoils
 	calculate_spoils()
@@ -9726,13 +9677,11 @@ states.battle_spoils = {
 	},
 
 	end_spoils() {
-		clear_undo()
 		end_battle_spoils()
 	},
 }
 
 function goto_death_or_disband() {
-	clear_undo()
 	remove_battle_capability_troops()
 	if (has_defeated_lords()) {
 		if (game.battle.loser === LANCASTER && lord_has_capability(LORD_RICHARD_III, AOW_YORK_BLOODY_THOU_ART) && get_lord_locale(LORD_RICHARD_III) === game.battle.where) {
@@ -9785,7 +9734,6 @@ states.death_or_disband = {
 		}
 	},
 	lord(lord) {
-		clear_undo()
 		let threshold = 2
 		let modifier = 0
 
@@ -10090,7 +10038,6 @@ states.pay = {
 		goto_pillage_coin()
 	},
 	end_pay() {
-		clear_undo()
 		end_pay()
 	},
 	card: action_held_event,
@@ -10140,7 +10087,6 @@ function has_friendly_lord_who_must_pay_troops() {
 }
 
 function goto_pay_lords() {
-	clear_undo()
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
 		if (is_lord_on_map(lord))
 			set_lord_unfed(lord, 1)
@@ -10155,7 +10101,6 @@ function goto_pay_lords() {
 }
 
 function end_pay_lords() {
-	clear_undo()
 	set_active_enemy()
 
 	if (game.active === P2)
@@ -10225,7 +10170,6 @@ states.pay_lords = {
 }
 
 function goto_pay_vassals() {
-	clear_undo()
 	let vassal_to_pay = false
 
 	for (let v = first_vassal; v <= last_vassal; v++) {
@@ -10718,7 +10662,6 @@ states.reset = {
 }
 
 function end_reset() {
-	clear_undo()
 	set_active_enemy()
 	if (game.active === P2)
 		goto_reset()
@@ -11051,7 +10994,6 @@ function goto_disembark() {
 }
 
 function end_disembark() {
-	clear_undo()
 	game.who = NOBODY
 	set_active_enemy()
 	if (game.active === P2)
