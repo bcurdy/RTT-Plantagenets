@@ -6528,9 +6528,12 @@ function goto_parliaments_truce() {
 	// We don't allow the active player to cancel an intercept -- if they want to cancel
 	// an interception, they should have played the event before marching.
 
+	let here = get_lord_locale(game.command)
 	if (
-		(game.active === YORK && could_play_card(EVENT_LANCASTER_PARLIAMENTS_TRUCE)) ||
-		(game.active === LANCASTER && could_play_card(EVENT_YORK_PARLIAMENTS_TRUCE))
+		has_enemy_lord(here) && (
+			(game.active === YORK && could_play_card(EVENT_LANCASTER_PARLIAMENTS_TRUCE)) ||
+			(game.active === LANCASTER && could_play_card(EVENT_YORK_PARLIAMENTS_TRUCE))
+		)
 	) {
 		set_active_enemy()
 		game.state = "parliaments_truce"
