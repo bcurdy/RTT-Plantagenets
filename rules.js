@@ -615,6 +615,21 @@ function find_sail_locales(here) {
 	return null
 }
 
+function make_locale_list(pred) {
+	let list = []
+	for (let loc = first_locale; loc <= last_locale; ++loc)
+		if (pred(loc))
+			list.push(loc)
+	return list
+}
+
+const all_north_locales = make_locale_list(is_north)
+const all_south_locales = make_locale_list(is_south)
+const all_wales_locales = make_locale_list(is_wales)
+const all_city_locales = make_locale_list(is_city)
+const all_town_locales = make_locale_list(is_town)
+const all_fortress_locales = make_locale_list(is_fortress)
+
 function current_turn() {
 	return game.turn >> 1
 }
@@ -1271,48 +1286,36 @@ function is_town(loc) {
 	return data.locales[loc].type === "town"
 }
 
-function in_wales(loc) {
+function is_wales(loc) {
 	return data.locales[loc].region === "Wales"
 }
 
-function in_south(loc) {
+function is_south(loc) {
 	return data.locales[loc].region === "South"
 }
 
-function in_north(loc) {
+function is_north(loc) {
 	return data.locales[loc].region === "North"
 }
 
 function is_lord_in_wales(lord) {
-	return data.locales[get_lord_locale(lord)].region === "Wales"
+	return is_wales(get_lord_locale(lord))
 }
 
 function is_lord_in_south(lord) {
-	return data.locales[get_lord_locale(lord)].region === "South"
+	return is_south(get_lord_locale(lord))
 }
 
 function is_lord_in_north(lord) {
-	return data.locales[get_lord_locale(lord)].region === "North"
+	return is_north(get_lord_locale(lord))
 }
 
 function is_fortress(loc) {
 	return data.locales[loc].type === "fortress"
 }
 
-function is_calais(loc) {
-	return data.locales[loc].type === "calais"
-}
-
 function is_sea(loc) {
 	return data.locales[loc].type === "sea"
-}
-
-function is_london(loc) {
-	return data.locales[loc].type === "london"
-}
-
-function is_harlech(loc) {
-	return data.locales[loc].type === "harlech"
 }
 
 function is_favour_friendly(loc) {
@@ -2638,11 +2641,9 @@ function is_swift_maneuver_in_play() {
 
 function is_york_dominating_north() {
 	let dom = 0
-	for (let loc of data.locales) {
-		if (loc.region === "North") {
-			if (has_favoury_marker(loc)) {
-				dom++
-			}
+	for (let loc of all_north_locales) {
+		if (has_favoury_marker(loc)) {
+			dom++
 		}
 	}
 	if (dom > 5)
@@ -2653,11 +2654,9 @@ function is_york_dominating_north() {
 
 function is_york_dominating_south() {
 	let dom = 0
-	for (let loc of data.locales) {
-		if (loc.region === "South") {
-			if (has_favoury_marker(loc)) {
-				dom++
-			}
+	for (let loc of all_south_locales) {
+		if (has_favoury_marker(loc)) {
+			dom++
 		}
 	}
 	if (dom > 9)
@@ -2673,11 +2672,9 @@ function is_york_dominating_south() {
 
 function is_york_dominating_wales() {
 	let dom = 0
-	for (let loc of data.locales) {
-		if (loc.region === "Wales") {
-			if (has_favoury_marker(loc)) {
-				dom++
-			}
+	for (let loc of all_wales_locales) {
+		if (has_favoury_marker(loc)) {
+			dom++
 		}
 	}
 	if (dom > 5)
@@ -2690,40 +2687,44 @@ function is_york_dominating_wales() {
 	return false
 }
 
-function is_adjacent_to_north(lord) {
-	for (let loc of data.locales[get_lord_locale(lord)].adjacent) {
-		if (data.locales[loc].region === "North") {
+function is_lord_in_or_adjacent_to_north(lord) {
+	let here = get_lord_locale(lord)
+	if (is_north(here))
+		return true
+	for (let loc of data.locales[here].adjacent)
+		if (is_north(loc))
 			return true
-		}
-	}
 	return false
 }
 
-function is_adjacent_to_south(lord) {
-	for (let loc of data.locales[get_lord_locale(lord)].adjacent) {
-		if (data.locales[loc].region === "South") {
+function is_lord_in_or_adjacent_to_south(lord) {
+	let here = get_lord_locale(lord)
+	if (is_south(here))
+		return true
+	for (let loc of data.locales[here].adjacent)
+		if (is_south(loc))
 			return true
-		}
-	}
 	return false
 }
-function is_adjacent_to_wales(lord) {
-	for (let loc of data.locales[get_lord_locale(lord)].adjacent) {
-		if (data.locales[loc].region === "Wales") {
+
+function is_lord_in_or_adjacent_to_wales(lord) {
+	let here = get_lord_locale(lord)
+	if (is_wales(here))
+		return true
+	for (let loc of data.locales[here].adjacent)
+		if (is_wales(loc))
 			return true
-		}
-	}
 	return false
 }
 
 function is_jack_cade_eligible(lord) {
 	if (!is_event_in_play(EVENT_YORK_JACK_CADE))
 		return false
-	if (is_york_dominating_south() && (is_adjacent_to_south(lord) || is_lord_in_south(lord)))
+	if (is_lord_in_or_adjacent_to_south(lord) && is_york_dominating_south())
 		return true
-	if (is_york_dominating_north() && (is_adjacent_to_north(lord) || is_lord_in_north(lord)))
+	if (is_lord_in_or_adjacent_to_north(lord) && is_york_dominating_north())
 		return true
-	if (is_york_dominating_wales() && (is_adjacent_to_wales(lord) || is_lord_in_wales(lord)))
+	if (is_lord_in_or_adjacent_to_wales(lord) && is_york_dominating_wales())
 		return true
 	return false
 }
@@ -3139,7 +3140,7 @@ function goto_lancaster_event_welsh_rebellion() {
 		}
 	}
 	for (let loc = first_locale; loc <= last_locale; loc++) {
-		if (in_wales(loc) && has_favoury_marker(loc))
+		if (is_wales(loc) && has_favoury_marker(loc))
 			can_play_remove_favour = true
 	}
 
@@ -3231,7 +3232,7 @@ states.welsh_rebellion_remove_favour = {
 	prompt() {
 		view.prompt = `Select up to ${2-game.count} Locales in Wales.`
 		for (let loc = first_locale; loc <= last_locale; loc++) {
-			if (game.count < 2 && in_wales(loc) && has_favoury_marker(loc)) {
+			if (game.count < 2 && is_wales(loc) && has_favoury_marker(loc)) {
 				gen_action_locale(loc)
 			}
 		}
@@ -3456,7 +3457,7 @@ function goto_lancaster_event_french_war_loans() {
 function goto_lancaster_event_robins_rebellion() {
 	let can_play = false
 	for (let loc = first_locale; loc <= last_locale; loc++) {
-		if (in_north(loc) && !has_favourl_marker(loc)) {
+		if (is_north(loc) && !has_favourl_marker(loc)) {
 			can_play = true
 		}
 	}
@@ -3475,7 +3476,7 @@ states.robins_rebellion = {
 	prompt() {
 		view.prompt = `Select up to ${3-game.count} Locales in North.`
 		for (let loc = first_locale; loc <= last_locale; loc++) {
-			if (game.count < 3 && in_north(loc) && !has_favourl_marker(loc)) {
+			if (game.count < 3 && is_north(loc) && !has_favourl_marker(loc)) {
 				gen_action_locale(loc)
 			}
 		}
@@ -3924,7 +3925,7 @@ function goto_york_event_yorkist_north() {
 			influence_gained++
 	}
 	for (let loc = first_locale; loc <= last_locale; loc++) {
-		if (loc !== NOWHERE && loc < CALENDAR && has_favoury_marker(loc) && in_north(loc)) {
+		if (loc !== NOWHERE && loc < CALENDAR && has_favoury_marker(loc) && is_north(loc)) {
 			influence_gained++
 		}
 	}
@@ -6123,13 +6124,13 @@ function format_group_move() {
 
 // Wales forbidden to the lancastrians for march, sail, intercept
 function is_wales_forbidden(loc) {
-	if (game.active === LANCASTER && is_event_in_play(EVENT_YORK_OWAIN_GLYNDWR) && data.locales[loc].region === "Wales")
+	if (game.active === LANCASTER && is_event_in_play(EVENT_YORK_OWAIN_GLYNDWR) && is_wales(loc))
 		return true
 	return false
 }
 
 function is_wales_forbidden_to_enemy(loc) {
-	if (game.active !== LANCASTER && is_event_in_play(EVENT_YORK_OWAIN_GLYNDWR) && data.locales[loc].region === "Wales")
+	if (game.active !== LANCASTER && is_event_in_play(EVENT_YORK_OWAIN_GLYNDWR) && is_wales(loc))
 		return true
 	return false
 }
@@ -7700,27 +7701,29 @@ function add_battle_capability_troops() {
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 			add_lord_forces(lord, LONGBOWMEN, 1)
 		}
-		if (lord_has_capability(lord, AOW_LANCASTER_WELSH_LORD) && data.locales[here].region === "Wales") {
+		if (lord_has_capability(lord, AOW_LANCASTER_WELSH_LORD) && is_wales(here)) {
 			add_lord_forces(lord, LONGBOWMEN, 2)
 		}
-		if (lord_has_capability(lord, AOW_YORK_PEMBROKE) && data.locales[here].region === "Wales") {
+		if (lord_has_capability(lord, AOW_YORK_PEMBROKE) && is_wales(here)) {
 			add_lord_forces(lord, LONGBOWMEN, 2)
 		}
-		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && data.locales[here].region === "North") {
+		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && is_north(here)) {
 			add_lord_forces(lord, MILITIA, 4)
 		}
 		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
 			add_lord_forces(lord, MILITIA, 4)
 		}
-		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (data.locales[here].region === "North" || data.locales[here].region === "South" || data.locales[here].region === "Wales")) {
+		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
 			add_lord_forces(lord, MILITIA, 3)
 		}
 
-		if (is_lord_on_map(lord) &&
-		!is_lord_on_calendar(lord) &&
-		lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) &&
-		(((is_friendly_locale(data.locales[here])) && data.port_2.includes(here)) ||
-		is_adjacent_friendly_port_english_channel(here))) {
+		// TODO: check this condition
+		if (
+			is_lord_on_map(lord) &&
+			!is_lord_on_calendar(lord) &&
+			lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) &&
+			((is_friendly_locale(here) && data.port_2.includes(here)) || is_adjacent_friendly_port_english_channel(here))
+		) {
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 		}
 	}
@@ -7739,22 +7742,24 @@ function remove_battle_capability_troops() {
 			add_lord_forces(lord, MEN_AT_ARMS, -2)
 			add_lord_forces(lord, LONGBOWMEN, -1)
 		}
-		if (lord_has_capability(lord, AOW_LANCASTER_WELSH_LORD) && data.locales[here].region === "Wales") {
+		if (lord_has_capability(lord, AOW_LANCASTER_WELSH_LORD) && is_wales(here)) {
 			add_lord_forces(lord, LONGBOWMEN, -2)
 		}
-		if (lord_has_capability(lord, AOW_YORK_PEMBROKE) && data.locales[here].region === "Wales") {
+		if (lord_has_capability(lord, AOW_YORK_PEMBROKE) && is_wales(here)) {
 			add_lord_forces(lord, LONGBOWMEN, -2)
 		}
-		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && data.locales[here].region === "North") {
+		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && is_north(here)) {
 			add_lord_forces(lord, MILITIA, -4)
 		}
 		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
 			add_lord_forces(lord, MILITIA, -4)
 		}
-		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (data.locales[here].region === "North" || data.locales[here].region === "South" || data.locales[here].region === "Wales")) {
+		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
 			add_lord_forces(lord, MILITIA, -3)
 		}
-		if (is_lord_on_map(lord) &&	lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE)) {
+
+		// TODO: check this condition
+		if (is_lord_on_map(lord) && lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE)) {
 			add_lord_forces(lord, MEN_AT_ARMS, -2)
 		}
 	}
@@ -8088,7 +8093,7 @@ function prompt_battle_events_death() {
 // === EVENT : WARDEN OF THE MARCHES ===
 
 function can_play_warden_of_the_marches() {
-	if (data.locales[game.battle.where].region === "North")
+	if (is_north(game.battle.where))
 		return true
 	return false
 }
@@ -8104,7 +8109,7 @@ states.warden_of_the_marches = {
 		let done = true
 		view.prompt = "Warden of the Marches: Select a friendly locale in the North to move routed lords there"
 		for (let loc = first_locale; loc <= last_locale; loc++) {
-			if (is_friendly_locale(loc) && in_north(loc) && loc !== game.battle.where) {
+			if (is_friendly_locale(loc) && is_north(loc) && loc !== game.battle.where) {
 				done = false
 				gen_action_locale(loc)
 			}
@@ -9959,7 +9964,7 @@ function goto_pay() {
 		if (is_lord_on_map(lord) &&
 			!is_lord_on_calendar(lord) &&
 			lord_has_capability(lord, AOW_LANCASTER_MADAME_LA_GRANDE) &&
-			(((is_friendly_locale(data.locales[here])) && data.port_2.includes(here)) ||
+			(((is_friendly_locale(here)) && data.port_2.includes(here)) ||
 			is_adjacent_friendly_port_english_channel(here))) {
 			add_lord_assets(lord, COIN, 1)
 		}
@@ -9967,8 +9972,8 @@ function goto_pay() {
 			game.active === LANCASTER &&
 			is_lord_on_map(lord) &&
 			lord_has_capability(LORD_NORTHUMBERLAND_L, AOW_LANCASTER_PERCYS_POWER) &&
-			data.locales[get_lord_locale(LORD_NORTHUMBERLAND_L)].region === "North" &&
-			data.locales[get_lord_locale(lord)].region === "North"
+			is_lord_in_north(LORD_NORTHUMBERLAND_L) &&
+			is_lord_in_north(lord)
 		) {
 			set_lord_unfed(lord, 0)
 		} else {
@@ -10694,100 +10699,90 @@ function tides_calc() {
 	let prewy = 0
 	let prel = 0
 	let prey = 0
-	let x = 0
 
 	// DOMINATION CALC
 
-	for (let loc of data.locales) {
-		if (loc.region === "North") {
-			if (has_favourl_marker(x)) {
-				domnl += 1
-			}
-			if (has_favoury_marker(x)) {
-				domny += 1
-			}
+	for (let x of all_north_locales) {
+		if (has_favourl_marker(x)) {
+			domnl += 1
 		}
-		if (loc.region === "South") {
-			if (has_favourl_marker(x)) {
-				domsl += 1
-			}
-			if (has_favoury_marker(x)) {
-				domsy += 1
-			}
+		if (has_favoury_marker(x)) {
+			domny += 1
 		}
-		if (loc.region === "Wales") {
-			if (has_favourl_marker(x)) {
-				domwl += 1
-			}
-			if (has_favoury_marker(x)) {
-				domwy += 1
-			}
+	}
+
+	for (let x of all_south_locales) {
+		if (has_favourl_marker(x)) {
+			domsl += 1
 		}
-
-		// SPECIAL LOCALES
-
-		if (loc.name === "London") {
-			if (has_favourl_marker(x)) {
-				log(`London control 2 Influence for Lancaster`)
-				doml += 2
-			}
-
-			if (has_favoury_marker(x)) {
-				log(`London control 2 Influence for York`)
-				domy += 2
-			}
+		if (has_favoury_marker(x)) {
+			domsy += 1
 		}
+	}
 
-		if (loc.name === "Calais") {
-			if (has_favourl_marker(x)) {
-				log(`Calais control 2 Influence for Lancastrians`)
-				doml += 2
-			}
-
-			if (has_favoury_marker(x)) {
-				log(`Calais control 2 Influence for York`)
-				domy += 2
-			}
+	for (let x of all_wales_locales) {
+		if (has_favourl_marker(x)) {
+			domwl += 1
 		}
-
-		if (loc.name === "Harlech") {
-			if (has_favourl_marker(x)) {
-				log(`Harlech control 1 Influence for Lancaster`)
-				doml += 1
-			}
-
-			if (has_favoury_marker(x)) {
-				log(`Harlech control 1 Influence for York`)
-				domy += 1
-			}
+		if (has_favoury_marker(x)) {
+			domwy += 1
 		}
+	}
 
-		if (loc.type === "city") {
-			if (has_favourl_marker(x)) {
-				cities -= 1
-			}
+	// SPECIAL LOCALES
 
-			if (has_favoury_marker(x)) {
-				cities += 1
-			}
+	if (has_favourl_marker(LOC_LONDON)) {
+		log(`London control 2 Influence for Lancaster`)
+		doml += 2
+	}
+	if (has_favoury_marker(LOC_LONDON)) {
+		log(`London control 2 Influence for York`)
+		domy += 2
+	}
+
+	if (has_favourl_marker(LOC_CALAIS)) {
+		log(`Calais control 2 Influence for Lancastrians`)
+		doml += 2
+	}
+	if (has_favoury_marker(LOC_CALAIS)) {
+		log(`Calais control 2 Influence for York`)
+		domy += 2
+	}
+
+	if (has_favourl_marker(LOC_HARLECH)) {
+		log(`Harlech control 1 Influence for Lancaster`)
+		doml += 1
+	}
+	if (has_favoury_marker(LOC_HARLECH)) {
+		log(`Harlech control 1 Influence for York`)
+		domy += 1
+	}
+
+	for (let x of all_city_locales) {
+		if (has_favourl_marker(x)) {
+			cities -= 1
 		}
-		if (loc.type === "town") {
-			if (has_favourl_marker(x)) {
-				town -= 1
-			}
-			if (has_favoury_marker(x)) {
-				town += 1
-			}
+		if (has_favoury_marker(x)) {
+			cities += 1
 		}
-		if (loc.type === "fortress") {
-			if (has_favourl_marker(x)) {
-				fortress -= 1
-			}
-			if (has_favoury_marker(x)) {
-				fortress += 1
-			}
+	}
+
+	for (let x of all_town_locales) {
+		if (has_favourl_marker(x)) {
+			town -= 1
 		}
-		x++
+		if (has_favoury_marker(x)) {
+			town += 1
+		}
+	}
+
+	for (let x of all_fortress_locales) {
+		if (has_favourl_marker(x)) {
+			fortress -= 1
+		}
+		if (has_favoury_marker(x)) {
+			fortress += 1
+		}
 	}
 
 	// DOMINATION CAPS
@@ -10876,37 +10871,38 @@ function tides_calc() {
 	// LORD PRESENCE
 	for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; ++lord) {
 		if (is_lord_on_map(lord)) {
-			if (data.locales[get_lord_locale(lord)].region === "North") {
+			if (is_lord_in_north(lord)) {
 				prenl = 1
 			}
-			if (data.locales[get_lord_locale(lord)].region === "South") {
+			if (is_lord_in_south(lord)) {
 				presl = 1
 			}
-			if (data.locales[get_lord_locale(lord)].region === "Wales") {
+			if (is_lord_in_wales(lord)) {
 				prewl = 1
 			}
 		}
 	}
 	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
 		if (is_lord_on_map(lord)) {
-			if (data.locales[get_lord_locale(lord)].region === "North") {
+			if (is_lord_in_north(lord)) {
 				preny = 1
 			}
-			if (data.locales[get_lord_locale(lord)].region === "South") {
+			if (is_lord_in_south(lord)) {
 				presy = 1
 			}
-			if (data.locales[get_lord_locale(lord)].region === "Wales")
+			if (is_lord_in_wales(lord)) {
 				prewy = 1
+			}
 		}
 	}
-	prel = prenl+presl+prewl
-	prey = preny+presy+prewy
+	prel = prenl + presl + prewl
+	prey = preny + presy + prewy
 
-	log("Presence in Areas : " +prel+ " for Lancaster")
-	log("Presence in Areas : " +prey+ " for Yorkists")
+	log("Presence in Areas : " + prel + " for Lancaster")
+	log("Presence in Areas : " + prey + " for Yorkists")
 
-	domy += preny+presy+prewy
-	doml += prenl+presl+prewl
+	domy += preny + presy + prewy
+	doml += prenl + presl + prewl
 
 	// CAPS EFFECT
 
