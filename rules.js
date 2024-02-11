@@ -6552,6 +6552,8 @@ function end_parliaments_truce() {
 }
 
 function goto_blocked_ford() {
+	let here = get_lord_locale(game.command)
+
 	// The marching lord can now play blocked ford to prevent enemy going into exile.
 	if (
 		has_enemy_lord(here) && (
