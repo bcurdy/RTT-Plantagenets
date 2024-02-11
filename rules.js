@@ -6156,6 +6156,13 @@ function is_wales_forbidden(loc) {
 	return false
 }
 
+function is_wales_forbidden_to_enemy(loc) {
+	if (game.active !== LANCASTER && is_event_in_play(EVENT_YORK_OWAIN_GLYNDWR) && data.locales[loc].region === "Wales")
+		return true
+	return false
+}
+
+
 function can_march_to(to) {
 	if (is_wales_forbidden(to))
 		return false
@@ -6307,21 +6314,26 @@ function end_march() {
 
 // === Interception ===
 
+function can_intercept_to(to) {
+	// TODO: forbid lancaster intercept into york moving to york, and vice versa
+	if (is_truce_in_effect())
+		return false
+	if (is_wales_forbidden_to_enemy(to))
+		return false
+	return true
+}
+
 function goto_intercept() {
-	if (!is_truce_in_effect()) {
-		let here = get_lord_locale(game.command)
+	let here = get_lord_locale(game.command)
+	if (can_intercept_to(here)) {
 		for (let next of data.locales[here].not_paths) {
-			// TODO: forbid lancaster intercept into york moving to york, and vice versa
 			if (has_enemy_lord(next)) {
-				// FIXME: wales forbidden _here_ rather than _next_ ???
-				if (!is_wales_forbidden(next)) {
-					clear_undo()
-					game.state = "intercept"
-					set_active_enemy()
-					game.intercept_group = []
-					game.who = NOBODY
-					return
-				}
+				clear_undo()
+				game.state = "intercept"
+				set_active_enemy()
+				game.intercept_group = []
+				game.who = NOBODY
+				return
 			}
 		}
 	}
