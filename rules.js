@@ -481,6 +481,7 @@ const EVENT_YORK_SEAMANSHIP = Y6
 const EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT = Y7
 const EVENT_YORK_EXILE_PACT = Y8
 const EVENT_YORK_TAX_COLLECTORS = Y10
+
 const EVENT_YORK_BLOCKED_FORD = Y11 // TODO
 // Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
 // basically at best, you want the player that when he approaches,
@@ -491,6 +492,7 @@ const EVENT_YORK_BLOCKED_FORD = Y11 // TODO
 // Blocked ford basically force the player being approached to choose battle rather
 // then exile.
 // Be careful about interaction aswell with EVENT FLANK ATTACK
+
 const EVENT_YORK_PARLIAMENTS_TRUCE = Y12 // TODO
 // Can be played during Levy and Campaign
 // Read L11 Basically it forbids to go to locales where enemy are as long as
@@ -6548,9 +6550,9 @@ states.parliaments_truce = {
 	prompt() {
 		view.prompt = "You may play Parliament's Truce to cancel approach."
 		if (game.active === YORK)
-			gen_action_card(EVENT_YORK_PARLIAMENTS_TRUCE)
+			gen_action_card_if_held(EVENT_YORK_PARLIAMENTS_TRUCE)
 		else
-			gen_action_card(EVENT_LANCASTER_PARLIAMENTS_TRUCE)
+			gen_action_card_if_held(EVENT_LANCASTER_PARLIAMENTS_TRUCE)
 		view.actions.pass = 1
 	},
 	card(c) {
