@@ -4028,7 +4028,11 @@ function play_held_event(c) {
 		set_delete(game.hand_l, c)
 
 	/* Hold events with This Levy/Campaign */
-	if (c === EVENT_YORK_YORKIST_PARADE) {
+	if (
+		c === EVENT_YORK_YORKIST_PARADE ||
+		c === EVENT_YORK_PARLIAMENTS_TRUCE ||
+		c === EVENT_LANCASTER_PARLIAMENTS_TRUCE
+	) {
 		set_add(game.events, c)
 	}
 }
@@ -4066,10 +4070,10 @@ function can_play_held_event(c) {
 			return can_play_rebel_supply_depot()
 		case EVENT_LANCASTER_SURPRISE_LANDING:
 			return can_play_surprise_landing()
-	/*	case EVENT_LANCASTER_PARLIAMENTS_TRUCE:
-			return can_play_l_parliament_truce()
+		case EVENT_LANCASTER_PARLIAMENTS_TRUCE:
+			return can_play_parliaments_truce()
 		case EVENT_YORK_PARLIAMENTS_TRUCE:
-			return can_play_y_parliament_truce()*/
+			return can_play_parliaments_truce()
 		case EVENT_YORK_ASPIELLES:
 			return can_play_y_aspielles()
 		case EVENT_YORK_YORKIST_PARADE:
@@ -4083,9 +4087,9 @@ function can_play_held_event(c) {
 function can_play_held_event_intercept(c) {
 	switch (c) {
 		case EVENT_LANCASTER_FLANK_ATTACK:
-			return can_play_l_flank_attack()
+			return can_play_flank_attack()
 		case EVENT_YORK_FLANK_ATTACK:
-			return can_play_y_flank_attack()
+			return can_play_flank_attack()
 	}
 	return false
 }
@@ -4145,18 +4149,8 @@ function can_play_y_aspielles() {
 	return false
 }
 
-function can_play_l_parliament_truce() {
-	if (game.state !== "battle") {
-		return true
-	}
-	return false
-}
-
-function can_play_y_parliament_truce() {
-	if (game.state === "campaign") {
-		return true
-	}
-	return false
+function can_play_parliaments_truce() {
+	return game.state === "campaign"
 }
 
 function can_play_rebel_supply_depot() {
@@ -4191,29 +4185,10 @@ function can_play_sun_in_splendour() {
 	return false
 }
 
-function can_play_l_flank_attack() {
-	if (game.active === LANCASTER
-		&& game.state === "intercept"
-		&& game.who !== NOBODY
-		&& !is_event_in_play(EVENT_YORK_PARLIAMENTS_TRUCE)
-		&& !is_event_in_play(EVENT_LANCASTER_PARLIAMENTS_TRUCE))
-	{
-		return true
-	}
-	return false
+function can_play_flank_attack() {
+	return game.state === "intercept" && game.who !== NOBODY && !is_truce_in_effect()
 }
 
-function can_play_y_flank_attack() {
-	if (game.active === YORK
-		&& game.state === "intercept"
-		&& game.who !== NOBODY
-		&& !is_event_in_play(EVENT_YORK_PARLIAMENTS_TRUCE)
-		&& !is_event_in_play(EVENT_LANCASTER_PARLIAMENTS_TRUCE))
-	{
-		return true
-	}
-	return false
-}
 // === EVENTS : HOLD - SUN IN SPLENDOUR
 
 function goto_play_sun_in_splendour() {
@@ -6181,33 +6156,37 @@ function is_wales_forbidden(loc) {
 	return false
 }
 
+function can_march_to(to) {
+	if (is_wales_forbidden(to))
+		return false
+	if (is_truce_in_effect() && has_enemy_lord(to))
+		return false
+	return true
+}
+
 function prompt_march() {
 	let from = get_lord_locale(game.command)
 
 	if (is_first_action()) {
 		for (let to of data.locales[from].paths) {
-			if (!is_wales_forbidden(to)) {
+			if (can_march_to(to))
 				gen_action_locale(to)
-			}
 		}
 	}
 	if (game.actions > 0 || game.flags.surprise_landing === 2) {
 		for (let to of data.locales[from].roads) {
-			if (!is_wales_forbidden(to)) {
+			if (can_march_to(to))
 				gen_action_locale(to)
-			}
 
 		}
 		for (let to of data.locales[from].highways) {
-			if (!is_wales_forbidden(to)) {
+			if (can_march_to(to))
 				gen_action_locale(to)
-			}
 		}
 	} else if ((game.actions === 0 && is_first_march_highway()) || game.flags.surprise_landing === 2) {
 		for (let to of data.locales[from].highways) {
-			if (!is_wales_forbidden(to)) {
+			if (can_march_to(to))
 				gen_action_locale(to)
-			}
 		}
 	}
 	if (
@@ -6217,9 +6196,8 @@ function prompt_march() {
 		count_group_lords() === 1
 	) {
 		for (let to of data.locales[from].roads) {
-			if (!is_wales_forbidden(to)) {
+			if (can_march_to(to))
 				gen_action_locale(to)
-			}
 		}
 	}
 }
@@ -6330,17 +6308,20 @@ function end_march() {
 // === Interception ===
 
 function goto_intercept() {
-	let here = get_lord_locale(game.command)
-	for (let next of data.locales[here].not_paths) {
-		// TODO: forbid lancaster intercept into york moving to york, and vice versa
-		if (has_enemy_lord(next)) {
-			if (!is_wales_forbidden(next)) {
-				clear_undo()
-				game.state = "intercept"
-				set_active_enemy()
-				game.intercept_group = []
-				game.who = NOBODY
-				return
+	if (!is_truce_in_effect()) {
+		let here = get_lord_locale(game.command)
+		for (let next of data.locales[here].not_paths) {
+			// TODO: forbid lancaster intercept into york moving to york, and vice versa
+			if (has_enemy_lord(next)) {
+				// FIXME: wales forbidden _here_ rather than _next_ ???
+				if (!is_wales_forbidden(next)) {
+					clear_undo()
+					game.state = "intercept"
+					set_active_enemy()
+					game.intercept_group = []
+					game.who = NOBODY
+					return
+				}
 			}
 		}
 	}
@@ -6522,14 +6503,55 @@ function end_kings_parley() {
 	goto_parliaments_truce()
 }
 
-function goto_parliaments_truce() {
+function is_truce_in_effect() {
+	return (
+		is_event_in_play(EVENT_YORK_PARLIAMENTS_TRUCE) ||
+		is_event_in_play(EVENT_LANCASTER_PARLIAMENTS_TRUCE)
+	)
+}
 
+function goto_parliaments_truce() {
 	// The non-active player can cancel approach with parliament's truce
 
 	// We don't allow the active player to cancel an intercept -- if they want to cancel
 	// an interception, they should have played the event before marching.
 
+	if (
+		(game.active === YORK && could_play_card(EVENT_LANCASTER_PARLIAMENTS_TRUCE)) ||
+		(game.active === LANCASTER && could_play_card(EVENT_YORK_PARLIAMENTS_TRUCE))
+	) {
+		set_active_enemy()
+		game.state = "parliaments_truce"
+		return
+	}
+
 	end_parliaments_truce()
+}
+
+states.parliaments_truce = {
+	inactive: "Parliament's Truce?",
+	prompt() {
+		view.prompt = "You may play Parliament's Truce to cancel approach."
+		if (game.active === YORK)
+			gen_action_card(EVENT_YORK_PARLIAMENTS_TRUCE)
+		else
+			gen_action_card(EVENT_LANCASTER_PARLIAMENTS_TRUCE)
+		view.actions.pass = 1
+	},
+	card(c) {
+		play_held_event(c)
+
+		// Cancel approach!
+		for (let lord of game.group)
+			set_lord_locale(lord, game.march.from)
+
+		set_active_enemy()
+		end_march()
+	},
+	pass() {
+		set_active_enemy()
+		end_parliaments_truce()
+	},
 }
 
 function end_parliaments_truce() {
@@ -7151,6 +7173,18 @@ function has_enough_available_ships_for_army() {
 	return needed_ships <= ships
 }
 
+function can_sail_to(to) {
+	if (is_wales_forbidden(to))
+		return false
+	if (has_enemy_lord(to)) {
+		if (is_truce_in_effect())
+			return false
+		if (!lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
+			return false
+	}
+	return true
+}
+
 function can_action_sail() {
 	// Must use whole action except if seamanship in play
 
@@ -7178,13 +7212,12 @@ function can_action_sail() {
 
 	// and a valid destination
 	for (let to of find_sail_locales(here)) {
-		if (to !== here)
-			if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL)) {
-				if (!is_wales_forbidden(to)) {
-					return true
-				}
-			}
+		if (to === here)
+			continue
+		if (can_sail_to(to))
+			return true
 	}
+
 	return false
 }
 
@@ -7217,13 +7250,11 @@ states.sail = {
 		if (overflow_prov <= 0 && overflow_cart <= 0) {
 			view.prompt = `Sail: Select a destination Port.`
 			for (let to of find_sail_locales(here)) {
-				if (to !== here)
-					if (!has_enemy_lord(to) || lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL)) {
-						if (!is_wales_forbidden(to)) {
-							gen_action_locale(to)
-						}
-					}
-				}
+				if (to === here)
+					continue
+				if (can_sail_to(to))
+					gen_action_locale(to)
+			}
 		} else if (overflow_cart > 0) {
 			view.prompt = `Sailing with ${ships} Ships. Please discard ${overflow_cart} Cart`
 			if (cart > 0) {
