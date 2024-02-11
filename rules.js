@@ -4058,14 +4058,6 @@ function prompt_held_event_intercept() {
 
 function can_play_held_event(c) {
 	switch (c) {
-
-	/* APPROACH
-		case EVENT_LANCASTER_BLOCKED_FORD:
-			return can_play_l_blocked_ford()
-		case EVENT_YORK_BLOCKED_FORD:
-			return can_play_y_blocked_ford()
-	*/
-
 		case EVENT_LANCASTER_ASPIELLES:
 			return can_play_l_aspielles()
 		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
@@ -6583,9 +6575,40 @@ function end_parliaments_truce() {
 }
 
 function goto_blocked_ford() {
-	// The marching lord can now play blocked ford to prevent going into exile.
+	// The marching lord can now play blocked ford to prevent enemy going into exile.
+	if (
+		has_enemy_lord(here) && (
+			(game.active === YORK && could_play_card(EVENT_YORK_BLOCKED_FORD)) ||
+			(game.active === LANCASTER && could_play_card(EVENT_LANCASTER_BLOCKED_FORD))
+		)
+	) {
+		game.state = "blocked_ford"
+		return
+	}
 
 	goto_exiles()
+}
+
+states.blocked_ford = {
+	inactive: "Blocked Ford?",
+	prompt() {
+		view.prompt = "You may play Blocked Ford."
+
+		if (game.active === YORK)
+			gen_action_card_if_held(EVENT_YORK_BLOCKED_FORD)
+		else
+			gen_action_card_if_held(EVENT_LANCASTER_BLOCKED_FORD)
+
+		view.actions.pass = 1
+	},
+	card(c) {
+		play_held_event(c)
+		goto_battle()
+	},
+	pass() {
+		set_active_enemy()
+		goto_exiles()
+	},
 }
 
 // === Exile ===
