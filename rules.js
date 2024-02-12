@@ -20,13 +20,13 @@ const MISS = [ "0", "\u2460", "\u2461", "\u2462", "\u2463", "\u2464", "\u2465" ]
 
 function range(x) {
 	switch (x) {
-	case 0: return "0"
-	case 1: return "1"
-	case 2: return "1-2"
-	case 3: return "1-3"
-	case 4: return "1-4"
-	case 5: return "1-5"
-	case 6: return "Automatic success"
+		case 0: return "0"
+		case 1: return "1"
+		case 2: return "1-2"
+		case 3: return "1-3"
+		case 4: return "1-4"
+		case 5: return "1-5"
+		case 6: return "Automatic success"
 	}
 }
 
@@ -1418,39 +1418,36 @@ function can_add_troops(lordwho, locale) {
 }
 
 function can_add_troops_beloved_warwick(lordwho, locale) {
-	if (!has_exhausted_marker(locale) &&
-	!is_exile(locale) &&
-	lord_has_capability(lordwho, AOW_YORK_BELOVED_WARWICK)
+	return (
+		lord_has_capability(lordwho, AOW_YORK_BELOVED_WARWICK) &&
+		!has_exhausted_marker(locale) &&
+		!is_exile(locale)
 	)
-		return true
-	else
-		return false
 }
+
 function can_add_troops_irishmen(lordwho, locale) {
-	if (
-	(!has_exhausted_marker(locale) &&
-	(locale === LOC_IRELAND || data.port_3.includes(locale))) &&
-	lord_has_capability(lordwho, AOW_YORK_IRISHMEN)
+	return (
+		lord_has_capability(lordwho, AOW_YORK_IRISHMEN) &&
+		!has_exhausted_marker(locale) &&
+		(locale === LOC_IRELAND || data.port_3.includes(locale))
 	)
-		return true
-	else
-		return false
 }
 
 function can_add_troops_sof(lordwho, locale) {
-	let number = 6
-	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-		number -= get_lord_forces(lord, MERCENARIES)
+	if (
+		lord_has_capability(lordwho, AOW_YORK_SOLDIERS_OF_FORTUNE) &&
+		!has_exhausted_marker(locale) &&
+		!is_exile(locale) &&
+		// TODO: get_shared_assets includes lord's own assets -- simplify?
+		(get_lord_assets(lordwho, COIN) > 0 || get_shared_assets(lordwho, COIN) > 0)
+	) {
+		let number = 6
+		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
+			number -= get_lord_forces(lord, MERCENARIES)
+		if (number >= 1)
+			return true
 	}
-	if (!has_exhausted_marker(locale) &&
-	!is_exile(locale) &&
-	lord_has_capability(lordwho, AOW_YORK_SOLDIERS_OF_FORTUNE) &&
-	(get_lord_assets(lordwho, COIN) > 0 || get_shared_assets(lordwho, COIN) > 0) &&
-	number >= 1
-	)
-		return true
-	else
-		return false
+	return false
 }
 
 function can_add_transport(who, what) {
@@ -2042,9 +2039,9 @@ function setup_II_Y() {
 
 	setup_vassals([ VASSAL_DEVON, VASSAL_OXFORD ])
 
-// TODO: Add Foreign Haven rule
-// TODO: Add Skaky Allies rules
-// TODO: Natural causes rule
+	// TODO: Add Foreign Haven rule
+	// TODO: Add Skaky Allies rules
+	// TODO: Natural causes rule
 
 }
 
@@ -2171,9 +2168,9 @@ function setup_II_L() {
 
 	setup_vassals([ VASSAL_DEVON, VASSAL_OXFORD ])
 
-// TODO: Add Foreign Haven rule
-// TODO: Add Shaky Allies rules
-// TODO: Natural causes rule
+	// TODO: Add Foreign Haven rule
+	// TODO: Add Shaky Allies rules
+	// TODO: Natural causes rule
 
 }
 
@@ -4753,7 +4750,7 @@ states.levy_muster_lord = {
 			add_lord_assets(game.who, SHIP, 1)
 			if (eligible_kings_name()) {
 				goto_kings_name("Levy Ship")
-			} 
+			}
 			else {
 				resume_levy_muster_lord()
 			}
@@ -6151,7 +6148,6 @@ function is_wales_forbidden_to_enemy(loc) {
 	return false
 }
 
-
 function can_march_to(to) {
 	if (is_wales_forbidden(to))
 		return false
@@ -6964,7 +6960,7 @@ states.select_supply_type = {
 			roll_naval_blockade()
 		}
 		else {
-		use_port_supply(game.where, get_port_supply_amount(game.where))
+			use_port_supply(game.where, get_port_supply_amount(game.where))
 		}
 	},
 }
@@ -7540,16 +7536,15 @@ function end_exile_pact() {
 	resume_command()
 }
 
-
 // === CAPABILITY : NAVAL BLOCKADE
- 
+
 function check_naval_blockade(action, locale) {
 	let ports = [data.port_1, data.port_2, data.port_3]
 	game.what = action
 
-    if (!lord_has_capability(LORD_WARWICK_Y, AOW_YORK_NAVAL_BLOCKADE) || !is_seaport(get_lord_locale(LORD_WARWICK_Y)) || is_exile(get_lord_locale(LORD_WARWICK_Y))) {
-        return false
-    }
+	if (!lord_has_capability(LORD_WARWICK_Y, AOW_YORK_NAVAL_BLOCKADE) || !is_seaport(get_lord_locale(LORD_WARWICK_Y)) || is_exile(get_lord_locale(LORD_WARWICK_Y))) {
+		return false
+	}
 	for (let port of ports) {
 		if (set_has(port, get_lord_locale(LORD_WARWICK_Y)) && set_has(port, locale)) {
 			return true
@@ -7561,7 +7556,7 @@ function roll_naval_blockade() {
 	push_state("naval_blockade")
 }
 
-// Parley, and Tax 
+// Parley, and Tax
 states.naval_blockade = {
 	inactive: "Naval Blockade",
 	prompt() {
@@ -7577,7 +7572,7 @@ states.naval_blockade = {
 			logi(`Successfully overran C${AOW_YORK_NAVAL_BLOCKADE}`)
 			if (game.what === "levy ship") {
 				add_lord_assets(game.who, SHIP, 1)
-			}		
+			}
 			if (game.what === "supply") {
 				use_port_supply(game.where, get_port_supply_amount(game.where))
 			}
@@ -7610,10 +7605,8 @@ states.naval_blockade = {
 			resume_command()
 		}
 		game.what = NOTHING
- 	},
+	},
 }
-
-
 
 // === CAPABILITY : AGITATORS ===
 
@@ -9118,12 +9111,12 @@ function goto_engagement_total_hits() {
 			if (game.battle.attacker_artillery > 0) {
 				ahits += game.battle.attacker_artillery
 			}
-		} 
+		}
 		else {
 			dhits += game.battle.ah[pos]
 			if (game.battle.defender_artillery > 0) {
 				dhits += game.battle.defender_artillery
-			} 			
+			}
 		}
 	}
 	if (ahits & 1)
@@ -11795,23 +11788,24 @@ function map_delete(map, item) {
 
 let log_sanity = []
 exports.fuzz_log = function (fuzz_info) {
-		console.log(`${fuzz_info.state.state} - ${fuzz_info.actions} - - ${fuzz_info.args} [${fuzz_info.chosen_action}, ${fuzz_info.chosen_arg}] `)
+	console.log(`${fuzz_info.state.state} - ${fuzz_info.actions} - - ${fuzz_info.args} [${fuzz_info.chosen_action}, ${fuzz_info.chosen_arg}]`)
 
-		log_sanity.push(fuzz_info.state.state)
-		if (log_sanity.length > 200) {
-			log_sanity = log_sanity.slice(1)
+	log_sanity.push(fuzz_info.state.state)
+	if (log_sanity.length > 200) {
+		log_sanity = log_sanity.slice(1)
 
-			// if (log_sanity.every(l => l === fuzz_info.state.state)) {
-			// 	console.log(`STATE`, fuzz_info.state)
-			// 	console.log(`VIEW`, fuzz_info.view)
-			// 		throw new Error("Too many times in the same state.")
-			// }
-		}
-
+		if (false)
+			if (log_sanity.every(l => l === fuzz_info.state.state)) {
+				console.log(`STATE`, fuzz_info.state)
+				console.log(`VIEW`, fuzz_info.view)
+				throw new Error("Too many times in the same state.")
+			}
 	}
+}
 
-	// exports.fuzz_crash = function (state, view) {
-	// 	for(let x = 0; x<log_sanity.length; x++) {
-	// 		console.log(log_sanity[x])
-	// 	}
-	// }
+if (false)
+	exports.fuzz_crash = function (state, view) {
+		for (let x = 0; x < log_sanity.length; x++) {
+			console.log(log_sanity[x])
+		}
+	}
