@@ -801,7 +801,7 @@ function lord_has_unrouted_units(lord) {
 	return result
 }
 
-function rout_vassal(lord, vassal) {
+function rout_vassal(_lord, vassal) {
 	set_add(game.battle.routed_vassals, vassal)
 }
 
@@ -1410,7 +1410,7 @@ function is_friendly_locale(loc) {
 	return false
 }
 
-function can_add_troops(lordwho, locale) {
+function can_add_troops(_lordwho, locale) {
 	if (has_exhausted_marker(locale) || is_exile(locale))
 		return false
 	else
@@ -4030,6 +4030,7 @@ function play_held_event(c) {
 	}
 }
 
+// TODO: use or remove this function
 function end_held_event() {
 	pop_state()
 	game.what = NOTHING
@@ -4315,7 +4316,7 @@ states.surprise_landing = {
 		// 4.3.2 Marshals MAY take other lords
 		if (
 			is_marshal(game.command) ||
-			(lord_has_capability(game.command, AOW_YORK_CAPTAIN) && !other_marshal_or_lieutenant(game.command, here))
+			(lord_has_capability(game.command, AOW_YORK_CAPTAIN) && !other_marshal_or_lieutenant(here))
 		) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
 				if (lord !== game.command)
@@ -5524,7 +5525,7 @@ function end_command() {
 }
 
 // Captain capability (lieutenant/marshall only if no other)
-function other_marshal_or_lieutenant(lord, loc) {
+function other_marshal_or_lieutenant(loc) {
 	let here = loc
 	let n = 0
 	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
@@ -5557,7 +5558,7 @@ states.command = {
 		// 4.3.2 Marshals MAY take other lords
 		if (
 			is_marshal(game.command) ||
-			(lord_has_capability(game.command, AOW_YORK_CAPTAIN) && !other_marshal_or_lieutenant(game.command, here))
+			(lord_has_capability(game.command, AOW_YORK_CAPTAIN) && !other_marshal_or_lieutenant(here))
 		) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
 				if (lord !== game.command)
