@@ -4153,10 +4153,9 @@ function can_play_rebel_supply_depot() {
 }
 
 function can_play_surprise_landing() {
-	if (game.flags.surprise_landing === 1 && is_seaport(get_lord_locale(game.command))) {
-		return true
-	}
-	return false
+	if (game.flags.surprise_landing === 0 || !is_seaport(get_lord_locale(game.command)) || data.locales[get_lord_locale(game.command)].type === "calais")
+		return false
+	return true
 }
 
 function can_play_yorkist_parade() {
