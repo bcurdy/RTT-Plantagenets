@@ -4337,6 +4337,9 @@ states.surprise_landing = {
 
 		prompt_march()
 	},
+	lord(lord) {
+		set_toggle(game.group, lord)
+	},
 	locale: goto_march,
 	card: action_held_event,
 }
