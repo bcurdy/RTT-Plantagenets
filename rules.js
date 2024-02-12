@@ -4811,10 +4811,10 @@ states.levy_muster_lord = {
 		if (eligible_kings_name()) {
 			goto_kings_name("Levy Troops")
 		}
-		if (is_event_in_play(EVENT_YORK_THE_COMMONS)) {
+		if (is_event_in_play(EVENT_YORK_THE_COMMONS) && is_york_lord(game.who)) {
 			push_undo()
 			game.flags.commons_militia = 2
-			game.state = "the_commons"
+			push_state("the_commons")
 		}
 		resume_levy_muster_lord()
 	},
@@ -5046,8 +5046,16 @@ states.the_commons = {
 		--game.flags.commons_militia
 	},
 	done() {
-		resume_levy_muster_lord()
+		push_undo()
+		end_the_commons()
+
 	}
+}
+
+function end_the_commons() {
+	game.flags.commons_militia = 0
+	pop_state()
+	resume_levy_muster_lord()
 }
 
 // === CAPABILITY: SOLDIERS OF FORTUNE
