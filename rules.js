@@ -6610,7 +6610,7 @@ function goto_exiles() {
 	let here = get_lord_locale(game.command)
 	if (has_enemy_lord(here)) {
 		spend_all_actions() // end command upon any approach
-
+		game.where = here
 		game.state = "exiles"
 		set_active_enemy()
 	} else {
@@ -7869,7 +7869,7 @@ function start_battle() {
 
 	log_h3(`Battle at %${here}`)
 
-	init_battle(here, 0, 0)
+	init_battle(game.where, 0, 0)
 
 	// Troops by capability
 
@@ -9891,7 +9891,7 @@ function goto_battle_aftermath() {
 
 	// Recovery
 	spend_all_actions()
-
+	game.where = NOWHERE
 	game.battle = 0
 	game.flags.bloody = 0
 	end_march()
