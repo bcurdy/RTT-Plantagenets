@@ -7547,7 +7547,7 @@ function check_naval_blockade(action, locale) {
 }
 
 function roll_naval_blockade() {
-	game.state = "naval_blockade"
+	push_state("naval_blockade")
 }
 
 // Parley, and Tax 
