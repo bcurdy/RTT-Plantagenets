@@ -4744,12 +4744,19 @@ states.levy_muster_lord = {
 
 	take_ship() {
 		push_undo()
-		add_lord_assets(game.who, SHIP, 1)
-		if (eligible_kings_name()) {
-			goto_kings_name("Levy Ship")
-		} else {
-			resume_levy_muster_lord()
+		if (check_naval_blockade("levy ship", get_lord_locale(game.who))) {
+			roll_naval_blockade()
 		}
+		else {
+			add_lord_assets(game.who, SHIP, 1)
+			if (eligible_kings_name()) {
+				goto_kings_name("Levy Ship")
+			} 
+			else {
+				resume_levy_muster_lord()
+			}
+		}
+
 	},
 	take_cart() {
 		push_undo()
@@ -4885,7 +4892,6 @@ states.kings_name = {
 		set_active_enemy()
 		pop_state()
 		if (game.state === "levy_muster_lord_attempt") {
-			console.log(data.lords[game.who].name)
 			push_state("muster_lord_at_seat")
 		}
 		if (game.state === "levy_muster_vassal") {
@@ -6944,7 +6950,12 @@ states.select_supply_type = {
 		use_stronghold_supply(game.where, get_stronghold_supply_amount(game.where))
 	},
 	port() {
+		if (check_naval_blockade("supply", game.where)) {
+			roll_naval_blockade()
+		}
+		else {
 		use_port_supply(game.where, get_port_supply_amount(game.where))
+		}
 	},
 }
 
@@ -7288,25 +7299,31 @@ states.sail = {
 	prov: drop_prov,
 	cart: drop_cart,
 	locale(to) {
-		log(`Sailed to %${to}${format_group_move()}.`)
-
-		for (let lord of game.group) {
-			set_lord_locale(lord, to)
-			set_lord_moved(lord, 1)
-			levy_burgundians(lord)
+		if (check_naval_blockade("sail", get_lord_locale(game.command)) || check_naval_blockade("sail", to)) {
+			roll_naval_blockade()
+			game.where = to
 		}
-
-		if (is_seamanship_in_play())
-			spend_action(1)
-		else
-			spend_all_actions()
-
-		// you can go to unbesieged enemy lord with norfolk capability
-		if (has_unbesieged_enemy_lord(to))
-			goto_confirm_approach_sail()
 		else {
-			game.flags.surprise_landing = 1
-			resume_command()
+			log(`Sailed to %${to}${format_group_move()}.`)
+
+			for (let lord of game.group) {
+				set_lord_locale(lord, to)
+				set_lord_moved(lord, 1)
+				levy_burgundians(lord)
+			}
+
+			if (is_seamanship_in_play())
+				spend_action(1)
+			else
+				spend_all_actions()
+
+			// you can go to unbesieged enemy lord with norfolk capability
+			if (has_unbesieged_enemy_lord(to))
+				goto_confirm_approach_sail()
+			else {
+				game.flags.surprise_landing = 1
+				resume_command()
+			}
 		}
 	},
 }
@@ -7512,6 +7529,81 @@ function end_exile_pact() {
 	push_undo()
 	resume_command()
 }
+
+
+// === CAPABILITY : NAVAL BLOCKADE
+ 
+function check_naval_blockade(action, locale) {
+	let ports = [data.port_1, data.port_2, data.port_3]
+	game.what = action
+
+    if (!lord_has_capability(LORD_WARWICK_Y, AOW_YORK_NAVAL_BLOCKADE) || !is_seaport(get_lord_locale(LORD_WARWICK_Y)) || is_exile(get_lord_locale(LORD_WARWICK_Y))) {
+        return false
+    }
+	for (let port of ports) {
+		if (set_has(port, get_lord_locale(LORD_WARWICK_Y)) && set_has(port, locale)) {
+			return true
+		}
+	}
+}
+
+function roll_naval_blockade() {
+	game.state = "naval_blockade"
+}
+
+// Parley, and Tax 
+states.naval_blockade = {
+	inactive: "Naval Blockade",
+	prompt() {
+		view.prompt = `Naval Blockade : Warwick block this action except on a 1-2`
+		view.actions.roll = 1
+	},
+	roll() {
+		let threshold = 2
+		let roll = roll_die()
+		let success = threshold >= roll
+		log(`Attempt to counter Naval Blockade ${success ? "Failed" : "Successful"}: (1-2) ${success ? HIT[roll] : MISS[roll]}`)
+		if (success) {
+			logi(`Successfully overran C${AOW_YORK_NAVAL_BLOCKADE}`)
+			if (game.what === "levy ship") {
+				add_lord_assets(game.who, SHIP, 1)
+			}		
+			if (game.what === "supply") {
+				use_port_supply(game.where, get_port_supply_amount(game.where))
+			}
+			if (game.what === "sail") {
+				log(`Sailed to %${game.where}${format_group_move()}.`)
+				for (let lord of game.group) {
+					set_lord_locale(lord, game.where)
+					set_lord_moved(lord, 1)
+				}
+				if (is_seamanship_in_play())
+					spend_action(1)
+				else
+					spend_all_actions()
+
+				game.flags.surprise_landing = 1
+				resume_command()
+			}
+		}
+		else {
+			logi(`Failed C${AOW_YORK_NAVAL_BLOCKADE}`)
+		}
+		if (game.what === "levy ship") {
+			pop_state()
+			resume_levy_muster_lord()
+		}
+		if (game.what === "supply" && !success) {
+			end_supply()
+		}
+		if (game.what === "sail" && !success) {
+			resume_command()
+		}
+		game.what = NOTHING
+ 	},
+}
+
+
 
 // === CAPABILITY : AGITATORS ===
 
@@ -9746,7 +9838,7 @@ states.death_or_disband = {
 
 		// === CAPABILITY : BLOODY THOU ART, BLOODY WILL BE THE END === //
 		if (is_lancaster_lord(lord) && game.flags.bloody === 1) {
-			log('BLOODY THOU ART, BLOODY WILL BE THE END')
+			logcap(AOW_YORK_BLOODY_THOU_ART)
 			disband_lord(lord, true)
 			set_delete(game.battle.fled, lord)
 			set_delete(game.battle.routed, lord)

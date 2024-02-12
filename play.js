@@ -1620,6 +1620,7 @@ function on_update() {
 	action_button("retreat", "Retreat")
 	action_button("remove", "Remove")
 	action_button("surrender", "Surrender")
+	action_button("roll", "Roll")
 
 	// Use all commands
 	action_button("heralds", "Heralds")
