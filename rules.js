@@ -3559,7 +3559,7 @@ function can_action_tax_collectors(lord) {
 	let here = get_lord_locale(lord)
 	if (can_tax_collectors_at(here, lord))
 		return true
-	return search_tax_collectors(false, here)
+	return search_tax_collectors(false, here, lord)
 }
 
 function can_tax_collectors_at(here, lord) {
@@ -3581,7 +3581,7 @@ function can_tax_collectors_at(here, lord) {
 	return false
 }
 
-function search_tax_collectors(result, start) {
+function search_tax_collectors(result, start, lord) {
 	let ships = get_shared_assets(start, SHIP)
 
 	search_seen.fill(0)
@@ -3591,8 +3591,8 @@ function search_tax_collectors(result, start) {
 	while (queue.length > 0) {
 		let here = queue.shift()
 
-		if (is_lord_on_map(game.who) && !is_lord_on_calendar(game.who)) {
-			if (can_tax_collectors_at(here, game.who)) {
+		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
+			if (can_tax_collectors_at(here, lord)) {
 				if (result)
 					set_add(result, here)
 				else
@@ -3652,7 +3652,7 @@ states.double_tax_collectors = {
 	prompt() {
 		view.prompt = "Tax: Select the location to tax for double."
 		if (game.where === NOWHERE) {
-			for (let loc of search_tax_collectors([], get_lord_locale(game.who)))
+			for (let loc of search_tax_collectors([], get_lord_locale(game.who), game.who))
 				gen_action_locale(loc)
 		} else {
 			view.prompt = `Tax: Attempting to tax ${data.locales[game.where].name}. `
