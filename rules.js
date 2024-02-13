@@ -4559,7 +4559,7 @@ function goto_levy_muster() {
 		// additionnal free specific actions
 		if (lord_has_capability(lord, AOW_LANCASTER_THOMAS_STANLEY))
 			game.flags.free_levy = 1
-		if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART) && can_action_parley_levy())
+		if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART))
 			game.flags.free_parley_henry = 2
 		if (is_event_in_play(EVENT_YORK_GLOUCESTER_AS_HEIR))
 			game.flags.free_parley_gloucester = 3
@@ -4591,10 +4591,10 @@ function reset_flags() {
 }
 
 function can_lord_muster(lord) {
-	// already mustered (except free levy)!
+	// already mustered (except free levy)! TODO : re-check parley henry if ships are levied and at exile
 	if (get_lord_moved(lord)
 	&& (game.flags.free_levy !== 1 || lord !== LORD_HENRY_TUDOR)
-	&& (game.flags.free_parley_henry === 0 || lord !== LORD_HENRY_VI)
+	&& (game.flags.free_parley_henry === 0 || lord !== LORD_HENRY_VI || (lord === LORD_HENRY_VI && !can_action_parley_levy()))
 	&& (game.flags.free_parley_gloucester === 0 || (lord !== LORD_GLOUCESTER_1 || lord !== LORD_GLOUCESTER_2)))
 		return false
 
@@ -8164,13 +8164,17 @@ function prompt_battle_events() {
 	// both attacker and defender events
 	if (game.active === LANCASTER) {
 		gen_action_card_if_held(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
-		gen_action_card_if_held(EVENT_LANCASTER_SUSPICION)
+		if (can_play_suspicion()) {
+			gen_action_card_if_held(EVENT_LANCASTER_SUSPICION)
+		}
 		gen_action_card_if_held(EVENT_LANCASTER_FOR_TRUST_NOT_HIM)
 		gen_action_card_if_held(EVENT_LANCASTER_RAVINE)
 	}
 	if (game.active === YORK) {
 		gen_action_card_if_held(EVENT_YORK_LEEWARD_BATTLE_LINE)
-		gen_action_card_if_held(EVENT_YORK_SUSPICION)
+		if (can_play_suspicion()) {
+			gen_action_card_if_held(EVENT_YORK_SUSPICION)
+		}
 		gen_action_card_if_held(EVENT_YORK_CALTROPS)
 		gen_action_card_if_held(EVENT_YORK_REGROUP)
 		gen_action_card_if_held(EVENT_YORK_SWIFT_MANEUVER)
@@ -8398,6 +8402,36 @@ states.caltrops = {
 	},
 }
 // === EVENT : SUSPICION ===
+
+function can_play_suspicion() {
+	if (highest_friendly_influence() >= lowest_enemy_influence()) {
+		return true
+	}
+	return false
+}
+
+function lowest_enemy_influence() {
+	let score = 10
+	for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord) {
+		if (get_lord_locale(lord) === get_lord_locale(game.command)) {
+			if (data.lords[lord].influence < score) {
+				score = data.lords[lord].influence
+			}
+		}
+	}
+	return score
+}
+
+function highest_friendly_influence() {
+	let score = 0
+	for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+		if (get_lord_locale(lord) === get_lord_locale(game.command)) {
+			if (data.lords[lord].influence > score) {
+				score = data.lords[lord].influence
+			}
+		}
+	}
+}
 
 states.suspicion = {
 	inactive: "Suspicion",
