@@ -8164,17 +8164,16 @@ function prompt_battle_events() {
 	// both attacker and defender events
 	if (game.active === LANCASTER) {
 		gen_action_card_if_held(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
-		if (can_play_suspicion()) {
+		if (can_play_suspicion()) 
 			gen_action_card_if_held(EVENT_LANCASTER_SUSPICION)
-		}
-		gen_action_card_if_held(EVENT_LANCASTER_FOR_TRUST_NOT_HIM)
+		if (can_play_for_trust_not_him())
+			gen_action_card_if_held(EVENT_LANCASTER_FOR_TRUST_NOT_HIM)
 		gen_action_card_if_held(EVENT_LANCASTER_RAVINE)
 	}
 	if (game.active === YORK) {
 		gen_action_card_if_held(EVENT_YORK_LEEWARD_BATTLE_LINE)
-		if (can_play_suspicion()) {
+		if (can_play_suspicion())
 			gen_action_card_if_held(EVENT_YORK_SUSPICION)
-		}
 		gen_action_card_if_held(EVENT_YORK_CALTROPS)
 		gen_action_card_if_held(EVENT_YORK_REGROUP)
 		gen_action_card_if_held(EVENT_YORK_SWIFT_MANEUVER)
@@ -8518,6 +8517,18 @@ states.influence_check_suspicion = {
 
 // === EVENT : FOR TRUST NOT HIM ===
 
+function can_play_for_trust_not_him() {
+	for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
+		if (is_vassal_mustered_with_york_lord(vassal) && get_lord_locale(get_vassal_lord(vassal)) === get_lord_locale(game.command)) {
+			// Hastings & Salisbury with Alice Montagu capability are immune.
+			if ((get_vassal_lord(vassal) !== LORD_SALISBURY || !lord_has_capability(LORD_SALISBURY, AOW_YORK_ALICE_MONTAGU)) && vassal !== VASSAL_HASTINGS) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 states.for_trust_not_him = {
 	inactive: "For trust not him \u2014 Select Lord",
 	prompt() {
@@ -8545,7 +8556,7 @@ states.for_trust_not_him_vassal = {
 	prompt() {
 		view.prompt = "Select an enemy Vassal"
 		for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
-			if (is_vassal_mustered_with_york_lord(vassal)) {
+			if (is_vassal_mustered_with_york_lord(vassal) && get_lord_locale(get_vassal_lord(vassal)) === get_lord_locale(game.command)) {
 				// Hastings & Salisbury with Alice Montagu capability are immune.
 				if ((get_vassal_lord(vassal) !== LORD_SALISBURY || !lord_has_capability(LORD_SALISBURY, AOW_YORK_ALICE_MONTAGU)) && vassal !== VASSAL_HASTINGS) {
 					gen_action_vassal(vassal)
