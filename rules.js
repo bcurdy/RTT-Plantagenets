@@ -4773,14 +4773,15 @@ states.levy_muster_lord = {
 		if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && game.active === YORK) {
 			push_state("rising_wages")
 		}
-		let locale = data.locales[get_lord_locale(game.who)].type
+		let here = get_lord_locale(game.who)
+		let here_type = data.locales[here].type
 		if (
 			!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS) &&
 			!lord_has_capability(game.who, AOW_YORK_WOODWILLES) &&
-			!chamberlains_eligible_levy(locale)
+			!chamberlains_eligible_levy(here)
 		)
-			deplete_locale(get_lord_locale(game.who))
-		switch (locale) {
+			deplete_locale(here)
+		switch (here_type) {
 			case "calais":
 				add_lord_forces(game.who, MEN_AT_ARMS, 2)
 				add_lord_forces(game.who, LONGBOWMEN, 1)
@@ -4969,8 +4970,9 @@ function kings_name_reset_troops() {
 		remove_exhausted_marker(get_lord_locale(game.who))
 	}
 
-	let locale = data.locales[get_lord_locale(game.who)].type
-	switch (locale) {
+	let here = get_lord_locale(game.who)
+	let here_type = data.locales[here].type
+	switch (here_type) {
 		case "calais":
 			add_lord_forces(game.who, MEN_AT_ARMS, -2)
 			add_lord_forces(game.who, LONGBOWMEN, -1)
@@ -5085,13 +5087,14 @@ states.soldier_of_fortune = {
 	},
 	coin(lord) {
 		push_undo()
-		let locale = data.locales[get_lord_locale(game.who)].type
+		let here = get_lord_locale(game.who)
+		let here_type = data.locales[here].type
 		let number = get_lord_forces(game.who, MERCENARIES)
 		let merc = 0
 		if (!lord_has_capability(game.who, AOW_YORK_WOODWILLES))
-			deplete_locale(get_lord_locale(game.who))
+			deplete_locale(here)
 
-		switch (locale) {
+		switch (here_type) {
 			case "calais":
 				add_lord_forces(game.who, MEN_AT_ARMS, 2)
 				add_lord_forces(game.who, LONGBOWMEN, 1)
