@@ -6298,6 +6298,7 @@ function march_with_group_2() {
 function end_march() {
 	// Disbanded in battle!
 	if (!is_lord_on_map(game.command)) {
+		game.where = NOWHERE
 		game.march = 0
 		spend_all_actions()
 		resume_command()
@@ -6606,6 +6607,7 @@ states.blocked_ford = {
 	},
 	card(c) {
 		play_held_event(c)
+		game.where = get_lord_locale(game.command)
 		goto_battle()
 	},
 	pass() {
@@ -8202,6 +8204,10 @@ function prompt_battle_events_death() {
 // === EVENT : WARDEN OF THE MARCHES ===
 
 function can_play_warden_of_the_marches() {
+	// if blocked ford then flee
+	if (is_north(game.where))
+		return true 
+	// if battle
 	if (is_north(game.battle.where))
 		return true
 	return false
