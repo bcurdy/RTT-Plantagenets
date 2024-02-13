@@ -3034,7 +3034,7 @@ function is_propaganda_target(loc) {
 
 function goto_warwicks_propaganda() {
 	let can_play = false
-	for (let loc of data.locales) {
+	for (let loc = first_locale; loc <= last_locale; ++loc) {
 		if (has_favoury_marker(loc)) {
 			can_play = true
 		}
