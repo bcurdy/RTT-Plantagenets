@@ -9695,6 +9695,7 @@ function action_losses(lord, type) {
 states.battle_losses = {
 	inactive: "Losses",
 	prompt() {
+		let done = true
 		view.prompt = "Losses: Determine the fate of your Routed units."
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 			if (is_lord_on_map(lord) && lord_has_routed_troops(lord)) {
@@ -9708,7 +9709,11 @@ states.battle_losses = {
 					gen_action_routed_men_at_arms(lord)
 				if (get_lord_routed_forces(lord, MILITIA) > 0)
 					gen_action_routed_militia(lord)
+				done = false
 			}
+		}
+		if (done) {
+			view.actions.done = 1
 		}
 	},
 	routed_mercenaries(lord) {
@@ -9725,6 +9730,9 @@ states.battle_losses = {
 	},
 	routed_militia(lord) {
 		action_losses(lord, MILITIA)
+	},
+	done() {
+		goto_death_or_disband()
 	},
 }
 
