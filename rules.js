@@ -596,6 +596,7 @@ function find_ports(here) {
 	if (here === data.exile_1) return data.port_1
 	if (here === data.exile_2) return data.port_2
 	if (here === data.exile_3) return data.port_3
+	if (here === data.exile_4) return data.port_1
 	if (set_has(data.port_1, here)) return data.port_1
 	if (set_has(data.port_2, here)) return data.port_2
 	if (set_has(data.port_3, here)) return data.port_3
