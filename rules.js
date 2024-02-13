@@ -923,7 +923,7 @@ function get_shared_assets(loc, what) {
 			m = get_lord_assets(lord, CART)
 			n += m
 		}
-		if (game.state === "supply_source" && (lord_has_capability(lord, AOW_YORK_GREAT_SHIPS) || lord_has_capability(AOW_YORK_GREAT_SHIPS)) && what === SHIP) {
+		if (game.state === "supply_source" && (lord_has_capability(lord, AOW_YORK_GREAT_SHIPS) || lord_has_capability(lord, AOW_YORK_GREAT_SHIPS)) && what === SHIP) {
 			m = get_lord_assets(lord, SHIP)
 			n += m
 		}
@@ -950,7 +950,7 @@ function count_group_ships() {
 	let n = 0
 	for (let lord of game.group) {
 		n += count_lord_ships(lord)
-		if (lord_has_capability(AOW_YORK_GREAT_SHIPS) || lord_has_capability(AOW_LANCASTER_GREAT_SHIPS))
+		if (lord_has_capability(lord, AOW_YORK_GREAT_SHIPS) || lord_has_capability(lord, AOW_LANCASTER_GREAT_SHIPS))
 			n += count_lord_ships(lord)
 	}
 	return n
@@ -2256,7 +2256,7 @@ function setup_III_Y() {
 		add_favoury_marker(LOC_CARLISLE)
 		// TODO: Add Y37
 	}
-	if (main_york_heir === LORD_GLOUCESTER_1 || main_york_heir(LORD_RICHARD_III)) {
+	if (main_york_heir === LORD_GLOUCESTER_1 || main_york_heir === LORD_RICHARD_III) {
 		muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
 		add_favoury_marker(LOC_CARLISLE)
 		// TODO: Add Y37
@@ -2536,7 +2536,7 @@ function setup_III_L() {
 }
 
 // FULL SCENARIO HEIR
-function main_york_heir() {
+function get_main_york_heir() {
 	if (is_lord_in_play(LORD_YORK))
 		return LORD_YORK
 	if (!is_lord_in_play(LORD_YORK) && is_lord_in_play(LORD_MARCH))
@@ -2551,7 +2551,7 @@ function main_york_heir() {
 		return LORD_WARWICK_Y
 }
 
-function main_lancaster_heir() {
+function get_main_lancaster_heir() {
 	if (is_lord_in_play(LORD_HENRY_VI))
 		return LORD_HENRY_VI
 	if (!is_lord_in_play(LORD_HENRY_VI) && is_lord_in_play(LORD_MARGARET))
@@ -2892,9 +2892,9 @@ states.scots = {
 		if (game.who !== NOBODY) {
 			let troops = map_get(game.count, game.who, 0)
 			if ((troops & 1) === 0)
-				gen_action("add_militia")
+				view.actions.add_militia = 1
 			if ((troops & 2) === 0)
-				gen_action("add_men_at_arms")
+				view.actions.add_men_at_arms = 1
 		}
 		view.actions.done = 1
 	},
@@ -2990,9 +2990,9 @@ states.french_troops = {
 		} else {
 			view.prompt = `Add ${2-pack2_get(game.count, 0)} Men at Arms and ${2-pack2_get(game.count, 1)} Militia to ${lord_name[game.who]}.`
 			if (pack2_get(game.count, 0) < 2)
-				gen_action("add_men_at_arms")
+				view.actions.add_men_at_arms = 1
 			if (pack2_get(game.count, 1) < 2)
-				gen_action("add_militia")
+				view.actions.add_militia = 1
 		}
 
 		view.actions.done = 1
@@ -3959,12 +3959,12 @@ states.earl_rivers = {
 		if (game.who !== NOBODY) {
 			let troops = map_get(game.count, game.who, 0)
 			if ((troops & 1) === 0)
-				gen_action("add_militia")
+				view.actions.add_militia = 1
 		}
 		if (game.who !== NOBODY) {
 			let troops = map_get(game.count, game.who, 0)
 			if ((troops & 1) === 0)
-				gen_action("add_militia2")
+				view.actions.add_militia2 = 1
 		}
 	},
 	done() {
@@ -4702,7 +4702,7 @@ states.levy_muster_lord = {
 					view.actions.soldiers_of_fortune = 1
 			}
 
-			if (game.count === 0 && lord_has_capability(AOW_LANCASTER_THOMAS_STANLEY) && can_add_troops(game.who, here)) {
+			if (game.count === 0 && lord_has_capability(game.who, AOW_LANCASTER_THOMAS_STANLEY) && can_add_troops(game.who, here)) {
 				view.actions.levy_troops = 1
 			}
 			// Rising wages event
@@ -5040,7 +5040,7 @@ states.the_commons = {
 	prompt() {
 		view.prompt = `Add up to ${game.flags.commons_militia} Militias.`
 		if (game.flags.commons_militia > 0) {
-			gen_action("add_militia")
+			view.actions.add_militia = 1
 		}
 		view.actions.done = 1
 	},
@@ -5663,7 +5663,7 @@ function influence_capabilities(lord, score) {
 		score += 2
 	if (has_favoury_marker(here) && lord_has_capability(lord, AOW_YORK_FAIR_ARBITER))
 		score += 1
-	if (lord_has_capability(AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
+	if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
 		score += 2
 
 	return score
@@ -5913,8 +5913,8 @@ function list_parley_command() {
 
 function can_action_parley_levy() {
 	if (game.count <= 0
-		&& (!game.who === LORD_HENRY_VI || game.flags.free_parley_henry === 0)
-		&& ((!game.who === LORD_GLOUCESTER_1 && !game.who === LORD_GLOUCESTER_2) || game.flags.free_parley_gloucester === 0)
+		&& (game.who !== LORD_HENRY_VI || game.flags.free_parley_henry === 0)
+		&& ((game.who !== LORD_GLOUCESTER_1 && game.who !== LORD_GLOUCESTER_2) || game.flags.free_parley_gloucester === 0)
 		&& (!game.flags.jack_cade))
 		return true
 	let here = get_lord_locale(game.who)
@@ -6002,7 +6002,7 @@ states.parley = {
 	locale(loc) {
 		push_undo()
 		game.where = loc
-		add_influence_check_distance(map_get(game.parley, loc))
+		add_influence_check_distance(map_get(game.parley, loc, 0))
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
@@ -6055,7 +6055,7 @@ function eligible_vassal(vassal) {
 	}
 	if (
 		!is_favour_friendly(data.vassals[vassal].seat) &&
-		(!game.who === LORD_HENRY_TUDOR || !is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))
+		(game.who !== LORD_HENRY_TUDOR || !is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))
 	) {
 		return false
 	}
@@ -6131,7 +6131,7 @@ states.levy_muster_vassal = {
 // === ACTION: MARCH ===
 
 function get_way_type(from, to) {
-	return map_get(data.ways[from], to)
+	return map_get(data.ways[from], to, undefined)
 }
 
 function format_group_move() {
@@ -6839,7 +6839,7 @@ function modify_supply(loc, supply) {
 	let carts = get_shared_assets(here, CART)
 
 	// Must carry supply over land with one cart per provender per way
-	let distance = map_get(game.supply, loc)
+	let distance = map_get(game.supply, loc, 0)
 	if (distance > 0)
 		supply = Math.min(supply, Math.floor(carts / distance))
 
@@ -7012,7 +7012,7 @@ function goto_forage() {
 		} else {
 			log(`${MISS[die]}, Forage Failure`)
 		}
-	} else if (has_adjacent_enemy(here) || is_favour_enemy(here)) {
+	} else if (has_adjacent_enemy(here) || is_favour_enemy(here, game.active)) {
 		let die = roll_die()
 		if (die <= 3) {
 			add_lord_assets(game.command, PROV, 1)
@@ -7433,7 +7433,7 @@ states.merchants = {
 		let results = do_influence_check()
 		log(`Attempt to C${AOW_LANCASTER_MERCHANTS} with %${game.command} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		if (results.success) {
-			merchants_success(game.command)
+			merchants_success()
 		} else {
 			end_merchants_attempt()
 		}
@@ -7875,7 +7875,7 @@ function start_battle() {
 
 	log_h3(`Battle at %${here}`)
 
-	init_battle(game.where, 0, 0)
+	init_battle(game.where)
 
 	// Troops by capability
 
@@ -8255,7 +8255,7 @@ function can_escape_at(here) {
 		return true
 	if (game.active === LANCASTER && has_favourl_marker(here) && is_seaport(here))
 		return true
-	if (search_escape_route(false, here))
+	if (search_escape_route(here))
 		return true
 	return false
 }
@@ -8294,7 +8294,7 @@ states.escape_ship = {
 	inactive: `Escape ship`,
 	prompt() {
 		view.prompt = "Escape Ship: Your lords go to Exile."
-		gen_action("escape_ship")
+		view.actions.escape_ship = 1
 	},
 	escape_ship() {
 		push_undo()
@@ -9091,7 +9091,7 @@ states.culverins_and_falconets = {
 		discard_lord_capability(lord, c)
 	},
 	done() {
-		if (is_defender(game.active)) {
+		if (is_defender()) {
 			set_active_enemy()
 		}
 		else {
@@ -9101,10 +9101,10 @@ states.culverins_and_falconets = {
 }
 
 function artillery_hits(ahits) {
-	if (is_attacker(game.active)) {
+	if (is_attacker()) {
 		game.battle.attacker_artillery = ahits*2
 	}
-	if (is_defender(game.active)) {
+	if (is_defender()) {
 		game.battle.defender_artillery = ahits*2
 	}
 }
@@ -9275,7 +9275,7 @@ states.assign_hits = {
 		prompt_hit_forces()
 	},
 	retinue(lord) {
-		if((lord === LORD_MARGARET) && (lord_has_capability(AOW_LANCASTER_YEOMEN_OF_THE_CROWN)) && get_lord_forces(lord, MEN_AT_ARMS) > 0)
+		if ((lord === LORD_MARGARET) && (lord_has_capability(lord, AOW_LANCASTER_YEOMEN_OF_THE_CROWN)) && get_lord_forces(lord, MEN_AT_ARMS) > 0)
 			action_assign_hits(lord, MEN_AT_ARMS)
 		else
 			action_assign_hits(lord, RETINUE)
@@ -11144,7 +11144,7 @@ states.disembark = {
 		}
 	},
 	lord(lord) {
-		if (do_disembark(lord)) {
+		if (do_disembark()) {
 			if (has_safe_ports(get_lord_locale(lord))) {
 				game.who = lord
 			} else {
