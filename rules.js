@@ -9941,7 +9941,6 @@ function set_lord_feed_requirements() {
 
 function goto_feed() {
 	log_br()
-
 	set_lord_feed_requirements()
 	if (has_friendly_lord_who_must_feed()) {
 		push_state("feed")
@@ -10048,6 +10047,7 @@ states.feed_lord_shared = {
 
 function end_feed() {
 	pop_state()
+	game.where = NOWHERE
 	if (game.state !== "disembark")
 		goto_remove_markers()
 }
