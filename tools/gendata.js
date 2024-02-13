@@ -765,6 +765,7 @@ let way_sea_3 = ["English Channel", "Bristol","Pembroke","Harlech", "Dover", "Ha
 let way_exile_1 = ["Burgundy", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
 let way_exile_2 = ["France", "English Channel",  "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
 let way_exile_3 = ["Ireland", "Irish Sea", "Bristol","Pembroke","Harlech"].map(name => locmap[name]).sort(cmpnum)
+let way_exile_4 = ["Scotland", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
 
 let way_port_1 = ["Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
 let way_port_2 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro", "English Channel"].map(name => locmap[name]).sort(cmpnum)
@@ -779,6 +780,7 @@ let sea_3 = locmap["Irish Sea"]
 let exile_1 = locmap["Burgundy"]
 let exile_2 = locmap["France"]
 let exile_3 = locmap["Ireland"]
+let exile_4 = locmap["Scotland"]
 
 let port_1 = ["Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich"].map(name => locmap[name]).sort(cmpnum)
 let port_2 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
@@ -1711,6 +1713,7 @@ print("exile_boxes:" + JSON.stringify(exile_boxes) + ",")
 print("exile_1:" + JSON.stringify(exile_1) + ",")
 print("exile_2:" + JSON.stringify(exile_2) + ",")
 print("exile_3:" + JSON.stringify(exile_3) + ",")
+print("exile_4:" + JSON.stringify(exile_4) + ",")
 print("sea_1:" + JSON.stringify(sea_1) + ",")
 print("sea_2:" + JSON.stringify(sea_2) + ",")
 print("sea_3:" + JSON.stringify(sea_3) + ",")
@@ -1721,6 +1724,7 @@ print("all_ports:" + JSON.stringify(all_ports) + ",")
 print("way_exile_1:" + JSON.stringify(way_exile_1) + ",")
 print("way_exile_2:" + JSON.stringify(way_exile_2) + ",")
 print("way_exile_3:" + JSON.stringify(way_exile_3) + ",")
+print("way_exile_4:" + JSON.stringify(way_exile_4) + ",")
 print("way_sea_1:" + JSON.stringify(way_sea_1) + ",")
 print("way_sea_2:" + JSON.stringify(way_sea_2) + ",")
 print("way_sea_3:" + JSON.stringify(way_sea_3) + ",")
