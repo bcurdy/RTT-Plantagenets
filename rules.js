@@ -1560,7 +1560,7 @@ function discard_events(when) {
 function discard_extra_levy_events() {
 	for (let i = 0; i < game.events.length; ) {
 		let c = game.events[i]
-		if (data.cards[c].name === "Y20")
+		if (c === Y20)
 			array_remove(game.events, i)
 		else
 			++i
@@ -2983,7 +2983,7 @@ states.french_troops = {
 		view.prompt = `Add 2 Men at Arms and 2 Militia to a Lord at a port.`
 		if (game.who === NOBODY) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
-				if (is_lord_on_map(lord) && data.seaports.includes(get_lord_locale(lord))) {
+				if (is_lord_on_map(lord) && is_seaport(get_lord_locale(lord))) {
 					gen_action_lord(lord)
 				}
 			}
@@ -4151,7 +4151,8 @@ function can_play_rebel_supply_depot() {
 }
 
 function can_play_surprise_landing() {
-	if (game.flags.surprise_landing === 0 || !is_seaport(get_lord_locale(game.command)) || data.locales[get_lord_locale(game.command)].type === "calais")
+	let here = get_lord_locale(game.command)
+	if (game.flags.surprise_landing === 0 || !is_seaport(here) || here === LOC_CALAIS)
 		return false
 	return true
 }
@@ -6049,14 +6050,19 @@ function eligible_vassal(vassal) {
 	if (!is_vassal_ready(vassal)) {
 		return false
 	}
-	if (!is_favour_friendly(data.vassals[vassal].seat)
-	&& (!game.who === LORD_HENRY_TUDOR
-	|| !is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))) {
+	if (
+		!is_favour_friendly(data.vassals[vassal].seat) &&
+		(!game.who === LORD_HENRY_TUDOR || !is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))
+	) {
 		return false
 	}
 	if (!is_favour_friendly(data.vassals[vassal].seat))
 		return false
-	if (game.active === LANCASTER && is_event_in_play(EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT) && !(is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT) && !is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND))){
+	if (
+		game.active === LANCASTER &&
+		is_event_in_play(EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT) &&
+		!(is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT) && !is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND))
+	) {
 		return false
 	}
 	return true
@@ -8503,7 +8509,7 @@ states.for_trust_not_him_vassal = {
 		for (let vassal = first_vassal; vassal <= last_vassal; vassal++) {
 			if (is_vassal_mustered_with_york_lord(vassal)) {
 				// Hastings & Salisbury with Alice Montagu capability are immune.
-				if ((get_vassal_lord(vassal) !== LORD_SALISBURY || !lord_has_capability(LORD_SALISBURY, AOW_YORK_ALICE_MONTAGU)) && data.vassals[vassal].name !== "Hastings") {
+				if ((get_vassal_lord(vassal) !== LORD_SALISBURY || !lord_has_capability(LORD_SALISBURY, AOW_YORK_ALICE_MONTAGU)) && vassal !== VASSAL_HASTINGS) {
 					gen_action_vassal(vassal)
 				}
 			}
