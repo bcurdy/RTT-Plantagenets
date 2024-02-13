@@ -4559,7 +4559,7 @@ function goto_levy_muster() {
 		// additionnal free specific actions
 		if (lord_has_capability(lord, AOW_LANCASTER_THOMAS_STANLEY))
 			game.flags.free_levy = 1
-		if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART))
+		if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART) && can_action_parley_levy())
 			game.flags.free_parley_henry = 2
 		if (is_event_in_play(EVENT_YORK_GLOUCESTER_AS_HEIR))
 			game.flags.free_parley_gloucester = 3
