@@ -11882,7 +11882,14 @@ function assertMutuallyExclusiveLords() {
 function assertAllLordsHaveTroopsOrRetinue() {
 	for (let lord = first_york_lord; lord <= last_lancaster_lord; ++lord) {
 		if (is_lord_on_map(lord) && !count_lord_all_forces(lord) && !get_lord_forces(lord, RETINUE))
-			throw Error(`ASSERT: Lord "${data.lords[lord].name}" without troops or retinue`)
+			throw Error(`ASSERT: Lord "${data.lords[lord].name}" without troops or retinue.`)
+	}
+}
+
+function assertAllLordsOnLand() {
+	for (let lord = first_york_lord; lord <= last_lancaster_lord; ++lord) {
+		if (is_lord_at_sea(lord))
+			throw Error(`ASSERT: Lord "${data.lords[lord].name}" at sea during Levy phase.`)
 	}
 }
 
@@ -11892,6 +11899,8 @@ exports.assertState = function (state) {
 	// assertMutuallyExclusiveLords()
 	if (game.state !== "battle_losses" && game.state !== "death_or_disband")
 		assertAllLordsHaveTroopsOrRetinue()
+	if (is_levy_phase())
+		assertAllLordsOnLand()
 }
 
 let log_sanity = []
