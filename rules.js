@@ -11893,14 +11893,24 @@ function assertAllLordsOnLand() {
 	}
 }
 
+function assertAllLordsWithoutRoutedTroops() {
+	for (let lord = first_york_lord; lord <= last_lancaster_lord; ++lord) {
+		if (lord_has_routed_troops(lord))
+			throw Error(`ASSERT: Lord "${data.lords[lord].name}" has routed troops during Levy phase.`)
+	}
+}
+
 exports.assertState = function (state) {
 	load_state(state)
 
 	// assertMutuallyExclusiveLords()
 	if (game.state !== "battle_losses" && game.state !== "death_or_disband")
 		assertAllLordsHaveTroopsOrRetinue()
-	if (is_levy_phase())
+
+	if (is_levy_phase()) {
 		assertAllLordsOnLand()
+		assertAllLordsWithoutRoutedTroops()
+	}
 }
 
 let log_sanity = []
