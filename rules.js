@@ -11856,6 +11856,35 @@ function map_delete(map, item) {
 	}
 }
 
+const mutually_exclusive_lords = [
+	[LORD_EXETER_1, LORD_EXETER_2],
+	[LORD_SOMERSET_1, LORD_SOMERSET_2],
+	[LORD_JASPER_TUDOR_1, LORD_JASPER_TUDOR_2],
+	[LORD_MARCH, LORD_EDWARD_IV],
+	[LORD_GLOUCESTER_1, LORD_GLOUCESTER_2, LORD_RICHARD_III],
+	[LORD_NORTHUMBERLAND_Y1, LORD_NORTHUMBERLAND_Y2, LORD_NORTHUMBERLAND_L],
+	[LORD_WARWICK_Y, LORD_WARWICK_L],
+	[LORD_YORK, LORD_EDWARD_IV, LORD_RICHARD_III],
+	[LORD_HENRY_VI, LORD_MARGARET],
+	[LORD_MARGARET, LORD_HENRY_TUDOR],
+	[LORD_HENRY_VI, LORD_HENRY_TUDOR],
+]
+
+function assertMutuallyExclusiveLords() {
+	for (const lords of mutually_exclusive_lords) {
+		if (lords.filter(is_lord_in_play).length > 1) {
+			const lord_names = lords.map(l => data.lords[l].name)
+			throw Error(`ASSERT: Mutually exclusive Lords [${lord_names}] can't be all in play.`)
+		}
+	}
+}
+
+exports.assertState = function (state) {
+	load_state(state)
+
+	assertMutuallyExclusiveLords()
+}
+
 let log_sanity = []
 exports.fuzz_log = function (fuzz_info) {
 	console.log(`${fuzz_info.state.state} - ${fuzz_info.actions} - - ${fuzz_info.args} [${fuzz_info.chosen_action}, ${fuzz_info.chosen_arg}]`)
