@@ -11870,46 +11870,46 @@ const mutually_exclusive_lords = [
 	[LORD_HENRY_VI, LORD_HENRY_TUDOR],
 ]
 
-function assertMutuallyExclusiveLords() {
+function assert_mutually_exclusive_lords() {
 	for (const lords of mutually_exclusive_lords) {
 		if (lords.filter(is_lord_in_play).length > 1) {
-			const lord_names = lords.map(l => data.lords[l].name)
+			const lord_names = lords.map(l => lord_name[l])
 			throw Error(`ASSERT: Mutually exclusive Lords [${lord_names}] can't be all in play.`)
 		}
 	}
 }
 
-function assertAllLordsHaveTroopsOrRetinue() {
+function assert_all_lords_have_troops_or_retinue() {
 	for (let lord = first_york_lord; lord <= last_lancaster_lord; ++lord) {
 		if (is_lord_on_map(lord) && !count_lord_all_forces(lord) && !get_lord_forces(lord, RETINUE))
-			throw Error(`ASSERT: Lord "${data.lords[lord].name}" without troops or retinue.`)
+			throw Error(`ASSERT: Lord "${lord_name[lord]}" without troops or retinue.`)
 	}
 }
 
-function assertAllLordsOnLand() {
+function assert_all_lords_on_land() {
 	for (let lord = first_york_lord; lord <= last_lancaster_lord; ++lord) {
 		if (is_lord_at_sea(lord))
-			throw Error(`ASSERT: Lord "${data.lords[lord].name}" at sea during Levy phase.`)
+			throw Error(`ASSERT: Lord "${lord_name[lord]}" at sea during Levy phase.`)
 	}
 }
 
-function assertAllLordsWithoutRoutedTroops() {
+function assert_all_lords_without_routed_troops() {
 	for (let lord = first_york_lord; lord <= last_lancaster_lord; ++lord) {
 		if (lord_has_routed_troops(lord))
-			throw Error(`ASSERT: Lord "${data.lords[lord].name}" has routed troops during Levy phase.`)
+			throw Error(`ASSERT: Lord "${lord_name[lord]}" has routed troops during Levy phase.`)
 	}
 }
 
-exports.assertState = function (state) {
+exports.assert_state = function (state) {
 	load_state(state)
 
-	// assertMutuallyExclusiveLords()
+	// assert_mutually_exclusive_lords()
 	if (game.state !== "battle_losses" && game.state !== "death_or_disband")
-		assertAllLordsHaveTroopsOrRetinue()
+		assert_all_lords_have_troops_or_retinue()
 
 	if (is_levy_phase()) {
-		assertAllLordsOnLand()
-		assertAllLordsWithoutRoutedTroops()
+		assert_all_lords_on_land()
+		assert_all_lords_without_routed_troops()
 	}
 }
 
