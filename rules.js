@@ -8540,6 +8540,7 @@ states.for_trust_not_him = {
 	inactive: "For trust not him \u2014 Select Lord",
 	prompt() {
 		let done = true
+		game.where = NOWHERE
 		view.prompt = "Select a friendly lord"
 		for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; lord++) {
 			if (is_lancaster_lord(lord) && get_lord_locale(lord) === game.battle.where) {
