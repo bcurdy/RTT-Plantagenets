@@ -5815,7 +5815,7 @@ function prompt_influence_check() {
 
 // TODO : FIX Parley through strongholds overseas
 function can_parley_at(loc) {
-	return !is_exile(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc)
+	return !is_exile(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc) && !is_sea(loc)
 }
 
 var search_seen = new Array(last_locale + 1)
@@ -11127,7 +11127,7 @@ function tides_of_war() {
 	tides_calc()
 	if (tow_extra_ip()) {
 		set_active(YORK)
-		game.state = "tow_extra_ip"
+		push_state("tow_extra_ip")
 	}
 	else
 		goto_disembark()
@@ -11150,7 +11150,7 @@ function is_lord_at_sea(lord) {
 
 function goto_disembark() {
 	if (has_lords_at_sea()) {
-		game.state = "disembark"
+		push_state("disembark")
 	} else {
 		end_disembark()
 	}
@@ -11159,7 +11159,7 @@ function goto_disembark() {
 function end_disembark() {
 	game.who = NOBODY
 	set_active_enemy()
-	if (game.active === P2)
+	if (game.active === P1)
 		goto_disembark()
 	else
 		goto_game_end()
