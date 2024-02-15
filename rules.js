@@ -10627,7 +10627,7 @@ function disband_lord(lord, permanently = false) {
 
 	for (let x = 0; x < FORCE_TYPE_COUNT; ++x) {
 		set_lord_forces(lord, x, 0)
-		//set_lord_routed(lord, x, 0)
+		set_lord_routed_forces(lord, x, 0)
 	}
 
 	set_lord_moved(lord, 0)
