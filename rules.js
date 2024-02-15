@@ -3710,6 +3710,7 @@ function end_tax_lord() {
 }
 
 function end_tax_collectors() {
+	game.where = NOWHERE
 	game.who = NOBODY
 	game.count = 0
 	end_immediate_event()
