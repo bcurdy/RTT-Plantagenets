@@ -1439,8 +1439,7 @@ function can_add_troops_sof(lordwho, locale) {
 		lord_has_capability(lordwho, AOW_YORK_SOLDIERS_OF_FORTUNE) &&
 		!has_exhausted_marker(locale) &&
 		!is_exile(locale) &&
-		// TODO: get_shared_assets includes lord's own assets -- simplify?
-		(get_lord_assets(lordwho, COIN) > 0 || get_shared_assets(lordwho, COIN) > 0)
+		get_shared_assets(locale, COIN) > 0
 	) {
 		let number = 6
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord)
