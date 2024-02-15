@@ -5131,7 +5131,9 @@ states.soldier_of_fortune = {
 		add_lord_assets(lord, COIN, -1)
 		add_lord_forces(game.who, MERCENARIES, merc)
 		set_lord_unfed(game.who, 0)
-		end_soldiers_of_fortune()
+	},
+	end_sof() {
+		end_soldiers_of_fortune()	
 	},
 	card: action_held_event,
 }
