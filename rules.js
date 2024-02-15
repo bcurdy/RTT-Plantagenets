@@ -11903,7 +11903,7 @@ exports.assert_state = function (state) {
 	load_state(state)
 
 	// assert_mutually_exclusive_lords()
-	if (game.state !== "battle_losses" && game.state !== "death_or_disband")
+	if (game.state === "feed")
 		assert_all_lords_have_troops_or_retinue()
 
 	if (is_levy_phase()) {
