@@ -5156,7 +5156,7 @@ states.muster_lord_at_seat = {
 
 		if (!found) {
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
-				if (is_lord_on_map(lord) && is_friendly_locale(data.lords[lord].seat)) {
+				if ((is_lord_on_map(lord) || is_lord_on_calendar(lord)) && is_friendly_locale(data.lords[lord].seat)) {
 					gen_action_locale(data.lords[lord].seat)
 				}
 			}
@@ -10628,7 +10628,9 @@ function disband_lord(lord, permanently = false) {
 
 	for (let x = 0; x < FORCE_TYPE_COUNT; ++x) {
 		set_lord_forces(lord, x, 0)
-		set_lord_routed_forces(lord, x, 0)
+		if (get_lord_routed_forces(lord, x) > 0) {
+			set_lord_routed_forces(lord, x, 0)
+		}
 	}
 
 	set_lord_moved(lord, 0)
