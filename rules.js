@@ -3248,7 +3248,7 @@ states.welsh_rebellion_remove_favour = {
 
 function end_welsh_rebellion() {
 	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
-		if (is_lord_in_wales(lord) && !has_no_unrouted_forces(lord))
+		if (is_lord_on_map(lord) && is_lord_in_wales(lord) && !lord_has_unrouted_units(lord))
 			disband_lord(lord, false)
 	}
 	game.count = 0
