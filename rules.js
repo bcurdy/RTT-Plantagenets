@@ -5873,6 +5873,9 @@ function can_action_parley_command() {
 	if (game.actions <= 0)
 		return false
 
+	if (is_lord_at_sea(game.active))
+		return false
+
 	if (!is_first_action() && game.active === YORK && is_event_in_play(EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT))
 		return false
 
