@@ -4153,7 +4153,7 @@ function can_play_rebel_supply_depot() {
 
 function can_play_surprise_landing() {
 	let here = get_lord_locale(game.command)
-	if (game.flags.surprise_landing === 0 || !is_seaport(here) || here === LOC_CALAIS || is_sea(here))
+	if (game.flags.surprise_landing === 0 || !is_seaport(here) || here === LOC_CALAIS || here === LOC_PEMBROKE || here === LOC_HARLECH || here === LANCASTER || is_sea(here))
 		return false
 	return true
 }
