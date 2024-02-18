@@ -6355,7 +6355,7 @@ states.intercept = {
 
 		// TODO : FLANK ATTACK through the held intercept
 		// or held event but with more conditions (for example state = "intercept")
-		prompt_held_event_intercept()
+		// prompt_held_event_intercept()
 
 		if (game.who === NOBODY) {
 			for (let next of data.locales[to].not_paths)
