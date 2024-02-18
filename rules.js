@@ -8261,8 +8261,11 @@ states.warden_of_the_marches = {
 				else {
 					set_lord_forces(lord, RETINUE, 1)
 				}
-				if (get_lord_routed_forces(lord, x) > 0) {
-					set_lord_routed_forces(lord, x, 0)
+				for (let x = 0; x < FORCE_TYPE_COUNT; ++x) {
+					set_lord_forces(lord, x, 0)
+					if (get_lord_routed_forces(lord, x) > 0) {
+						set_lord_routed_forces(lord, x, 0)
+					}
 				}
 				for_each_vassal_with_lord(lord, v => {
 					if (set_has(game.battle.routed_vassals, v)) {
