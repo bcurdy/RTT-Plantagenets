@@ -3142,12 +3142,12 @@ function goto_lancaster_event_welsh_rebellion() {
 	}
 
 	if (can_play_remove_troops) {
-		game.state = "welsh_rebellion_remove_troops"
+		push_state("welsh_rebellion_remove_troops")
 		game.who = NOBODY
 		game.count = 0
 	}
 	else if (can_play_remove_favour) {
-		game.state = "welsh_rebellion_remove_favour"
+		push_state("welsh_rebellion_remove_favour")
 		game.who = NOBODY
 		game.count = 0
 	}
@@ -3247,6 +3247,10 @@ states.welsh_rebellion_remove_favour = {
 }
 
 function end_welsh_rebellion() {
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
+		if (is_lord_in_wales(lord) && !has_no_unrouted_forces(lord))
+			disband_lord(lord, false)
+	}
 	game.count = 0
 	game.who = NOBODY
 	end_immediate_event()
