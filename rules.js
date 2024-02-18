@@ -8253,6 +8253,21 @@ states.warden_of_the_marches = {
 		for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; lord++) {
 			if (get_lord_locale(lord) === game.battle.where) {
 				set_lord_locale(lord, loc)
+				if (!lord_has_unrouted_troops(lord)) {
+					disband_lord(lord, false)
+				}
+				else {
+					set_lord_forces(lord, RETINUE, 1)
+				}
+				if (get_lord_routed_forces(lord, x) > 0) {
+					set_lord_routed_forces(lord, x, 0)
+				}
+				for_each_vassal_with_lord(lord, v => {
+					if (set_has(game.battle.routed_vassals, v)) {
+						array_remove(game.battle.routed_vassals, v)
+						disband_vassal(v)
+					}
+				})
 			}
 		}
 		logi(`Moved to ${data.locales[loc].name}`)
