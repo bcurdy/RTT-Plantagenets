@@ -11164,10 +11164,15 @@ function goto_disembark() {
 function end_disembark() {
 	game.who = NOBODY
 	set_active_enemy()
-	if (game.active === P1)
+	if (game.active === P1 && has_lords_at_sea())
 		goto_disembark()
-	else
+	else if (game.active === P2 && has_lords_at_sea()) {
+		goto_disembark()
+	}
+	else {
+		set_active(P1)
 		goto_game_end()
+	}
 }
 
 function do_disembark() {
