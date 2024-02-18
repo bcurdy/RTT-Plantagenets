@@ -3157,7 +3157,7 @@ function goto_lancaster_event_welsh_rebellion() {
 }
 
 states.welsh_rebellion_remove_troops = {
-	inactive: "Welsh Rebellion - Remove troops",
+	inactive: "Welsh Rebellion \u2014 Remove troops",
 	prompt() {
 		view.prompt = `Remove 2 Troops from each enemy Lord in Wales.`
 		let done = true
@@ -3225,7 +3225,7 @@ states.welsh_rebellion_remove_troops = {
 }
 
 states.welsh_rebellion_remove_favour = {
-	inactive: "Robin's Rebellion",
+	inactive: "Welsh Rebellion \u2014 Remove Favour",
 	prompt() {
 		view.prompt = `Select up to ${2-game.count} Locales in Wales.`
 		for (let loc = first_locale; loc <= last_locale; loc++) {
