@@ -4141,6 +4141,8 @@ function can_play_parliaments_truce() {
 }
 
 function can_play_rebel_supply_depot() {
+	if (game.active === YORK) 
+		return false
 	if (game.group) {
 		for (let lord of game.group) {
 			if (get_lord_moved(lord) && is_seaport(get_lord_locale(game.command))) {
