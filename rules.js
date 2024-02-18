@@ -5873,7 +5873,7 @@ function can_action_parley_command() {
 	if (game.actions <= 0)
 		return false
 
-	if (is_lord_at_sea(game.active))
+	if (is_lord_at_sea(game.command))
 		return false
 
 	if (!is_first_action() && game.active === YORK && is_event_in_play(EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT))
@@ -8209,6 +8209,16 @@ function prompt_battle_events_death() {
 // === EVENT : WARDEN OF THE MARCHES ===
 
 function can_play_warden_of_the_marches() {
+	// TOOD : Maybe a bug with blocked ford/exile ?
+	let can_play = false
+	for (let loc = first_locale; loc <= last_locale; loc++) {
+		if (is_friendly_locale(loc) && is_north(loc) && loc !== game.battle.where) {
+			can_play = true
+		}
+	}
+	if (!can_play) {
+		return false
+	}
 	// if blocked ford then flee
 	if (is_north(game.where))
 		return true 
