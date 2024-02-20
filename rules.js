@@ -1640,7 +1640,8 @@ exports.setup = function (seed, scenario, options) {
 			swap_battle_attacker:0,
 			supply_depot:0,
 			loyalty_and_trust:0,
-			warden_of_the_marches:0
+			warden_of_the_marches:0,
+			naval_blockade:0
 		},
 
 		command: NOBODY,
@@ -6015,6 +6016,11 @@ states.parley = {
 		push_undo()
 		game.where = loc
 		add_influence_check_distance(map_get(game.parley, loc, 0))
+		if (is_levy_phase() && check_naval_blockade("levy parley", loc)) {
+			roll_naval_blockade()
+		}
+		if (is_campaign_phase() && check_naval_blockade("campaign parley", loc))
+			roll_naval_blockade()
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
@@ -7105,7 +7111,6 @@ function search_tax(result, start) {
 			}
 		}
 	}
-
 	if (result)
 		return result
 	else
@@ -7562,6 +7567,51 @@ function end_exile_pact() {
 
 // === CAPABILITY : NAVAL BLOCKADE
 
+function parley_through_sea(start, locale) {
+	// Only entered in levy
+	let ships = get_shared_assets(start, SHIP)
+
+	if (ships === 0) {
+		game.flags.naval_blockade = -1
+	}
+	
+	search_dist.fill(0)
+	search_seen.fill(0)
+	search_seen[start] = 1
+
+	let queue = [ start ]
+	while (queue.length > 0) {
+		let here = queue.shift()
+		let dist = search_dist[here]
+		let next_dist = dist + 1
+
+		if (is_friendly_locale(here)) {
+			for (let next of data.locales[here].adjacent) {
+				if (!search_seen[next]) {
+					search_seen[next] = 1
+					search_dist[next] = next_dist
+					queue.push(next)
+					if (next === locale) {
+						game.flags.naval_blockade = -1
+					}
+				}
+			}
+			if (ships > 0 && is_seaport(here)) {
+				for (let next of find_ports(here)) {
+					if (!search_seen[next]) {
+						search_seen[next] = 1
+						search_dist[next] = next_dist
+						queue.push(next)
+						if (next === locale && game.flags.naval_blockade !== -1) {
+							game.flags.naval_blockade = 1
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 function check_naval_blockade(action, locale) {
 	let ports = [data.port_1, data.port_2, data.port_3]
 	game.what = action
@@ -7569,6 +7619,18 @@ function check_naval_blockade(action, locale) {
 	if (!lord_has_capability(LORD_WARWICK_Y, AOW_YORK_NAVAL_BLOCKADE) || !is_seaport(get_lord_locale(LORD_WARWICK_Y)) || is_exile(get_lord_locale(LORD_WARWICK_Y))) {
 		return false
 	}
+
+	if (action === "levy parley") {
+		parley_through_sea(get_lord_locale(game.who), locale)
+		if (game.flags.naval_blockade !== 1) {
+			return false
+		}
+	}
+
+	if (action === "campaign parley" && data.locales[locale].adjacent.includes(get_lord_locale(game.command))) {
+			return false
+	}
+	
 	for (let port of ports) {
 		if (set_has(port, get_lord_locale(LORD_WARWICK_Y)) && set_has(port, locale)) {
 			return true
@@ -7594,6 +7656,12 @@ states.naval_blockade = {
 		log(`Attempt to counter Naval Blockade ${success ? "Failed" : "Successful"}: (1-2) ${success ? HIT[roll] : MISS[roll]}`)
 		if (success) {
 			logi(`Successfully overran C${AOW_YORK_NAVAL_BLOCKADE}`)
+			if (game.what === "levy parley") {
+				game.flags.naval_blockade = -1
+			}
+			if (game.what === "campaign parley") {
+				game.flags.naval_blockade = -1
+			}
 			if (game.what === "levy ship") {
 				add_lord_assets(game.who, SHIP, 1)
 			}
@@ -7617,6 +7685,13 @@ states.naval_blockade = {
 		}
 		else {
 			logi(`Failed C${AOW_YORK_NAVAL_BLOCKADE}`)
+		}
+		if (game.what === "levy parley") {
+			pop_state()
+			resume_levy_muster_lord()
+		}
+		if (game.what === "campaign parley") {
+			resume_command()
 		}
 		if (game.what === "levy ship") {
 			pop_state()
