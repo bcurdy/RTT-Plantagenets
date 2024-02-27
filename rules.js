@@ -5973,6 +5973,7 @@ function goto_parley() {
 
 function end_parley() {
 	pop_state()
+	game.flags.naval_blockade = 0
 	game.where = NOWHERE
 	game.parley = NOTHING
 	if (game.flags.free_parley_henry > 0 && game.who === LORD_HENRY_VI) {
@@ -7596,6 +7597,15 @@ function parley_through_sea(start, locale) {
 					}
 				}
 			}
+		}
+	}
+	queue = [ start ]
+	while (queue.length > 0) {
+		let here = queue.shift()
+		let dist = search_dist[here]
+		let next_dist = dist + 1
+
+		if (is_friendly_locale(here)) {
 			if (ships > 0 && is_seaport(here)) {
 				for (let next of find_ports(here)) {
 					if (!search_seen[next]) {
