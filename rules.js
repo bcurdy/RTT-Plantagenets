@@ -1287,14 +1287,14 @@ function is_sea(loc) {
 }
 
 function is_favour_friendly(loc) {
-	if (game.active == YORK)
+	if (game.active === YORK)
 		return has_favoury_marker(loc)
 	else
 		return has_favourl_marker(loc)
 }
 
 function is_favour_enemy(loc, side) {
-	if (side == LANCASTER)
+	if (side === LANCASTER)
 		return has_favoury_marker(loc)
 	else
 		return has_favourl_marker(loc)
@@ -7686,7 +7686,7 @@ function check_naval_blockade(action, locale) {
 	}
 
 	if (action === "campaign parley" && data.locales[locale].adjacent.includes(get_lord_locale(game.command))) {
-			return false
+		return false
 	}
 	
 	for (let port of ports) {
