@@ -356,7 +356,7 @@ const AOW_LANCASTER_IN_THE_NAME_OF_THE_KING = L11
 const AOW_LANCASTER_COMMISION_OF_ARRAY = L12 // TODO
 const AOW_LANCASTER_EXPERT_COUNSELLORS = L13
 const AOW_LANCASTER_PERCYS_POWER = L14
-const AOW_LANCASTER_KINGS_PARLEY = L15 // TODO
+const AOW_LANCASTER_KINGS_PARLEY = L15
 const AOW_LANCASTER_NORTHMEN = L16
 const AOW_LANCASTER_MARGARET = L17
 const AOW_LANCASTER_COUNCIL_MEMBER = L18
@@ -393,7 +393,7 @@ const AOW_YORK_YORKISTS_NEVER_WAIT = Y11
 const AOW_YORK_SOLDIERS_OF_FORTUNE = Y12
 const AOW_YORK_SCOURERS = Y13
 const AOW_YORK_BURGUNDIANS = [ Y14, Y23 ]
-const AOW_YORK_NAVAL_BLOCKADE = Y15 // TODO AFTER ALL OTHER ACTIONS
+const AOW_YORK_NAVAL_BLOCKADE = Y15 // TODO DEBUG pop_state() going into parley and not after province selection 
 const AOW_YORK_BELOVED_WARWICK = Y16
 const AOW_YORK_ALICE_MONTAGU = Y17
 const AOW_YORK_IRISHMEN = Y18
@@ -417,8 +417,7 @@ const AOW_YORK_VANGUARD = Y36 // TODO AFTER ALL OTHER BATTLE PROMPTS TO SEE WHER
 const AOW_YORK_PERCYS_NORTH2 = Y37
 
 const EVENT_LANCASTER_LEEWARD_BATTLE_LINE = L1
-const EVENT_LANCASTER_FLANK_ATTACK = L2 // TODO
-// Hold event. Play during the intercept state EXCEPT when Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
+const EVENT_LANCASTER_FLANK_ATTACK = L2
 const EVENT_LANCASTER_ESCAPE_SHIP = L3
 const EVENT_LANCASTER_BE_SENT_FOR = L4
 const EVENT_LANCASTER_SUSPICION = L5
@@ -428,18 +427,7 @@ const EVENT_LANCASTER_FORCED_MARCHES = L8
 const EVENT_LANCASTER_RISING_WAGES = L9
 const EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT = L10
 
-const EVENT_LANCASTER_BLOCKED_FORD = L11 // TODO
-// Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
-// basically at best, you want the player that when he approaches,
-// he plays BLOCKED ford or not.
-// but without the enemy knowing this.
-// Then, the opponent may play PARLIAMENT'S TRUCE/KING'S PARLEY to cancel that approach
-// and consider BLOCKED FORD to not have been used.
-// Blocked ford basically force the player being approached to choose battle rather
-// then exile.
-// Be careful about interaction aswell with EVENT FLANK ATTACK
-// also note that there is a confirm_approach_sail state aswell.
-
+const EVENT_LANCASTER_BLOCKED_FORD = L11
 const EVENT_LANCASTER_RAVINE = L12 // TODO
 // Play at start of Battle after BATTLE ARRAY basically like Nevsky's Ambush
 const EVENT_LANCASTER_ASPIELLES = L13
@@ -449,10 +437,7 @@ const EVENT_LANCASTER_WARDEN_OF_THE_MARCHES = L16
 const EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART = L17
 const EVENT_LANCASTER_PARLIAMENT_VOTES = L18
 const EVENT_LANCASTER_HENRYS_PROCLAMATION = L19
-const EVENT_LANCASTER_PARLIAMENTS_TRUCE = L20 // TODO
-// Can be played during Levy and Campaign
-// Read L11 Basically it forbids to go to locales where enemy are as long as
-// this event is active (until end of this campaign)
+const EVENT_LANCASTER_PARLIAMENTS_TRUCE = L20
 const EVENT_LANCASTER_FRENCH_FLEET = L21
 const EVENT_LANCASTER_FRENCH_TROOPS = L22
 const EVENT_LANCASTER_WARWICKS_PROPAGANDA = L23
@@ -472,8 +457,7 @@ const EVENT_LANCASTER_TALBOT_TO_THE_RESCUE = L36
 const EVENT_LANCASTER_THE_EARL_OF_RICHMOND = L37
 
 const EVENT_YORK_LEEWARD_BATTLE_LINE = Y1
-const EVENT_YORK_FLANK_ATTACK = Y2 // TODO
-// Hold event. Play during the intercept state EXCEPT when Y12 or L20 Parliament truce is active. Automatic success. Instant battle with playing side as attacker
+const EVENT_YORK_FLANK_ATTACK = Y2
 const EVENT_YORK_ESCAPE_SHIP = [Y3 , Y9]
 const EVENT_YORK_JACK_CADE = Y4
 const EVENT_YORK_SUSPICION = Y5
@@ -482,31 +466,15 @@ const EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT = Y7
 const EVENT_YORK_EXILE_PACT = Y8
 const EVENT_YORK_TAX_COLLECTORS = Y10
 
-const EVENT_YORK_BLOCKED_FORD = Y11 // TODO
-// Hold event. Play during APPROACH. This one is a bit tricky as it has odd interaction with EVENT PARLIAMENT'S TRUCE and CAPABILITY KING'S PARLEY
-// basically at best, you want the player that when he approaches,
-// he plays BLOCKED ford or not.
-// but without the enemy knowing this.
-// Then, the opponent may play PARLIAMENT'S TRUCE/KING'S PARLEY to cancel that approach
-// and consider BLOCKED FORD to not have been used.
-// Blocked ford basically force the player being approached to choose battle rather
-// then exile.
-// Be careful about interaction aswell with EVENT FLANK ATTACK
-
-const EVENT_YORK_PARLIAMENTS_TRUCE = Y12 // TODO
-// Can be played during Levy and Campaign
-// Read L11 Basically it forbids to go to locales where enemy are as long as
-// this event is active (until end of this campaign)
+const EVENT_YORK_BLOCKED_FORD = Y11
+const EVENT_YORK_PARLIAMENTS_TRUCE = Y12
 const EVENT_YORK_ASPIELLES = Y13
 const EVENT_YORK_RICHARD_OF_YORK = Y14
-const EVENT_YORK_LONDON_FOR_YORK = Y15
+const EVENT_YORK_LONDON_FOR_YORK = Y15 // TODO PROTECTION AND UI
 const EVENT_YORK_THE_COMMONS = Y16
 const EVENT_YORK_SHEWOLF_OF_FRANCE = Y17
 const EVENT_YORK_SUCCESSION = Y18
-const EVENT_YORK_CALTROPS = Y19 // TODO
-// Play in Battle after BATTLE ARRAY. Select a FRIENDLY LORD
-// for him to produce 2 more melee hits in his engagements (he may chose 1 on 2 different engagements)
-// the lancastrianw ill himself put the hits between his lords
+const EVENT_YORK_CALTROPS = Y19
 const EVENT_YORK_YORKIST_PARADE = Y20
 const EVENT_YORK_SIR_RICHARD_LEIGH = Y21
 const EVENT_YORK_LOYALTY_AND_TRUST = Y22
@@ -7695,12 +7663,20 @@ states.naval_blockade = {
 		}
 		else {
 			logi(`Failed C${AOW_YORK_NAVAL_BLOCKADE}`)
+			if (game.what === "levy parley") {
+				pop_state()
+			}
+			if (game.what === "campaign parley") {
+				pop_state()
+			}
 		}
 		if (game.what === "levy parley") {
 			pop_state()
 			resume_levy_muster_lord()
 		}
 		if (game.what === "campaign parley") {
+			pop_state()
+			--game.count
 			resume_command()
 		}
 		if (game.what === "levy ship") {
@@ -8493,7 +8469,7 @@ function action_battle_events(c) {
 			game.state = "for_trust_not_him"
 			break
 		case EVENT_LANCASTER_RAVINE:
-			//	game.state = "ravine"
+			game.state = "ravine"
 			break
 		case EVENT_YORK_LEEWARD_BATTLE_LINE:
 			break
@@ -8509,6 +8485,28 @@ function action_battle_events(c) {
 			break
 	}
 }
+
+// === EVENT : RAVINE ===
+
+states.ravine = {
+	inactive: "Ravine",
+	prompt() {
+		view.prompt = "Ravine: Select an enemy lord to ignore that Lord round 1"
+		for (let lord of game.battle.array) {
+			if (is_enemy_lord(lord)) {
+				gen_action_lord(lord)
+			}
+		}
+	},
+	lord(lord) {
+		push_undo()
+		game.battle.ravine = lord
+		resume_battle_events()
+		logi(`${data.lords[lord].name} ignored for Engage and Strike Round 1`)
+		logevent(EVENT_LANCASTER_RAVINE)
+	},
+}
+
 
 // === EVENT : CALTROPS ===
 
@@ -8530,6 +8528,7 @@ states.caltrops = {
 		logevent(EVENT_YORK_CALTROPS)
 	},
 }
+
 // === EVENT : SUSPICION ===
 
 function can_play_suspicion() {
