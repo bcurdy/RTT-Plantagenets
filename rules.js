@@ -5748,7 +5748,7 @@ function do_influence_check() {
 	let roll = roll_die()
 	let success
 
-	if (roll === 1)
+	if (roll === 1 || rating === 6)
 		success = true
 	else if (roll === 6)
 		success = false
@@ -6597,7 +6597,6 @@ states.blocked_ford = {
 		goto_battle()
 	},
 	pass() {
-		set_active_enemy()
 		goto_exiles()
 	},
 }
@@ -8444,7 +8443,6 @@ states.defender_events = {
 	inactive: "Defender Events",
 	prompt() {
 		view.prompt = "Defender may play Events."
-
 		prompt_battle_events()
 
 		// defender only events
@@ -8497,6 +8495,11 @@ states.ravine = {
 				gen_action_lord(lord)
 			}
 		}
+		for (let lord of game.battle.reserves) {
+			if (is_enemy_lord(lord)) {
+				gen_action_lord(lord)
+			}
+		}
 	},
 	lord(lord) {
 		push_undo()
@@ -8506,7 +8509,6 @@ states.ravine = {
 		logevent(EVENT_LANCASTER_RAVINE)
 	},
 }
-
 
 // === EVENT : CALTROPS ===
 
@@ -8742,19 +8744,6 @@ function end_for_trust_not_him() {
 	game.who = NOBODY
 	game.which = NOTHING
 	resume_battle_events()
-}
-
-// === BATTLE: RAVINE ===
-
-states.ravine = {
-	inactive: "Ravine",
-	prompt() {
-		view.prompt = "Ravine: Select an enemy lord : he is ignored Round 1"
-		view.actions.done = 1
-	},
-	done() {
-		end_defender_events()
-	},
 }
 
 // === BATTLE: FLEE ===
