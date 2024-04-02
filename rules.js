@@ -353,7 +353,7 @@ const AOW_LANCASTER_HAY_WAINS = L8
 const AOW_LANCASTER_QUARTERMASTERS = L9
 const AOW_LANCASTER_CHAMBERLAINS = L10
 const AOW_LANCASTER_IN_THE_NAME_OF_THE_KING = L11
-const AOW_LANCASTER_COMMISION_OF_ARRAY = L12 // TODO
+const AOW_LANCASTER_COMMISION_OF_ARRAY = L12
 const AOW_LANCASTER_EXPERT_COUNSELLORS = L13
 const AOW_LANCASTER_PERCYS_POWER = L14
 const AOW_LANCASTER_KINGS_PARLEY = L15
@@ -428,8 +428,7 @@ const EVENT_LANCASTER_RISING_WAGES = L9
 const EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT = L10
 
 const EVENT_LANCASTER_BLOCKED_FORD = L11
-const EVENT_LANCASTER_RAVINE = L12 // TODO
-// Play at start of Battle after BATTLE ARRAY basically like Nevsky's Ambush
+const EVENT_LANCASTER_RAVINE = L12
 const EVENT_LANCASTER_ASPIELLES = L13
 const EVENT_LANCASTER_SCOTS = L14
 const EVENT_LANCASTER_HENRY_PRESSURES_PARLIAMENT = L15
@@ -1380,10 +1379,17 @@ function is_friendly_locale(loc) {
 }
 
 function can_add_troops(_lordwho, locale) {
-	if (has_exhausted_marker(locale) || is_exile(locale))
-		return false
-	else
+	if (!has_exhausted_marker(locale) && !is_exile(locale))
 		return true
+	return false
+}
+
+function can_add_troops_coa(lordwho, locale) {
+	for (let next of data.locales[locale].adjacent) {
+		if (is_friendly_locale(next) && lord_has_capability(lordwho, AOW_LANCASTER_COMMISION_OF_ARRAY) && (!has_exhausted_marker(locale) && !is_exile(locale)))
+			return true
+	}
+	return false
 }
 
 function can_add_troops_beloved_warwick(lordwho, locale) {
@@ -4676,6 +4682,9 @@ states.levy_muster_lord = {
 
 				if (can_add_troops_sof(game.who, here))
 					view.actions.soldiers_of_fortune = 1
+
+				if (can_add_troops_coa(game.who, here))
+					view.actions.commission_of_array = 1
 			}
 
 			if (game.count === 0 && lord_has_capability(game.who, AOW_LANCASTER_THOMAS_STANLEY) && can_add_troops(game.who, here)) {
@@ -4814,6 +4823,10 @@ states.levy_muster_lord = {
 		push_undo()
 		set_lord_unfed(game.who, 1)
 		push_state("soldier_of_fortune")
+	},
+	commission_of_array() {
+		push_undo()
+		push_state("commission_of_array")
 	},
 
 	capability() {
@@ -5115,6 +5128,74 @@ states.soldier_of_fortune = {
 }
 
 function end_soldiers_of_fortune() {
+	pop_state()
+	resume_levy_muster_lord()
+}
+
+
+// === CAPABILITY: COMMISSION OF ARRAY
+
+states.commission_of_array = {
+	inactive: "Levy Troops",
+	prompt() {
+		view.prompt = `Lord troops adjacent to ${lord_name[game.who]}.`
+		let done = true
+		let here = get_lord_locale(game.who)
+		if (done) {
+			for (let next of data.locales[here].adjacent) {
+				if (is_friendly_locale(next) && lord_has_capability(game.who, AOW_LANCASTER_COMMISION_OF_ARRAY) && (!has_exhausted_marker(next) && !is_exile(next))) {
+					done = false
+					gen_action_locale(next)
+				}
+			}
+		}
+		// Done
+		if (done) {
+			view.prompt = "Commission of Array: Done."
+			view.actions.end_coa = 1
+		}
+	},
+	locale(loc) {
+		push_undo()
+		let loc_type = data.locales[loc].type
+		deplete_locale(loc)
+
+		switch (loc_type) {
+			case "calais":
+				add_lord_forces(game.who, MEN_AT_ARMS, 2)
+				add_lord_forces(game.who, LONGBOWMEN, 1)
+				break
+			case "london":
+				add_lord_forces(game.who, MEN_AT_ARMS, 1)
+				add_lord_forces(game.who, LONGBOWMEN, 1)
+				add_lord_forces(game.who, MILITIA, 1)
+				break
+			case "harlech":
+				add_lord_forces(game.who, MEN_AT_ARMS, 1)
+				add_lord_forces(game.who, LONGBOWMEN, 2)
+				break
+			case "city":
+				add_lord_forces(game.who, LONGBOWMEN, 1)
+				add_lord_forces(game.who, MILITIA, 1)
+				break
+			case "town":
+				add_lord_forces(game.who, MILITIA, 2)
+				break
+			case "fortress":
+				add_lord_forces(game.who, MEN_AT_ARMS, 1)
+				add_lord_forces(game.who, MILITIA, 1)
+				break
+		}
+		if (game.flags.free_levy === 1) {
+			++game.count
+			game.flags.free_levy = 0
+		}
+		end_commission_of_array()	
+	},
+	card: action_held_event,
+}
+
+function end_commission_of_array() {
 	pop_state()
 	resume_levy_muster_lord()
 }

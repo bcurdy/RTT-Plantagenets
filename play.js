@@ -1644,6 +1644,8 @@ function on_update() {
 	action_button("levy_beloved_warwick", "Beloved Warwick")
 	action_button("levy_irishmen", "Irishmen")
 	action_button("soldiers_of_fortune", "Soldiers of Fortune")
+	action_button("commission_of_array", "Commission of Array")
+
 
 	action_button("capability", "Capability")
 
