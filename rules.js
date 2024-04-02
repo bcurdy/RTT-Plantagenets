@@ -8968,7 +8968,10 @@ states.reposition_center = {
 // === BATTLE: STRIKE ===
 
 function filled(pos) {
-	return game.battle.array[pos] !== NOBODY
+	if (game.battle.array[pos] !== NOBODY && !ravine_check(game.battle.ravine, pos)) {
+		return true
+	}
+	return false
 }
 
 const battle_strike_positions = [ D1, D2, D3, A1, A2, A3 ]
@@ -9057,6 +9060,12 @@ function has_strike(pos) {
 }
 
 // === BATTLE: ENGAGEMENTS
+
+function ravine_check(lord,pos) {
+	if (game.battle.array[pos] === lord)
+		return true
+	return false
+}
 
 function determine_engagements() {
 	let center = [ A2, D2 ]
@@ -9669,6 +9678,7 @@ function goto_end_battle_round() {
 // === BATTLE: NEW ROUND ===
 
 function end_battle_round() {
+	game.battle.ravine = NOBODY
 	let attacker_loser = null
 	set_active_attacker()
 	if (has_no_unrouted_forces()) {
