@@ -1037,7 +1037,7 @@ function remove_card_scenario(c) {
 	//TODO: Remove card in scenario
 }
 
-function is_card_in_scenario() {
+function is_card_in_scenario(_c) {
 	// TODO: Cards setup
 	return true
 }
@@ -1047,7 +1047,7 @@ function list_deck() {
 	let first_card = game.active === YORK ? first_york_card : first_lancaster_card
 	let last_card = game.active === YORK ? last_york_card : last_lancaster_card
 	for (let c = first_card; c <= last_card; ++c)
-		if (!is_card_in_use(c) && is_card_in_scenario())
+		if (!is_card_in_use(c) && is_card_in_scenario(c))
 			deck.push(c)
 	return deck
 }
