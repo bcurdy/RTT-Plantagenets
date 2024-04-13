@@ -54,15 +54,6 @@ const scenario_last_turn = {
 	"I-III. Wars of the Roses": 15,
 }
 
-function should_remove_Y28_event_card() {
-	return game.scenario !== "I-III. Wars of the Roses"
-}
-
-function has_Y28_happened() {
-	//TODO: Scenario IIY and IIL when Y28 happens.
-	return false
-}
-
 // unit types
 const RETINUE = 0
 const VASSAL = 1
@@ -1020,14 +1011,6 @@ function is_card_in_use(c) {
 	return false
 }
 
-function add_card_scenario(c) {
-	// TODO: Add card in scenario
-}
-
-function remove_card_scenario(c) {
-	//TODO: Remove card in scenario
-}
-
 function is_card_in_scenario(_c) {
 	// TODO: Cards setup
 	return true
@@ -1888,6 +1871,26 @@ function setup_ItoIII() {
 	setup_vassals()
 }
 
+// === CAMPAIGN GAME -- NOT IMPLEMENTED YET ===
+/*
+
+function should_remove_Y28_event_card() {
+	return game.scenario !== "I-III. Wars of the Roses"
+}
+
+function has_Y28_happened() {
+	//TODO: Scenario IIY and IIL when Y28 happens.
+	return false
+}
+
+function add_card_scenario(c) {
+	// TODO: Add card in scenario
+}
+
+function remove_card_scenario(c) {
+	//TODO: Remove card in scenario
+}
+
 function setup_II_Y() {
 	game.turn = 1 << 1
 	game.scenario = "IIY. The Kingmaker"
@@ -2531,6 +2534,8 @@ function get_main_lancaster_heir() {
 	if (!is_lord_in_play(LORD_HENRY_VI) && !is_lord_in_play(LORD_MARGARET) && !is_lord_in_play(LORD_SOMERSET_1) && !is_lord_in_play(LORD_SOMERSET_2) && !is_lord_in_play(LORD_HENRY_TUDOR) && is_lord_in_play(LORD_WARWICK_L))
 		return LORD_WARWICK_L
 }
+
+*/
 
 function goto_setup_lords() {
 	// setup will be used in some scenarios
