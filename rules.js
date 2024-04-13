@@ -42,7 +42,7 @@ exports.scenarios = [
 	"Ic. Somerset's Return",
 	"II. Warwicks' Rebellion",
 	"III. My Kingdom for a Horse",
-	"I-III. Wars of the Roses",
+// TODO	"I-III. Wars of the Roses",
 ]
 
 const scenario_last_turn = {
