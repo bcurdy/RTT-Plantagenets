@@ -6414,9 +6414,7 @@ states.intercept = {
 		view.prompt = `Choose lord to intercept moving lords?`
 		let to = get_lord_locale(game.command)
 
-		// TODO : FLANK ATTACK through the held intercept
-		// or held event but with more conditions (for example state = "intercept")
-		// prompt_held_event_intercept()
+		prompt_held_event_intercept()
 
 		if (game.who === NOBODY) {
 			for (let next of data.locales[to].not_paths)
@@ -6445,6 +6443,10 @@ states.intercept = {
 		} else {
 			set_toggle(game.intercept_group, lord)
 		}
+	},
+	card(c) {
+		push_undo()
+		play_held_event(c)
 	},
 	pass() {
 		set_active_enemy()
