@@ -45,15 +45,6 @@ exports.scenarios = [
 	"I-III. Wars of the Roses",
 ]
 
-const scenario_first_turn = {
-	"Ia. Henry VI": 1,
-	"Ib. Towton": 1,
-	"Ic. Somerset's Return": 5,
-	"II. Warwicks' Rebellion": 1,
-	"III. My Kingdom for a Horse": 9,
-	"I-III. Wars of the Roses": 1,
-}
-
 const scenario_last_turn = {
 	"Ia. Henry VI": 15,
 	"Ib. Towton": 2,
@@ -11515,10 +11506,6 @@ function logcap(cap) {
 
 function logi(msg) {
 	game.log.push(">" + msg)
-}
-
-function logii(msg) {
-	game.log.push(">>" + msg)
 }
 
 function log_h1(msg) {
