@@ -2544,7 +2544,6 @@ function get_main_lancaster_heir() {
 function goto_setup_lords() {
 	// setup will be used in some scenarios
 	end_setup_lords()
-	end_setup_lords()
 }
 
 states.setup_lords = {
