@@ -10646,12 +10646,12 @@ function goto_york_event_shewolf_of_france() {
 	let can_play = false
 	for (let v = first_vassal; v <= last_vassal; v++) {
 		if (is_vassal_mustered_with_friendly_lord(v)) {
-			set_vassal_moved(v, 1)
 			can_play = true
 		}
 	}
 	if (can_play) {
 		game.state = "she_wolf"
+		game.event_data = []
 		game.who = NOBODY
 	} else {
 		logi(`No Effect`)
@@ -10659,50 +10659,29 @@ function goto_york_event_shewolf_of_france() {
 	}
 }
 
-// TO TRACK VASSALS DURING EVENTS
-
-function get_vassal_moved(v) {
-	// TODO: does it clash with lords moved?
-	// TODO: or use game.count instead?
-	return map_get(game.pieces.moved, v, 0)
-}
-
-function set_vassal_moved(v, x) {
-	// TODO: does it clash with lords moved?
-	map_set(game.pieces.moved, v, x)
-}
-
-function pay_vassal_shewolf(vassal) {
-	if (current_turn() < 16)
-		set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), get_vassal_service(vassal) + 1)
-}
-
 states.she_wolf = {
 	inactive: "She-Wolf of France",
 	prompt() {
+		view.prompt = "Shift each Yorkist Vassal's Calendar marker 1 box right."
 		let done = true
-		view.prompt = "You may shift your vassals one calendar box."
-		if (game.who === NOBODY) {
-			for (let v = first_vassal; v <= last_vassal; v++) {
-				if (get_vassal_moved(v) && is_vassal_mustered_with_friendly_lord(v)) {
-					gen_action_vassal(v)
-					done = false
-				}
-			}
-			if (done) {
-				view.actions.done = 1
+		for (let v = first_vassal; v <= last_vassal; v++) {
+			if (!set_has(game.event_data, v) && is_vassal_mustered_with_friendly_lord(v)) {
+				gen_action_vassal(v)
+				done = false
 			}
 		}
+		if (done)
+			view.actions.done = 1
 	},
 	vassal(v) {
 		push_undo()
-		game.who = v
-		pay_vassal_shewolf(game.who)
-		set_vassal_moved(v, 0)
+		if (current_turn() < 16)
+			set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), get_vassal_service(vassal) + 1)
+		set_add(game.event_data, v)
 		logi(`Vassal ${data.vassals[v].name} shifted one calendar box`)
-		game.who = NOBODY
 	},
 	done() {
+		game.event_data = 0
 		end_immediate_event()
 	},
 }
