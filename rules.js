@@ -3,7 +3,6 @@
 // TODO: "approach" pause when about to move into intercept range?
 // TODO: log end victory conditions at scenario start
 // Check all push/clear_undo
-// TODO : Check BUG done visible in Death of Disband despite being false
 // TODO: check flank attack
 
 let game = null
@@ -6800,9 +6799,7 @@ function goto_death_or_disband() {
 }
 
 function end_death_or_disband() {
-
 	set_active_enemy()
-
 	if (has_defeated_lords()) {
 		goto_death_or_disband()
 	} else {
@@ -6824,7 +6821,6 @@ function prompt_battle_events_death() {
 		if (can_play_escape_ship())
 			gen_action_card_if_held(EVENT_YORK_ESCAPE_SHIP)
 	}
-	view.actions.done = 1
 }
 
 states.death_or_disband = {
@@ -6839,14 +6835,12 @@ states.death_or_disband = {
 			if (is_friendly_lord(lord)) {
 				gen_action_lord(lord)
 				done = false
-				view.actions.done = 0 // That shouldn't necessary but it is
 			}
 		}
 		for (let lord of game.battle.routed) {
 			if (is_friendly_lord(lord)) {
 				gen_action_lord(lord)
 				done = false
-				view.actions.done = 0 // That shouldn't necessary but it is ?
 			}
 		}
 		if (game.flags.warden_of_the_marches && game.active === LANCASTER) {
