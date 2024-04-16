@@ -863,6 +863,18 @@ function set_lord_calendar(lord, turn) {
 	set_lord_locale(lord, CALENDAR + turn)
 }
 
+function set_lord_in_exile(lord) {
+	game.pieces.in_exile = pack1_set(game.pieces.in_exile, lord, 1)
+}
+
+function get_lord_in_exile(lord) {
+	return pack1_get(game.pieces.in_exile, lord)
+}
+
+function remove_lord_from_exile(lord) {
+	game.pieces.in_exile = pack1_set(game.pieces.in_exile, lord, 0)
+}
+
 function get_lord_capability(lord, n) {
 	return map2_get(game.pieces.capabilities, lord, n, NOTHING)
 }
@@ -2364,7 +2376,6 @@ function end_levy_muster() {
 	if (game.active === P2)
 		goto_levy_muster()
 	else
-		//goto_levy_call_to_arms()
 		goto_levy_discard_events()
 }
 
@@ -2528,6 +2539,7 @@ states.levy_muster_lord = {
 
 		view.actions.done = 1
 	},
+
 	lord(other) {
 		push_undo()
 		goto_levy_muster_lord_attempt(other)
@@ -2555,6 +2567,7 @@ states.levy_muster_lord = {
 		}
 
 	},
+
 	take_cart() {
 		push_undo()
 		add_lord_assets(game.who, CART, 2)
@@ -2564,6 +2577,7 @@ states.levy_muster_lord = {
 			resume_levy_muster_lord()
 		}
 	},
+
 	levy_troops() {
 		push_undo()
 		if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && game.active === YORK) {
@@ -2633,8 +2647,9 @@ states.levy_muster_lord = {
 	soldiers_of_fortune() {
 		push_undo()
 		set_lord_unfed(game.who, 1)
-		push_state("soldier_of_fortune")
+		push_state("soldiers_of_fortune")
 	},
+
 	commission_of_array() {
 		push_undo()
 		push_state("commission_of_array")
@@ -2644,15 +2659,18 @@ states.levy_muster_lord = {
 		push_undo()
 		push_state("muster_capability")
 	},
+
 	parley() {
 		push_undo()
 		goto_parley()
 	},
+
 	loyalty_and_trust() {
 		push_undo()
 		game.count += 3
 		game.flags.loyalty_and_trust = 0
 	},
+
 	done() {
 		set_lord_moved(game.who, 1)
 		pop_state()
@@ -4640,7 +4658,7 @@ function goto_blocked_ford() {
 		return
 	}
 
-	goto_exiles()
+	goto_choose_exile()
 }
 
 states.blocked_ford = {
@@ -4661,25 +4679,25 @@ states.blocked_ford = {
 		goto_battle()
 	},
 	pass() {
-		goto_exiles()
+		goto_choose_exile()
 	},
 }
 
-// === 4.3.5 APPROACH - EXILE ===
+// === 4.3.5 APPROACH - CHOOSE EXILE ===
 
-function goto_exiles() {
+function goto_choose_exile() {
 	let here = get_lord_locale(game.command)
 	if (has_enemy_lord(here)) {
 		spend_all_actions() // end command upon any approach
 		game.where = here
-		game.state = "exiles"
+		game.state = "choose_exile"
 		set_active_enemy()
 	} else {
 		end_march()
 	}
 }
 
-function end_exiles() {
+function end_choose_exile() {
 	if (has_friendly_lord(get_lord_locale(game.command))) {
 		// still some lords not exiled to fight.
 		set_active_enemy()
@@ -4691,7 +4709,7 @@ function end_exiles() {
 	}
 }
 
-states.exiles = {
+states.choose_exile = {
 	inactive: "Exiles",
 	prompt() {
 		view.prompt = "Select Lords to go into Exile."
@@ -4705,32 +4723,20 @@ states.exiles = {
 		exile_lord(lord)
 	},
 	done() {
-		end_exiles()
+		end_choose_exile()
 	},
 }
 
-function set_lord_in_exile(lord) {
-	game.pieces.in_exile = pack1_set(game.pieces.in_exile, lord, 1)
-}
-
-function get_lord_in_exile(lord) {
-	return pack1_get(game.pieces.in_exile, lord)
-}
-
 function exile_lord(lord) {
-	if (!lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME)) {
+	if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME)) {
+		disband_lord(lord, false)
+		set_lord_calendar(lord, current_turn() + 1)
+	} else {
 		set_lord_in_exile(lord)
 		disband_lord(lord, false)
 	}
-	else {
-		disband_lord(lord, false)
-		set_lord_calendar(lord, current_turn() + 1)
-	}
 }
 
-function remove_lord_from_exile(lord) {
-	game.pieces.in_exile = pack1_set(game.pieces.in_exile, lord, 0)
-}
 
 // === 4.3.5 APPROACH - EXILE (SPOILS) ===
 
@@ -8981,7 +8987,7 @@ function lordship_effects(lord) {
 
 // === CAPABILITY: SOLDIERS OF FORTUNE ===
 
-states.soldier_of_fortune = {
+states.soldiers_of_fortune = {
 	inactive: "Levy Troops",
 	prompt() {
 		view.prompt = `Pay 1 Coin for Mercenaries ${lord_name[game.who]}.`
