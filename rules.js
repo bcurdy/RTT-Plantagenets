@@ -3276,8 +3276,10 @@ states.command = {
 			view.actions.merchants = 1
 		if (can_action_agitators())
 			view.actions.agitators = 1
-		if (can_action_exile_pact() && is_york_lord(game.command))
-			view.actions.exile_pact = 1
+
+		if (is_york_lord(game.command))
+			if (can_action_exile_pact())
+				view.actions.exile_pact = 1
 	},
 
 	pass() {
@@ -11141,10 +11143,7 @@ function end_the_commons() {
 // === EVENT (AS ACTION): EXILE PACT ===
 
 function can_action_exile_pact() {
-	if (game.actions <= 0 || !is_event_in_play(EVENT_YORK_EXILE_PACT))
-		return false
-	else
-		return true
+	return game.actions > 0 && is_event_in_play(EVENT_YORK_EXILE_PACT)
 }
 
 function goto_exile_pact() {
@@ -11153,9 +11152,9 @@ function goto_exile_pact() {
 }
 
 states.exile_pact = {
-	inactive: "Exile pact",
+	inactive: "Exile Pact",
 	prompt() {
-		view.prompt = "Exile Pact : place your cylinder in one of your Exile boxes"
+		view.prompt = "Exile Pact: Place your cylinder in a Friendly Exile box."
 		for (let loc of data.exile_boxes) {
 			if (has_favour_in_locale(game.active, loc))
 				gen_action_locale(loc)
