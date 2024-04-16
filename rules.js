@@ -7988,7 +7988,6 @@ exports.setup = function (seed, scenario, options) {
 			exhausted: [],
 			favourl: [],
 			favoury: [],
-			propaganda: [],
 		},
 
 		flags: {
@@ -9953,15 +9952,15 @@ states.french_troops = {
 // === EVENT: WARWICKS PROPAGANDA ===
 
 function add_propaganda_target(loc) {
-	set_add(game.pieces.propaganda, loc)
+	set_add(game.propaganda, loc)
 }
 
 function remove_propaganda_target(loc) {
-	set_delete(game.pieces.propaganda, loc)
+	set_delete(game.propaganda, loc)
 }
 
 function is_propaganda_target(loc) {
-	return set_has(game.pieces.propaganda, loc)
+	return set_has(game.propaganda, loc)
 }
 
 function goto_warwicks_propaganda() {
@@ -9974,7 +9973,8 @@ function goto_warwicks_propaganda() {
 
 	if (can_play) {
 		game.state = "warwicks_propaganda"
-		game.who = NOBODY
+		game.propaganda = []
+		game.where = NOWHERE
 		game.count = 0
 	} else {
 		end_immediate_event()
@@ -10003,7 +10003,7 @@ states.warwicks_propaganda = {
 }
 
 function goto_yorkist_choice() {
-	game.who = NOBODY
+	game.where = NOBODY
 	set_active_enemy()
 	game.state = "warwicks_propaganda_yorkist_choice"
 }
@@ -10013,7 +10013,7 @@ states.warwicks_propaganda_yorkist_choice = {
 	prompt() {
 		view.prompt = `For each Stronghold, Pay 2 influence or Remove favour.`
 		let done = true
-		if (game.who === NOBODY) {
+		if (game.where === NOBODY) {
 			for (let loc = first_locale; loc <= last_locale; loc++) {
 				if (is_propaganda_target(loc)) {
 					gen_action_locale(loc)
@@ -10029,21 +10029,21 @@ states.warwicks_propaganda_yorkist_choice = {
 		}
 	},
 	locale(loc) {
-		game.who = loc
+		game.where = loc
 	},
 	remove_favour() {
 		push_undo()
-		remove_favoury_marker(game.who)
-		remove_propaganda_target(game.who)
-		logi(`Removed favour in ${game.who}`)
-		game.who = NOBODY
+		remove_favoury_marker(game.where)
+		remove_propaganda_target(game.where)
+		logi(`Removed favour in ${game.where}`)
+		game.where = NOBODY
 	},
 	pay() {
 		push_undo()
 		reduce_influence(2)
-		logi(`Paid 2 to keep ${game.who}`)
-		remove_propaganda_target(game.who)
-		game.who = NOBODY
+		logi(`Paid 2 to keep ${game.where}`)
+		remove_propaganda_target(game.where)
+		game.where = NOWHERE
 	},
 	done() {
 		end_warwicks_propaganda()
@@ -10051,7 +10051,8 @@ states.warwicks_propaganda_yorkist_choice = {
 }
 
 function end_warwicks_propaganda() {
-	game.who = NOBODY
+	delete game.propaganda
+	game.where = NOWHERE
 	game.count = 0
 	set_active_enemy()
 	end_immediate_event()
