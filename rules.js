@@ -8038,6 +8038,7 @@ exports.setup = function (seed, scenario, options) {
 		what: NOTHING,
 		which: NOTHING,
 		count: 0,
+		event_data: 0,
 
 		supply: 0,
 		march: 0,
@@ -9908,15 +9909,15 @@ states.french_troops = {
 // === EVENT: WARWICKS PROPAGANDA ===
 
 function add_propaganda_target(loc) {
-	set_add(game.propaganda, loc)
+	set_add(game.event_data, loc)
 }
 
 function remove_propaganda_target(loc) {
-	set_delete(game.propaganda, loc)
+	set_delete(game.event_data, loc)
 }
 
 function is_propaganda_target(loc) {
-	return set_has(game.propaganda, loc)
+	return set_has(game.event_data, loc)
 }
 
 function goto_warwicks_propaganda() {
@@ -9929,7 +9930,7 @@ function goto_warwicks_propaganda() {
 
 	if (can_play) {
 		game.state = "warwicks_propaganda"
-		game.propaganda = []
+		game.event_data = []
 		game.where = NOWHERE
 		game.count = 0
 	} else {
@@ -10007,7 +10008,7 @@ states.warwicks_propaganda_yorkist_choice = {
 }
 
 function end_warwicks_propaganda() {
-	delete game.propaganda
+	game.event_data = 0
 	game.where = NOWHERE
 	game.count = 0
 	set_active_enemy()
