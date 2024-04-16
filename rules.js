@@ -2582,54 +2582,13 @@ states.levy_muster_lord = {
 
 	levy_troops() {
 		push_undo()
+
 		if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && game.active === YORK) {
-			push_state("rising_wages")
+			goto_rising_wages()
+			return
 		}
-		let here = get_lord_locale(game.who)
-		let here_type = data.locales[here].type
-		if (
-			!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS) &&
-			!lord_has_capability(game.who, AOW_YORK_WOODWILLES) &&
-			!chamberlains_eligible_levy(here)
-		)
-			deplete_locale(here)
-		switch (here_type) {
-			case "calais":
-				add_lord_forces(game.who, MEN_AT_ARMS, 2)
-				add_lord_forces(game.who, LONGBOWMEN, 1)
-				break
-			case "london":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, LONGBOWMEN, 1)
-				add_lord_forces(game.who, MILITIA, 1)
-				break
-			case "harlech":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, LONGBOWMEN, 2)
-				break
-			case "city":
-				add_lord_forces(game.who, LONGBOWMEN, 1)
-				add_lord_forces(game.who, MILITIA, 1)
-				break
-			case "town":
-				add_lord_forces(game.who, MILITIA, 2)
-				break
-			case "fortress":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, MILITIA, 1)
-				break
-		}
-		if (game.flags.free_levy === 1) {
-			++game.count
-			game.flags.free_levy = 0
-		}
-		if (eligible_kings_name()) {
-			goto_kings_name("Levy Troops")
-		}
-		if (is_event_in_play(EVENT_YORK_THE_COMMONS) && is_york_lord(game.who))
-			goto_the_commons()
-		else
-			resume_levy_muster_lord()
+
+		do_levy_troops()
 	},
 
 	levy_beloved_warwick() {
@@ -2675,6 +2634,68 @@ states.levy_muster_lord = {
 		set_lord_moved(game.who, 1)
 		pop_state()
 	},
+}
+
+// Check if the levy troops is at vassal seat
+function chamberlains_eligible_levy(locale) {
+	for (let vassal = first_vassal; vassal <= last_vassal; ++vassal)
+		if (is_vassal_mustered_with(vassal, game.who) && lord_has_capability(game.who, AOW_LANCASTER_CHAMBERLAINS)) {
+			if (locale === data.vassals[vassal].seat)
+				return true
+		}
+}
+
+function do_levy_troops() {
+	let here = get_lord_locale(game.who)
+	if (
+		!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS) &&
+		!lord_has_capability(game.who, AOW_YORK_WOODWILLES) &&
+		!chamberlains_eligible_levy(here)
+	)
+		deplete_locale(here)
+
+	let here_type = data.locales[here].type
+	switch (here_type) {
+		case "calais":
+			add_lord_forces(game.who, MEN_AT_ARMS, 2)
+			add_lord_forces(game.who, LONGBOWMEN, 1)
+			break
+		case "london":
+			add_lord_forces(game.who, MEN_AT_ARMS, 1)
+			add_lord_forces(game.who, LONGBOWMEN, 1)
+			add_lord_forces(game.who, MILITIA, 1)
+			break
+		case "harlech":
+			add_lord_forces(game.who, MEN_AT_ARMS, 1)
+			add_lord_forces(game.who, LONGBOWMEN, 2)
+			break
+		case "city":
+			add_lord_forces(game.who, LONGBOWMEN, 1)
+			add_lord_forces(game.who, MILITIA, 1)
+			break
+		case "town":
+			add_lord_forces(game.who, MILITIA, 2)
+			break
+		case "fortress":
+			add_lord_forces(game.who, MEN_AT_ARMS, 1)
+			add_lord_forces(game.who, MILITIA, 1)
+			break
+	}
+	if (game.flags.free_levy === 1) {
+		++game.count
+		game.flags.free_levy = 0
+	}
+
+	// TODO: after The Commons
+
+	if (is_event_in_play(EVENT_YORK_THE_COMMONS) && is_york_lord(game.who)) {
+		goto_the_commons()
+	} else {
+		if (eligible_kings_name())
+			goto_kings_name("Levy Troops")
+		else
+			resume_levy_muster_lord()
+	}
 }
 
 // === 3.4.2 LEVY LORD ===
@@ -11057,6 +11078,10 @@ function kings_name_reset_troops() {
 
 // === EVENT: RISING WAGES ===
 
+function goto_rising_wages() {
+	game.state = "rising_wages"
+}
+
 states.rising_wages = {
 	inactive: "Rising Wages",
 	prompt() {
@@ -11074,18 +11099,9 @@ states.rising_wages = {
 		add_lord_assets(lord, COIN, -1)
 		logi(`${EVENT_LANCASTER_RISING_WAGES}`)
 		log("York paid 1 Coin to Levy troops")
-		pop_state()
+
+		do_levy_troops()
 	},
-}
-
-// Check if the levy troops is at vassal seat
-
-function chamberlains_eligible_levy(locale) {
-	for (let vassal = first_vassal; vassal <= last_vassal; ++vassal)
-		if (is_vassal_mustered_with(vassal, game.who) && lord_has_capability(game.who, AOW_LANCASTER_CHAMBERLAINS)) {
-			if (locale === data.vassals[vassal].seat)
-				return true
-		}
 }
 
 // === EVENT: THE COMMONS ===
