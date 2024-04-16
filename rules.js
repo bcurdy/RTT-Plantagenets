@@ -11137,7 +11137,11 @@ states.the_commons = {
 
 function end_the_commons() {
 	game.flags.commons_militia = 0
-	resume_levy_muster_lord()
+
+	if (eligible_kings_name())
+		goto_kings_name("Levy Troops")
+	else
+		resume_levy_muster_lord()
 }
 
 // === EVENT (AS ACTION): EXILE PACT ===
