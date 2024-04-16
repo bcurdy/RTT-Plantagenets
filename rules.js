@@ -2730,6 +2730,7 @@ states.levy_muster_lord_attempt = {
 
 		if (results.success) {
 			game.who = game.what
+			pop_state()
 			push_state("muster_lord_at_seat")
 		}
 		else {
@@ -5611,7 +5612,7 @@ states.for_trust_not_him = {
 	lord(lord) {
 		push_undo()
 		game.who = lord
-		push_state("for_trust_not_him_vassal")
+		game.state = "for_trust_not_him_vassal"
 	},
 }
 
@@ -5642,7 +5643,7 @@ function goto_influence_check_for_trust_not_him() {
 		modifier: data.vassals[game.which].influence * (game.active === LANCASTER ? -1 : 1),
 		source: "vassal",
 	})
-	push_state("for_trust_not_him_bribe")
+	game.state = "for_trust_not_him_bribe"
 }
 
 states.for_trust_not_him_bribe = {
@@ -5793,7 +5794,7 @@ states.swift_maneuver = {
 		logevent(`${EVENT_YORK_SWIFT_MANEUVER}`)
 		log("Passed.")
 		set_active_enemy()
-		pop_state()
+		finish_action_assign_hits(game.who)
 	},
 }
 
@@ -6465,12 +6466,14 @@ function action_assign_hits(lord, type, special) {
 				game.where = special
 		} else {
 			rout_unit(lord, type, special)
+
 			// Swift Maneuver event
 			if (is_swift_maneuver_in_play() && type === RETINUE) {
 				set_active_enemy()
-				push_state("swift_maneuver")
-				// TODO: add return here?
+				game.state = "swift_maneuver"
+				return
 			}
+
 			finish_action_assign_hits(lord)
 		}
 	} else {
@@ -9558,7 +9561,7 @@ states.heralds = {
 
 function goto_heralds_attempt(lord) {
 	game.what = lord
-	push_state("heralds_attempt")
+	game.state = "heralds_attempt"
 	init_influence_check(game.command)
 }
 
@@ -9577,17 +9580,15 @@ states.heralds_attempt = {
 		if (results.success) {
 			game.who = game.what
 			set_lord_calendar(game.who, current_turn() + 1)
-			end_heralds_attempt()
-		} else {
-			end_heralds_attempt()
 		}
+
+		end_heralds_attempt()
 	},
 }
 
 function end_heralds_attempt() {
-	spend_all_actions()
-	pop_state()
 	end_influence_check()
+	spend_all_actions()
 	resume_command()
 }
 
@@ -10009,12 +10010,12 @@ function goto_lancaster_event_welsh_rebellion() {
 	}
 
 	if (can_play_remove_troops) {
-		push_state("welsh_rebellion_remove_troops")
+		game.state = "welsh_rebellion_remove_troops"
 		game.who = NOBODY
 		game.count = 0
 	}
 	else if (can_play_remove_favour) {
-		push_state("welsh_rebellion_remove_favour")
+		game.state = "welsh_rebellion_remove_favour"
 		game.who = NOBODY
 		game.count = 0
 	}
@@ -10087,8 +10088,18 @@ states.welsh_rebellion_remove_troops = {
 		game.count--
 	},
 	done() {
-		end_welsh_rebellion()
+		end_welsh_rebellion_remove_troops()
 	},
+}
+
+function end_welsh_rebellion_remove_troops() {
+	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
+		if (is_lord_on_map(lord) && is_lord_in_wales(lord) && !lord_has_unrouted_units(lord))
+			disband_lord(lord, false)
+	}
+	game.count = 0
+	game.who = NOBODY
+	end_immediate_event()
 }
 
 states.welsh_rebellion_remove_favour = {
@@ -10111,16 +10122,6 @@ states.welsh_rebellion_remove_favour = {
 	done() {
 		end_immediate_event()
 	},
-}
-
-function end_welsh_rebellion() {
-	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
-		if (is_lord_on_map(lord) && is_lord_in_wales(lord) && !lord_has_unrouted_units(lord))
-			disband_lord(lord, false)
-	}
-	game.count = 0
-	game.who = NOBODY
-	end_immediate_event()
 }
 
 // === EVENT: HENRY RELEASED ===
