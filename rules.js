@@ -3151,6 +3151,8 @@ function goto_command() {
 	game.flags.surprise_landing = 0
 	game.flags.first_action = 1
 	game.flags.first_march_highway = 0
+	game.flags.march_to_port = 0
+	game.flags.sail_to_port = 0
 
 	resume_command()
 }
@@ -3685,6 +3687,11 @@ states.sail = {
 function do_sail(to) {
 	log(`Sailed to %${to}${format_group_move()}.`)
 
+	game.flags.march_to_port = 0
+	if (is_seaport(to))
+		game.flags.sail_to_port = 1
+	else
+		game.flags.sail_to_port = 0
 
 	for (let lord of game.group) {
 		set_lord_locale(lord, to)
@@ -3701,7 +3708,6 @@ function do_sail(to) {
 	if (has_unbesieged_enemy_lord(to))
 		goto_confirm_approach_sail()
 	else {
-		game.flags.surprise_landing = 1
 		resume_command()
 	}
 }
@@ -4347,6 +4353,13 @@ function end_march() {
 		resume_command()
 		return
 	}
+
+	let here = get_lord_locale(game.command)
+	if (is_seaport(here))
+		game.flags.march_to_port = 1
+	else
+		game.flags.march_to_port = 0
+	game.flags.sail_to_port = 0
 
 	game.march = 0
 	resume_command()
@@ -7971,6 +7984,8 @@ exports.setup = function (seed, scenario, options) {
 			bloody:0,
 			london_for_york:0,
 			surprise_landing:0,
+			sail_to_port: 0,
+			march_to_port: 0,
 			parliament_votes:0,
 			succession:0,
 			jack_cade:0,
@@ -11341,15 +11356,8 @@ states.aspielles = {
 // === HELD EVENT: REBEL SUPPLY DEPOT ===
 
 function can_play_rebel_supply_depot() {
-	if (game.active === YORK)
-		return false
-	if (game.group) {
-		for (let lord of game.group) {
-			if (get_lord_moved(lord) && is_seaport(get_lord_locale(game.command))) {
-				return true
-			}
-		}
-	}
+	if (game.flags.sail_to_port || game.flags.march_to_port)
+		return true
 	return false
 }
 
@@ -11396,13 +11404,15 @@ function end_rebel_supply_depot() {
 
 function can_play_surprise_landing() {
 	let here = get_lord_locale(game.command)
-	if (game.flags.surprise_landing === 0 || !is_seaport(here) || here === LOC_CALAIS || here === LOC_PEMBROKE || here === LOC_HARLECH || here === LANCASTER || is_sea(here))
-		return false
-	return true
+	if (game.flags.sail_to_port) {
+		if (here !== LOC_CALAIS && here !== LOC_PEMBROKE && here !== LOC_HARLECH && here !== LOC_LANCASTER)
+			return true
+	}
+	return false
 }
 
 function goto_play_surprise_landing() {
-	push_state("surprise_landing")
+	game.state = "surprise_landing"
 	game.flags.surprise_landing = 2
 	game.who = NOBODY
 }
