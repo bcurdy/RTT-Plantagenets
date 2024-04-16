@@ -9752,65 +9752,6 @@ function end_immediate_event() {
 	resume_levy_arts_of_war()
 }
 
-// === EVENT: JACK CADE ===
-
-function is_york_dominating_north() {
-	let dom = 0
-	for (let loc of all_north_locales) {
-		if (has_favoury_marker(loc)) {
-			dom++
-		}
-	}
-	if (dom > 5)
-		return true
-	return false
-}
-
-function is_york_dominating_south() {
-	let dom = 0
-	for (let loc of all_south_locales) {
-		if (has_favoury_marker(loc)) {
-			dom++
-		}
-	}
-	if (dom > 9)
-		return true
-	if (dom > 4
-		&& (lord_has_capability(LORD_MARCH, AOW_YORK_SOUTHERNERS)
-		|| lord_has_capability(LORD_RUTLAND, AOW_YORK_SOUTHERNERS)
-		|| lord_has_capability(LORD_YORK, AOW_YORK_SOUTHERNERS)))
-		return true
-	return false
-}
-
-function is_york_dominating_wales() {
-	let dom = 0
-	for (let loc of all_wales_locales) {
-		if (has_favoury_marker(loc)) {
-			dom++
-		}
-	}
-	if (dom > 5)
-		return true
-	if (dom > 2
-		&& (lord_has_capability(LORD_MARCH, AOW_YORK_WELSHMEN)
-		|| lord_has_capability(LORD_YORK, AOW_YORK_WELSHMEN)))
-		return true
-	return false
-}
-
-function is_jack_cade_eligible(lord) {
-	if (!is_event_in_play(EVENT_YORK_JACK_CADE))
-		return false
-	if (is_lord_in_or_adjacent_to_south(lord) && is_york_dominating_south())
-		return true
-	if (is_lord_in_or_adjacent_to_north(lord) && is_york_dominating_north())
-		return true
-	if (is_lord_in_or_adjacent_to_wales(lord) && is_york_dominating_wales())
-		return true
-	return false
-}
-
 // === EVENT: LANCASTER SCOTS ===
 
 function goto_lancaster_event_scots() {
@@ -11139,6 +11080,65 @@ function end_the_commons() {
 		goto_kings_name("Levy Troops")
 	else
 		resume_levy_muster_lord()
+}
+
+// === EVENT (AS LEVY EFFECT): JACK CADE ===
+
+function is_york_dominating_north() {
+	let dom = 0
+	for (let loc of all_north_locales) {
+		if (has_favoury_marker(loc)) {
+			dom++
+		}
+	}
+	if (dom > 5)
+		return true
+	return false
+}
+
+function is_york_dominating_south() {
+	let dom = 0
+	for (let loc of all_south_locales) {
+		if (has_favoury_marker(loc)) {
+			dom++
+		}
+	}
+	if (dom > 9)
+		return true
+	if (dom > 4
+		&& (lord_has_capability(LORD_MARCH, AOW_YORK_SOUTHERNERS)
+		|| lord_has_capability(LORD_RUTLAND, AOW_YORK_SOUTHERNERS)
+		|| lord_has_capability(LORD_YORK, AOW_YORK_SOUTHERNERS)))
+		return true
+	return false
+}
+
+function is_york_dominating_wales() {
+	let dom = 0
+	for (let loc of all_wales_locales) {
+		if (has_favoury_marker(loc)) {
+			dom++
+		}
+	}
+	if (dom > 5)
+		return true
+	if (dom > 2
+		&& (lord_has_capability(LORD_MARCH, AOW_YORK_WELSHMEN)
+		|| lord_has_capability(LORD_YORK, AOW_YORK_WELSHMEN)))
+		return true
+	return false
+}
+
+function is_jack_cade_eligible(lord) {
+	if (!is_event_in_play(EVENT_YORK_JACK_CADE))
+		return false
+	if (is_lord_in_or_adjacent_to_south(lord) && is_york_dominating_south())
+		return true
+	if (is_lord_in_or_adjacent_to_north(lord) && is_york_dominating_north())
+		return true
+	if (is_lord_in_or_adjacent_to_wales(lord) && is_york_dominating_wales())
+		return true
+	return false
 }
 
 // === EVENT (AS ACTION): EXILE PACT ===
