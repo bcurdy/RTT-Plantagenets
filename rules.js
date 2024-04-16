@@ -10437,16 +10437,11 @@ function tudor_banner_eligible() {
 				return true
 		}
 	}
-	else
-		return false
+	return false
 }
 
 function goto_lancaster_event_tudor_banners() {
-	let can_play = false
 	if (tudor_banner_eligible()) {
-		can_play = true
-	}
-	if (can_play) {
 		game.state = "tudor_banners"
 		game.who = NOBODY
 	} else {
@@ -10459,13 +10454,15 @@ states.tudor_banners = {
 	inactive: "Tudor banners",
 	prompt() {
 		view.prompt = `Select locales adjacent to Henry to make them Lancastrian`
+		let done = true
 		for (let next of data.locales[get_lord_locale(LORD_HENRY_TUDOR)].adjacent) {
 			if (!has_enemy_lord(next) && !has_favourl_marker(next)) {
 				gen_action_locale(next)
-			} else {
-				view.actions.done = 1
+				done = false
 			}
 		}
+		if (done)
+			view.actions.done = 1
 	},
 	locale(loc) {
 		push_undo()
