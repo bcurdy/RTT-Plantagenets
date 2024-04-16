@@ -11294,22 +11294,20 @@ function end_sun_in_splendour() {
 // === HELD EVENT: ASPIELLES ===
 
 function can_play_l_aspielles() {
-	if (game.hand_y.length > 0 || game.hidden) {
-		return true
-	}
-	return false
+	return game.hand_y.length > 0 || game.hidden
 }
 
 function can_play_y_aspielles() {
-	if (game.hand_l.length > 0 || game.hidden) {
-		return true
-	}
-	return false
+	return game.hand_l.length > 0 || game.hidden
 }
 
 function goto_play_aspielles() {
 	push_state("aspielles")
 	game.who = NOBODY
+	if (game.active === YORK)
+		log("Lancaster hand shown to the York player")
+	if (game.active === LANCASTER)
+		log("York hand shown to the Lancaster player")
 }
 
 states.aspielles = {
@@ -11318,34 +11316,27 @@ states.aspielles = {
 		view.prompt = "Aspielles: You may see enemy held cards"
 		if (game.hidden) {
 			view.prompt += " and an enemy lord to see his mat"
+			if (game.who === NOBODY) {
+				for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord)
+					gen_action_lord(lord)
+			} else {
+				view.reveal |= (1 << game.who)
+				view.actions.done = 1
+			}
+		} else {
+			view.actions.done = 1
 		}
-		prompt_held_event()
-		if (game.hidden) {
-			for (let lord = first_enemy_lord; lord <= last_enemy_lord; ++lord)
-				gen_action_lord(lord)
-		}
-		if (game.active === YORK) {
+		if (game.active === YORK)
 			view.hand = game.hand_l
-			log("Lancaster hand shown to the York player")
-		}
-		if (game.active === LANCASTER) {
+		if (game.active === LANCASTER)
 			view.hand = game.hand_y
-			log("York hand shown to the Lancaster player")
-		}
-		view.actions.done = 1
-
 	},
 	lord(lord) {
 		log(`${lord_name[lord]} Spied`)
-		view.reveal |= (1 << lord)
+		game.who = lord
 	},
-	card: action_held_event,
 	done() {
-		if (is_campaign_phase()) {
-			resume_command()
-		} else {
-			pop_state()
-		}
+		end_held_event()
 	},
 }
 
