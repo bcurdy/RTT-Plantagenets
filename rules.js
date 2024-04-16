@@ -1555,16 +1555,12 @@ function end_influence_check() {
 
 function count_influence_score() {
 	let score = game.check.reduce((p, c) => p + c.modifier, 0)
+
 	let lord = 0
 	if (is_levy_phase())
 		lord = game.who
 	if (is_campaign_phase())
 		lord = game.command
-
-	// Space for whose lord has been selected for SUSPICION EVENT
-
-	// TODO - what's going on here?
-	score = (lord, score)
 
 	if (score > 5)
 		score = 5
@@ -1572,6 +1568,7 @@ function count_influence_score() {
 		score = 1
 
 	score = automatic_success(lord, score)
+
 	return score
 }
 
@@ -2685,8 +2682,6 @@ function do_levy_troops() {
 		++game.count
 		game.flags.free_levy = 0
 	}
-
-	// TODO: after The Commons
 
 	if (is_event_in_play(EVENT_YORK_THE_COMMONS) && is_york_lord(game.who)) {
 		goto_the_commons()
