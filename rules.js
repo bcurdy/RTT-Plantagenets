@@ -6,7 +6,10 @@
 // TODO: check flank attack
 
 // TODO: clean up use of who/what/which/where -- explicit selected_lord, selected_vassal, etc?
+// TODO: remove unneccessary game.who = NOBODY etc
 // TODO: call end_influence_check earlier when possible?
+
+// TODO: verify all push_state uses
 
 let game = null
 let view = null
@@ -7550,9 +7553,8 @@ function goto_tides_of_war() {
 		add_lord_assets(LORD_BUCKINGHAM, PROV, 1)
 	}
 	tides_calc()
-	if (tow_extra_ip()) {
-		set_active(YORK)
-		push_state("tow_extra_ip")
+	if (eligible_charity()) {
+		goto_we_done_deeds_of_charity()
 	}
 	else
 		goto_disembark()
@@ -7584,11 +7586,8 @@ function goto_disembark() {
 function end_disembark() {
 	game.who = NOBODY
 	set_active_enemy()
-	if (game.active === P1 && has_lords_at_sea())
+	if (has_lords_at_sea())
 		goto_disembark()
-	else if (game.active === P2 && has_lords_at_sea()) {
-		goto_disembark()
-	}
 	else {
 		set_active(P1)
 		goto_victory_check()
@@ -7988,7 +7987,6 @@ exports.setup = function (seed, scenario, options) {
 			free_parley_henry:0,
 			free_parley_gloucester:0,
 			burgundians:0,
-			charity:0,
 			bloody:0,
 			london_for_york:0,
 			surprise_landing:0,
@@ -9167,41 +9165,47 @@ function end_commission_of_array() {
 
 // === CAPABILITY: WE DONE DEEDS OF CHARITY ===
 
-function tow_extra_ip() {
-	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
-		if (lord_has_capability(lord, AOW_YORK_WE_DONE_DEEDS_OF_CHARITY) && (get_lord_assets(lord, PROV) > 0 || get_shared_assets(lord, PROV) > 0))
-			return true
-	}
+function eligible_charity() {
+	let lord = find_lord_with_capability_card(AOW_YORK_WE_DONE_DEEDS_OF_CHARITY)
+	if (lord !== NOBODY && get_shared_assets(lord, PROV) > 0)
+		return true
 	return false
 }
 
-states.tow_extra_ip = {
+function goto_we_done_deeds_of_charity() {
+	set_active(YORK)
+	game.state = "we_done_deeds_of_charity"
+	game.count = 2
+}
+
+states.we_done_deeds_of_charity = {
 	inactive: "We done needs of charity",
 	prompt() {
-		let loc = 0
-		view.prompt = "We done deeds of charity: spend up to two Provender to add influence points."
-		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (lord_has_capability(lord, AOW_YORK_WE_DONE_DEEDS_OF_CHARITY)) {
-				loc = get_lord_locale(lord)
-			}
-		}
-		for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
-			if (game.flags.charity < 2 && get_lord_locale(lord) === loc && (get_lord_assets(lord, PROV) > 0)) {
-				gen_action_prov(lord)
+		view.prompt = "We done deeds of charity: Pay up to two Provender for +1 Influence point each."
+		let lord = find_lord_with_capability_card(AOW_YORK_WE_DONE_DEEDS_OF_CHARITY)
+		let here = get_lord_locale(lord)
+		if (game.count > 0) {
+			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
+				if (get_lord_locale(lord) === here && (get_lord_assets(lord, PROV) > 0)) {
+					gen_action_prov(lord)
+				}
 			}
 		}
 		view.actions.done = 1
 	},
 	prov(lord) {
 		push_undo()
+		increase_york_influence(1)
 		add_lord_assets(lord, PROV, -1)
-		game.flags.charity += 1
+		game.count--
 	},
 	done() {
-		increase_york_influence(game.flags.charity)
+		clear_undo()
 		logi(`${AOW_YORK_WE_DONE_DEEDS_OF_CHARITY}`)
-		log("York paid " + game.flags.charity + " provender to add " + game.flags.charity + " Influence Points")
-		game.flags.charity = 0
+		log("York paid " + game.count + " provender to add " + game.count + " Influence Points")
+		game.count = 0
+
+		// TODO: who should be active?
 		goto_disembark()
 	},
 }
