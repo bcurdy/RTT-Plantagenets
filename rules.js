@@ -5,6 +5,8 @@
 // Check all push/clear_undo
 // TODO: check flank attack
 
+// TODO: clean up use of who/what/which/where -- explicit selected_lord, selected_vassal, etc?
+
 let game = null
 let view = null
 let states = {}
@@ -2359,7 +2361,7 @@ function goto_ready_vassals() {
 
 // === 3.4 MUSTER ===
 
-function reset_flags() {
+function reset_flags_for_muster() {
 	// to avoid some flags affecting campaign
 	game.flags.jack_cade = 0
 	game.flags.parliament_votes = 0
@@ -2453,7 +2455,7 @@ states.levy_muster = {
 		push_state("levy_muster_lord")
 		game.who = lord
 		game.count = data.lords[lord].lordship
-		reset_flags()
+		reset_flags_for_muster()
 		lordship_effects(lord)
 	},
 	end_muster() {
@@ -2551,6 +2553,7 @@ states.levy_muster_lord = {
 					view.actions.parley = 1
 			}
 		}
+
 		if (is_event_in_play(EVENT_YORK_LOYALTY_AND_TRUST) && game.flags.loyalty_and_trust) {
 			view.actions.loyalty_and_trust = 1
 		}
