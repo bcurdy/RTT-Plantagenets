@@ -10190,6 +10190,7 @@ function end_welsh_rebellion() {
 }
 
 // === EVENT: HENRY RELEASED ===
+
 function goto_lancaster_event_henry_released() {
 	if (has_favourl_marker(LOC_LONDON)) {
 		logi(`Henry Released : 5 Influence for Lancaster`)
@@ -10722,16 +10723,19 @@ function goto_york_event_shewolf_of_france() {
 // TO TRACK VASSALS DURING EVENTS
 
 function get_vassal_moved(v) {
+	// TODO: does it clash with lords moved?
+	// TODO: or use game.count instead?
 	return map_get(game.pieces.moved, v, 0)
 }
 
 function set_vassal_moved(v, x) {
+	// TODO: does it clash with lords moved?
 	map_set(game.pieces.moved, v, x)
 }
 
 function pay_vassal_shewolf(vassal) {
 	if (current_turn() < 16)
-		set_vassal_lord_and_service(vassal, get_vassal_lord(vassal),get_vassal_service(vassal) + 1)
+		set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), get_vassal_service(vassal) + 1)
 }
 
 states.she_wolf = {
@@ -10933,7 +10937,7 @@ states.earl_rivers = {
 	}
 }
 
-// === EVENT: THE KINGS NAME ===
+// === EVENT (AS LEVY EFFECT): THE KINGS NAME ===
 
 function eligible_kings_name() {
 	if (
@@ -11074,7 +11078,7 @@ function kings_name_reset_troops() {
 	}
 }
 
-// === EVENT: RISING WAGES ===
+// === EVENT (AS LEVY EFFECT): RISING WAGES ===
 
 function goto_rising_wages() {
 	game.state = "rising_wages"
@@ -11102,7 +11106,7 @@ states.rising_wages = {
 	},
 }
 
-// === EVENT: THE COMMONS ===
+// === EVENT (AS LEVY EFFECT): THE COMMONS ===
 
 // each Levy Troops action ends with coming here
 
