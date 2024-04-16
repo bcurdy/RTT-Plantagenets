@@ -3677,28 +3677,33 @@ states.sail = {
 			game.where = to
 		}
 		else {
-			log(`Sailed to %${to}${format_group_move()}.`)
-
-			for (let lord of game.group) {
-				set_lord_locale(lord, to)
-				set_lord_moved(lord, 1)
-				levy_burgundians(lord)
-			}
-
-			if (is_seamanship_in_play())
-				spend_action(1)
-			else
-				spend_all_actions()
-
-			// you can go to unbesieged enemy lord with norfolk capability
-			if (has_unbesieged_enemy_lord(to))
-				goto_confirm_approach_sail()
-			else {
-				game.flags.surprise_landing = 1
-				resume_command()
-			}
+			do_sail(to)
 		}
 	},
+}
+
+function do_sail(to) {
+	log(`Sailed to %${to}${format_group_move()}.`)
+
+
+	for (let lord of game.group) {
+		set_lord_locale(lord, to)
+		set_lord_moved(lord, 1)
+		levy_burgundians(lord)
+	}
+
+	if (is_seamanship_in_play())
+		spend_action(1)
+	else
+		spend_all_actions()
+
+	// you can go to unbesieged enemy lord with norfolk capability
+	if (has_unbesieged_enemy_lord(to))
+		goto_confirm_approach_sail()
+	else {
+		game.flags.surprise_landing = 1
+		resume_command()
+	}
 }
 
 function goto_confirm_approach_sail() {
@@ -9397,18 +9402,7 @@ states.naval_blockade = {
 				use_port_supply(game.where, get_port_supply_amount(game.where))
 			}
 			if (game.what === "sail") {
-				log(`Sailed to %${game.where}${format_group_move()}.`)
-				for (let lord of game.group) {
-					set_lord_locale(lord, game.where)
-					set_lord_moved(lord, 1)
-				}
-				if (is_seamanship_in_play())
-					spend_action(1)
-				else
-					spend_all_actions()
-
-				game.flags.surprise_landing = 1
-				resume_command()
+				do_sail(game.where)
 			}
 		}
 		else {
