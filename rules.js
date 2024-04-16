@@ -2042,7 +2042,7 @@ states.pillage_locale = {
 	lord(lord) {
 		// Pillage
 		// Same values as Taxing.
-		let num = get_tax_amount(game.where)
+		let num = get_tax_amount(game.where, lord)
 		add_lord_assets(lord, COIN, num)
 		add_lord_assets(lord, PROV, num)
 		reduce_influence(4 * num)
@@ -3394,8 +3394,8 @@ function chamberlains_eligible_supply(source) {
 		}
 }
 
-function command_has_stafford_branch(loc) {
-	if (lord_has_capability(game.command, AOW_YORK_STAFFORD_BRANCH)) {
+function lord_has_stafford_branch(loc, lord) {
+	if (lord_has_capability(lord, AOW_YORK_STAFFORD_BRANCH)) {
 		return (
 			loc === LOC_EXETER ||
 			loc === LOC_LAUNCESTON ||
@@ -3460,7 +3460,7 @@ function get_stronghold_supply_amount(loc) {
 		else
 			supply = 1
 
-		if (command_has_stafford_branch(loc))
+		if (lord_has_stafford_branch(loc, lord))
 			supply += 1
 
 		return modify_supply(loc, supply)
@@ -3782,7 +3782,7 @@ function goto_forage() {
 
 // === 4.6.3 ACTION: TAX ===
 
-function can_tax_at(here) {
+function can_tax_at(here, lord) {
 	if (is_friendly_locale(here) && !has_exhausted_marker(here)) {
 		// London, Calais, and Harlech
 		if (here === LOC_LONDON || here === LOC_CALAIS || here === LOC_HARLECH)
@@ -3802,7 +3802,7 @@ function can_tax_at(here) {
 }
 
 // adjacent friendly locales to an eligible stronghold (can_tax_at)
-function search_tax(result, start) {
+function search_tax(result, start, lord) {
 	let ships = get_shared_assets(start, SHIP)
 
 	search_seen.fill(0)
@@ -3812,7 +3812,7 @@ function search_tax(result, start) {
 	while (queue.length > 0) {
 		let here = queue.shift()
 
-		if (can_tax_at(here)) {
+		if (can_tax_at(here, lord)) {
 			if (result)
 				set_add(result, here)
 			else
@@ -3846,26 +3846,25 @@ function can_action_tax() {
 	if (game.actions < 1)
 		return false
 	let here = get_lord_locale(game.command)
-	if (can_tax_at(here))
+	if (can_tax_at(here, game.command))
 		return true
-	return search_tax(false, here)
+	return search_tax(false, here, game.command)
 }
 
 function goto_tax() {
 	push_undo()
-	push_state("tax")
-	init_influence_check(game.command)
+	game.state = "tax"
 	game.where = NOWHERE
+	init_influence_check(game.command)
 }
 
 function end_tax() {
-	pop_state()
 	game.where = NOWHERE
 	spend_action(1)
 	resume_command()
 }
 
-function get_tax_amount(loc) {
+function get_tax_amount(loc, lord) {
 	let tax
 
 	if (loc === LOC_LONDON || loc === LOC_CALAIS)
@@ -3875,8 +3874,28 @@ function get_tax_amount(loc) {
 	else
 		tax = 1
 
-	if (command_has_stafford_branch(loc))
+	if (lord_has_stafford_branch(loc, lord)) {
+		log(`C${AOW_YORK_STAFFORD_BRANCH}.`)
 		tax += 1
+	}
+
+	if (lord_has_capability(lord, AOW_YORK_SO_WISE_SO_YOUNG)) {
+		log(`C${AOW_YORK_SO_WISE_SO_YOUNG}.`)
+		tax += 1
+	}
+
+	if (
+		lord === LORD_DEVON && (
+			loc === LOC_EXETER ||
+			loc === LOC_LAUNCESTON ||
+			loc === LOC_PLYMOUTH ||
+			loc === LOC_WELLS ||
+			loc === LOC_DORCHESTER
+		)
+	) {
+		// TODO: log which ability
+		tax += 1
+	}
 
 	return tax
 }
@@ -3900,7 +3919,7 @@ states.tax = {
 			deplete_locale(game.where)
 
 			log(`Taxed automatically successful at %${game.where}.`)
-			add_lord_assets(game.command, COIN, get_tax_amount(game.where))
+			add_lord_assets(game.command, COIN, get_tax_amount(game.where, game.command))
 			end_tax()
 		}
 	},
@@ -3910,26 +3929,11 @@ states.tax = {
 		let results = do_influence_check()
 		logi(`Tax : ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
-		if (lord_has_capability(game.command, AOW_YORK_SO_WISE_SO_YOUNG)) {
-			log(`C${AOW_YORK_SO_WISE_SO_YOUNG}.`)
-			add_lord_assets(game.command, COIN, 1)
-		}
-
 		if (results.success) {
 			deplete_locale(game.where)
 
 			log(`Taxed %${game.where}.`)
-			add_lord_assets(game.command, COIN, get_tax_amount(game.where))
-
-			if (
-				game.command === LORD_DEVON &&
-				(game.where === LOC_EXETER ||
-					game.where === LOC_LAUNCESTON ||
-					game.where === LOC_PLYMOUTH ||
-					game.where === LOC_WELLS ||
-					game.where === LOC_DORCHESTER)
-			)
-				add_lord_assets(game.command, COIN, 1)
+			add_lord_assets(game.command, COIN, get_tax_amount(game.where, game.command))
 		} else {
 			log(`Tax of %${game.where} failed.`)
 		}
@@ -10386,83 +10390,14 @@ states.tudor_banners = {
 // === EVENT: TAX COLLECTORS ===
 
 function goto_york_event_tax_collectors() {
-	game.who = NOBODY
-	game.count = 0
-	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
-		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
-			set_lord_moved(lord, 1)
-		}
-	}
-	push_state("tax_collectors")
+	game.state = "tax_collectors"
 }
 
-function can_action_tax_collectors(lord) {
+function can_tax_collectors(lord) {
 	let here = get_lord_locale(lord)
-	if (can_tax_collectors_at(here, lord))
+	if (can_tax_at(here, lord))
 		return true
-	return search_tax_collectors(false, here, lord)
-}
-
-function can_tax_collectors_at(here, lord) {
-	if (is_friendly_locale(here) && !has_exhausted_marker(here)) {
-		// London, Calais, and Harlech
-		if (here === LOC_LONDON || here === LOC_CALAIS || here === LOC_HARLECH)
-			return true
-
-		// Own seat
-		if (here === data.lords[lord].seat)
-			return true
-
-		// vassal seats
-		for (let vassal = first_vassal; vassal <= last_vassal; ++vassal)
-			if (is_vassal_mustered_with(vassal, lord))
-				if (here === data.vassals[vassal].seat)
-					return true
-	}
-	return false
-}
-
-function search_tax_collectors(result, start, lord) {
-	let ships = get_shared_assets(start, SHIP)
-
-	search_seen.fill(0)
-	search_seen[start] = 1
-
-	let queue = [ start ]
-	while (queue.length > 0) {
-		let here = queue.shift()
-
-		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
-			if (can_tax_collectors_at(here, lord)) {
-				if (result)
-					set_add(result, here)
-				else
-					return true
-			}
-		}
-
-		if (is_friendly_locale(here)) {
-			for (let next of data.locales[here].adjacent) {
-				if (!search_seen[next]) {
-					search_seen[next] = 1
-					queue.push(next)
-				}
-			}
-			if (ships > 0 && is_seaport(here)) {
-				for (let next of find_ports(here)) {
-					if (!search_seen[next]) {
-						search_seen[next] = 1
-						queue.push(next)
-					}
-				}
-			}
-		}
-	}
-
-	if (result)
-		return result
-	else
-		return false
+	return !!search_tax(false, here, lord)
 }
 
 states.tax_collectors = {
@@ -10470,17 +10405,17 @@ states.tax_collectors = {
 	prompt() {
 		view.prompt = "Tax Collectors : You may tax for Double coin with each lord"
 		for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
-			if (can_action_tax_collectors(lord) && get_lord_moved(lord)) {
+			if (!get_lord_moved(lord) && can_tax_collectors(here, lord))
 				gen_action_lord(lord)
-			}
 		}
 		view.actions.done = 1
 	},
 	lord(lord) {
 		push_undo()
+		set_lord_moved(lord, 0)
 		game.where = NOWHERE
 		game.who = lord
-		push_state("double_tax_collectors")
+		game.state = "tax_collectors_lord"
 		init_influence_check(lord)
 	},
 	done() {
@@ -10488,12 +10423,12 @@ states.tax_collectors = {
 	},
 }
 
-states.double_tax_collectors = {
+states.tax_collectors_lord = {
 	inactive: "Tax Collectors",
 	prompt() {
 		view.prompt = "Tax: Select the location to tax for double."
 		if (game.where === NOWHERE) {
-			for (let loc of search_tax_collectors([], get_lord_locale(game.who), game.who))
+			for (let loc of search_tax([], get_lord_locale(game.who), game.who))
 				gen_action_locale(loc)
 		} else {
 			view.prompt = `Tax: Attempting to tax ${data.locales[game.where].name}. `
@@ -10507,8 +10442,7 @@ states.double_tax_collectors = {
 			deplete_locale(game.where)
 
 			log(`Taxed %${game.where}.`)
-			add_lord_assets(game.who, COIN, get_tax_amount(game.where)*2)
-			set_lord_moved(game.who, 0)
+			add_lord_assets(game.who, COIN, get_tax_amount(game.where, game.who) * 2)
 			end_tax_lord()
 		}
 	},
@@ -10518,39 +10452,21 @@ states.double_tax_collectors = {
 		let results = do_influence_check()
 		logi(`Tax : ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
-		if (lord_has_capability(game.who, AOW_YORK_SO_WISE_SO_YOUNG)) {
-			log(`C${AOW_YORK_SO_WISE_SO_YOUNG}.`)
-			add_lord_assets(game.who, COIN, 1)
-		}
-
 		if (results.success) {
 			deplete_locale(game.where)
 			log(`Taxed %${game.where}.`)
-			add_lord_assets(game.who, COIN, get_tax_amount(game.where)*2)
-
-			if (
-				game.command === LORD_DEVON &&
-				(game.where === LOC_EXETER ||
-					game.where === LOC_LAUNCESTON ||
-					game.where === LOC_PLYMOUTH ||
-					game.where === LOC_WELLS ||
-					game.where === LOC_DORCHESTER)
-			)
-				add_lord_assets(game.command, COIN, 4)
+			add_lord_assets(game.who, COIN, get_tax_amount(game.where, game.who) * 2)
 		} else {
 			log(`Tax of %${game.where} failed.`)
 
 		}
-		set_lord_moved(game.who, 0)
-		game.who = NOBODY
-		push_state("tax_collectors")
+		end_tax_collectors_lord()
 	},
 }
 
-function end_tax_lord() {
-	game.where = NOWHERE
+function end_tax_collectors_lord() {
 	game.who = NOBODY
-	pop_state()
+	game.state = "tax_collectors"
 }
 
 function end_tax_collectors() {
