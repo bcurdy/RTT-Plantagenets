@@ -2448,7 +2448,9 @@ states.levy_muster = {
 }
 
 function resume_levy_muster_lord() {
+	game.state = "levy_muster_lord"
 	--game.count
+
 	// muster over only if the lord has not spend their free levy actions
 	if (game.count === 0 && game.flags.jack_cade === 0 && game.flags.free_levy === 0 && can_add_troops(game.who, get_lord_locale(game.who))) {
 		set_lord_moved(game.who, 1)
@@ -2624,12 +2626,10 @@ states.levy_muster_lord = {
 		if (eligible_kings_name()) {
 			goto_kings_name("Levy Troops")
 		}
-		if (is_event_in_play(EVENT_YORK_THE_COMMONS) && is_york_lord(game.who)) {
-			push_undo()
-			game.flags.commons_militia = 2
-			push_state("the_commons")
-		}
-		resume_levy_muster_lord()
+		if (is_event_in_play(EVENT_YORK_THE_COMMONS) && is_york_lord(game.who))
+			goto_the_commons()
+		else
+			resume_levy_muster_lord()
 	},
 
 	levy_beloved_warwick() {
@@ -11081,30 +11081,35 @@ function chamberlains_eligible_levy(locale) {
 
 // === EVENT: THE COMMONS ===
 
+// each Levy Troops action ends with coming here
+
+function goto_the_commons() {
+	game.state = "the_commons"
+	game.flags.commons_militia = 2
+}
+
 states.the_commons = {
 	inactive: "The Commons",
 	prompt() {
 		view.prompt = `Add up to ${game.flags.commons_militia} Militias.`
-		if (game.flags.commons_militia > 0) {
+		if (game.flags.commons_militia > 0)
 			view.actions.add_militia = 1
-		}
 		view.actions.done = 1
 	},
 	add_militia() {
 		push_undo()
 		add_lord_forces(game.who, MILITIA, 1)
-		--game.flags.commons_militia
+		if (--game.flags.commons_militia === 0)
+			end_the_commons()
 	},
 	done() {
 		push_undo()
 		end_the_commons()
-
 	}
 }
 
 function end_the_commons() {
 	game.flags.commons_militia = 0
-	pop_state()
 	resume_levy_muster_lord()
 }
 
