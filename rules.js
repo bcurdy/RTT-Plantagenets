@@ -2016,9 +2016,8 @@ states.pillage = {
 		}
 	},
 	locale(loc) {
-		// pillage the Locale
 		game.where = loc
-		goto_pillage_locale()
+		game.state = "pillage_locale"
 	},
 	lord(lord) {
 		disband_influence_penalty(lord)
@@ -2027,16 +2026,6 @@ states.pillage = {
 	done() {
 		end_pillage()
 	},
-}
-
-function goto_pillage_locale() {
-	push_state("pillage_locale")
-}
-
-function end_pillage_locale() {
-	pop_state()
-	game.where = NOWHERE
-	end_pillage()
 }
 
 states.pillage_locale = {
@@ -2063,7 +2052,8 @@ states.pillage_locale = {
 		for (let next of data.locales[game.where].adjacent)
 			shift_favour_away(next)
 
-		end_pillage_locale()
+		game.state = "pillage"
+		game.where = NOWHERE
 	},
 }
 
