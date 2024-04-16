@@ -1189,7 +1189,6 @@ function muster_vassal(vassal, lord) {
 }
 
 function disband_vassal(vassal) {
-	// TODO: Hastings here?
 	if (data.vassals[vassal].service > 0) {
 		let new_turn = current_turn() + (6 - data.vassals[vassal].service)
 		set_vassal_lord_and_service(vassal, VASSAL_CALENDAR, new_turn)
@@ -1198,6 +1197,10 @@ function disband_vassal(vassal) {
 		// TODO: special vassals with no service marker!?
 		set_vassal_lord_and_service(vassal, VASSAL_OUT_OF_PLAY, 0)
 		log(`Disbanded V${vassal}.`)
+	}
+	if (vassal === VASSAL_HASTINGS) {
+		discard_card_capability(AOW_YORK_HASTINGS)
+		logi(`Hastings Discarded`)
 	}
 }
 
@@ -10246,12 +10249,6 @@ states.aragne_3 = {
 
 		if (!results.success) {
 			disband_vassal(game.who)
-
-			// TODO: move Hastings check into disband_vassal?
-			if (game.who === VASSAL_HASTINGS) {
-				discard_card_capability(AOW_YORK_HASTINGS)
-				logi(`Hastings Discarded`)
-			}
 		}
 
 		end_influence_check()
