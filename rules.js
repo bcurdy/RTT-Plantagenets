@@ -10658,7 +10658,7 @@ states.she_wolf = {
 	vassal(v) {
 		push_undo()
 		if (current_turn() < 16)
-			set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), get_vassal_service(vassal) + 1)
+			set_vassal_lord_and_service(v, get_vassal_lord(v), get_vassal_service(v) + 1)
 		set_add(game.event_data, v)
 		logi(`Vassal ${data.vassals[v].name} shifted one calendar box`)
 	},
