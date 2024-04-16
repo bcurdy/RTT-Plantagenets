@@ -4720,6 +4720,7 @@ states.choose_exile = {
 	},
 	lord(lord) {
 		push_undo()
+		// TODO: give up assets as if spoils?
 		exile_lord(lord)
 	},
 	done() {
@@ -4737,8 +4738,9 @@ function exile_lord(lord) {
 	}
 }
 
+// === 4.3.5 APPROACH - SPOILS AFTER CHOOSING EXILE ===
 
-// === 4.3.5 APPROACH - EXILE (SPOILS) ===
+// TODO: spoils after choosing exile
 
 function has_any_spoils() {
 	return game.spoils && game.spoils[PROV] + game.spoils[COIN] + game.spoils[CART] + game.spoils[SHIP] > 0
