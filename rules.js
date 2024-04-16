@@ -11231,7 +11231,7 @@ function goto_held_event(c) {
 			goto_play_sun_in_splendour()
 			break
 		case EVENT_YORK_YORKIST_PARADE:
-			// passive effect
+			goto_play_yorkist_parade()
 			break
 
 		// Play any time
@@ -11255,19 +11255,22 @@ function goto_held_event(c) {
 // === HELD EVENT (LEVY): YORKIST PARADE ===
 
 function can_play_yorkist_parade() {
-	// TODO: only during levy?
-	if (game.active === YORK && is_favour_friendly(LOC_LONDON) && (get_lord_locale(LORD_WARWICK_Y) === LOC_LONDON || get_lord_locale(LORD_YORK) === LOC_LONDON)) {
-		return true
+	if (is_levy_phase()) {
+		if (is_favour_friendly(LOC_LONDON) && (get_lord_locale(LORD_WARWICK_Y) === LOC_LONDON || get_lord_locale(LORD_YORK) === LOC_LONDON))
+			return true
 	}
 	return false
+}
+
+function goto_play_yorkist_parade() {
+	// no effect
 }
 
 // === HELD EVENT (LEVY): SUN IN SPLENDOUR ===
 
 function can_play_sun_in_splendour() {
-	if (is_levy_phase() && is_lord_on_calendar(LORD_EDWARD_IV)) {
-		return true
-	}
+	if (is_levy_phase())
+		return is_lord_on_calendar(LORD_EDWARD_IV)
 	return false
 }
 
@@ -11276,28 +11279,21 @@ function goto_play_sun_in_splendour() {
 }
 
 states.sun_in_splendour = {
-	inactive: "Sun in splendour",
+	inactive: "Sun in Splendour",
 	prompt() {
-		let done = true
 		view.prompt = "Sun in Splendour: Muster Edward IV in any friendly locale with no enemy lord"
-		if (is_lord_on_calendar(LORD_EDWARD_IV)) {
-			for (let loc = first_locale; loc <= last_locale; loc++) {
-				if (is_friendly_locale(loc)) {
-					done = false
-					gen_action_locale(loc)
-				}
-			}
-		}
-		if (done) {
-			view.actions.done = 1
-		}
+		// ... TODO: or a scenario-designated Yorkist Exile box
+		for (let loc = first_locale; loc <= last_locale; loc++)
+			if (is_friendly_locale(loc))
+				gen_action_locale(loc)
 	},
 	locale(loc) {
 		push_undo()
 		muster_lord(LORD_EDWARD_IV, loc)
+		// TODO: remove_lord_from_exile(LORD_EDWARD_IV) ?
+		// TODO: muster to exile box ?
 		logi(`Mustered Edward IV at ${data.locales[loc].name}`)
-	},
-	done() {
+
 		pop_state()
 		game.what = NOTHING
 	},
