@@ -690,29 +690,6 @@ function set_active_command() {
 		set_active(LANCASTER)
 }
 
-function reduce_influence(amt) {
-	if (game.active === YORK)
-		reduce_york_influence(amt)
-	else
-		reduce_lancaster_influence(amt)
-}
-
-function reduce_york_influence(amt) {
-	game.influence += amt
-}
-
-function increase_york_influence(amt) {
-	game.influence -= amt
-}
-
-function reduce_lancaster_influence(amt) {
-	game.influence -= amt
-}
-
-function increase_lancaster_influence(amt) {
-	game.influence += amt
-}
-
 // === STATE: TURN ===
 
 function current_turn() {
@@ -1455,6 +1432,29 @@ function has_adjacent_friendly(loc) {
 
 // === 1.4 INFLUENCE ===
 
+function reduce_influence(amt) {
+	if (game.active === YORK)
+		reduce_york_influence(amt)
+	else
+		reduce_lancaster_influence(amt)
+}
+
+function reduce_york_influence(amt) {
+	game.influence += amt
+}
+
+function increase_york_influence(amt) {
+	game.influence -= amt
+}
+
+function reduce_lancaster_influence(amt) {
+	game.influence -= amt
+}
+
+function increase_lancaster_influence(amt) {
+	game.influence += amt
+}
+
 // Bonus score but still maxed at 5
 function influence_capabilities(lord, score) {
 	let here = get_lord_locale(game.group)
@@ -1552,6 +1552,7 @@ function count_influence_score() {
 
 	// Space for whose lord has been selected for SUSPICION EVENT
 
+	// TODO - what's going on here?
 	score = (lord, score)
 
 	if (score > 5)
@@ -4509,8 +4510,6 @@ function can_play_flank_attack() {
 
 // === MARCH EVENT: KING'S PARLEY ===
 
-// TODO: merge states into one question
-
 function goto_kings_parley() {
 	// If Henry VI in space, with King's Parley capability
 	// TODO: ... unless he intercepted York lords already present ?
@@ -5341,6 +5340,7 @@ function action_battle_events(c) {
 	set_add(game.events, c)
 	switch (c) {
 		case EVENT_LANCASTER_LEEWARD_BATTLE_LINE:
+			// nothing to do
 			break
 		case EVENT_LANCASTER_SUSPICION:
 			game.state = "suspicion"
@@ -5352,6 +5352,7 @@ function action_battle_events(c) {
 			game.state = "ravine"
 			break
 		case EVENT_YORK_LEEWARD_BATTLE_LINE:
+			// nothing to do
 			break
 		case EVENT_YORK_SUSPICION:
 			game.state = "suspicion"
@@ -5360,8 +5361,10 @@ function action_battle_events(c) {
 			game.state = "caltrops"
 			break
 		case EVENT_YORK_REGROUP:
+			// nothing to do
 			break
 		case EVENT_YORK_SWIFT_MANEUVER:
+			// nothing to do
 			break
 	}
 }
@@ -5431,6 +5434,7 @@ states.caltrops = {
 // === BATTLE EVENT: SUSPICION ===
 
 function can_play_suspicion() {
+	// TODO: account for influence_capabilities
 	if (highest_friendly_influence() >= lowest_enemy_influence()) {
 		return true
 	}
@@ -6484,7 +6488,7 @@ states.spend_valour = {
 	},
 }
 
-// === BATTLE: NEW ROUND ===
+// === 4.4.2 BATTLE ROUNDS: NEW ROUND ===
 
 function goto_end_battle_round() {
 	end_battle_round()
