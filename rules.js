@@ -6815,7 +6815,7 @@ function end_death_or_disband() {
 	}
 }
 
-function prompt_battle_events_death() {
+function prompt_held_event_death_check() {
 	// both attacker and defender events
 	if (game.active === LANCASTER) {
 		if (can_play_escape_ship())
@@ -6836,7 +6836,7 @@ states.death_or_disband = {
 	prompt() {
 		view.prompt = `Death or Disband: Select lords to roll for Death or Disband.`
 
-		prompt_battle_events_death()
+		prompt_held_event_death_check()
 
 		let done = true
 		for (let lord of game.battle.fled) {
@@ -11168,12 +11168,6 @@ function play_held_event(c) {
 	}
 }
 
-// TODO: use or remove this function
-function end_held_event() {
-	pop_state()
-	game.what = NOTHING
-}
-
 function prompt_held_event() {
 	for (let c of current_hand())
 		if (can_play_held_event(c))
@@ -11211,12 +11205,8 @@ function action_held_event(c) {
 
 function goto_held_event(c) {
 	switch (c) {
+		// Play upon Death Check
 		case EVENT_YORK_ESCAPE_SHIP:
-			goto_play_escape_ship()
-			break
-		case EVENT_YORK_ASPIELLES:
-			goto_play_aspielles()
-			break
 		case EVENT_LANCASTER_ESCAPE_SHIP:
 			goto_play_escape_ship()
 			break
@@ -11226,17 +11216,29 @@ function goto_held_event(c) {
 		case EVENT_LANCASTER_WARDEN_OF_THE_MARCHES:
 			goto_play_warden_of_the_marches()
 			break
-		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
-			goto_play_rebel_supply_depot()
+
+		// Play in Levy
+		case EVENT_YORK_SUN_IN_SPLENDOUR:
+			goto_play_sun_in_splendour()
 			break
-		case EVENT_LANCASTER_SURPRISE_LANDING:
-			goto_play_surprise_landing()
+		case EVENT_YORK_YORKIST_PARADE:
+			// passive effect
 			break
+
+		// Play any time
+		case EVENT_YORK_ASPIELLES:
 		case EVENT_LANCASTER_ASPIELLES:
 			goto_play_aspielles()
 			break
-		case EVENT_YORK_SUN_IN_SPLENDOUR:
-			goto_play_sun_in_splendour()
+
+		// Play after march/sail to seaport
+		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
+			goto_play_rebel_supply_depot()
+			break
+
+		// Play after sail to seaport
+		case EVENT_LANCASTER_SURPRISE_LANDING:
+			goto_play_surprise_landing()
 			break
 	}
 }
@@ -11287,13 +11289,9 @@ states.sun_in_splendour = {
 		logi(`Mustered Edward IV at ${data.locales[loc].name}`)
 	},
 	done() {
-		end_sun_in_splendour()
+		pop_state()
+		game.what = NOTHING
 	},
-}
-
-function end_sun_in_splendour() {
-	game.who = NOBODY
-	pop_state()
 }
 
 // === HELD EVENT: ASPIELLES ===
@@ -11341,7 +11339,8 @@ states.aspielles = {
 		game.who = lord
 	},
 	done() {
-		end_held_event()
+		pop_state()
+		game.what = NOTHING
 	},
 }
 
@@ -11394,9 +11393,9 @@ states.rebel_supply_depot = {
 }
 
 function end_rebel_supply_depot() {
-	game.who = NOBODY
+	pop_state()
 	game.spoils = 0
-	resume_command()
+	game.what = NOTHING
 }
 
 // === HELD EVENT: SURPRISE LANDING ===
