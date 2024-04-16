@@ -9,6 +9,21 @@ let game = null
 let view = null
 let states = {}
 
+function check_london_protected() {
+// TODO IF HENRY/MARGARET ARE MUSTERED IT DOES NOT CHANGE FAVOUR
+// ONLY L17/L18 and Pillage will cancel that event
+//(it is annuled when london go to neutral
+	if (game.state === "pillage") {
+		return false
+	}
+	if (game.flags.london_for_york === 1 && game.where === LOC_LONDON) {
+		return true
+	}
+	else {
+		return false
+	}
+}
+
 // === CONSTANTS ===
 
 const data = require("./data.js")
@@ -10681,21 +10696,6 @@ states.london_for_york = {
 		logi(`Immune to Lancastrian parley unless aided by event`)
 		end_immediate_event()
 	},
-}
-
-function check_london_protected() {
-// TODO IF HENRY/MARGARET ARE MUSTERED IT DOES NOT CHANGE FAVOUR
-// ONLY L17/L18 and Pillage will cancel that event
-//(it is annuled when london go to neutral
-	if (game.state === "pillage") {
-		return false
-	}
-	if (game.flags.london_for_york === 1 && game.where === LOC_LONDON) {
-		return true
-	}
-	else {
-		return false
-	}
 }
 
 // === EVENT: SHE-WOLF OF FRANCE ===
