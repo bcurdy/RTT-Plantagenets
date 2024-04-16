@@ -1189,6 +1189,7 @@ function muster_vassal(vassal, lord) {
 }
 
 function disband_vassal(vassal) {
+	// TODO: Hastings here?
 	if (data.vassals[vassal].service > 0) {
 		let new_turn = current_turn() + (6 - data.vassals[vassal].service)
 		set_vassal_lord_and_service(vassal, VASSAL_CALENDAR, new_turn)
@@ -10166,22 +10167,21 @@ function goto_lancaster_event_luniverselle_aragne() {
 		}
 	}
 	if (can_play) {
-		game.state = "aragne"
-		game.who = NOBODY
-		game.count = 0
+		game.state = "aragne_1"
+		game.event_data = []
 	} else {
 		logi("No Effect")
 		end_immediate_event()
 	}
 }
 
-states.aragne = {
+states.aragne_1 = {
 	inactive: "L'universelle Aragne",
 	prompt() {
 		view.prompt = "Select up to 2 Vassals"
-		if (game.who === NOBODY && game.count < 2) {
+		if (game.event_data.length < 2) {
 			for (let v = first_vassal; v <= last_vassal; v++) {
-				if (!get_vassal_moved(v) && is_vassal_mustered_with_york_lord(v)) {
+				if (!set_has(game.event_data, v) && is_vassal_mustered_with_york_lord(v)) {
 					gen_action_vassal(v)
 				}
 			}
@@ -10190,63 +10190,49 @@ states.aragne = {
 	},
 	vassal(v) {
 		push_undo()
-		game.who = v
-		game.count++
-		set_vassal_moved(v, 1)
+		set_add(game.event_data, v)
 		logi(`Vassal ${data.vassals[v].name} selected`)
-		game.who = NOBODY
 	},
 	done() {
+		push_undo()
 		goto_yorkist_aragne()
 	},
 }
 
 function goto_yorkist_aragne() {
-	game.who = NOBODY
 	set_active_enemy()
-	game.state = "yorkist_aragne"
+	game.state = "aragne_2"
 }
 
-states.yorkist_aragne = {
+states.aragne_2 = {
 	inactive: "Influence checks",
 	prompt() {
 		view.prompt = `For Each vassal, influence check : failure disbands it`
 		let done = true
-		if (game.who === NOBODY) {
-			for (let v = first_vassal; v <= last_vassal; v++) {
-				if (get_vassal_moved(v) && is_vassal_mustered_with_friendly_lord(v)) {
-					gen_action_vassal(v)
-					done = false
-				}
-			}
-			if (done) {
-				view.actions.done = 1
-			}
+		for (let v of game.event_data) {
+			gen_action_vassal(v)
+			done = false
 		}
+		if (done)
+			view.actions.done = 1
 	},
 	vassal(other) {
 		push_undo()
-		goto_aragne_save(other)
+		game.who = other
+		init_influence_check(get_vassal_lord(other))
+		game.check.push({
+			cost: 0,
+			modifier: data.vassals[other].influence * (game.active === LANCASTER ? -1 : 1),
+			source: "vassal",
+		})
+		game.state = "aragne_3"
 	},
 	done() {
 		end_universelle_aragne()
 	},
 }
 
-function goto_aragne_save(other) {
-	game.who = other
-	game.where = NOWHERE
-	get_vassal_lord(other)
-	init_influence_check(get_vassal_lord(other))
-	game.check.push({
-		cost: 0,
-		modifier: data.vassals[other].influence * (game.active === LANCASTER ? -1 : 1),
-		source: "vassal",
-	})
-	push_state("aragne_save")
-}
-
-states.aragne_save = {
+states.aragne_3 = {
 	inactive: `Influence check`,
 	prompt() {
 		view.prompt = `Influence check : Failure disbands ${data.vassals[game.who].name}`
@@ -10258,28 +10244,27 @@ states.aragne_save = {
 		let results = do_influence_check()
 		logi(`Attempt to save ${data.vassals[game.who].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
-		if (results.success) {
-			set_vassal_moved(game.who, 0)
-			game.who = NOBODY
-			end_influence_check()
-			push_state("yorkist_aragne")
-		} else {
-			set_vassal_moved(game.who, 0)
+		if (!results.success) {
 			disband_vassal(game.who)
+
+			// TODO: move Hastings check into disband_vassal?
 			if (game.who === VASSAL_HASTINGS) {
 				discard_card_capability(AOW_YORK_HASTINGS)
 				logi(`Hastings Discarded`)
 			}
-			game.who = NOBODY
-			end_influence_check()
-			push_state("yorkist_aragne")
 		}
+
+		end_influence_check()
+
+		set_delete(game.event_data, game.who)
+		game.who = NOBODY
+		game.state = "aragne_2"
 	},
 }
 
 function end_universelle_aragne() {
 	game.who = NOBODY
-	game.count = 0
+	game.event_data = 0
 	end_immediate_event()
 }
 
