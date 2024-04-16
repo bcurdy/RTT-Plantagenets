@@ -11367,7 +11367,7 @@ states.rebel_supply_depot = {
 	inactive: "Rebel Supply depot",
 	prompt() {
 		if (has_any_spoils()) {
-			view.prompt = "Divide " + list_spoils() + "."
+			view.prompt = "Rebel Supply Depot: Divide " + list_spoils() + "."
 			let here = get_lord_locale(game.command)
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
 				if (get_lord_locale(lord) === here)
@@ -11386,14 +11386,15 @@ states.rebel_supply_depot = {
 		take_spoils(PROV)
 	},
 	end_spoils() {
+		push_undo_without_who()
 		end_rebel_supply_depot()
 	},
 }
 
 function end_rebel_supply_depot() {
 	pop_state()
-	game.spoils = 0
 	game.what = NOTHING
+	game.spoils = 0
 }
 
 // === HELD EVENT: SURPRISE LANDING ===
