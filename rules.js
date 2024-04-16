@@ -1894,6 +1894,7 @@ states.pay = {
 			}
 		}
 
+		// Pillage
 		if (done) {
 			view.prompt = "Pay: You must Pillage and/or Disband."
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; ++lord) {
@@ -1979,10 +1980,6 @@ function goto_pillage_coin() {
 	game.what = COIN
 }
 
-function end_pillage() {
-	pop_state()
-}
-
 function can_pillage(loc) {
 	return !is_exile(loc) && !has_exhausted_marker(loc)
 }
@@ -2024,7 +2021,7 @@ states.pillage = {
 		disband_lord(lord)
 	},
 	done() {
-		end_pillage()
+		pop_state()
 	},
 }
 
@@ -2621,13 +2618,13 @@ states.levy_muster_lord = {
 	commission_of_array() {
 		push_undo()
 		push_the_kings_name()
-		push_state("commission_of_array")
+		game.state = "commission_of_array"
 	},
 
 	capability() {
 		push_undo()
 		push_the_kings_name()
-		push_state("muster_capability")
+		game.state = "muster_capability"
 	},
 
 	parley() {
@@ -2999,7 +2996,6 @@ states.muster_capability = {
 	card(c) {
 		add_lord_capability(game.who, c)
 		capability_muster_effects(game.who, c)
-		pop_state()
 		goto_the_kings_name("Capability C${c}")
 	},
 }
@@ -6827,7 +6823,7 @@ function goto_death_or_disband() {
 		if (game.battle.loser === LANCASTER && lord_has_capability(LORD_RICHARD_III, AOW_YORK_BLOODY_THOU_ART) && get_lord_locale(LORD_RICHARD_III) === game.battle.where) {
 			game.flags.bloody = 1
 		}
-		game.state = "death_or_disband"
+		game.state = "death_check"
 	}
 	else
 		end_death_or_disband()
@@ -6858,7 +6854,7 @@ function prompt_held_event_death_check() {
 	}
 }
 
-states.death_or_disband = {
+states.death_check = {
 	inactive: "Death or Disband",
 	prompt() {
 		view.prompt = `Death or Disband: Select lords to roll for Death or Disband.`
@@ -6956,7 +6952,7 @@ function search_escape_route(start) {
 }
 
 function goto_play_escape_ship() {
-	push_state("escape_ship")
+	game.state = "escape_ship"
 	game.who = NOBODY
 }
 
@@ -6978,7 +6974,7 @@ states.escape_ship = {
 			exile_lord(lord)
 			set_delete(game.battle.routed, lord)
 		}
-		goto_battle_aftermath()
+		game.state = "death_check"
 	},
 }
 
@@ -7016,7 +7012,7 @@ function can_play_warden_of_the_marches() {
 
 function goto_play_warden_of_the_marches() {
 	push_undo()
-	push_state("warden_of_the_marches")
+	game.state = "warden_of_the_marches"
 }
 
 states.warden_of_the_marches = {
@@ -7070,7 +7066,7 @@ states.warden_of_the_marches = {
 function end_warden_of_the_marches() {
 	game.flags.warden_of_the_marches = 1
 	game.who = NOBODY
-	pop_state()
+	game.state = "death_check"
 }
 
 // === 4.4.4 ENDING THE BATTLE: AFTERMATH ===
@@ -7144,6 +7140,7 @@ function goto_feed() {
 	if (has_friendly_lord_who_must_feed()) {
 		push_state("feed")
 	} else {
+		// TODO: clean up transitions for End Command -> Feed and Disembark -> Feed
 		if (game.state !== "disembark")
 			goto_remove_markers()
 	}
@@ -7247,6 +7244,7 @@ states.feed_lord_shared = {
 function end_feed() {
 	pop_state()
 	game.where = NOWHERE
+	// TODO: clean up transitions for End Command -> Feed and Disembark -> Feed
 	if (game.state !== "disembark")
 		goto_remove_markers()
 }
@@ -7574,7 +7572,7 @@ function is_lord_at_sea(lord) {
 
 function goto_disembark() {
 	if (has_lords_at_sea()) {
-		push_state("disembark")
+		game.state = "disembark"
 	} else {
 		end_disembark()
 	}
@@ -9089,7 +9087,6 @@ states.soldiers_of_fortune = {
 }
 
 function end_soldiers_of_fortune() {
-	pop_state()
 	goto_the_kings_name("Soldiers of Fortune")
 }
 
@@ -9156,7 +9153,6 @@ states.commission_of_array = {
 }
 
 function end_commission_of_array() {
-	pop_state()
 	goto_the_kings_name("Commission of Array")
 }
 
@@ -10956,8 +10952,10 @@ function can_play_held_event(c) {
 	switch (c) {
 		case EVENT_LANCASTER_ASPIELLES:
 			return can_play_l_aspielles()
+		// TODO: move into states.command ?
 		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
 			return can_play_rebel_supply_depot()
+		// TODO: move into states.command ?
 		case EVENT_LANCASTER_SURPRISE_LANDING:
 			return can_play_surprise_landing()
 		case EVENT_LANCASTER_PARLIAMENTS_TRUCE:
@@ -10984,6 +10982,7 @@ function action_held_event(c) {
 function goto_held_event(c) {
 	switch (c) {
 		// Play upon Death Check
+		// TODO: move into states.death_check
 		case EVENT_YORK_ESCAPE_SHIP:
 		case EVENT_LANCASTER_ESCAPE_SHIP:
 			goto_play_escape_ship()
@@ -10996,11 +10995,14 @@ function goto_held_event(c) {
 			break
 
 		// Play in Levy
+		// TODO: move into states.levy
 		case EVENT_YORK_SUN_IN_SPLENDOUR:
 			goto_play_sun_in_splendour()
 			break
+
+		// Play in Levy (for passive effect)
 		case EVENT_YORK_YORKIST_PARADE:
-			goto_play_yorkist_parade()
+			// no effect
 			break
 
 		// Play any time
@@ -11010,11 +11012,13 @@ function goto_held_event(c) {
 			break
 
 		// Play after march/sail to seaport
+		// TODO: move into states.command ?
 		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
 			goto_play_rebel_supply_depot()
 			break
 
 		// Play after sail to seaport
+		// TODO: move into states.command ?
 		case EVENT_LANCASTER_SURPRISE_LANDING:
 			goto_play_surprise_landing()
 			break
@@ -11029,10 +11033,6 @@ function can_play_yorkist_parade() {
 			return true
 	}
 	return false
-}
-
-function goto_play_yorkist_parade() {
-	// no effect
 }
 
 // === HELD EVENT (LEVY): SUN IN SPLENDOUR ===
