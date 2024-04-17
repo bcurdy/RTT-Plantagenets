@@ -3448,7 +3448,7 @@ function get_stronghold_supply_amount(loc) {
 		else
 			supply = 1
 
-		if (lord_has_stafford_branch(game.command, lord))
+		if (lord_has_stafford_branch(loc, game.command))
 			supply += 1
 
 		return modify_supply(loc, supply)
@@ -3777,12 +3777,12 @@ function can_tax_at(here, lord) {
 			return true
 
 		// Own seat
-		if (here === data.lords[game.command].seat)
+		if (here === data.lords[lord].seat)
 			return true
 
 		// vassal seats
 		for (let vassal = first_vassal; vassal <= last_vassal; ++vassal)
-			if (is_vassal_mustered_with(vassal, game.command))
+			if (is_vassal_mustered_with(vassal, lord))
 				if (here === data.vassals[vassal].seat)
 					return true
 	}
@@ -10428,7 +10428,7 @@ states.tax_collectors_lord = {
 
 			log(`Taxed %${game.where}.`)
 			add_lord_assets(game.who, COIN, get_tax_amount(game.where, game.who) * 2)
-			end_tax_lord()
+			end_tax_collectors_lord()
 		}
 	},
 	spend1: add_influence_check_modifier_1,
