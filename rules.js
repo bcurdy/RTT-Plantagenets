@@ -9286,19 +9286,18 @@ function deplete_merchants() {
 }
 
 function count_deplete(loc) {
-	game.count = 0
+	let n = 0
 	for (let next of data.locales[loc].adjacent) {
 		if (has_exhausted_marker(next) || has_depleted_marker(next)) {
-			++game.count
+			++n
 		}
 	}
 	if (has_exhausted_marker(loc) || has_depleted_marker(loc)) {
-		++game.count
+		++n
 	}
-	if (game.count > 1)
-		return game.count = 2
-	else
-		return game.count
+	if (n > 1)
+		n = 2
+	return n
 }
 
 // === CAPABILITY: BURGUNDIANS ===
