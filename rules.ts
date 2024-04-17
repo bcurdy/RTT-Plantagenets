@@ -1750,22 +1750,21 @@ function increase_lancaster_influence(amt: number) {
 }
 
 // Bonus score but still maxed at 5
-/*
-function influence_capabilities(lord: Lord, score) {
-	let here = get_lord_locale(game.group)
+function influence_capabilities(lord: Lord, score: number) {
+	let here = get_lord_locale(lord)
 	if (game.active === YORK && is_event_in_play(EVENT_YORK_YORKIST_PARADE))
 		score += 2
 	if (game.active === YORK && is_event_in_play(EVENT_YORK_PRIVY_COUNCIL))
 		score += 1
-	if (game.state === "parley" && ((is_event_in_play(EVENT_YORK_RICHARD_OF_YORK) && game.active === YORK) || lord_has_capability(game.group, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING)))
+	if (game.state === "parley" && ((is_event_in_play(EVENT_YORK_RICHARD_OF_YORK) && game.active === YORK) || lord_has_capability(lord, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING)))
 		score += 1
-	if (get_lord_locale(LORD_MARGARET) === here && lord_has_capability(game.group, AOW_LANCASTER_LOYAL_SOMERSET))
+	if (get_lord_locale(LORD_MARGARET) === here && lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET))
 		score += 1
 	if (lord_has_capability(lord, AOW_YORK_YORKS_FAVOURED_SON))
 		score += 1
 	if (
 		get_lord_locale(LORD_WARWICK_L) === here &&
-		lord_has_capability(game.group, AOW_LANCASTER_MARRIED_TO_A_NEVILLE) &&
+		lord_has_capability(lord, AOW_LANCASTER_MARRIED_TO_A_NEVILLE) &&
 		is_friendly_locale(here)
 	)
 		score += 2
@@ -1773,10 +1772,8 @@ function influence_capabilities(lord: Lord, score) {
 		score += 1
 	if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
 		score += 2
-
 	return score
 }
-*/
 
 // Cards that allows automatic success
 function automatic_success(lord: Lord, score) {
@@ -5718,13 +5715,6 @@ states.caltrops = {
 // === BATTLE EVENT: SUSPICION ===
 
 function can_play_suspicion() {
-	// TODO
-	return false
-}
-
-/*
-
-function can_play_suspicion() {
 	// TODO: account for influence_capabilities
 	if (highest_friendly_influence() >= lowest_enemy_influence()) {
 		return true
@@ -5798,9 +5788,8 @@ states.suspicion_enemy_lord = {
 	},
 }
 
-function suspicion_lord_score(lord, score) {
-	influence_capabilities(lord, score)
-	return score
+function suspicion_lord_score(lord: Lord, score: number) {
+	return influence_capabilities(lord, score)
 }
 
 states.influence_check_suspicion = {
@@ -5838,8 +5827,6 @@ states.influence_check_suspicion = {
 		}
 	},
 }
-
-*/
 
 // === BATTLE EVENT: FOR TRUST NOT HIM ===
 
