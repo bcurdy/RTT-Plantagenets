@@ -2070,6 +2070,7 @@ function goto_pay_lords() {
 	}
 
 	if (has_friendly_lord_who_must_pay_troops()) {
+		game.count = 0
 		game.who = NOBODY
 		game.state = "pay_lords"
 	} else {
@@ -2091,35 +2092,32 @@ states.pay_lords = {
 	prompt() {
 		view.prompt = "Pay Lords in Influence or Disband them."
 		prompt_held_event()
-		let done = true
-		game.count = 0
 		if (game.who === NOBODY) {
+			let done = true
 			for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
 				if (is_lord_on_map(lord) && is_lord_unfed(lord)) {
 					gen_action_lord(lord)
 					done = false
 				}
 			}
-			if (done) {
-				view.actions.done = 1
-			}
 			if (!done)
 				view.actions.pay_all = 1
+			if (done)
+				view.actions.done = 1
 		} else {
 			view.actions.disband = 1
 			view.actions.pay = 1
-		}	},
+		}
+	},
 	lord(lord) {
 		push_undo()
 		game.who = lord
 	},
 	disband() {
-		push_undo()
 		disband_lord(game.who)
 		game.who = NOBODY
 	},
 	pay() {
-		push_undo()
 		reduce_influence(is_exile(get_lord_locale(game.who)) ? 2 : 1)
 		set_lord_moved(game.who, 0)
 		game.who = NOBODY
@@ -2128,17 +2126,10 @@ states.pay_lords = {
 		push_undo()
 		for (let lord = first_friendly_lord; lord <= last_friendly_lord; lord++) {
 			if (is_lord_on_map(lord) && is_lord_unfed(lord)) {
-				++game.count
+				reduce_influence(is_exile(get_lord_locale(lord)) ? 2 : 1)
 				set_lord_moved(lord, 0)
-				if (is_exile(get_lord_locale(lord))) {
-					++game.count
-				}
-				reduce_influence(game.count)
-				game.count = 0
 			}
 		}
-		game.who = NOBODY
-
 	},
 	card: action_held_event,
 	done() {
