@@ -3893,7 +3893,7 @@ states.tax = {
 	prompt() {
 		view.prompt = "Tax: Select the location to tax."
 		if (game.where === NOWHERE) {
-			for (let loc of search_tax([], get_lord_locale(game.command)))
+			for (let loc of search_tax([], get_lord_locale(game.command), game.command))
 				gen_action_locale(loc)
 		} else {
 			view.prompt = `Tax: Attempting to tax ${data.locales[game.where].name}. `
