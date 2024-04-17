@@ -4210,7 +4210,7 @@ function can_parley_at(loc: Locale) {
 var search_seen = new Array(data.locales.length)
 var search_dist = new Array(data.locales.length)
 
-function search_parley(result, start: Locale) {
+function search_parley(result, start: Locale, lord: Lord) {
 	let ships = get_shared_assets(start, SHIP)
 
 	search_dist.fill(0)
@@ -4239,7 +4239,7 @@ function search_parley(result, start: Locale) {
 				}
 			}
 			if (ships > 0 && is_seaport(here)) {
-				for (let next of find_ports(here, game.command)) {
+				for (let next of find_ports(here, lord)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
 						search_dist[next] = next_dist
@@ -4313,12 +4313,12 @@ function can_action_parley_levy() {
 	let here = get_lord_locale(game.who)
 	if (can_parley_at(here))
 		return true
-	return !!search_parley(false, here)
+	return !!search_parley(false, here, game.who)
 }
 
 function list_parley_levy() {
 	let here = get_lord_locale(game.who)
-	return search_parley([], here)
+	return search_parley([], here, game.who)
 }
 
 function goto_parley() {
