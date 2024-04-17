@@ -11,6 +11,8 @@
 
 // TODO: prompt_held_event -- specific subsets at specific times only (move, battle, death check, after move/sail, any command)
 
+// TODO: use game.command instead of game.who for levy -- can we avoid saving who and count in push_state?
+
 // TODO: verify all push_state uses
 /*
 REDO
@@ -67,7 +69,7 @@ interface Game {
 	stack: any[], // TODO
 	active: Player,
 
-	rebel: string,
+	rebel: Side,
 
 	victory_check: number,
 	influence: number,
@@ -128,12 +130,14 @@ interface Game {
 	actions: number,
 	group: Lord[],
 	intercept_group: Lord[],
+
+	arts_of_war: Card[],
 	who: Lord,
+	other: Lord,
 	where: Locale,
 	vassal: Vassal,
 
-	what: any,
-	which: any,
+	what: string,
 	count: number,
 	event_data: any,
 
@@ -194,7 +198,6 @@ const NOBODY = -1 as Lord
 const NOVASSAL = -1 as Vassal
 const NOWHERE = -1 as Locale
 const NOCARD = -1 as Card
-const NOTHING = -1
 
 const CALENDAR = 100 as Locale
 
@@ -1772,7 +1775,7 @@ function add_influence_check_modifier_2() {
 function add_influence_check_distance(distance) {
 	let idx = game.check.findIndex(i => i.source === "distance")
 
-	if (idx !== NOTHING)
+	if (idx >= 0)
 		game.check.splice(idx, 1)
 
 	game.check.push({ cost: distance, modifier: 0, source: "distance" })
@@ -1837,19 +1840,19 @@ function goto_levy_arts_of_war_first() {
 	else
 		log_h2("Lancaster Arts of War")
 	game.state = "levy_arts_of_war_first"
-	game.what = draw_two_cards()
+	game.arts_of_war = draw_two_cards()
 }
 
 function resume_levy_arts_of_war_first() {
-	if (game.what.length === 0)
+	if (game.arts_of_war.length === 0)
 		end_levy_arts_of_war_first()
 }
 
 states.levy_arts_of_war_first = {
 	inactive: "Arts of War",
 	prompt() {
-		let c = game.what[0]
-		view.arts_of_war = game.what
+		let c = game.arts_of_war[0]
+		view.arts_of_war = game.arts_of_war
 		view.what = c
 		let discard = true
 		for (let lord of data.cards[c].lords) {
@@ -1867,7 +1870,7 @@ states.levy_arts_of_war_first = {
 	},
 	lord(lord: Lord) {
 		push_undo()
-		let c = game.what.shift()
+		let c = game.arts_of_war.shift()
 		log(`${game.active} deployed Capability.`)
 		add_lord_capability(lord, c)
 		capability_muster_effects(lord, c)
@@ -1875,14 +1878,14 @@ states.levy_arts_of_war_first = {
 	},
 	discard() {
 		push_undo()
-		let c = game.what.shift()
+		let c = game.arts_of_war.shift()
 		discard_card_capability(c)
 		resume_levy_arts_of_war_first()
 	},
 }
 
 function end_levy_arts_of_war_first() {
-	game.what = NOTHING
+	game.arts_of_war = null
 	set_active_enemy()
 	if (game.active === P2)
 		goto_levy_arts_of_war_first()
@@ -1897,20 +1900,20 @@ function goto_levy_arts_of_war() {
 		log_h2("York Arts of War")
 	else
 		log_h2("Lancaster Arts of War")
-	game.what = draw_two_cards()
+	game.arts_of_war = draw_two_cards()
 	resume_levy_arts_of_war()
 }
 
 function resume_levy_arts_of_war() {
 	game.state = "levy_arts_of_war"
-	if (game.what.length === 0)
+	if (game.arts_of_war.length === 0)
 		end_levy_arts_of_war()
 }
 
 states.levy_arts_of_war = {
 	inactive: "Arts of War",
 	prompt() {
-		let c = game.what[0]
+		let c = game.arts_of_war[0]
 		view.arts_of_war = [ c ]
 		view.what = c
 		switch (data.cards[c].when) {
@@ -1931,12 +1934,12 @@ states.levy_arts_of_war = {
 		}
 	},
 	play() {
-		let c = game.what.shift()
+		let c = game.arts_of_war.shift()
 		log(`${game.active} played E${c}.`)
 		goto_immediate_event(c)
 	},
 	hold() {
-		let c = game.what.shift()
+		let c = game.arts_of_war.shift()
 		log(`${game.active} Held Event.`)
 		if (game.active === YORK)
 			set_add(game.hand_y, c)
@@ -1945,14 +1948,14 @@ states.levy_arts_of_war = {
 		resume_levy_arts_of_war()
 	},
 	discard() {
-		let c = game.what.shift()
+		let c = game.arts_of_war.shift()
 		discard_card_event(c)
 		resume_levy_arts_of_war()
 	},
 }
 
 function end_levy_arts_of_war() {
-	game.what = NOTHING
+	game.arts_of_war = null
 	set_active_enemy()
 	if (game.active === P2)
 		goto_levy_arts_of_war()
@@ -2105,12 +2108,12 @@ function end_pay() {
 
 function goto_pillage_food() {
 	push_state("pillage")
-	game.what = PROV
+	game.what = "unfed"
 }
 
 function goto_pillage_coin() {
 	push_state("pillage")
-	game.what = COIN
+	game.what = "unpaid"
 }
 
 function can_pillage(loc) {
@@ -2120,7 +2123,7 @@ function can_pillage(loc) {
 states.pillage = {
 	inactive: "Pillage",
 	prompt() {
-		view.prompt = `Pillage: Pillage the locales where your ${game.what === PROV ? "unfed" : "unpaid"} lords are.`
+		view.prompt = `Pillage: Pillage the locales where your ${game.what} lords are.`
 
 		let done = true
 		for (let x of all_friendly_lords()) {
@@ -2131,7 +2134,7 @@ states.pillage = {
 		}
 
 		if (done) {
-			view.prompt = `Pillage: Unable to Pillage, you must disband your ${game.what === PROV ? "unfed" : "unpaid"} lords.`
+			view.prompt = `Pillage: Unable to Pillage, you must disband your ${game.what} lords.`
 			for (let x of all_friendly_lords()) {
 				if (is_lord_on_map(x) && is_lord_unfed(x)) {
 					gen_action_lord(x)
@@ -2285,7 +2288,7 @@ function goto_pay_vassals() {
 	}
 	if (vassal_to_pay) {
 		game.state = "pay_vassals"
-		game.what = NOBODY
+		game.vassal = NOVASSAL
 	} else {
 		end_pay_vassals()
 	}
@@ -2306,7 +2309,7 @@ states.pay_vassals = {
 	prompt() {
 		let done = true
 		view.prompt = "You may pay or disband vassals in the next calendar box."
-		if (game.what === NOBODY) {
+		if (game.vassal === NOVASSAL) {
 			for (let v of all_vassals) {
 				if (
 					is_vassal_mustered_with_friendly_lord(v) &&
@@ -2329,13 +2332,13 @@ states.pay_vassals = {
 	},
 	vassal(v: Vassal) {
 		push_undo()
-		game.what = v
+		game.vassal = v
 	},
 	pay() {
 		push_undo()
-		pay_vassal(game.what)
+		pay_vassal(game.vassal)
 		reduce_influence(1)
-		game.what = NOBODY
+		game.vassal = NOVASSAL
 	},
 	pay_all() {
 		push_undo()
@@ -2344,14 +2347,14 @@ states.pay_vassals = {
 			&& get_vassal_service(v) === current_turn()) {
 				pay_vassal(v)
 				reduce_influence(1)
-				game.what = NOBODY
+				game.vassal = NOVASSAL
 			}
 		}
 	},
 	disband() {
 		push_undo()
-		disband_vassal(game.what)
-		game.what = NOBODY
+		disband_vassal(game.vassal)
+		game.vassal = NOVASSAL
 	},
 	done() {
 		end_pay_vassals()
@@ -2693,8 +2696,8 @@ states.levy_muster_lord = {
 
 	vassal(vassal: Vassal) {
 		push_undo()
-		game.which = vassal
-		goto_levy_muster_vassal(vassal)
+		game.vassal = vassal
+		goto_levy_muster_vassal()
 	},
 
 	take_ship() {
@@ -2838,8 +2841,8 @@ function do_levy_troops() {
 
 // === 3.4.2 LEVY LORD ===
 
-function goto_levy_muster_lord_attempt(lord) {
-	game.what = lord
+function goto_levy_muster_lord_attempt(lord: Lord) {
+	game.other = lord
 	push_state("levy_muster_lord_attempt")
 	init_influence_check(game.who)
 }
@@ -2847,7 +2850,7 @@ function goto_levy_muster_lord_attempt(lord) {
 states.levy_muster_lord_attempt = {
 	inactive: "Levy Lord",
 	prompt() {
-		view.prompt = `Levy Lord ${lord_name[game.what]}. `
+		view.prompt = `Levy Lord ${lord_name[game.other]}. `
 
 		prompt_influence_check()
 	},
@@ -2857,12 +2860,12 @@ states.levy_muster_lord_attempt = {
 		let results = do_influence_check()
 		end_influence_check()
 
-		log(`Attempt to levy L${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		log(`Attempt to levy L${game.other} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
 		if (results.success) {
-			game.who = game.what
 			pop_state()
 			push_state("muster_lord_at_seat")
+			game.who = game.other
 		}
 		else {
 			pop_state()
@@ -2932,7 +2935,7 @@ function eligible_vassal(vassal) {
 	return true
 }
 
-function goto_levy_muster_vassal(vassal: Vassal) {
+function goto_levy_muster_vassal() {
 	game.where = NOWHERE
 	let influence_cost = 0
 	if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_BUCKINGHAMS_PLOT))
@@ -2942,7 +2945,7 @@ function goto_levy_muster_vassal(vassal: Vassal) {
 	init_influence_check(game.who)
 	game.check.push({
 		cost: influence_cost,
-		modifier: data.vassals[vassal].influence * (game.active === LANCASTER ? -1 : 1),
+		modifier: data.vassals[game.vassal].influence * (game.active === LANCASTER ? -1 : 1),
 		source: "vassal",
 	})
 }
@@ -2950,7 +2953,7 @@ function goto_levy_muster_vassal(vassal: Vassal) {
 states.levy_muster_vassal = {
 	inactive: "Levy Vassal",
 	prompt() {
-		view.prompt = `Levy Vassal ${data.vassals[game.which].name}. `
+		view.prompt = `Levy Vassal ${data.vassals[game.vassal].name}. `
 		prompt_influence_check()
 	},
 	spend1: add_influence_check_modifier_1,
@@ -2966,11 +2969,11 @@ states.levy_muster_vassal = {
 			log(`Automatic Success. C${EVENT_LANCASTER_THE_EARL_OF_RICHMOND}.`)
 		}
 		else {
-			log(`Attempt to levy V${game.which} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+			log(`Attempt to levy V${game.vassal} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		}
 
 		if (results.success) {
-			muster_vassal(game.which, game.who)
+			muster_vassal(game.vassal, game.who)
 			pop_state()
 			goto_the_kings_name("Levy Vassal")
 		} else {
@@ -5407,7 +5410,6 @@ function end_attacker_events() {
 }
 
 function resume_battle_events() {
-	game.what = -1
 	if (is_attacker())
 		goto_attacker_events()
 	else
@@ -5491,7 +5493,6 @@ function prompt_battle_events() {
 }
 
 function action_battle_events(c) {
-	game.what = c
 	set_delete(current_hand(), c)
 	set_add(game.events, c)
 	switch (c) {
@@ -5765,7 +5766,7 @@ states.for_trust_not_him_vassal = {
 	},
 	vassal(v: Vassal) {
 		push_undo()
-		game.which = v
+		game.vassal = v
 		goto_influence_check_for_trust_not_him()
 	},
 }
@@ -5774,7 +5775,7 @@ function goto_influence_check_for_trust_not_him() {
 	init_influence_check(game.who)
 	game.check.push({
 		cost: 0,
-		modifier: data.vassals[game.which].influence * (game.active === LANCASTER ? -1 : 1),
+		modifier: data.vassals[game.vassal].influence * (game.active === LANCASTER ? -1 : 1),
 		source: "vassal",
 	})
 	game.state = "for_trust_not_him_bribe"
@@ -5783,7 +5784,7 @@ function goto_influence_check_for_trust_not_him() {
 states.for_trust_not_him_bribe = {
 	inactive: `Influence check`,
 	prompt() {
-		view.prompt = `Influence check : Success bribes ${data.vassals[game.which].name} `
+		view.prompt = `Influence check : Success bribes ${data.vassals[game.vassal].name} `
 		prompt_influence_check()
 	},
 	spend1: add_influence_check_modifier_1,
@@ -5794,10 +5795,10 @@ states.for_trust_not_him_bribe = {
 			logi(`Automatic success C${AOW_LANCASTER_TWO_ROSES}`)
 		}
 		else {
-			logi(`Attempt to bribe ${data.vassals[game.which].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+			logi(`Attempt to bribe ${data.vassals[game.vassal].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		}
 		if (results.success) {
-			muster_vassal(game.which, game.who)
+			muster_vassal(game.vassal, game.who)
 			end_influence_check()
 			end_for_trust_not_him()
 		} else {
@@ -5809,7 +5810,7 @@ states.for_trust_not_him_bribe = {
 
 function end_for_trust_not_him() {
 	game.who = NOBODY
-	game.which = NOTHING
+	game.vassal = NOVASSAL
 	resume_battle_events()
 }
 
@@ -6543,41 +6544,41 @@ function spend_valour(lord: Lord) {
 }
 
 function check_protection_capabilities(protection) {
-	if (game.what === MEN_AT_ARMS || game.what === MILITIA) {
+	if (game.battle.force === MEN_AT_ARMS || game.battle.force === MILITIA) {
 		if (lord_has_capability(game.who, AOW_LANCASTER_PIQUIERS) &&
 		(get_lord_routed_forces(game.who, MILITIA) + get_lord_routed_forces(game.who, MEN_AT_ARMS) < 3)) {
 			protection = 4
 		}
 	}
 
-	if (game.what === MEN_AT_ARMS) {
+	if (game.battle.force === MEN_AT_ARMS) {
 		if (lord_has_capability(game.who, AOW_LANCASTER_CHURCH_BLESSINGS)) {
 			protection += 1
 		}
 	}
-	if (game.what === RETINUE) {
+	if (game.battle.force === RETINUE) {
 		if (lord_has_capability(game.who, AOW_LANCASTER_MONTAGU))
 			protection += 1
 	}
-	if ((game.what === RETINUE || game.what === VASSAL) && is_archery_step()) {
+	if ((game.battle.force === RETINUE || game.battle.force === VASSAL) && is_archery_step()) {
 		if (lord_has_capability(game.who, AOW_LANCASTER_BARDED_HORSE))
 			protection -= 1
 	}
-	if ((game.what === RETINUE || game.what === VASSAL) && is_melee_step()) {
+	if ((game.battle.force === RETINUE || game.battle.force === VASSAL) && is_melee_step()) {
 		if (lord_has_capability(game.who, AOW_LANCASTER_BARDED_HORSE))
 			protection += 1
 	}
 
-	if (game.what === MEN_AT_ARMS) {
+	if (game.battle.force === MEN_AT_ARMS) {
 		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_favoury_marker(game.battle.where))
 			protection += 1
 	}
-	if (game.what === MEN_AT_ARMS) {
+	if (game.battle.force === MEN_AT_ARMS) {
 		if (lord_has_capability(game.who, AOW_LANCASTER_CHEVALIERS) && is_archery_step()) {
 			protection -= 1
 		}
 	}
-	if (game.what === MILITIA || game.what === LONGBOWMEN) {
+	if (game.battle.force === MILITIA || game.battle.force === LONGBOWMEN) {
 		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_favoury_marker(game.battle.where))
 			protection += 1
 	}
@@ -6595,7 +6596,7 @@ function action_assign_hits(lord, type, v=NOVASSAL) {
 	if (assign_hit_roll(get_force_name(lord, type, v), protection, extra)) {
 		if (get_lord_remaining_valour(lord) > 0) {
 			game.state = "spend_valour"
-			game.what = type
+			game.battle.force = type
 			if (type === VASSAL)
 				game.vassal = v
 		} else {
@@ -6634,21 +6635,21 @@ function finish_action_assign_hits(lord) {
 states.spend_valour = {
 	inactive: "Spend Valour",
 	prompt() {
-		view.prompt = `Spend Valour: Reroll Hit on ${get_force_name(game.who, game.what, game.vassal)}?`
+		view.prompt = `Spend Valour: Reroll Hit on ${get_force_name(game.who, game.battle.force, game.vassal)}?`
 		gen_action("valour", game.who)
 		view.actions.pass = 1
 	},
 	pass() {
-		rout_unit(game.who, game.what, game.vassal)
+		rout_unit(game.who, game.battle.force, game.vassal)
 		finish_action_assign_hits(game.who)
 	},
 	valour() {
-		let protection = check_protection_capabilities(FORCE_PROTECTION[game.what])
+		let protection = check_protection_capabilities(FORCE_PROTECTION[game.battle.force])
 
 		spend_valour(game.who)
 		log(`Reroll:`)
-		if (assign_hit_roll(get_force_name(game.who, game.what, game.vassal), protection, "")) {
-			rout_unit(game.who, game.what, game.vassal)
+		if (assign_hit_roll(get_force_name(game.who, game.battle.force, game.vassal), protection, "")) {
+			rout_unit(game.who, game.battle.force, game.vassal)
 			finish_action_assign_hits(game.who)
 		} else {
 			finish_action_assign_hits(game.who)
@@ -8141,13 +8142,14 @@ exports.setup = function (seed, scenario, options) {
 		group: null,
 		intercept_group: null,
 		who: NOBODY,
+		other: NOBODY,
 		where: NOWHERE,
 		vassal: NOVASSAL,
-		what: NOTHING,
-		which: NOTHING,
+		what: null,
 		count: 0,
 		event_data: 0,
 		check: null,
+		arts_of_war: null,
 
 		supply: 0,
 		march: 0,
@@ -9599,7 +9601,7 @@ states.naval_blockade = {
 		if (game.what === "sail" && !success) {
 			resume_command()
 		}
-		game.what = NOTHING
+		game.what = null
 	},
 }
 
@@ -9698,7 +9700,7 @@ states.heralds = {
 }
 
 function goto_heralds_attempt(lord) {
-	game.what = lord
+	game.other = lord
 	game.state = "heralds_attempt"
 	init_influence_check(game.command)
 }
@@ -9706,18 +9708,17 @@ function goto_heralds_attempt(lord) {
 states.heralds_attempt = {
 	inactive: "Heralds Attempt",
 	prompt() {
-		view.prompt = `Attempt to shift ${lord_name[game.what]} to next Turn Box. `
+		view.prompt = `Attempt to shift ${lord_name[game.other]} to next Turn Box. `
 		prompt_influence_check()
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
 		let results = do_influence_check()
-		log(`Attempt to shift L${game.what} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		log(`Attempt to shift L${game.other} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 
 		if (results.success) {
-			game.who = game.what
-			set_lord_calendar(game.who, current_turn() + 1)
+			set_lord_calendar(game.other, current_turn() + 1)
 		}
 
 		end_heralds_attempt()
@@ -11101,7 +11102,6 @@ function can_play_held_event(c) {
 function action_held_event(c) {
 	push_undo()
 	play_held_event(c)
-	game.what = c
 	goto_held_event(c)
 }
 
@@ -11190,7 +11190,6 @@ states.sun_in_splendour = {
 		logi(`Mustered Edward IV at ${data.locales[loc].name}`)
 
 		pop_state()
-		game.what = NOTHING
 	},
 }
 
@@ -11240,7 +11239,6 @@ states.aspielles = {
 	},
 	done() {
 		pop_state()
-		game.what = NOTHING
 	},
 }
 
@@ -11288,7 +11286,6 @@ states.rebel_supply_depot = {
 
 function end_rebel_supply_depot() {
 	pop_state()
-	game.what = NOTHING
 	game.spoils = 0
 }
 
