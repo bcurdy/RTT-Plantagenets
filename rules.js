@@ -3457,7 +3457,7 @@ function get_stronghold_supply_amount(loc) {
 		else
 			supply = 1
 
-		if (lord_has_stafford_branch(loc, lord))
+		if (lord_has_stafford_branch(game.command, lord))
 			supply += 1
 
 		return modify_supply(loc, supply)
@@ -10402,7 +10402,7 @@ states.tax_collectors = {
 	prompt() {
 		view.prompt = "Tax Collectors : You may tax for Double coin with each lord"
 		for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
-			if (!get_lord_moved(lord) && can_tax_collectors(here, lord))
+			if (!get_lord_moved(lord) && can_tax_collectors(lord))
 				gen_action_lord(lord)
 		}
 		view.actions.done = 1
