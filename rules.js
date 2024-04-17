@@ -9982,25 +9982,25 @@ function end_warwicks_propaganda() {
 // === EVENT: WELSH REBELLION ===
 
 function goto_lancaster_event_welsh_rebellion() {
-	let can_play_remove_troops = false
-	let can_play_remove_favour = false
+	let can_remove_troops = false
+	let can_remove_favour = false
 	for (let lord = first_york_lord; lord <= last_york_lord; ++lord) {
 		if (is_lord_on_map(lord) && is_lord_in_wales(lord)) {
 			set_lord_moved(lord, 1)
-			can_play_remove_troops = true
+			can_remove_troops = true
 		}
 	}
 	for (let loc = first_locale; loc <= last_locale; loc++) {
 		if (is_wales(loc) && has_favoury_marker(loc))
-			can_play_remove_favour = true
+			can_remove_favour = true
 	}
 
-	if (can_play_remove_troops) {
+	if (can_remove_troops) {
 		game.state = "welsh_rebellion_remove_troops"
 		game.who = NOBODY
 		game.count = 0
 	}
-	else if (can_play_remove_favour) {
+	else if (can_remove_favour) {
 		game.state = "welsh_rebellion_remove_favour"
 		game.who = NOBODY
 		game.count = 0
@@ -10026,52 +10026,50 @@ states.welsh_rebellion_remove_troops = {
 				view.actions.done = 1
 			}
 		}
-		else if (game.who !== NOBODY) {
-			if (game.count >= 0) {
-				view.prompt = `Remove ${game.count} Troops from ${data.lords[game.who].name}.`
-				if (game.count === 0) {
-					set_lord_moved(game.who, 0)
-					view.actions.done = 1
-				}
-				else {
-					if (get_lord_forces(game.who, BURGUNDIANS) > 0)
-						gen_action_burgundians(game.who)
-					if (get_lord_forces(game.who, MERCENARIES) > 0)
-						gen_action_mercenaries(game.who)
-					if (get_lord_forces(game.who, LONGBOWMEN) > 0)
-						gen_action_longbowmen(game.who)
-					if (get_lord_forces(game.who, MEN_AT_ARMS) > 0)
-						gen_action_men_at_arms(game.who)
-					if (get_lord_forces(game.who, MILITIA) > 0)
-						gen_action_militia(game.who)
-				}
-			}
+		else {
+			view.prompt = `Remove ${game.count} Troops from ${data.lords[game.who].name}.`
+			if (get_lord_forces(game.who, BURGUNDIANS) > 0)
+				gen_action_burgundians(game.who)
+			if (get_lord_forces(game.who, MERCENARIES) > 0)
+				gen_action_mercenaries(game.who)
+			if (get_lord_forces(game.who, LONGBOWMEN) > 0)
+				gen_action_longbowmen(game.who)
+			if (get_lord_forces(game.who, MEN_AT_ARMS) > 0)
+				gen_action_men_at_arms(game.who)
+			if (get_lord_forces(game.who, MILITIA) > 0)
+				gen_action_militia(game.who)
 		}
 	},
 	lord(lord) {
 		push_undo()
+		set_lord_moved(lord, 0)
 		game.who = lord
 		game.count = 2
 	},
 	burgundians(lord) {
 		add_lord_forces(lord, BURGUNDIANS, -1)
-		game.count--
+		if (--game.count === 0 || !lord_has_unrouted_units(lord))
+			game.who = NOBODY
 	},
 	mercenaries(lord) {
 		add_lord_forces(lord, MERCENARIES, -1)
-		game.count--
+		if (--game.count === 0 || !lord_has_unrouted_units(lord))
+			game.who = NOBODY
 	},
 	longbowmen(lord) {
 		add_lord_forces(lord, LONGBOWMEN, -1)
-		game.count--
+		if (--game.count === 0 || !lord_has_unrouted_units(lord))
+			game.who = NOBODY
 	},
 	men_at_arms(lord) {
 		add_lord_forces(lord, MEN_AT_ARMS, -1)
-		game.count--
+		if (--game.count === 0 || !lord_has_unrouted_units(lord))
+			game.who = NOBODY
 	},
 	militia(lord) {
 		add_lord_forces(lord, MILITIA, -1)
-		game.count--
+		if (--game.count === 0 || !lord_has_unrouted_units(lord))
+			game.who = NOBODY
 	},
 	done() {
 		end_welsh_rebellion_remove_troops()
