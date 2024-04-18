@@ -129,7 +129,6 @@ interface Game {
 		succession: 0 | 1,
 		supply_depot: 0 | 1,
 		surprise_landing: 0 | 1,
-		swap_battle_attacker: 0 | 1,
 		warden_of_the_marches: 0 | 1,
 	},
 
@@ -4695,43 +4694,18 @@ function end_intercept() {
 	goto_kings_parley()
 }
 
-function can_play_held_event_at_intercept(c: Card) {
-	switch (c) {
-		case EVENT_LANCASTER_FLANK_ATTACK:
-			return can_play_flank_attack()
-		case EVENT_YORK_FLANK_ATTACK:
-			return can_play_flank_attack()
-	}
-	return false
-}
-
-function prompt_held_event_intercept() {
-	for (let c of current_hand())
-		if (can_play_held_event_at_intercept(c))
-			gen_action_card(c)
-}
-
-function action_held_event_at_intercept(c: Card) {
-	push_undo()
-	play_held_event(c)
-	switch (c) {
-		// Play at Intercept
-		case EVENT_LANCASTER_FLANK_ATTACK:
-		case EVENT_YORK_FLANK_ATTACK:
-			set_add(game.events, c)
-			break
-	}
-}
-
 states.intercept = {
 	inactive: "Intercept",
 	prompt() {
 		view.prompt = `Choose lord to intercept moving lords?`
-		let to = get_lord_locale(game.command)
 
-		prompt_held_event_intercept()
+		if (game.active === YORK)
+			gen_action_card_if_held(EVENT_YORK_FLANK_ATTACK)
+		else
+			gen_action_card_if_held(EVENT_LANCASTER_FLANK_ATTACK)
 
 		if (game.who === NOBODY) {
+			let to = get_lord_locale(game.command)
 			for (let next of data.locales[to].not_paths)
 				for_each_friendly_lord_in_locale(next, gen_action_lord)
 		} else {
@@ -4759,7 +4733,11 @@ states.intercept = {
 			set_toggle(game.intercept_group, lord)
 		}
 	},
-	card: action_held_event_at_intercept,
+	card(c) {
+		push_undo()
+		play_held_event(c)
+		set_add(game.events, c)
+	},
 	pass() {
 		set_active_enemy()
 		end_intercept()
@@ -4767,9 +4745,8 @@ states.intercept = {
 	intercept() {
 		let valour = data.lords[game.who].valour
 		let success = false
-		if (is_event_in_play(EVENT_LANCASTER_FLANK_ATTACK) || is_event_in_play(EVENT_YORK_FLANK_ATTACK)) {
+		if (is_flank_attack_in_play()) {
 			success = true
-			// FIXME: swap_battle_attacker = 1 ???
 		}
 		else {
 			let roll = roll_die()
@@ -4845,8 +4822,8 @@ function for_each_friendly_lord_in_locale(loc: Locale, f) {
 
 // === MARCH EVENT: FLANK ATTACK ===
 
-function can_play_flank_attack() {
-	return game.state === "intercept" && game.who !== NOBODY && !is_truce_in_effect()
+function is_flank_attack_in_play() {
+	return is_event_in_play(EVENT_LANCASTER_FLANK_ATTACK) || is_event_in_play(EVENT_YORK_FLANK_ATTACK)
 }
 
 // === MARCH EVENT: KING'S PARLEY ===
@@ -5347,6 +5324,13 @@ function goto_battle() {
 		dhits: 0,
 		attacker_artillery: 0,
 		defender_artillery: 0,
+	}
+
+	if (is_flank_attack_in_play()) {
+		if (game.battle.attacker === YORK)
+			game.battle.attacker = LANCASTER
+		else
+			game.battle.attacker = YORK
 	}
 
 	// Troops by capability
@@ -8307,7 +8291,6 @@ exports.setup = function (seed, scenario, options) {
 			succession: 0,
 			supply_depot: 0,
 			surprise_landing: 0,
-			swap_battle_attacker: 0,
 			warden_of_the_marches: 0,
 		},
 
