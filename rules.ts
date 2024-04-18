@@ -959,8 +959,8 @@ function all_friendly_lords() {
 
 function all_enemy_lords() {
 	if (game.active === YORK)
-		return all_york_lords
-	return all_lancaster_lords
+		return all_lancaster_lords
+	return all_york_lords
 }
 
 function update_aliases() {
