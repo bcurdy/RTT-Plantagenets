@@ -1939,10 +1939,7 @@ function prompt_influence_check() {
 		view.actions.spend1 = 1
 		view.actions.spend3 = 1
 	}
-	if (game.where !== NOWHERE)
-		gen_action_locale(game.where)
 	view.actions.check = 1
-
 	view.prompt += `Cost: ${count_influence_cost()} - Range (${range(count_influence_score())})`
 }
 
@@ -3003,7 +3000,6 @@ states.levy_muster_lord_attempt = {
 	inactive: "Levy Lord",
 	prompt() {
 		view.prompt = `Levy Lord ${lord_name[game.other]}. `
-
 		prompt_influence_check()
 	},
 	spend1: add_influence_check_modifier_1,
@@ -3782,6 +3778,7 @@ states.supply_source = {
 		}
 
 		if (port_supply > 0 && stronghold_supply === 0) {
+			// TODO: naval blockade?
 			use_port_supply(loc, port_supply)
 			return
 		}
@@ -4188,8 +4185,8 @@ function get_tax_amount(loc: Locale, lord: Lord) {
 states.tax = {
 	inactive: "Tax",
 	prompt() {
-		view.prompt = "Tax: Select the location to tax."
 		if (game.where === NOWHERE) {
+			view.prompt = "Tax: Select the location to tax."
 			for (let loc of search_tax([], get_lord_locale(game.command), game.command))
 				gen_action_locale(loc)
 		} else {
@@ -4409,8 +4406,8 @@ function end_parley(success: boolean) {
 states.parley = {
 	inactive: "Parley",
 	prompt() {
-		view.prompt = "Parley: Choose a Locale to Parley."
 		if (game.where === NOWHERE) {
+			view.prompt = "Parley: Choose a Locale to Parley."
 			for (let i = 0; i < game.parley.length; i += 2)
 				gen_action_locale(game.parley[i] as Locale)
 		} else {
