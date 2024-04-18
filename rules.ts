@@ -3151,7 +3151,7 @@ states.levy_muster_vassal = {
 		if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES)) {
 			log(`Automatic Success. C${AOW_LANCASTER_TWO_ROSES}.`)
 		}
-		else if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND) && game.state === "levy_muster_vassal") {
+		else if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND)) {
 			log(`Automatic Success. C${EVENT_LANCASTER_THE_EARL_OF_RICHMOND}.`)
 		}
 		else {
@@ -4544,7 +4544,7 @@ states.parley = {
 		&& game.command === LORD_DEVON
 		&& get_lord_locale(LORD_DEVON) === LOC_EXETER
 		&& is_event_in_play(EVENT_YORK_DORSET)
-		&& game.state === "parley") {
+		) {
 			log(`Parley at ${data.locales[game.where].name}. Automatic Success. C${EVENT_YORK_DORSET}.`)
 		}
 		else
