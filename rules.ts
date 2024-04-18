@@ -9,8 +9,6 @@
 // TODO: remove unneccessary game.who = NOBODY etc
 // TODO: call end_influence_check earlier when possible?
 
-// TODO: prompt_held_event -- specific subsets at specific times only (move, battle, death check, after move/sail, any command)
-
 // TODO: use game.command instead of game.who for levy -- can we avoid saving who and count in push_state?
 
 // TODO: verify all push_state uses
@@ -2186,7 +2184,6 @@ states.pay = {
 	end_pay() {
 		end_pay()
 	},
-	card: action_held_event,
 }
 
 states.pay_lord_shared = {
@@ -2348,7 +2345,6 @@ states.pay_lords = {
 	inactive: "Pay Lords",
 	prompt() {
 		view.prompt = "Pay Lords in Influence or Disband them."
-		prompt_held_event()
 		if (game.who === NOBODY) {
 			let done = true
 			for (let lord of all_friendly_lords()) {
@@ -2388,7 +2384,6 @@ states.pay_lords = {
 			}
 		}
 	},
-	card: action_held_event,
 	done() {
 		end_pay_lords()
 	},
@@ -2685,7 +2680,8 @@ states.levy_muster = {
 	prompt() {
 		view.prompt = "Levy: Muster with your Lords."
 
-		prompt_held_event()
+		prompt_held_event_at_levy()
+
 		let done = true
 		for (let lord of all_friendly_lords()) {
 			if (can_lord_muster(lord)) {
@@ -2711,7 +2707,7 @@ states.levy_muster = {
 		end_levy_muster()
 	},
 
-	card: action_held_event,
+	card: action_held_event_at_levy,
 }
 
 function resume_levy_muster_lord() {
@@ -3467,7 +3463,7 @@ states.command = {
 
 		let here = get_lord_locale(game.command)
 
-		prompt_held_event()
+		prompt_held_event_at_campaign()
 
 		// 4.3.2 Marshals MAY take other lords
 		if (
@@ -3544,7 +3540,7 @@ states.command = {
 		set_toggle(game.group, lord)
 	},
 
-	card: action_held_event,
+	card: action_held_event_at_campaign,
 
 	parley() {
 		push_undo()
@@ -4660,7 +4656,7 @@ function end_intercept() {
 	goto_kings_parley()
 }
 
-function can_play_held_event_intercept(c) {
+function can_play_held_event_at_intercept(c: Card) {
 	switch (c) {
 		case EVENT_LANCASTER_FLANK_ATTACK:
 			return can_play_flank_attack()
@@ -4672,8 +4668,20 @@ function can_play_held_event_intercept(c) {
 
 function prompt_held_event_intercept() {
 	for (let c of current_hand())
-		if (can_play_held_event_intercept(c))
+		if (can_play_held_event_at_intercept(c))
 			gen_action_card(c)
+}
+
+function action_held_event_at_intercept(c: Card) {
+	push_undo()
+	play_held_event(c)
+	switch (c) {
+		// Play at Intercept
+		case EVENT_LANCASTER_FLANK_ATTACK:
+		case EVENT_YORK_FLANK_ATTACK:
+			set_add(game.events, c)
+			break
+	}
 }
 
 states.intercept = {
@@ -4712,10 +4720,7 @@ states.intercept = {
 			set_toggle(game.intercept_group, lord)
 		}
 	},
-	card(c) {
-		push_undo()
-		play_held_event(c)
-	},
+	card: action_held_event_at_intercept,
 	pass() {
 		set_active_enemy()
 		end_intercept()
@@ -7088,7 +7093,7 @@ function end_death_or_disband() {
 	}
 }
 
-function prompt_held_event_death_check() {
+function prompt_held_event_at_death_check() {
 	// both attacker and defender events
 	if (game.active === LANCASTER) {
 		if (can_play_escape_ship())
@@ -7105,12 +7110,31 @@ function prompt_held_event_death_check() {
 	}
 }
 
+function action_held_event_at_death_check(c: Card) {
+	push_undo()
+	play_held_event(c)
+	switch (c) {
+		// Play upon Death Check
+		case EVENT_YORK_ESCAPE_SHIP[0]:
+		case EVENT_YORK_ESCAPE_SHIP[1]:
+		case EVENT_LANCASTER_ESCAPE_SHIP:
+			goto_play_escape_ship()
+			break
+		case EVENT_LANCASTER_TALBOT_TO_THE_RESCUE:
+			goto_play_talbot_to_the_rescue()
+			break
+		case EVENT_LANCASTER_WARDEN_OF_THE_MARCHES:
+			goto_play_warden_of_the_marches()
+			break
+	}
+}
+
 states.death_check = {
 	inactive: "Death or Disband",
 	prompt() {
 		view.prompt = `Death or Disband: Select lords to roll for Death or Disband.`
 
-		prompt_held_event_death_check()
+		prompt_held_event_at_death_check()
 
 		let done = true
 		for (let lord of game.battle.fled) {
@@ -7158,7 +7182,7 @@ states.death_check = {
 	done() {
 		end_death_or_disband()
 	},
-	card: action_held_event,
+	card: action_held_event_at_death_check,
 }
 
 // === DEATH CHECK EVENT: ESCAPE SHIP ===
@@ -7462,7 +7486,6 @@ states.feed = {
 		push_undo()
 		end_feed()
 	},
-	card: action_held_event,
 }
 
 function resume_feed_lord_shared() {
@@ -9337,7 +9360,6 @@ states.soldiers_of_fortune = {
 	end_sof() {
 		end_soldiers_of_fortune()
 	},
-	card: action_held_event,
 }
 
 function end_soldiers_of_fortune() {
@@ -9403,7 +9425,6 @@ states.commission_of_array = {
 		}
 		end_commission_of_array()
 	},
-	card: action_held_event,
 }
 
 function end_commission_of_array() {
@@ -11170,41 +11191,28 @@ function end_exile_pact() {
 
 function play_held_event(c: Card) {
 	log(`Played E${c}.`)
-	if (c >= first_york_card && c <= last_york_card)
+	if (is_york_card(c))
 		set_delete(game.hand_y, c)
 	else
 		set_delete(game.hand_l, c)
-
-	/* Hold events with This Levy/Campaign */
-	if (
-		c === EVENT_YORK_YORKIST_PARADE ||
-		c === EVENT_YORK_PARLIAMENTS_TRUCE ||
-		c === EVENT_LANCASTER_PARLIAMENTS_TRUCE
-	) {
-		set_add(game.events, c)
-	}
 }
 
-function prompt_held_event() {
+function prompt_held_event_at_levy() {
 	for (let c of current_hand())
-		if (can_play_held_event(c))
+		if (can_play_held_event_at_levy(c))
 			gen_action_card(c)
 }
 
-function can_play_held_event(c: Card) {
+function prompt_held_event_at_campaign() {
+	for (let c of current_hand())
+		if (can_play_held_event_at_campaign(c))
+			gen_action_card(c)
+}
+
+function can_play_held_event_at_levy(c: Card) {
 	switch (c) {
 		case EVENT_LANCASTER_ASPIELLES:
 			return can_play_l_aspielles()
-		// TODO: move into states.command ?
-		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
-			return can_play_rebel_supply_depot()
-		// TODO: move into states.command ?
-		case EVENT_LANCASTER_SURPRISE_LANDING:
-			return can_play_surprise_landing()
-		case EVENT_LANCASTER_PARLIAMENTS_TRUCE:
-			return can_play_parliaments_truce()
-		case EVENT_YORK_PARLIAMENTS_TRUCE:
-			return can_play_parliaments_truce()
 		case EVENT_YORK_ASPIELLES:
 			return can_play_y_aspielles()
 		case EVENT_YORK_YORKIST_PARADE:
@@ -11215,39 +11223,53 @@ function can_play_held_event(c: Card) {
 	return false
 }
 
-function action_held_event(c: Card) {
-	push_undo()
-	play_held_event(c)
-	goto_held_event(c)
+function can_play_held_event_at_campaign(c: Card) {
+	switch (c) {
+		case EVENT_LANCASTER_ASPIELLES:
+			return can_play_l_aspielles()
+		case EVENT_YORK_ASPIELLES:
+			return can_play_y_aspielles()
+		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
+			return can_play_rebel_supply_depot()
+		case EVENT_LANCASTER_SURPRISE_LANDING:
+			return can_play_surprise_landing()
+		case EVENT_LANCASTER_PARLIAMENTS_TRUCE:
+			return can_play_parliaments_truce()
+		case EVENT_YORK_PARLIAMENTS_TRUCE:
+			return can_play_parliaments_truce()
+	}
+	return false
 }
 
-function goto_held_event(c: Card) {
+function action_held_event_at_levy(c: Card) {
+	push_undo()
+	play_held_event(c)
 	switch (c) {
-		// Play upon Death Check
-		// TODO: move into states.death_check
-		case EVENT_YORK_ESCAPE_SHIP[0]:
-		case EVENT_YORK_ESCAPE_SHIP[1]:
-		case EVENT_LANCASTER_ESCAPE_SHIP:
-			goto_play_escape_ship()
-			break
-		case EVENT_LANCASTER_TALBOT_TO_THE_RESCUE:
-			goto_play_talbot_to_the_rescue()
-			break
-		case EVENT_LANCASTER_WARDEN_OF_THE_MARCHES:
-			goto_play_warden_of_the_marches()
+		// Play any time
+		case EVENT_YORK_ASPIELLES:
+		case EVENT_LANCASTER_ASPIELLES:
+			goto_play_aspielles()
 			break
 
 		// Play in Levy
-		// TODO: move into states.levy
 		case EVENT_YORK_SUN_IN_SPLENDOUR:
 			goto_play_sun_in_splendour()
 			break
 
 		// Play in Levy (for passive effect)
 		case EVENT_YORK_YORKIST_PARADE:
-			// no effect
+			set_add(game.events, c)
 			break
 
+		default:
+			throw "INVALID CARD"
+	}
+}
+
+function action_held_event_at_campaign(c: Card) {
+	push_undo()
+	play_held_event(c)
+	switch (c) {
 		// Play any time
 		case EVENT_YORK_ASPIELLES:
 		case EVENT_LANCASTER_ASPIELLES:
@@ -11265,6 +11287,15 @@ function goto_held_event(c: Card) {
 		case EVENT_LANCASTER_SURPRISE_LANDING:
 			goto_play_surprise_landing()
 			break
+
+		// Play in Campaign (for passive effect)
+		case EVENT_LANCASTER_PARLIAMENTS_TRUCE:
+		case EVENT_YORK_PARLIAMENTS_TRUCE:
+			set_add(game.events, c)
+			break
+
+		default:
+			throw "INVALID CARD"
 	}
 }
 
@@ -11427,7 +11458,6 @@ states.surprise_landing = {
 	inactive: "Surprise Landing",
 	prompt() {
 		view.prompt = "Surprise Landing : You may march once (no path)."
-		prompt_held_event()
 
 		view.group = game.group
 		let here = get_lord_locale(game.command)
@@ -11457,7 +11487,6 @@ states.surprise_landing = {
 		set_toggle(game.group, lord)
 	},
 	locale: goto_march,
-	card: action_held_event,
 }
 
 // === LOGGING ===
