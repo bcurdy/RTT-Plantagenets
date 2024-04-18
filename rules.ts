@@ -3220,7 +3220,7 @@ function can_add_troops_sof(lord: Lord, locale: Locale) {
 // === 3.4.5 LEVY TRANSPORT
 
 function can_add_transport(who: Lord, what: Asset) {
-	return get_lord_assets(who, what) < 100
+	return get_lord_assets(who, what) < 14
 }
 
 // === 3.4.6 LEVY CAPABILITY ===
