@@ -111,7 +111,6 @@ interface Game {
 	},
 
 	flags: {
-		bloody: 0 | 1,
 		burgundians: 0 | 1,
 		first_action: 0 | 1,
 		first_march_highway: 0 | 1,
@@ -7154,21 +7153,23 @@ states.battle_spoils = {
 function goto_death_or_disband() {
 	remove_battle_capability_troops()
 
-	if (game.battle.loser === LANCASTER && lord_has_capability(LORD_RICHARD_III, AOW_YORK_BLOODY_THOU_ART) && get_lord_locale(LORD_RICHARD_III) === game.battle.where)
-		game.flags.bloody = 1
-	else
-		game.flags.bloody = 0
-
-	if (has_defeated_lords())
-		game.state = "death_check"
-	else
+	if (has_defeated_lords()) {
+		if (is_bloody_thou_art_triggered())
+			game.state = "bloody_thou_art"
+		else
+			game.state = "death_check"
+	} else {
 		end_death_or_disband()
+	}
 }
 
 function end_death_or_disband() {
 	set_active_enemy()
 	if (has_defeated_lords()) {
-		game.state = "death_check"
+		if (is_bloody_thou_art_triggered())
+			game.state = "bloody_thou_art"
+		else
+			game.state = "death_check"
 	} else {
 		goto_battle_aftermath()
 	}
@@ -7236,29 +7237,57 @@ states.death_check = {
 		let threshold = 2
 		let modifier = 0
 
-		// CAPABILITY: BLOODY THOU ART, BLOODY WILL BE THE END
-		if (is_lancaster_lord(lord) && game.flags.bloody === 1) {
-			logcap(AOW_YORK_BLOODY_THOU_ART)
-			disband_lord(lord, true)
-			set_delete(game.battle.fled, lord)
-			set_delete(game.battle.routed, lord)
-		}
-		else {
-			let roll = roll_die()
-			if (set_has(game.battle.fled, lord))
-				modifier = -2
+		let roll = roll_die()
+		if (set_has(game.battle.fled, lord))
+			modifier = -2
 
-			let success = threshold >= roll + modifier
-			log(`Lord ${lord_name[lord]} ${success ? "Survived" : "Died"}: (${range(2)}) ${success ? HIT[roll] : MISS[roll]} ${modifier < 0 ? "(-2 Fled)" : ""}`)
-			disband_lord(lord, !success)
-			set_delete(game.battle.fled, lord)
-			set_delete(game.battle.routed, lord)
-		}
+		let success = threshold >= roll + modifier
+		log(`Lord ${lord_name[lord]} ${success ? "Survived" : "Died"}: (${range(2)}) ${success ? HIT[roll] : MISS[roll]} ${modifier < 0 ? "(-2 Fled)" : ""}`)
+		disband_lord(lord, !success)
+		set_delete(game.battle.fled, lord)
+		set_delete(game.battle.routed, lord)
 	},
 	done() {
 		end_death_or_disband()
 	},
 	card: action_held_event_at_death_check,
+}
+
+// === DEATH CHECK CAPABILITY: BLOODY THOU ART ===
+
+function is_bloody_thou_art_triggered() {
+	return (
+		game.active === LANCASTER &&
+		game.battle.loser === LANCASTER &&
+		lord_has_capability(LORD_RICHARD_III, AOW_YORK_BLOODY_THOU_ART) &&
+		get_lord_locale(LORD_RICHARD_III) === game.battle.where
+	)
+}
+
+states.bloody_thou_art = {
+	inactive: "Bloody thou art",
+	prompt() {
+		view.prompt = "Bloody thou art: All Routed Lancastrian Lords Die."
+
+		let done = true
+		for (let lord of game.battle.routed) {
+			if (is_friendly_lord(lord)) {
+				gen_action_lord(lord)
+				done = false
+			}
+		}
+
+		if (done)
+			view.actions.done = 1
+	},
+	lord(lord) {
+		logcap(AOW_YORK_BLOODY_THOU_ART)
+		disband_lord(lord, true)
+		set_delete(game.battle.routed, lord)
+	},
+	done() {
+		game.state = "death_check"
+	},
 }
 
 // === DEATH CHECK EVENT: ESCAPE SHIP ===
@@ -7457,7 +7486,6 @@ function goto_battle_aftermath() {
 	// Recovery
 	spend_all_actions()
 	delete game.battle
-	game.flags.bloody = 0
 	end_march()
 }
 
@@ -8337,7 +8365,6 @@ exports.setup = function (seed, scenario, options) {
 		},
 
 		flags: {
-			bloody: 0,
 			burgundians: 0,
 			first_action: 0,
 			first_march_highway: 0,
