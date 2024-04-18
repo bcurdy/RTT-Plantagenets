@@ -4303,14 +4303,11 @@ states.tax = {
 
 // === 4.6.4 ACTION: PARLEY ===
 
-// TODO : FIX Parley through strongholds overseas
 function can_parley_at(loc: Locale) {
 	return !is_exile(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc) && !is_sea(loc)
 }
 
-function search_parley(result, start: Locale, lord: Lord) {
-	let ships = count_shared_ships(start, false)
-
+function search_parley_levy(result, start: Locale, lord: Lord) {
 	search_dist.fill(0)
 	search_seen.fill(0)
 	search_seen[start] = 1
@@ -4336,7 +4333,8 @@ function search_parley(result, start: Locale, lord: Lord) {
 					queue.push(next)
 				}
 			}
-			if (ships > 0 && is_seaport(here)) {
+
+			if (here === start && is_exile(here) && count_shared_ships(start, false) > 0) {
 				for (let next of find_ports(here, lord)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
@@ -4353,18 +4351,6 @@ function search_parley(result, start: Locale, lord: Lord) {
 	else
 		return false
 }
-
-function search_parley_for_naval_blockade(start: Locale, destination: Locale) {
-	if (count_shared_ships(start, false) === 0)
-		return false
-/*
-	TODO: full recursive search to see if we can reach destination
-	let war = get_lord_locale(LORD_WARWICK_Y))
-	let dist = map_get(game.parley, destination)
-*/
-	return can_naval_blockade(start) || can_naval_blockade(destination)
-}
-
 
 function can_action_parley_command() {
 	if (game.actions <= 0)
@@ -4385,7 +4371,7 @@ function can_action_parley_command() {
 		if (can_parley_at(next))
 			return true
 
-	if (is_seaport(here) && count_shared_ships(here, false) > 0)
+	if (is_exile(here) && count_shared_ships(here, false) > 0)
 		for (let next of find_ports(here, game.command))
 			if (can_parley_at(next))
 				return true
@@ -4393,7 +4379,7 @@ function can_action_parley_command() {
 	return false
 }
 
-function list_parley_command() {
+function search_parley_campaign() {
 	let result = []
 
 	let here = get_lord_locale(game.command)
@@ -4405,7 +4391,7 @@ function list_parley_command() {
 			if (can_parley_at(next))
 				map_set(result, next, 1)
 
-		if (is_seaport(here) && count_shared_ships(here, false) > 0)
+		if (is_exile(here) && count_shared_ships(here, false) > 0)
 			for (let next of find_ports(here, game.command))
 				if (can_parley_at(next))
 					map_set(result, next, 1)
@@ -4423,11 +4409,7 @@ function can_action_parley_levy(): boolean {
 	let here = get_lord_locale(game.who)
 	if (can_parley_at(here))
 		return true
-	return search_parley(false, here, game.who)
-}
-
-function list_parley_levy() {
-	return search_parley([], get_lord_locale(game.who), game.who)
+	return search_parley_levy(false, here, game.who)
 }
 
 function goto_parley() {
@@ -4435,10 +4417,10 @@ function goto_parley() {
 
 	if (is_levy_phase()) {
 		init_influence_check(game.who)
-		game.parley = list_parley_levy()
+		game.parley = search_parley_levy([], get_lord_locale(game.who), game.who)
 	} else {
 		init_influence_check(game.command)
-		game.parley = list_parley_command()
+		game.parley = search_parley_campaign()
 
 		// Campaign phase, and current location is no cost (except some events), and always successful.
 		if (game.parley.length === 2 && get_lord_locale(game.command) === game.parley[0]) {
@@ -4508,17 +4490,11 @@ states.parley = {
 		push_undo()
 		game.where = loc
 		add_influence_check_distance(map_get(game.parley, loc, 0))
-		if (is_levy_phase()) {
-			// needs full search of the entire chain during levy
-			if (can_naval_blockade_parley(get_lord_locale(game.who), loc))
+		let here = get_lord_locale(is_levy_phase() ? game.who : game.command)
+		if (!is_adjacent(here, loc)) {
+			// TODO: check interaction of Naval Blockade with Great Ships when parleying across multiple seas
+			if (can_naval_blockade(here))
 				game.state = "blockade_parley"
-		} else {
-			// limited parley length during campaign
-			let here = get_lord_locale(game.command)
-			if (!is_adjacent(here, loc)) {
-				if (can_naval_blockade(here) || can_naval_blockade(loc))
-					game.state = "blockade_parley"
-			}
 		}
 	},
 	spend1: add_influence_check_modifier_1,
@@ -9702,12 +9678,6 @@ function is_naval_blockade_in_play() {
 function can_naval_blockade(here: Locale) {
 	if (is_naval_blockade_in_play())
 		return is_on_same_sea(here, get_lord_locale(LORD_WARWICK_Y))
-	return false
-}
-
-function can_naval_blockade_parley(from: Locale, to: Locale) {
-	if (is_naval_blockade_in_play())
-		return search_parley_for_naval_blockade(from, to)
 	return false
 }
 
