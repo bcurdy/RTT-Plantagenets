@@ -4968,10 +4968,6 @@ function end_kings_parley() {
 
 // === MARCH EVENT: PARLIAMENT'S TRUCE ===
 
-function can_play_parliaments_truce() {
-	return game.state === "campaign"
-}
-
 function is_truce_in_effect() {
 	return (
 		is_event_in_play(EVENT_YORK_PARLIAMENTS_TRUCE) ||
@@ -11205,9 +11201,9 @@ function can_play_held_event_at_campaign(c: Card) {
 		case EVENT_LANCASTER_SURPRISE_LANDING:
 			return can_play_surprise_landing()
 		case EVENT_LANCASTER_PARLIAMENTS_TRUCE:
-			return can_play_parliaments_truce()
+			return true
 		case EVENT_YORK_PARLIAMENTS_TRUCE:
-			return can_play_parliaments_truce()
+			return true
 	}
 	return false
 }
