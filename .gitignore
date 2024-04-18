@@ -1,1 +1,4 @@
 HIRES
+node_modules
+rules.d.ts
+package-lock.json
