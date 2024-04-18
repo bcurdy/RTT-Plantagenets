@@ -1698,13 +1698,6 @@ function has_enemy_lord(loc: Locale) {
 	return false
 }
 
-function has_unbesieged_enemy_lord(loc: Locale) {
-	for (let lord of all_enemy_lords())
-		if (get_lord_locale(lord) === loc)
-			return true
-	return false
-}
-
 function is_lord_in_or_adjacent_to_north(lord: Lord) {
 	let here = get_lord_locale(lord)
 	if (is_north(here))
@@ -1751,7 +1744,7 @@ function other_marshal_or_lieutenant(loc: Locale) {
 
 function has_adjacent_enemy(loc: Locale) {
 	for (let next of data.locales[loc].adjacent)
-		if (has_unbesieged_enemy_lord(next))
+		if (has_enemy_lord(next))
 			return true
 	return false
 }
@@ -4002,12 +3995,11 @@ function do_sail(to: Locale) {
 	else
 		spend_all_actions()
 
-	// you can go to unbesieged enemy lord with norfolk capability
-	if (has_unbesieged_enemy_lord(to))
+	// you can go to enemy lord with norfolk capability
+	if (has_enemy_lord(to))
 		goto_confirm_approach_sail()
-	else {
+	else
 		resume_command()
-	}
 }
 
 function goto_confirm_approach_sail() {
