@@ -565,9 +565,11 @@ function is_adjacent(a: Locale, b: Locale) {
 
 function find_ports(here: Locale, lord: Lord): Locale[] {
 
-	// TODO: verify which lord is being passed in every place
-	if ((lord_has_capability(lord, AOW_YORK_GREAT_SHIPS) || lord_has_capability(lord, AOW_LANCASTER_GREAT_SHIPS)))
-		return data.all_ports
+	// for Parley, Supply, and Tax purposes only (not Disembark)
+	if (lord !== NOBODY) {
+		if ((lord_has_capability(lord, AOW_YORK_GREAT_SHIPS) || lord_has_capability(lord, AOW_LANCASTER_GREAT_SHIPS)))
+			return data.all_ports
+	}
 
 	if (here === data.sea_1) return data.port_1
 	if (here === data.sea_2) return data.port_2
@@ -7984,8 +7986,8 @@ function do_disembark() {
 	return success
 }
 
-function has_safe_ports(sea: Locale, lord: Lord) {
-	for (let loc of find_ports(sea, lord))
+function has_safe_ports(sea: Locale) {
+	for (let loc of find_ports(sea, NOBODY))
 		if (!has_enemy_lord(loc))
 			return true
 	return false
@@ -8004,8 +8006,7 @@ states.disembark = {
 				}
 			}
 		} else {
-			let sea = get_lord_locale(game.who)
-			for (let loc of find_ports(sea, game.who))
+			for (let loc of find_ports(get_lord_locale(game.who), NOBODY))
 				if (!has_enemy_lord(loc))
 					gen_action_locale(loc)
 		}
@@ -8015,7 +8016,7 @@ states.disembark = {
 	},
 	lord(lord) {
 		if (do_disembark()) {
-			if (has_safe_ports(get_lord_locale(lord), lord)) {
+			if (has_safe_ports(get_lord_locale(lord))) {
 				game.who = lord
 			} else {
 				no_safe_disembark(lord)
