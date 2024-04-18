@@ -12121,7 +12121,7 @@ function map_delete(map, item) {
 	}
 }
 
-function map_for_each<K,V>(map: MyMap<K,V>, f: (K,V)=>void) {
+function map_for_each<K,V>(map: MyMap<K,V>, f: (_:K,_:V)=>void) {
 	for (let i = 0; i < map.length; i += 2)
 		f(map[i] as K, map[i+1] as V)
 }
