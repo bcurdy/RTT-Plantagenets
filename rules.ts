@@ -129,7 +129,6 @@ interface Game {
 		succession: 0 | 1,
 		supply_depot: 0 | 1,
 		surprise_landing: 0 | 1,
-		warden_of_the_marches: 0 | 1,
 	},
 
 	command: Lord,
@@ -7161,12 +7160,8 @@ states.death_check = {
 				done = false
 			}
 		}
-		if (game.flags.warden_of_the_marches && game.active === LANCASTER) {
-			done = true
-		}
-		if (done) {
+		if (done)
 			view.actions.done = 1
-		}
 	},
 	lord(lord) {
 		let threshold = 2
@@ -7335,6 +7330,9 @@ states.warden_of_the_marches = {
 	},
 	lord(lord) {
 		push_undo()
+
+		set_delete(game.battle.routed, lord)
+
 		logi(`Moved lord to ${data.locales[game.where].name}`)
 
 		// TODO: move this stuff to somewhere common?
@@ -8289,7 +8287,6 @@ exports.setup = function (seed, scenario, options) {
 			succession: 0,
 			supply_depot: 0,
 			surprise_landing: 0,
-			warden_of_the_marches: 0,
 		},
 
 		command: NOBODY,
