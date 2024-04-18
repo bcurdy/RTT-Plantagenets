@@ -7299,7 +7299,7 @@ function can_play_warden_of_the_marches() {
 	// TODO: blocked ford?
 	if (is_north(game.battle.where)) {
 		for (let loc of all_locales)
-			if (is_north(loc) && loc !== game.battle.where && is_friendly_locale(loc))
+			if (is_north(loc) && loc !== game.battle.where && is_friendly_locale(loc) && !has_enemy_lord(loc))
 				return true
 	}
 	return false
@@ -7316,7 +7316,7 @@ states.warden_of_the_marches = {
 		if (game.where === NOWHERE) {
 			view.prompt = "Warden of the Marches: Move any Routed Lancastrians to a Friendly Stronghold in the North."
 			for (let loc of all_locales)
-				if (is_north(loc) && loc !== game.battle.where && is_friendly_locale(loc))
+				if (is_north(loc) && loc !== game.battle.where && is_friendly_locale(loc) && !has_enemy_lord(loc))
 					gen_action_locale(loc)
 		} else {
 			for (let lord of game.battle.routed)
