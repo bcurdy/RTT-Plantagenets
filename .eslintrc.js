@@ -1,6 +1,12 @@
 module.exports = {
 	parser: "@typescript-eslint/parser",
-	extends: "eslint:recommended",
+	extends: [
+		"eslint:recommended",
+		"plugin:@typescript-eslint/recommended",
+	],
+	plugins: [
+		"@typescript-eslint"
+	],
 	env: {
 		browser: true,
 		commonjs: true,
@@ -10,7 +16,9 @@ module.exports = {
 		"no-constant-binary-expression": "error",
 		indent: [ "warn", "tab", { SwitchCase: 1 } ],
 		semi: [ "error", "never" ],
-		"no-unused-vars": [ "error", { "vars": "all", "args": "all", "argsIgnorePattern": "^_" } ],
 		"prefer-const": 0,
+		"no-unused-vars": "off",
+		"@typescript-eslint/no-unused-vars": [ "error", { "vars": "all", "args": "all", "argsIgnorePattern": "^_" } ],
+		"@typescript-eslint/no-explicit-any": "off",
 	},
 }

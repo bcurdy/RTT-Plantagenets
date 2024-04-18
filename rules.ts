@@ -310,13 +310,21 @@ interface View {
 	who?: Lord,
 }
 
-// === CONSTANTS ===
-
-var game: Game
-var view: View
-var states: { [index: string]: State } = {}
+// === GLOBALS ===
 
 const data = require("./data.js")
+
+let game: Game
+let view: View
+let states: { [index: string]: State } = {}
+
+let P1: Side
+let P2: Side
+
+const search_seen: number[] = new Array(data.locales.length)
+const search_dist: number[] = new Array(data.locales.length)
+
+// === CONSTANTS ===
 
 function find_card(name): Card {
 	let ix = data.cards.findIndex(x => x.name === name)
@@ -462,6 +470,9 @@ const first_york_lord = 0
 const last_york_lord = 13
 const first_lancaster_lord = 14
 const last_lancaster_lord = 27
+
+const all_york_lords = make_list(0, 13) as Lord[]
+const all_lancaster_lords = make_list(14, 27) as Lord[]
 
 const YORK_LORD_MASK = 0x1fff
 const LANCASTER_LORD_MASK = YORK_LORD_MASK << 14
@@ -940,12 +951,6 @@ const EVENT_YORK_SWIFT_MANEUVER = Y36
 const EVENT_YORK_PATRICK_DE_LA_MOTE = Y37
 
 // === STATE: ACTIVE PLAYER ===
-
-var P1: Side = YORK
-var P2: Side = LANCASTER
-
-const all_york_lords = make_list(0, 13) as Lord[]
-const all_lancaster_lords = make_list(14, 27) as Lord[]
 
 function all_friendly_lords() {
 	if (game.active === YORK)
@@ -4236,9 +4241,6 @@ states.tax = {
 function can_parley_at(loc: Locale) {
 	return !is_exile(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc) && !is_sea(loc)
 }
-
-var search_seen = new Array(data.locales.length)
-var search_dist = new Array(data.locales.length)
 
 function search_parley(result, start: Locale, lord: Lord) {
 	let ships = get_shared_assets(start, SHIP)
@@ -12121,7 +12123,7 @@ function map_delete(map, item) {
 	}
 }
 
-function map_for_each<K,V>(map: MyMap<K,V>, f: (_:K,_:V)=>void) {
+function map_for_each<K,V>(map: MyMap<K,V>, f: (k:K,v:V)=>void) {
 	for (let i = 0; i < map.length; i += 2)
 		f(map[i] as K, map[i+1] as V)
 }
