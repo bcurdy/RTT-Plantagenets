@@ -4262,43 +4262,40 @@ states.tax = {
 	inactive: "Tax",
 	prompt() {
 		if (game.where === NOWHERE) {
-			view.prompt = "Tax: Select the location to tax."
+			view.prompt = "Tax: Select a Stronghold to Tax."
 			for (let loc of search_tax([], get_lord_locale(game.command), game.command))
 				gen_action_locale(loc)
 		} else {
-			view.prompt = `Tax: Attempting to tax ${data.locales[game.where].name}. `
+			view.prompt = `Tax: Attempt to Tax ${data.locales[game.where].name}. `
 			prompt_influence_check()
 		}
 	},
 	locale(loc) {
 		game.where = loc
+		// TODO: naval blockade if only reachable by sea
 		if (loc === data.lords[game.command].seat) {
-			// Auto succeed without influence check at Lords seat.
-			deplete_locale(game.where)
-
-			log(`Taxed automatically successful at %${game.where}.`)
-			add_lord_assets(game.command, COIN, get_tax_amount(game.where, game.command))
+			do_tax(game.command, game.where, 1)
 			end_tax()
 		}
-
-		// TODO: naval blockade
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
 		let results = do_influence_check()
-		logi(`Tax : ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
-
-		if (results.success) {
-			deplete_locale(game.where)
-
-			log(`Taxed %${game.where}.`)
-			add_lord_assets(game.command, COIN, get_tax_amount(game.where, game.command))
-		} else {
-			log(`Tax of %${game.where} failed.`)
-		}
+		end_influence_check()
+		if (results.success)
+			do_tax(game.command, game.where, 1)
+		else
+			log(`Tax %${game.where} failed.`)
 		end_tax()
 	},
+}
+
+function do_tax(where, who, mul) {
+	let amount = get_tax_amount(where, who) * mul
+	log(`Tax %${where} for ${mul} Coin.`)
+	add_lord_assets(who, COIN, amount)
+	deplete_locale(where)
 }
 
 // === 4.6.4 ACTION: PARLEY ===
@@ -10649,40 +10646,34 @@ states.tax_collectors_lord = {
 	inactive: "Tax Collectors",
 	prompt() {
 		if (game.where === NOWHERE) {
-			view.prompt = "Tax: Select the location to tax for double."
+			view.prompt = "Tax Collectors: Select a Stronghold to Tax."
 			for (let loc of search_tax([], get_lord_locale(game.who), game.who))
 				gen_action_locale(loc)
 		} else {
-			view.prompt = `Tax: Attempting to tax ${data.locales[game.where].name}. `
+			view.prompt = `Tax Collectors: Attempt to Tax ${data.locales[game.where].name}. `
 			prompt_influence_check()
 		}
 	},
 	locale(loc) {
 		game.where = loc
+		// TODO: naval blockade if only reachable by sea
 		if (loc === data.lords[game.who].seat) {
-			// Auto succeed without influence check at Lords seat.
-			deplete_locale(game.where)
-
-			log(`Taxed %${game.where}.`)
-			add_lord_assets(game.who, COIN, get_tax_amount(game.where, game.who) * 2)
+			do_tax(game.where, game.who, 2)
 			end_tax_collectors_lord()
 		}
-		// TODO: naval blockade
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
 		let results = do_influence_check()
-		logi(`Tax : ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		logi(`Tax: ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		end_influence_check()
 
-		if (results.success) {
-			deplete_locale(game.where)
-			log(`Taxed %${game.where}.`)
-			add_lord_assets(game.who, COIN, get_tax_amount(game.where, game.who) * 2)
-		} else {
-			log(`Tax of %${game.where} failed.`)
+		if (results.success)
+			do_tax(game.where, game.who, 2)
+		else
+			log(`Tax %${game.where} failed.`)
 
-		}
 		end_tax_collectors_lord()
 	},
 }
