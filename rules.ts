@@ -1347,14 +1347,6 @@ function count_lord_all_forces(lord: Lord) {
 	)
 }
 
-function count_lord_ships(lord: Lord) {
-	return get_lord_assets(lord, SHIP)
-}
-
-function count_lord_transport(lord: Lord) {
-	return get_lord_assets(lord, CART)
-}
-
 function lord_has_unrouted_units(lord: Lord) {
 	for (let x of all_force_types)
 		if (get_lord_forces(lord, x) > 0)
@@ -1385,50 +1377,61 @@ function get_force_name(lord: Lord, n: Force, x: Vassal = NOVASSAL) {
 // === STATE: LORD (SHARED) ===
 
 function get_shared_assets(loc: Locale, what: Asset) {
-	let m = 0
 	let n = 0
-	for (let lord of all_friendly_lords()) {
+	for (let lord of all_friendly_lords())
 		if (get_lord_locale(lord) === loc)
 			n += get_lord_assets(lord, what)
-		if (game.state === "supply_source" && lord_has_capability(lord, AOW_LANCASTER_HAY_WAINS) && what === CART) {
-			m = get_lord_assets(lord, CART)
-			n += m
-		}
-		if (game.state === "supply_source" && (lord_has_capability(lord, AOW_YORK_GREAT_SHIPS) || lord_has_capability(lord, AOW_YORK_GREAT_SHIPS)) && what === SHIP) {
-			m = get_lord_assets(lord, SHIP)
-			n += m
+	return n
+}
+
+function count_shared_ships(loc: Locale, allow_great_ships: boolean) {
+	let n = 0
+	for (let lord of all_friendly_lords()) {
+		if (get_lord_locale(lord) === loc) {
+			n += get_lord_assets(lord, SHIP)
+			if (allow_great_ships && (lord_has_capability(lord, AOW_YORK_GREAT_SHIPS) || lord_has_capability(lord, AOW_LANCASTER_GREAT_SHIPS)))
+				n += get_lord_assets(lord, SHIP)
 		}
 	}
 	return n
 }
 
-function count_group_assets(type: Asset, group: Lord[] = game.group) {
+function count_group_ships(group: Lord[], allow_great_ships: boolean) {
 	let n = 0
 	for (let lord of group) {
-		n += get_lord_assets(lord, type)
-		if (type === CART) {
-			if (game.state === "command" || game.state === "march_laden")
-				if (lord_has_capability(lord, AOW_LANCASTER_HAY_WAINS))
-					n += get_lord_assets(lord, CART)
+		n += get_lord_assets(lord, SHIP)
+		if (allow_great_ships && (lord_has_capability(lord, AOW_YORK_GREAT_SHIPS) || lord_has_capability(lord, AOW_LANCASTER_GREAT_SHIPS)))
+			n += get_lord_assets(lord, SHIP)
+	}
+	return n
+}
+
+function count_shared_carts(loc: Locale, allow_hay_wains: boolean) {
+	let n = 0
+	for (let lord of all_friendly_lords()) {
+		if (get_lord_locale(lord) === loc) {
+			n += get_lord_assets(lord, CART)
+			if (allow_hay_wains && lord_has_capability(lord, AOW_LANCASTER_HAY_WAINS))
+				n += get_lord_assets(lord, CART)
 		}
 	}
 	return n
 }
 
-function count_group_ships() {
+function count_group_carts(group: Lord[], allow_hay_wains: boolean) {
 	let n = 0
-	for (let lord of game.group) {
-		n += count_lord_ships(lord)
-		if (lord_has_capability(lord, AOW_YORK_GREAT_SHIPS) || lord_has_capability(lord, AOW_LANCASTER_GREAT_SHIPS))
-			n += count_lord_ships(lord)
+	for (let lord of group) {
+		n += get_lord_assets(lord, CART)
+		if (allow_hay_wains && lord_has_capability(lord, AOW_LANCASTER_HAY_WAINS))
+			n += get_lord_assets(lord, CART)
 	}
 	return n
 }
 
-function count_group_transport(group: Lord[] = game.group) {
+function count_group_provender(group: Lord[]) {
 	let n = 0
 	for (let lord of group)
-		n += count_lord_transport(lord)
+		n += get_lord_assets(lord, PROV)
 	return n
 }
 
@@ -3680,8 +3683,8 @@ function search_supply_by_sea(result, here: Locale) {
 
 function search_supply(result) {
 	let here = get_lord_locale(game.command)
-	let carts = get_shared_assets(here, CART)
-	let ships = get_shared_assets(here, SHIP)
+	let carts = count_shared_carts(here, true)
+	let ships = count_shared_ships(here, true)
 	if (ships > 0 && is_exile(here))
 		result = search_supply_by_sea(result, here)
 	result = search_supply_by_way(result, here, carts, ships)
@@ -3741,7 +3744,7 @@ function goto_supply() {
 
 function modify_supply(loc: Locale, supply: number) {
 	let here = get_lord_locale(game.command)
-	let carts = get_shared_assets(here, CART)
+	let carts = count_shared_carts(here, true)
 
 	// Must carry supply over land with one cart per provender per way
 	let distance = map_get(game.supply, loc, 0)
@@ -3758,7 +3761,7 @@ function modify_supply(loc: Locale, supply: number) {
 function get_port_supply_amount(loc: Locale) {
 	if (is_seaport(loc)) {
 		let here = get_lord_locale(game.command)
-		let ships = get_shared_assets(here, SHIP)
+		let ships = count_shared_ships(here, true)
 		return modify_supply(loc, ships)
 	}
 	return 0
@@ -3789,8 +3792,8 @@ states.supply_source = {
 		view.prompt = "Supply: Select Supply Source."
 
 		let here = get_lord_locale(game.command)
-		let carts = get_shared_assets(here, CART)
-		let ships = get_shared_assets(here, SHIP)
+		let carts = count_shared_carts(here, true)
+		let ships = count_shared_ships(here, true)
 
 		if (carts > 0)
 			view.prompt += ` ${carts} Cart.`
@@ -3898,7 +3901,7 @@ states.blockade_supply = {
 // === 4.6.1 ACTION: SAIL ===
 
 function has_enough_available_ships_for_army() {
-	let ships = count_group_ships()
+	let ships = count_group_ships(game.group, true)
 	let army = count_lord_all_forces(game.command)
 	let needed_ships = army / 6
 	return needed_ships <= ships
@@ -3971,9 +3974,9 @@ states.sail = {
 		view.group = game.group
 
 		let here = get_lord_locale(game.command)
-		let ships = count_group_ships()
-		let prov = count_group_assets(PROV)
-		let cart = count_group_assets(CART)
+		let ships = count_group_ships(game.group, true)
+		let cart = count_group_carts(game.group, true)
+		let prov = count_group_provender(game.group)
 
 		let overflow_prov = (prov / 2 - ships) * 2
 		let overflow_cart = (cart / 2 - ships) * 2
@@ -4156,7 +4159,7 @@ function can_tax_at(here: Locale, lord: Lord) {
 
 // adjacent friendly locales to an eligible stronghold (can_tax_at)
 function search_tax(result, start: Locale, lord: Lord) {
-	let ships = get_shared_assets(start, SHIP)
+	let ships = count_shared_ships(start, false)
 
 	search_seen.fill(0)
 	search_seen[start] = 1
@@ -4304,7 +4307,7 @@ function can_parley_at(loc: Locale) {
 }
 
 function search_parley(result, start: Locale, lord: Lord) {
-	let ships = get_shared_assets(start, SHIP)
+	let ships = count_shared_ships(start, false)
 
 	search_dist.fill(0)
 	search_seen.fill(0)
@@ -4350,7 +4353,7 @@ function search_parley(result, start: Locale, lord: Lord) {
 }
 
 function search_parley_for_naval_blockade(start: Locale, destination: Locale) {
-	if (get_shared_assets(start, SHIP) === 0)
+	if (count_shared_ships(start, false) === 0)
 		return false
 /*
 	TODO: full recursive search to see if we can reach destination
@@ -4380,7 +4383,7 @@ function can_action_parley_command() {
 		if (can_parley_at(next))
 			return true
 
-	if (is_seaport(here) && get_shared_assets(here, SHIP) > 0)
+	if (is_seaport(here) && count_shared_ships(here, false) > 0)
 		for (let next of find_ports(here, game.command))
 			if (can_parley_at(next))
 				return true
@@ -4400,7 +4403,7 @@ function list_parley_command() {
 			if (can_parley_at(next))
 				map_set(result, next, 1)
 
-		if (is_seaport(here) && get_shared_assets(here, SHIP) > 0)
+		if (is_seaport(here) && count_shared_ships(here, false) > 0)
 			for (let next of find_ports(here, game.command))
 				if (can_parley_at(next))
 					map_set(result, next, 1)
@@ -4653,8 +4656,8 @@ function goto_march(to: Locale) {
 }
 
 function march_with_group_1() {
-	let transport = count_group_assets(CART)
-	let prov = count_group_assets(PROV)
+	let transport = count_group_carts(game.group, true)
+	let prov = count_group_provender(game.group)
 	if (prov > transport)
 		game.state = "march_laden"
 	else
@@ -4666,8 +4669,8 @@ states.march_laden = {
 	inactive: "March",
 	prompt() {
 		let to = game.march.to
-		let transport = count_group_assets(CART)
-		let prov = count_group_assets(PROV)
+		let transport = count_group_carts(game.group, true)
+		let prov = count_group_provender(game.group)
 
 		view.group = game.group
 		view.prompt = `March: Unladen. `
@@ -4857,7 +4860,7 @@ states.intercept = {
 }
 
 function goto_intercept_march() {
-	if (count_group_transport(game.intercept_group) >= count_group_assets(PROV, game.intercept_group)) {
+	if (count_group_carts(game.intercept_group, false) >= count_group_provender(game.intercept_group)) {
 		do_intercept_march()
 	} else {
 		game.state = "intercept_march"
@@ -4883,8 +4886,8 @@ states.intercept_march = {
 	inactive: "Intercept",
 	prompt() {
 		let to = game.march.to
-		let transport = count_group_transport(game.intercept_group)
-		let prov = count_group_assets(PROV, game.intercept_group)
+		let transport = count_group_carts(game.intercept_group, false)
+		let prov = count_group_provender(game.intercept_group)
 
 		view.group = game.intercept_group
 
