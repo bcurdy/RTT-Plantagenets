@@ -120,7 +120,6 @@ interface Game {
 		sail_to_port: 0 | 1,
 		supply_depot: 0 | 1,
 		surprise_landing: 0 | 1,
-		naval_blockade: -1 | 0 | 1,
 		london_for_york: number,
 	},
 
@@ -560,6 +559,10 @@ function is_sea(loc: Locale) {
 	return data.locales[loc].type === "sea"
 }
 
+function is_adjacent(a: Locale, b: Locale) {
+	return set_has(data.locales[a].adjacent, b)
+}
+
 function find_ports(here: Locale, lord: Lord): Locale[] {
 
 	// TODO: verify which lord is being passed in every place
@@ -590,6 +593,14 @@ function find_sail_locales(here: Locale): Locale[] {
 	if (set_has(data.port_2, here)) return data.way_port_2
 	if (set_has(data.port_3, here)) return data.way_port_3
 	return null
+}
+
+function is_on_same_sea(a: Locale, b: Locale) {
+	return (
+		(set_has(data.port_1, a) && set_has(data.port_1, b)) ||
+		(set_has(data.port_2, a) && set_has(data.port_2, b)) ||
+		(set_has(data.port_3, a) && set_has(data.port_3, b))
+	)
 }
 
 function make_locale_list(pred): Locale[] {
@@ -2861,14 +2872,10 @@ states.levy_muster_lord = {
 
 	take_ship() {
 		push_undo()
-		if (check_naval_blockade("levy ship", get_lord_locale(game.who))) {
-			roll_naval_blockade()
-		}
-		else {
-			push_the_kings_name()
-			add_lord_assets(game.who, SHIP, 1)
-			goto_the_kings_name("Levy Ship")
-		}
+		if (can_naval_blockade(get_lord_locale(game.who)))
+			game.state = "blockade_levy_ship"
+		else
+			do_levy_ship()
 	},
 
 	take_cart() {
@@ -2939,6 +2946,26 @@ states.levy_muster_lord = {
 		set_lord_moved(game.who, 1)
 		pop_state()
 	},
+}
+
+states.blockade_levy_ship = {
+	inactive: "Muster",
+	prompt() {
+		view.prompt = "Warwick may Naval Blockade the Levy Ship action."
+		view.actions.roll = 1
+	},
+	roll() {
+		if (roll_blockade())
+			do_levy_ship()
+		else
+			resume_levy_muster_lord()
+	},
+}
+
+function do_levy_ship() {
+	push_the_kings_name()
+	add_lord_assets(game.who, SHIP, 1)
+	goto_the_kings_name("Levy Ship")
 }
 
 // Check if the levy troops is at vassal seat
@@ -3781,12 +3808,18 @@ states.supply_source = {
 
 		if (stronghold_supply > 0 && port_supply === 0) {
 			use_stronghold_supply(loc, stronghold_supply)
+			end_supply()
 			return
 		}
 
 		if (port_supply > 0 && stronghold_supply === 0) {
-			// TODO: naval blockade?
-			use_port_supply(loc, port_supply)
+			game.where = loc
+			if (can_naval_blockade(game.where)) {
+				game.state = "blockade_supply"
+			} else {
+				use_port_supply(loc, port_supply)
+				end_supply()
+			}
 			return
 		}
 
@@ -3810,19 +3843,13 @@ function quartermasters_eligible_supply(source: Locale) {
 function use_stronghold_supply(source: Locale, amount: number) {
 	logi(`${amount} from Stronghold at %${source}`)
 	add_lord_assets(game.command, PROV, amount)
-	if (chamberlains_eligible_supply(source)) {
-		end_supply()
-	}
-	else {
+	if (!chamberlains_eligible_supply(source))
 		deplete_locale(source)
-		end_supply()
-	}
 }
 
 function use_port_supply(source: Locale, amount: number) {
 	logi(`${amount} from Port at %${source}`)
 	add_lord_assets(game.command, PROV, amount)
-	end_supply()
 }
 
 function end_supply() {
@@ -3837,21 +3864,34 @@ states.select_supply_type = {
 	prompt() {
 		let port = get_port_supply_amount(game.where)
 		let stronghold = get_stronghold_supply_amount(game.where)
-
 		view.prompt = `Supply: ${stronghold} from Stronghold or ${port} from Port?`
 		view.actions.stronghold = 1
 		view.actions.port = 1
 	},
 	stronghold() {
 		use_stronghold_supply(game.where, get_stronghold_supply_amount(game.where))
+		end_supply()
 	},
 	port() {
-		if (check_naval_blockade("supply", game.where)) {
-			roll_naval_blockade()
-		}
-		else {
+		if (can_naval_blockade(game.where)) {
+			game.state = "blockade_supply"
+		} else {
 			use_port_supply(game.where, get_port_supply_amount(game.where))
+			end_supply()
 		}
+	},
+}
+
+states.blockade_supply = {
+	inactive: "Supply",
+	prompt() {
+		view.prompt = "Warwick may Naval Blockade this Supply action."
+		view.actions.roll = 1
+	},
+	roll() {
+		if (roll_blockade())
+			use_port_supply(game.where, get_port_supply_amount(game.where))
+		end_supply()
 	},
 }
 
@@ -3969,13 +4009,29 @@ states.sail = {
 	prov: drop_prov,
 	cart: drop_cart,
 	locale(to) {
-		if (check_naval_blockade("sail", get_lord_locale(game.command)) || check_naval_blockade("sail", to)) {
-			roll_naval_blockade()
+		let from = get_lord_locale(game.command)
+		if (can_naval_blockade(from) || can_naval_blockade(to)) {
 			game.where = to
-		}
-		else {
+			game.state = "blockade_sail"
+		} else {
 			do_sail(to)
 		}
+	},
+}
+
+states.blockade_sail = {
+	inactive: "Muster",
+	prompt() {
+		view.prompt = "Warwick may Naval Blockade the Sail action."
+		view.actions.roll = 1
+	},
+	roll() {
+		let to = game.where
+		game.where = NOWHERE
+		if (roll_blockade())
+			do_sail(to)
+		else
+			fail_sail()
 	},
 }
 
@@ -4004,6 +4060,14 @@ function do_sail(to: Locale) {
 		goto_confirm_approach_sail()
 	else
 		resume_command()
+}
+
+function fail_sail() {
+	if (is_seamanship_in_play())
+		spend_action(1)
+	else
+		spend_all_actions()
+	resume_command()
 }
 
 function goto_confirm_approach_sail() {
@@ -4211,6 +4275,8 @@ states.tax = {
 			add_lord_assets(game.command, COIN, get_tax_amount(game.where, game.command))
 			end_tax()
 		}
+
+		// TODO: naval blockade
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
@@ -4282,6 +4348,18 @@ function search_parley(result, start: Locale, lord: Lord) {
 	else
 		return false
 }
+
+function search_parley_for_naval_blockade(start: Locale, destination: Locale) {
+	if (get_shared_assets(start, SHIP) === 0)
+		return false
+/*
+	TODO: full recursive search to see if we can reach destination
+	let war = get_lord_locale(LORD_WARWICK_Y))
+	let dist = map_get(game.parley, destination)
+*/
+	return can_naval_blockade(start) || can_naval_blockade(destination)
+}
+
 
 function can_action_parley_command() {
 	if (game.actions <= 0)
@@ -4379,7 +4457,6 @@ function goto_parley() {
 
 function end_parley(success: boolean) {
 	pop_state()
-	game.flags.naval_blockade = 0
 	game.where = NOWHERE
 	delete game.parley
 	if (game.levy_flags.my_crown_is_in_my_heart > 0 && game.who === LORD_HENRY_VI) {
@@ -4426,11 +4503,18 @@ states.parley = {
 		push_undo()
 		game.where = loc
 		add_influence_check_distance(map_get(game.parley, loc, 0))
-		if (is_levy_phase() && check_naval_blockade("levy parley", loc)) {
-			roll_naval_blockade()
+		if (is_levy_phase()) {
+			// needs full search of the entire chain during levy
+			if (can_naval_blockade_parley(get_lord_locale(game.who), loc))
+				game.state = "blockade_parley"
+		} else {
+			// limited parley length during campaign
+			let here = get_lord_locale(game.command)
+			if (!is_adjacent(here, loc)) {
+				if (can_naval_blockade(here) || can_naval_blockade(loc))
+					game.state = "blockade_parley"
+			}
 		}
-		if (is_campaign_phase() && check_naval_blockade("campaign parley", loc))
-			roll_naval_blockade()
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
@@ -4466,6 +4550,20 @@ states.parley = {
 		} else {
 			end_parley(false)
 		}
+	},
+}
+
+states.blockade_parley = {
+	inactive: "Parley",
+	prompt() {
+		view.prompt = "Warwick may Naval Blockade this Parley action."
+		view.actions.roll = 1
+	},
+	roll() {
+		if (roll_blockade())
+			game.state = "parley"
+		else
+			end_parley(false)
 	},
 }
 
@@ -8273,7 +8371,6 @@ exports.setup = function (seed, scenario, options) {
 			jack_cade: 0,
 			london_for_york: 0,
 			march_to_port: 0,
-			naval_blockade: 0,
 			sail_to_port: 0,
 			supply_depot: 0,
 			surprise_landing: 0,
@@ -9593,156 +9690,36 @@ function levy_burgundians(lord: Lord) {
 
 // === CAPABILITY: NAVAL BLOCKADE ===
 
-function parley_through_sea(start: Locale, locale: Locale) {
-	// Only entered in levy
-	let ships = get_shared_assets(start, SHIP)
-
-	if (ships === 0) {
-		game.flags.naval_blockade = -1
-	}
-
-	search_dist.fill(0)
-	search_seen.fill(0)
-	search_seen[start] = 1
-
-	let queue = [ start ]
-	while (queue.length > 0) {
-		let here = queue.shift()
-		let dist = search_dist[here]
-		let next_dist = dist + 1
-
-		if (is_friendly_locale(here)) {
-			for (let next of data.locales[here].adjacent) {
-				if (!search_seen[next]) {
-					search_seen[next] = 1
-					search_dist[next] = next_dist
-					queue.push(next)
-					if (next === locale) {
-						game.flags.naval_blockade = -1
-					}
-				}
-			}
-		}
-	}
-	queue = [ start ]
-	while (queue.length > 0) {
-		let here = queue.shift()
-		let dist = search_dist[here]
-		let next_dist = dist + 1
-
-		if (is_friendly_locale(here)) {
-			if (ships > 0 && is_seaport(here)) {
-				for (let next of find_ports(here, game.command)) {
-					if (!search_seen[next]) {
-						search_seen[next] = 1
-						search_dist[next] = next_dist
-						queue.push(next)
-						if (next === locale && game.flags.naval_blockade !== -1) {
-							game.flags.naval_blockade = 1
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-function check_naval_blockade(action: string, locale: Locale) {
-	let ports = [data.port_1, data.port_2, data.port_3]
-	game.what = action
-
-	if (!lord_has_capability(LORD_WARWICK_Y, AOW_YORK_NAVAL_BLOCKADE) || !is_seaport(get_lord_locale(LORD_WARWICK_Y)) || is_exile(get_lord_locale(LORD_WARWICK_Y))) {
-		return false
-	}
-
-	if (action === "levy parley") {
-		parley_through_sea(get_lord_locale(game.who), locale)
-		if (game.flags.naval_blockade !== 1) {
-			return false
-		}
-	}
-
-	if (action === "campaign parley" && data.locales[locale].adjacent.includes(get_lord_locale(game.command))) {
-		return false
-	}
-
-	for (let port of ports) {
-		if (set_has(port, get_lord_locale(LORD_WARWICK_Y)) && set_has(port, locale)) {
+function is_naval_blockade_in_play() {
+	if (lord_has_capability(LORD_WARWICK_Y, AOW_YORK_NAVAL_BLOCKADE)) {
+		let war = get_lord_locale(LORD_WARWICK_Y)
+		if (is_seaport(war) && !is_exile(war))
 			return true
-		}
 	}
-
 	return false
 }
 
-function roll_naval_blockade() {
-	push_state("naval_blockade")
+function can_naval_blockade(here: Locale) {
+	if (is_naval_blockade_in_play())
+		return is_on_same_sea(here, get_lord_locale(LORD_WARWICK_Y))
+	return false
 }
 
-// Parley, and Tax
-states.naval_blockade = {
-	inactive: "Naval Blockade",
-	prompt() {
-		view.prompt = `Naval Blockade : Warwick block this action except on a 1-2`
-		view.actions.roll = 1
-	},
-	roll() {
-		let threshold = 2
-		let roll = roll_die()
-		let success = threshold >= roll
-		log(`Attempt to counter Naval Blockade ${success ? "Failed" : "Successful"}: (1-2) ${success ? HIT[roll] : MISS[roll]}`)
-		if (success) {
-			logi(`Successfully overran C${AOW_YORK_NAVAL_BLOCKADE}`)
-			if (game.what === "levy parley") {
-				game.flags.naval_blockade = -1
-			}
-			if (game.what === "campaign parley") {
-				game.flags.naval_blockade = -1
-			}
-			if (game.what === "levy ship") {
-				push_the_kings_name()
-				add_lord_assets(game.who, SHIP, 1)
-				goto_the_kings_name("Levy Ship")
-			}
-			if (game.what === "supply") {
-				use_port_supply(game.where, get_port_supply_amount(game.where))
-			}
-			if (game.what === "sail") {
-				let to = game.where
-				game.where = NOWHERE
-				do_sail(to)
-			}
-		}
-		else {
-			logi(`Failed C${AOW_YORK_NAVAL_BLOCKADE}`)
-			if (game.what === "levy parley") {
-				pop_state()
-			}
-			if (game.what === "campaign parley") {
-				pop_state()
-			}
-		}
-		if (game.what === "levy parley") {
-			pop_state()
-			resume_levy_muster_lord()
-		}
-		if (game.what === "campaign parley") {
-			pop_state()
-			--game.count
-			resume_command()
-		}
-		if (game.what === "levy ship") {
-			pop_state()
-			resume_levy_muster_lord()
-		}
-		if (game.what === "supply" && !success) {
-			end_supply()
-		}
-		if (game.what === "sail" && !success) {
-			resume_command()
-		}
-		game.what = null
-	},
+function can_naval_blockade_parley(from: Locale, to: Locale) {
+	if (is_naval_blockade_in_play())
+		return search_parley_for_naval_blockade(from, to)
+	return false
+}
+
+function roll_blockade() {
+	let roll = roll_die()
+	if (roll <= 2) {
+		log("Naval Blockade " + HIT[roll])
+		return true
+	} else {
+		log("Naval Blockade " + MISS[roll])
+		return false
+	}
 }
 
 // === CAPABILITY: AGITATORS ===
@@ -10720,6 +10697,7 @@ states.tax_collectors_lord = {
 			add_lord_assets(game.who, COIN, get_tax_amount(game.where, game.who) * 2)
 			end_tax_collectors_lord()
 		}
+		// TODO: naval blockade
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
