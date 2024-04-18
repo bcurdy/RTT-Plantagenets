@@ -3310,7 +3310,6 @@ states.campaign_plan = {
 	inactive: "Plan",
 	prompt(current) {
 		let plan = current === YORK ? game.plan_y : game.plan_l
-		let lord_list = current === YORK ? all_york_lords : all_lancaster_lords
 		view.plan = plan
 		view.actions.plan = []
 
@@ -3324,7 +3323,7 @@ states.campaign_plan = {
 			if (count_cards_in_plan(plan, NOBODY) < 7)
 				gen_action_plan(NOBODY)
 
-			for (let lord of lord_list) {
+			for (let lord of all_friendly_lords()) {
 				if (is_lord_on_map(lord) && count_cards_in_plan(plan, lord) < 3)
 					gen_action_plan(lord)
 			}
@@ -5209,7 +5208,10 @@ function has_strike(pos: number) {
 function add_battle_capability_troops() {
 	let here = get_lord_locale(game.command)
 
-	for (let lord of all_york_lords) {
+	for (let lord of all_lords) {
+		if (get_lord_locale(lord) !== here)
+			continue
+
 		if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_favoury_marker(here)) {
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 			add_lord_forces(lord, LONGBOWMEN, 1)
@@ -5250,7 +5252,10 @@ function add_battle_capability_troops() {
 function remove_battle_capability_troops() {
 	let here = get_lord_locale(game.command)
 
-	for (let lord of all_york_lords) {
+	for (let lord of all_lords) {
+		if (get_lord_locale(lord) !== here)
+			continue
+
 		if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_favoury_marker(here)) {
 			add_lord_forces(lord, MEN_AT_ARMS, -2)
 			add_lord_forces(lord, LONGBOWMEN, -1)
@@ -7080,12 +7085,14 @@ states.battle_spoils = {
 
 function goto_death_or_disband() {
 	remove_battle_capability_troops()
-	if (has_defeated_lords()) {
-		if (game.battle.loser === LANCASTER && lord_has_capability(LORD_RICHARD_III, AOW_YORK_BLOODY_THOU_ART) && get_lord_locale(LORD_RICHARD_III) === game.battle.where) {
-			game.flags.bloody = 1
-		}
+
+	if (game.battle.loser === LANCASTER && lord_has_capability(LORD_RICHARD_III, AOW_YORK_BLOODY_THOU_ART) && get_lord_locale(LORD_RICHARD_III) === game.battle.where)
+		game.flags.bloody = 1
+	else
+		game.flags.bloody = 0
+
+	if (has_defeated_lords())
 		game.state = "death_check"
-	}
 	else
 		end_death_or_disband()
 }
@@ -7093,7 +7100,7 @@ function goto_death_or_disband() {
 function end_death_or_disband() {
 	set_active_enemy()
 	if (has_defeated_lords()) {
-		goto_death_or_disband()
+		game.state = "death_check"
 	} else {
 		goto_battle_aftermath()
 	}
@@ -12147,21 +12154,21 @@ function assert_mutually_exclusive_lords() {
 }
 
 function assert_all_lords_have_troops_or_retinue() {
-	for (let lord of all_york_lords) {
+	for (let lord of all_lords) {
 		if (is_lord_on_map(lord) && !count_lord_all_forces(lord) && !get_lord_forces(lord, RETINUE))
 			throw Error(`ASSERT: Lord "${lord_name[lord]}" without troops or retinue.`)
 	}
 }
 
 function assert_all_lords_on_land() {
-	for (let lord of all_york_lords) {
+	for (let lord of all_lords) {
 		if (is_lord_at_sea(lord))
 			throw Error(`ASSERT: Lord "${lord_name[lord]}" at sea during Levy phase.`)
 	}
 }
 
 function assert_all_lords_without_routed_troops() {
-	for (let lord of all_york_lords) {
+	for (let lord of all_lords) {
 		if (lord_has_routed_troops(lord))
 			throw Error(`ASSERT: Lord "${lord_name[lord]}" has routed troops during Levy phase.`)
 	}
