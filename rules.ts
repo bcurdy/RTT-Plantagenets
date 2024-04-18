@@ -3,7 +3,6 @@
 // TODO: "approach" pause when about to move into intercept range?
 // TODO: log end victory conditions at scenario start
 // Check all push/clear_undo
-// TODO: check flank attack
 
 // TODO: check all who = NOBODY etc resets
 
@@ -25,6 +24,7 @@ REDO
 REDO
 	suspicion
 	naval_blockade
+	ravine
 */
 
 /*
@@ -5572,8 +5572,6 @@ states.defender_events = {
 	prompt() {
 		view.prompt = "Defender may play Events."
 		prompt_battle_events()
-
-		// defender only events
 	},
 	card: action_battle_events,
 	done() {
@@ -5644,7 +5642,8 @@ function prompt_battle_events() {
 }
 
 function action_battle_events(c: Card) {
-	set_delete(current_hand(), c)
+	push_undo()
+	play_held_event(c)
 	set_add(game.events, c)
 	switch (c) {
 		case EVENT_LANCASTER_LEEWARD_BATTLE_LINE:
@@ -5695,11 +5694,10 @@ states.ravine = {
 		}
 	},
 	lord(lord) {
-		push_undo()
 		game.battle.ravine = lord
-		resume_battle_events()
 		logi(`${data.lords[lord].name} ignored for Engage and Strike Round 1`)
 		logevent(EVENT_LANCASTER_RAVINE)
+		resume_battle_events()
 	},
 }
 
@@ -10951,43 +10949,30 @@ function end_york_event_earl_rivers() {
 states.earl_rivers = {
 	inactive: "Earl Rivers",
 	prompt() {
-		view.prompt = "Earl Rivers: Add up to 2 Militia to each lord"
+		view.prompt = "Earl Rivers: Add up to 2 Militia to each Yorkist Lord on map."
 		view.actions.done = 1
-		for (let lord of all_york_lords) {
-			if (is_lord_on_map(lord) && map_get(game.event_earl_rivers, lord, 0) < 3) {
-				gen_action_lord(lord)
-			}
-		}
 
-		if (game.who !== NOBODY) {
-			let troops = map_get(game.event_earl_rivers, game.who, 0)
-			if ((troops & 1) === 0)
-				view.actions.add_militia = 1
-		}
-		if (game.who !== NOBODY) {
-			let troops = map_get(game.event_earl_rivers, game.who, 0)
-			if ((troops & 1) === 0)
-				view.actions.add_militia2 = 1
+		if (game.who === NOBODY) {
+			for (let lord of all_york_lords)
+				if (is_lord_on_map(lord) && !set_has(game.event_earl_rivers, lord))
+					gen_action_lord(lord)
+		} else {
+			view.actions.add_militia = 1
+			view.actions.add_militia2 = 1
 		}
 	},
 	done() {
 		end_york_event_earl_rivers()
 	},
 	add_militia() {
-		push_undo()
 		add_lord_forces(game.who, MILITIA, 1)
-		let troops = map_get(game.event_earl_rivers, game.who, 0)
-		map_set(game.event_earl_rivers, game.who, troops + 1)
-		if (troops > 1)
-			game.who = NOBODY
+		set_add(game.event_earl_rivers, game.who)
+		game.who = NOBODY
 	},
 	add_militia2() {
-		push_undo()
 		add_lord_forces(game.who, MILITIA, 2)
-		let troops = map_get(game.event_earl_rivers, game.who, 0)
-		map_set(game.event_earl_rivers, game.who, troops + 1)
-		if (troops > 1)
-			game.who = NOBODY
+		set_add(game.event_earl_rivers, game.who)
+		game.who = NOBODY
 	},
 	lord(lord) {
 		push_undo()
