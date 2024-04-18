@@ -5641,7 +5641,7 @@ function action_battle_events(c: Card) {
 			// nothing to do
 			break
 		case EVENT_LANCASTER_SUSPICION:
-			game.state = "suspicion"
+			game.state = "suspicion_1"
 			break
 		case EVENT_LANCASTER_FOR_TRUST_NOT_HIM:
 			game.state = "for_trust_not_him"
@@ -5653,7 +5653,7 @@ function action_battle_events(c: Card) {
 			// nothing to do
 			break
 		case EVENT_YORK_SUSPICION:
-			game.state = "suspicion"
+			game.state = "suspicion_1"
 			break
 		case EVENT_YORK_CALTROPS:
 			game.state = "caltrops"
@@ -5732,19 +5732,20 @@ states.caltrops = {
 // === BATTLE EVENT: SUSPICION ===
 
 function can_play_suspicion() {
-	// TODO: account for influence_capabilities
-	if (highest_friendly_influence() >= lowest_enemy_influence()) {
-		return true
-	}
-	return false
+	// NOTE: printed influence only!
+	return highest_friendly_influence() > lowest_enemy_influence()
+}
+
+function get_printed_lord_influence(lord) {
+	return data.lords[lord].influence
 }
 
 function lowest_enemy_influence() {
 	let score = 10
 	for (let lord of all_enemy_lords()) {
-		if (get_lord_locale(lord) === get_lord_locale(game.command)) {
-			if (data.lords[lord].influence < score) {
-				score = data.lords[lord].influence
+		if (get_lord_locale(lord) === game.battle.where) {
+			if (get_printed_lord_influence(lord) < score) {
+				score = get_printed_lord_influence(lord)
 			}
 		}
 	}
@@ -5754,94 +5755,83 @@ function lowest_enemy_influence() {
 function highest_friendly_influence() {
 	let score = 0
 	for (let lord of all_friendly_lords()) {
-		if (get_lord_locale(lord) === get_lord_locale(game.command)) {
-			if (data.lords[lord].influence > score) {
-				score = data.lords[lord].influence
+		if (get_lord_locale(lord) === game.battle.where) {
+			if (get_printed_lord_influence(lord) > score) {
+				score = get_printed_lord_influence(lord)
 			}
 		}
 	}
 	return score
 }
 
-states.suspicion = {
+states.suspicion_1 = {
 	inactive: "Suspicion",
 	prompt() {
 		view.prompt = "Suspicion: Check one of your lords to influence check"
-		for (let lord of game.battle.array) {
-			if (is_friendly_lord(lord)) {
+		let lowest = lowest_enemy_influence()
+		for (let lord of game.battle.array)
+			if (is_friendly_lord(lord) && get_printed_lord_influence(lord) > lowest)
 				gen_action_lord(lord)
-			}
-		}
-		for (let lord of game.battle.reserves) {
-			if (is_friendly_lord(lord)) {
+		for (let lord of game.battle.reserves)
+			if (is_friendly_lord(lord) && get_printed_lord_influence(lord) > lowest)
 				gen_action_lord(lord)
-			}
-		}
 	},
 	lord(lord) {
-		game.who = lord
 		push_undo()
-		push_state("suspicion_enemy_lord")
+		game.who = lord
+		game.state = "suspicion_2"
 	},
 }
 
-states.suspicion_enemy_lord = {
+states.suspicion_2 = {
 	inactive: "Suspicion",
 	prompt() {
 		view.prompt = "Suspicion: Select one enemy lord to influence check"
-		for (let lord of game.battle.array) {
-			if (is_enemy_lord(lord)) {
-				if (suspicion_lord_score(game.who, data.lords[game.who].influence) > data.lords[lord].influence) {
-					gen_action_lord(lord)
-				}
-			}
-		}
+		let highest = get_printed_lord_influence(game.who)
+		for (let lord of game.battle.array)
+			if (is_enemy_lord(lord) && get_printed_lord_influence(lord) < highest)
+				gen_action_lord(lord)
 	},
 	lord(lord) {
 		push_undo()
-		push_state("influence_check_suspicion")
+		game.other = lord
+		game.state = "suspicion_3"
 		init_influence_check(game.who)
-		game.who = lord
 	},
 }
 
-function suspicion_lord_score(lord: Lord, score: number) {
-	return influence_capabilities(lord, score)
-}
-
-states.influence_check_suspicion = {
-	inactive: `Influence check`,
+states.suspicion_3 = {
+	inactive: "Suspicion",
 	prompt() {
-		view.prompt = `Influence check : Success disbands enemy lord `
+		view.prompt = `Suspicion`
 		prompt_influence_check()
 	},
 	spend1: add_influence_check_modifier_1,
 	spend3: add_influence_check_modifier_2,
 	check() {
-		let lord = game.who
+		let other = game.other
 		let results = do_influence_check()
-		logi(`Attempt to disband ${data.lords[lord].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
+		logi(`Attempt to disband ${data.lords[other].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		if (results.success) {
-			log(`${data.lords[lord].name} disbanded`)
+			log(`${data.lords[other].name} disbanded`)
 			for (let x = 0; x < 6; x++) {
-				if (game.battle.array[x] === lord) {
+				if (game.battle.array[x] === other) {
 					game.battle.array[x] = NOBODY
 					break
 				}
-				else if (set_has(game.battle.reserves, lord)) {
-					array_remove(game.battle.reserves, lord)
+				else if (set_has(game.battle.reserves, other)) {
+					array_remove(game.battle.reserves, other)
 				}
 			}
-			disband_lord(lord)
-			game.who = NOBODY
-			end_influence_check()
-			resume_battle_events()
+			disband_lord(other)
 		} else {
-			log(`${data.lords[lord].name} stays`)
-			game.who = NOBODY
-			end_influence_check()
-			resume_battle_events()
+			log(`${data.lords[other].name} stays`)
 		}
+
+		game.who = NOBODY
+		game.other = NOBODY
+		end_influence_check()
+		resume_battle_events()
 	},
 }
 
