@@ -3095,7 +3095,6 @@ function eligible_vassal(vassal: Vassal) {
 }
 
 function goto_levy_muster_vassal() {
-	game.where = NOWHERE
 	let influence_cost = 0
 	if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_BUCKINGHAMS_PLOT))
 		influence_cost += 2
@@ -4645,7 +4644,6 @@ function march_with_group_2() {
 function end_march() {
 	// Disbanded in battle!
 	if (!is_lord_on_map(game.command)) {
-		game.where = NOWHERE
 		delete game.march
 		spend_all_actions()
 		resume_command()
@@ -4978,7 +4976,6 @@ states.blocked_ford = {
 	},
 	card(c) {
 		play_held_event(c)
-		game.where = get_lord_locale(game.command)
 		goto_battle()
 	},
 	pass() {
@@ -4992,7 +4989,6 @@ function goto_choose_exile() {
 	let here = get_lord_locale(game.command)
 	if (has_enemy_lord(here)) {
 		spend_all_actions() // end command upon any approach
-		game.where = here
 		game.state = "choose_exile"
 		set_active_enemy()
 	} else {
@@ -5303,7 +5299,7 @@ function goto_battle() {
 	log_h3(`Battle at %${here}`)
 
 	game.battle = {
-		where: game.where,
+		where: here,
 		round: 1,
 		step: 0,
 		attacker: game.active,
@@ -5874,7 +5870,6 @@ states.for_trust_not_him = {
 	inactive: "For trust not him \u2014 Select Lord",
 	prompt() {
 		let done = true
-		game.where = NOWHERE
 		view.prompt = "Select a friendly lord"
 		for (let lord of all_lancaster_lords) {
 			if (is_lancaster_lord(lord) && get_lord_locale(lord) === game.battle.where) {
@@ -7288,7 +7283,7 @@ function goto_play_talbot_to_the_rescue() {
 // === DEATH CHECK EVENT: WARDEN OF THE MARCHES ===
 
 function can_play_warden_of_the_marches() {
-	// TOOD : Maybe a bug with blocked ford/exile ?
+	// TODO : Maybe a bug with blocked ford/exile ?
 	let can_play = false
 	for (let loc of all_locales) {
 		if (is_friendly_locale(loc) && is_north(loc) && loc !== game.battle.where) {
@@ -7299,7 +7294,7 @@ function can_play_warden_of_the_marches() {
 		return false
 	}
 	// if blocked ford then flee
-	if (is_north(game.where))
+	if (is_north(game.where)) // XXX BLOCKED FORD?
 		return true
 	// if battle
 	if (is_north(game.battle.where))
@@ -7370,7 +7365,6 @@ function end_warden_of_the_marches() {
 
 function goto_battle_aftermath() {
 	set_active(game.battle.attacker)
-	game.where = NOWHERE
 
 	// Routed Vassals get disbanded
 	for (let lord of all_lords) {
@@ -7389,7 +7383,6 @@ function goto_battle_aftermath() {
 
 	// Recovery
 	spend_all_actions()
-	game.where = NOWHERE
 	delete game.battle
 	game.flags.bloody = 0
 	end_march()
@@ -7539,7 +7532,6 @@ states.feed_lord_shared = {
 
 function end_feed() {
 	pop_state()
-	game.where = NOWHERE
 	// TODO: clean up transitions for End Command -> Feed and Disembark -> Feed
 	if (game.state !== "disembark")
 		goto_remove_markers()
@@ -9721,7 +9713,9 @@ states.naval_blockade = {
 				use_port_supply(game.where, get_port_supply_amount(game.where))
 			}
 			if (game.what === "sail") {
-				do_sail(game.where)
+				let to = game.where
+				game.where = NOWHERE
+				do_sail(to)
 			}
 		}
 		else {
@@ -10198,7 +10192,6 @@ function goto_warwicks_propaganda() {
 	if (can_play) {
 		game.state = "warwicks_propaganda"
 		game.event_propaganda = []
-		game.where = NOWHERE
 		game.count = 0
 	} else {
 		end_immediate_event()
@@ -10713,8 +10706,8 @@ states.tax_collectors = {
 states.tax_collectors_lord = {
 	inactive: "Tax Collectors",
 	prompt() {
-		view.prompt = "Tax: Select the location to tax for double."
 		if (game.where === NOWHERE) {
+			view.prompt = "Tax: Select the location to tax for double."
 			for (let loc of search_tax([], get_lord_locale(game.who), game.who))
 				gen_action_locale(loc)
 		} else {
@@ -10752,6 +10745,7 @@ states.tax_collectors_lord = {
 }
 
 function end_tax_collectors_lord() {
+	game.where = NOWHERE
 	game.who = NOBODY
 	game.state = "tax_collectors"
 }
