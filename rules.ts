@@ -173,8 +173,6 @@ interface Battle {
 	step: number,
 	attacker: Player,
 	loser: Player,
-	fought: number, // bit mask of lords
-	retreated: number, // bit mask of lords
 	array: Lord[],
 	ah: number[],
 	valour: number[],
@@ -1271,8 +1269,6 @@ function clear_lords_moved() {
 
 function set_lord_fought(lord: Lord) {
 	set_lord_moved(lord, 1)
-	// TODO: is this needed?
-	game.battle.fought = pack1_set(game.battle.fought, lord, 1)
 }
 
 function set_lord_unfed(lord: Lord, n) {
@@ -5310,7 +5306,6 @@ function goto_battle() {
 		step: 0,
 		attacker: game.active,
 		loser: "None",
-		fought: 0, // flag all lords who participated
 		array: [
 			NOBODY, NOBODY, NOBODY,
 			NOBODY, NOBODY, NOBODY
@@ -5320,7 +5315,6 @@ function goto_battle() {
 		routed_vassals: [],
 		engagements: [],
 		reserves: [],
-		retreated: 0,
 		fled: [],
 		routed: [],
 		target: null,
