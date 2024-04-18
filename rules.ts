@@ -113,22 +113,24 @@ interface Game {
 	flags: {
 		bloody: 0 | 1,
 		burgundians: 0 | 1,
-		commons_militia: 0 | 1 | 2,
 		first_action: 0 | 1,
 		first_march_highway: 0 | 1,
-		free_levy: 0 | 1,
-		free_parley_gloucester: 0 | 1 | 2 | 3,
-		free_parley_henry: 0 | 1 | 2,
 		jack_cade: 0 | 1 | 2,
-		london_for_york: 0 | 1,
-		loyalty_and_trust: 0 | 1,
 		march_to_port: 0 | 1,
-		naval_blockade: -1 | 0 | 1,
-		parliament_votes: 0 | 1,
 		sail_to_port: 0 | 1,
-		succession: 0 | 1,
 		supply_depot: 0 | 1,
 		surprise_landing: 0 | 1,
+		naval_blockade: -1 | 0 | 1,
+		london_for_york: number,
+	},
+
+	levy_flags?: {
+		gloucester_as_heir: number,
+		loyalty_and_trust: number,
+		my_crown_is_in_my_heart: number,
+		parliament_votes: number,
+		succession: number,
+		thomas_stanley: number,
 	},
 
 	command: Lord,
@@ -1816,7 +1818,7 @@ function automatic_success(lord: Lord, score) {
 		&& game.state === "levy_muster_vassal")
 		score = 6
 	if (game.active === LANCASTER
-		&& game.flags.parliament_votes === 1
+		&& game.levy_flags.parliament_votes === 1
 		&& game.state === "parley")
 		score = 6
 	if (game.active === YORK
@@ -1824,7 +1826,7 @@ function automatic_success(lord: Lord, score) {
 		&& game.state === "parley")
 		score = 6
 	if (game.active === YORK
-		&& game.flags.succession === 1
+		&& game.levy_flags.succession === 1
 		&& game.state === "parley")
 		score = 6
 	if (is_campaign_phase()
@@ -1850,13 +1852,13 @@ function init_influence_check(lord: Lord) {
 	}
 	if (game.active === LANCASTER
 		&& is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES)
-		&& game.flags.parliament_votes === 1
+		&& game.levy_flags.parliament_votes === 1
 		&& game.state === "parley") {
 		game.check.push({ cost: -1, modifier: 0, source:"Parliament Votes"})
 	}
 	if (game.active === YORK
 		&& is_event_in_play(EVENT_YORK_SUCCESSION)
-		&& game.flags.succession === 1
+		&& game.levy_flags.succession === 1
 		&& game.state === "parley") {
 		game.check.push({ cost: -1, modifier: 0, source:"Succession"})
 	}
@@ -2638,21 +2640,31 @@ function goto_ready_vassals() {
 function reset_flags_for_muster() {
 	// to avoid some flags affecting campaign
 	game.flags.jack_cade = 0
-	game.flags.parliament_votes = 0
+	game.levy_flags.parliament_votes = 0
 }
 
 function goto_levy_muster() {
+
+	game.levy_flags = {
+		gloucester_as_heir: 0,
+		loyalty_and_trust: 0,
+		my_crown_is_in_my_heart: 0,
+		parliament_votes: 0,
+		succession: 0,
+		thomas_stanley: 0,
+	}
+
 	for (let lord of all_friendly_lords()) {
 		clear_lords_moved()
 		// additionnal free specific actions
 		if (lord_has_capability(lord, AOW_LANCASTER_THOMAS_STANLEY))
-			game.flags.free_levy = 1
+			game.levy_flags.thomas_stanley = 1
 		if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART))
-			game.flags.free_parley_henry = 2
+			game.levy_flags.my_crown_is_in_my_heart = 2
 		if (is_event_in_play(EVENT_YORK_GLOUCESTER_AS_HEIR))
-			game.flags.free_parley_gloucester = 3
+			game.levy_flags.gloucester_as_heir = 3
 		if (is_event_in_play(EVENT_YORK_LOYALTY_AND_TRUST))
-			game.flags.loyalty_and_trust = 1
+			game.levy_flags.loyalty_and_trust = 1
 	}
 	if (game.active === YORK)
 		log_h2("York Muster")
@@ -2673,10 +2685,14 @@ function end_levy_muster() {
 
 function can_lord_muster(lord: Lord) {
 	// already mustered (except free levy)! TODO : re-check parley henry if ships are levied and at exile
-	if (get_lord_moved(lord)
-	&& (game.flags.free_levy !== 1 || lord !== LORD_HENRY_TUDOR)
-	&& (game.flags.free_parley_henry === 0 || lord !== LORD_HENRY_VI || (lord === LORD_HENRY_VI && !can_action_parley_levy()))
-	&& (game.flags.free_parley_gloucester === 0 || (lord !== LORD_GLOUCESTER_1 || lord !== LORD_GLOUCESTER_2)))
+	if (
+		get_lord_moved(lord) &&
+		(game.levy_flags.thomas_stanley !== 1 || lord !== LORD_HENRY_TUDOR) &&
+		(game.levy_flags.my_crown_is_in_my_heart === 0 ||
+			lord !== LORD_HENRY_VI ||
+			(lord === LORD_HENRY_VI && !can_action_parley_levy())) &&
+		(game.levy_flags.gloucester_as_heir === 0 || lord !== LORD_GLOUCESTER_1 || lord !== LORD_GLOUCESTER_2)
+	)
 		return false
 
 	// must be on map
@@ -2745,7 +2761,7 @@ function resume_levy_muster_lord() {
 	--game.count
 
 	// muster over only if the lord has not spend their free levy actions
-	if (game.count === 0 && game.flags.jack_cade === 0 && game.flags.free_levy === 0 && can_add_troops(game.who, get_lord_locale(game.who))) {
+	if (game.count === 0 && game.flags.jack_cade === 0 && game.levy_flags.thomas_stanley === 0 && can_add_troops(game.who, get_lord_locale(game.who))) {
 		set_lord_moved(game.who, 1)
 		pop_state()
 	}
@@ -2811,10 +2827,10 @@ states.levy_muster_lord = {
 			if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && !can_pay_from_shared(game.who)) {
 				view.actions.levy_troops = 0
 			}
-			if (game.count === 0 && game.flags.free_parley_henry > 0 && game.who === LORD_HENRY_VI) {
+			if (game.count === 0 && game.levy_flags.my_crown_is_in_my_heart > 0 && game.who === LORD_HENRY_VI) {
 				view.actions.parley = 1
 			}
-			if (game.count === 0 && game.flags.free_parley_gloucester > 0 && (game.who === LORD_GLOUCESTER_2 || game.who === LORD_GLOUCESTER_1)) {
+			if (game.count === 0 && game.levy_flags.gloucester_as_heir > 0 && (game.who === LORD_GLOUCESTER_2 || game.who === LORD_GLOUCESTER_1)) {
 				view.actions.parley = 1
 			}
 			if (game.count === 0 && game.flags.jack_cade > 0) {
@@ -2829,7 +2845,7 @@ states.levy_muster_lord = {
 			}
 		}
 
-		if (is_event_in_play(EVENT_YORK_LOYALTY_AND_TRUST) && game.flags.loyalty_and_trust) {
+		if (is_event_in_play(EVENT_YORK_LOYALTY_AND_TRUST) && game.levy_flags.loyalty_and_trust) {
 			view.actions.loyalty_and_trust = 1
 		}
 
@@ -2920,7 +2936,7 @@ states.levy_muster_lord = {
 	loyalty_and_trust() {
 		push_undo()
 		game.count += 3
-		game.flags.loyalty_and_trust = 0
+		game.levy_flags.loyalty_and_trust = 0
 	},
 
 	done() {
@@ -2975,16 +2991,12 @@ function do_levy_troops() {
 			add_lord_forces(game.who, MILITIA, 1)
 			break
 	}
-	if (game.flags.free_levy === 1) {
+	if (game.levy_flags.thomas_stanley === 1) {
 		++game.count
-		game.flags.free_levy = 0
+		game.levy_flags.thomas_stanley = 0
 	}
 
-	if (is_event_in_play(EVENT_YORK_THE_COMMONS) && is_york_lord(game.who)) {
-		goto_the_commons()
-	} else {
-		goto_the_kings_name("Levy Troops")
-	}
+	goto_the_commons()
 }
 
 // === 3.4.2 LEVY LORD ===
@@ -3286,6 +3298,7 @@ states.muster_capability = {
 // === 3.4 MUSTER - DISCARD EVENTS ===
 
 function goto_levy_discard_events() {
+	delete game.levy_flags
 	// Discard "This Levy" events from play.
 	discard_events("this_levy")
 	discard_extra_levy_events()
@@ -4324,8 +4337,8 @@ function list_parley_command() {
 
 function can_action_parley_levy(): boolean {
 	if (game.count <= 0
-		&& (game.who !== LORD_HENRY_VI || game.flags.free_parley_henry === 0)
-		&& ((game.who !== LORD_GLOUCESTER_1 && game.who !== LORD_GLOUCESTER_2) || game.flags.free_parley_gloucester === 0)
+		&& (game.who !== LORD_HENRY_VI || game.levy_flags.my_crown_is_in_my_heart === 0)
+		&& ((game.who !== LORD_GLOUCESTER_1 && game.who !== LORD_GLOUCESTER_2) || game.levy_flags.gloucester_as_heir === 0)
 		&& (!game.flags.jack_cade))
 		return true
 	let here = get_lord_locale(game.who)
@@ -4373,12 +4386,12 @@ function end_parley(success: boolean) {
 	game.flags.naval_blockade = 0
 	game.where = NOWHERE
 	delete game.parley
-	if (game.flags.free_parley_henry > 0 && game.who === LORD_HENRY_VI) {
-		--game.flags.free_parley_henry
+	if (game.levy_flags.my_crown_is_in_my_heart > 0 && game.who === LORD_HENRY_VI) {
+		--game.levy_flags.my_crown_is_in_my_heart
 		++game.count
 	}
-	if (game.flags.free_parley_gloucester > 0 && (game.who === LORD_GLOUCESTER_1 || game.who === LORD_GLOUCESTER_2)) {
-		--game.flags.free_parley_gloucester
+	if (game.levy_flags.gloucester_as_heir > 0 && (game.who === LORD_GLOUCESTER_1 || game.who === LORD_GLOUCESTER_2)) {
+		--game.levy_flags.gloucester_as_heir
 		++game.count
 	}
 	if (game.flags.jack_cade > 0) {
@@ -4428,19 +4441,19 @@ states.parley = {
 	check() {
 		let results = do_influence_check()
 
-		if (game.flags.parliament_votes === 1) {
+		if (game.levy_flags.parliament_votes === 1) {
 			log(`Parley at ${data.locales[game.where].name}. Automatic Success.`)
 			logevent(EVENT_LANCASTER_PARLIAMENT_VOTES)
-			game.flags.parliament_votes = 0
+			game.levy_flags.parliament_votes = 0
 		}
 		else if (game.flags.jack_cade > 0) {
 			log(`Parley at ${data.locales[game.where].name}. Automatic Success.`)
 			logevent(EVENT_YORK_JACK_CADE)
 		}
-		else if (game.flags.succession === 1) {
+		else if (game.levy_flags.succession === 1) {
 			log(`Parley at ${data.locales[game.where].name}. Automatic Success.`)
 			logevent(EVENT_YORK_SUCCESSION)
-			game.flags.succession = 0
+			game.levy_flags.succession = 0
 		}
 		else if (is_campaign_phase()
 		&& game.command === LORD_DEVON
@@ -8261,20 +8274,13 @@ exports.setup = function (seed, scenario, options) {
 		flags: {
 			bloody: 0,
 			burgundians: 0,
-			commons_militia: 0,
 			first_action: 0,
 			first_march_highway: 0,
-			free_levy: 0,
-			free_parley_gloucester: 0,
-			free_parley_henry: 0,
 			jack_cade: 0,
 			london_for_york: 0,
-			loyalty_and_trust: 0,
 			march_to_port: 0,
 			naval_blockade: 0,
-			parliament_votes: 0,
 			sail_to_port: 0,
-			succession: 0,
 			supply_depot: 0,
 			surprise_landing: 0,
 		},
@@ -9237,7 +9243,7 @@ function capability_muster_effects(lord: Lord, c: Card) {
 
 	if (c === AOW_LANCASTER_THOMAS_STANLEY) {
 		muster_vassal(VASSAL_THOMAS_STANLEY, lord)
-		game.flags.free_levy = 1
+		game.levy_flags.thomas_stanley = 1
 	}
 
 	if (c === AOW_YORK_HASTINGS) {
@@ -9274,14 +9280,16 @@ function lordship_effects(lord: Lord) {
 		game.count += 1
 	if (is_event_in_play(EVENT_YORK_EDWARD_V) && (lord === LORD_GLOUCESTER_1 || lord === LORD_GLOUCESTER_2))
 		game.count += 3
+
 	if (is_lancaster_lord(lord) && is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES)) {
-		game.flags.parliament_votes = 1
-	}
-	if (is_york_lord(lord) && is_jack_cade_eligible(lord)) {
-		game.flags.jack_cade = 2
+		game.levy_flags.parliament_votes = 1
 	}
 	if (is_york_lord(lord) && is_event_in_play(EVENT_YORK_SUCCESSION)) {
-		game.flags.succession = 1
+		game.levy_flags.succession = 1
+	}
+
+	if (is_york_lord(lord) && is_jack_cade_eligible(lord)) {
+		game.flags.jack_cade = 2
 	}
 }
 
@@ -9343,9 +9351,9 @@ states.soldiers_of_fortune = {
 				add_lord_forces(game.who, MILITIA, 1)
 				break
 		}
-		if (game.flags.free_levy === 1) {
+		if (game.levy_flags.thomas_stanley === 1) {
 			++game.count
-			game.flags.free_levy = 0
+			game.levy_flags.thomas_stanley = 0
 		}
 		if (number === 5)
 			merc = 1
@@ -9417,9 +9425,9 @@ states.commission_of_array = {
 				add_lord_forces(game.who, MILITIA, 1)
 				break
 		}
-		if (game.flags.free_levy === 1) {
+		if (game.levy_flags.thomas_stanley === 1) {
 			++game.count
-			game.flags.free_levy = 0
+			game.levy_flags.thomas_stanley = 0
 		}
 		end_commission_of_array()
 	},
@@ -11052,23 +11060,29 @@ states.rising_wages = {
 // each Levy Troops action ends with coming here
 
 function goto_the_commons() {
-	game.state = "the_commons"
-	game.flags.commons_militia = 2
+	if (is_event_in_play(EVENT_YORK_THE_COMMONS) && is_york_lord(game.who))
+		game.state = "the_commons"
+	else
+		end_the_commons()
 }
 
 states.the_commons = {
 	inactive: "The Commons",
 	prompt() {
-		view.prompt = `Add up to ${game.flags.commons_militia} Militias.`
-		if (game.flags.commons_militia > 0)
-			view.actions.add_militia = 1
+		view.prompt = `Add up to 2 Militia extra.`
+		view.actions.add_militia = 1
+		view.actions.add_militia2 = 1
 		view.actions.done = 1
 	},
 	add_militia() {
 		push_undo()
 		add_lord_forces(game.who, MILITIA, 1)
-		if (--game.flags.commons_militia === 0)
-			end_the_commons()
+		end_the_commons()
+	},
+	add_militia2() {
+		push_undo()
+		add_lord_forces(game.who, MILITIA, 2)
+		end_the_commons()
 	},
 	done() {
 		push_undo()
@@ -11077,7 +11091,6 @@ states.the_commons = {
 }
 
 function end_the_commons() {
-	game.flags.commons_militia = 0
 	goto_the_kings_name("Levy Troops")
 }
 
