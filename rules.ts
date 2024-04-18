@@ -5,13 +5,17 @@
 // Check all push/clear_undo
 // TODO: check flank attack
 
-// TODO: clean up use of who/what/which/where -- explicit selected_lord, selected_vassal, etc?
+// TODO: check all who = NOBODY etc resets
+
 // TODO: remove unneccessary game.who = NOBODY etc
+
 // TODO: call end_influence_check earlier when possible?
 
 // TODO: use game.command instead of game.who for levy -- can we avoid saving who and count in push_state?
+// TODO: can we simplify push_state to not push count and who?
 
 // TODO: verify all push_state uses
+
 /*
 REDO
 	parley - needs push_state? probably.
@@ -58,10 +62,12 @@ type Season = number & { TAG: "Season" }
 
 type Way = "path" | "road" | "highway"
 
+type MyMap<K,V> = (K|V)[]
+
 interface Game {
 	seed: number,
 	scenario: string,
-	hidden: boolean,
+	hidden: 0 | 1,
 
 	log: string[],
 	undo: any[],
@@ -105,51 +111,58 @@ interface Game {
 	},
 
 	flags: {
-		first_action: number,
-		first_march_highway: number,
-		free_levy: number,
-		free_parley_henry: number,
-		free_parley_gloucester: number,
-		burgundians: number,
-		bloody: number,
-		london_for_york: number,
-		surprise_landing: number,
-		sail_to_port: number,
-		march_to_port: number,
-		parliament_votes: number,
-		succession: number,
-		jack_cade: number,
-		commons_militia: number,
-		swap_battle_attacker: number,
-		supply_depot: number,
-		loyalty_and_trust: number,
-		warden_of_the_marches: number,
-		naval_blockade: number,
+		bloody: 0 | 1,
+		burgundians: 0 | 1,
+		commons_militia: 0 | 1 | 2,
+		first_action: 0 | 1,
+		first_march_highway: 0 | 1,
+		free_levy: 0 | 1,
+		free_parley_gloucester: 0 | 1 | 2 | 3,
+		free_parley_henry: 0 | 1 | 2,
+		jack_cade: 0 | 1 | 2,
+		london_for_york: 0 | 1,
+		loyalty_and_trust: 0 | 1,
+		march_to_port: 0 | 1,
+		naval_blockade: -1 | 0 | 1,
+		parliament_votes: 0 | 1,
+		sail_to_port: 0 | 1,
+		succession: 0 | 1,
+		supply_depot: 0 | 1,
+		surprise_landing: 0 | 1,
+		swap_battle_attacker: 0 | 1,
+		warden_of_the_marches: 0 | 1,
 	},
 
 	command: Lord,
 	actions: number,
 	group: Lord[],
 	intercept_group: Lord[],
-
-	arts_of_war: Card[],
 	who: Lord,
 	other: Lord,
 	where: Locale,
 	vassal: Vassal,
-
 	what: string,
 	count: number,
-	event_data: any,
 
-	check: any,
-	supply: any,
-	march: { from: Locale, to: Locale },
-	parley: any,
+	/* temporary properties for various phases and actions */
+	arts_of_war?: Card[],
+	march?: { from: Locale, to: Locale },
+	battle?: Battle,
+	supply?: MyMap<Locale,number>,
+	parley?: MyMap<Locale,number>,
+	spoils?: number[],
 
-	battle: Battle,
-	spoils: number[],
+	check?: { cost: number, modifier: number, source: string }[],
 
+	/* temporary properties for various events */
+	event_scots?: Lord[],
+	event_propaganda?: Locale[],
+	event_aragne?: Vassal[],
+	event_she_wolf?: Vassal[],
+	event_earl_rivers?: MyMap<Lord,number>,
+	event_the_kings_name?: any,
+
+	/* game over properties */
 	victory?: string,
 	result?: string,
 }
@@ -270,15 +283,39 @@ interface State {
 	soldiers_of_fortune?(): void,
 }
 
-interface StateList {
-	[index: string]: State
+interface View {
+	prompt: string,
+	actions: any,
+	log: string[],
+
+	end: number,
+	turn: number,
+	victory_check: number,
+	influence: number,
+
+	events: Card[],
+	pieces: any,
+	reveal: number,
+
+	held_y: number,
+	held_l: number,
+
+	command: Lord,
+	hand: Card[],
+	plan: Lord[],
+
+	battle?: Battle,
+	arts_of_war?: Card[],
+	group?: Lord[],
+	what?: Card,
+	who?: Lord,
 }
 
 // === CONSTANTS ===
 
 var game: Game
-var view: any
-var states: StateList = {}
+var view: View
+var states: { [index: string]: State } = {}
 
 const data = require("./data.js")
 
@@ -1830,7 +1867,7 @@ function init_influence_check(lord: Lord) {
 }
 
 function end_influence_check() {
-	game.check = 0
+	delete game.check
 }
 
 function count_influence_score() {
@@ -2004,7 +2041,7 @@ states.levy_arts_of_war_first = {
 }
 
 function end_levy_arts_of_war_first() {
-	game.arts_of_war = null
+	delete game.arts_of_war
 	set_active_enemy()
 	if (game.active === P2)
 		goto_levy_arts_of_war_first()
@@ -2074,7 +2111,7 @@ states.levy_arts_of_war = {
 }
 
 function end_levy_arts_of_war() {
-	game.arts_of_war = null
+	delete game.arts_of_war
 	set_active_enemy()
 	if (game.active === P2)
 		goto_levy_arts_of_war()
@@ -3594,6 +3631,7 @@ function search_supply_by_way(result, start: Locale, carts: number, ships: numbe
 
 	if (result)
 		return result
+
 	return false
 }
 
@@ -3662,10 +3700,10 @@ function init_supply() {
 	game.supply = search_supply([])
 }
 
-function can_action_supply() {
+function can_action_supply(): boolean {
 	if (game.actions < 1)
 		return false
-	return !!search_supply(false)
+	return search_supply(false)
 }
 
 function goto_supply() {
@@ -3734,7 +3772,7 @@ states.supply_source = {
 			view.prompt += ` ${ships} Ship.`
 
 		for (let i = 0; i < game.supply.length; i += 2)
-			gen_action_locale(game.supply[i])
+			gen_action_locale(game.supply[i] as Locale)
 	},
 	locale(loc) {
 		push_undo()
@@ -3790,7 +3828,7 @@ function use_port_supply(source: Locale, amount: number) {
 function end_supply() {
 	spend_action(1)
 	resume_command()
-	game.supply = 0
+	delete game.supply
 	game.where = NOWHERE
 }
 
@@ -4094,13 +4132,13 @@ function search_tax(result, start: Locale, lord: Lord) {
 		return false
 }
 
-function can_action_tax() {
+function can_action_tax(): boolean {
 	if (game.actions < 1)
 		return false
 	let here = get_lord_locale(game.command)
 	if (can_tax_at(here, game.command))
 		return true
-	return !!search_tax(false, here, game.command)
+	return search_tax(false, here, game.command)
 }
 
 function goto_tax() {
@@ -4297,7 +4335,7 @@ function list_parley_command() {
 	return result
 }
 
-function can_action_parley_levy() {
+function can_action_parley_levy(): boolean {
 	if (game.count <= 0
 		&& (game.who !== LORD_HENRY_VI || game.flags.free_parley_henry === 0)
 		&& ((game.who !== LORD_GLOUCESTER_1 && game.who !== LORD_GLOUCESTER_2) || game.flags.free_parley_gloucester === 0)
@@ -4306,12 +4344,11 @@ function can_action_parley_levy() {
 	let here = get_lord_locale(game.who)
 	if (can_parley_at(here))
 		return true
-	return !!search_parley(false, here, game.who)
+	return search_parley(false, here, game.who)
 }
 
 function list_parley_levy() {
-	let here = get_lord_locale(game.who)
-	return search_parley([], here, game.who)
+	return search_parley([], get_lord_locale(game.who), game.who)
 }
 
 function goto_parley() {
@@ -4327,7 +4364,7 @@ function goto_parley() {
 		// Campaign phase, and current location is no cost (except some events), and always successful.
 		if (game.parley.length === 2 && get_lord_locale(game.command) === game.parley[0]) {
 			log(`Parley at ${data.locales[get_lord_locale(game.command)]}`)
-			shift_favour_toward(game.parley[0])
+			shift_favour_toward(game.parley[0] as Locale)
 			if (is_lancaster_lord(game.command) && is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
 				reduce_lancaster_influence(1)
 			}
@@ -4337,7 +4374,7 @@ function goto_parley() {
 	}
 
 	if (game.parley.length === 2) {
-		game.where = game.parley[0]
+		game.where = game.parley[0] as Locale
 		add_influence_check_distance(game.parley[1])
 	} else {
 		game.where = NOWHERE
@@ -4348,7 +4385,7 @@ function end_parley(success: boolean) {
 	pop_state()
 	game.flags.naval_blockade = 0
 	game.where = NOWHERE
-	game.parley = null
+	delete game.parley
 	if (game.flags.free_parley_henry > 0 && game.who === LORD_HENRY_VI) {
 		--game.flags.free_parley_henry
 		++game.count
@@ -4383,7 +4420,7 @@ states.parley = {
 		view.prompt = "Parley: Choose a Locale to Parley."
 		if (game.where === NOWHERE) {
 			for (let i = 0; i < game.parley.length; i += 2)
-				gen_action_locale(game.parley[i])
+				gen_action_locale(game.parley[i] as Locale)
 		} else {
 			view.prompt = "Parley: "
 			prompt_influence_check()
@@ -4477,13 +4514,15 @@ function can_march_to(to: Locale) {
 function prompt_march() {
 	let from = get_lord_locale(game.command)
 
+	// TODO: this is a bit complicated -- can we simplify?
+
 	if (is_first_action()) {
 		for (let to of data.locales[from].paths) {
 			if (can_march_to(to))
 				gen_action_locale(to)
 		}
 	}
-	if (game.actions > 0 || game.flags.surprise_landing === 2) {
+	if (game.actions > 0 || game.flags.surprise_landing === 1) {
 		for (let to of data.locales[from].roads) {
 			if (can_march_to(to))
 				gen_action_locale(to)
@@ -4493,7 +4532,7 @@ function prompt_march() {
 			if (can_march_to(to))
 				gen_action_locale(to)
 		}
-	} else if ((game.actions === 0 && is_first_march_highway()) || game.flags.surprise_landing === 2) {
+	} else if (game.actions === 0 && is_first_march_highway()) {
 		for (let to of data.locales[from].highways) {
 			if (can_march_to(to))
 				gen_action_locale(to)
@@ -4568,7 +4607,7 @@ function march_with_group_2() {
 
 	switch (type) {
 		case "highway":
-			if (is_first_march_highway() || game.flags.surprise_landing === 2) {
+			if (is_first_march_highway() || game.flags.surprise_landing === 1) {
 				spend_march_action(0)
 			} else {
 				spend_march_action(1)
@@ -4577,7 +4616,7 @@ function march_with_group_2() {
 			break
 
 		case "road":
-			if ((alone && is_first_march_highway()) || game.flags.surprise_landing === 2) {
+			if ((alone && is_first_march_highway()) || game.flags.surprise_landing === 1) {
 				spend_march_action(0)
 			} else {
 				spend_march_action(1)
@@ -4606,7 +4645,7 @@ function end_march() {
 	// Disbanded in battle!
 	if (!is_lord_on_map(game.command)) {
 		game.where = NOWHERE
-		game.march = null
+		delete game.march
 		spend_all_actions()
 		resume_command()
 		return
@@ -4619,7 +4658,7 @@ function end_march() {
 		game.flags.march_to_port = 0
 	game.flags.sail_to_port = 0
 
-	game.march = null
+	delete game.march
 	resume_command()
 }
 
@@ -5038,7 +5077,7 @@ function get_spoils(type: Asset) {
 }
 
 function add_spoils(type: Asset, n) {
-	if (!game.spoils)
+	if (game.spoils === undefined)
 		game.spoils = [ 0, 0, 0, 0, 0, 0, 0 ]
 	game.spoils[type] += n
 }
@@ -7032,8 +7071,7 @@ function goto_battle_spoils() {
 
 function end_battle_spoils() {
 	game.who = NOBODY
-	game.spoils = null
-
+	delete game.spoils
 	goto_battle_losses_victor()
 }
 
@@ -7368,7 +7406,7 @@ function goto_battle_aftermath() {
 	// Recovery
 	spend_all_actions()
 	game.where = NOWHERE
-	game.battle = null
+	delete game.battle
 	game.flags.bloody = 0
 	end_march()
 }
@@ -8209,24 +8247,25 @@ exports.setup = function (seed, scenario, options) {
 	game = {
 		seed,
 		scenario,
-		hidden: !!options.hidden,
+		hidden: options.hidden ? 1 : 0,
 
 		log: [],
 		undo: [],
 
 		active: null,
-		rebel: null,
 		state: "setup_lords",
 		stack: [],
+
 		victory_check: 0,
+		turn: 0,
 		influence: 0,
+		rebel: null,
 
 		hand_y: [],
 		hand_l: [],
 		plan_y: [],
 		plan_l: [],
 
-		turn: 0,
 		events: [], // this levy/this campaign cards
 
 		pieces: {
@@ -8250,26 +8289,26 @@ exports.setup = function (seed, scenario, options) {
 		},
 
 		flags: {
+			bloody: 0,
+			burgundians: 0,
+			commons_militia: 0,
 			first_action: 0,
 			first_march_highway: 0,
 			free_levy: 0,
-			free_parley_henry:0,
-			free_parley_gloucester:0,
-			burgundians:0,
-			bloody:0,
-			london_for_york:0,
-			surprise_landing:0,
-			sail_to_port: 0,
+			free_parley_gloucester: 0,
+			free_parley_henry: 0,
+			jack_cade: 0,
+			london_for_york: 0,
+			loyalty_and_trust: 0,
 			march_to_port: 0,
-			parliament_votes:0,
-			succession:0,
-			jack_cade:0,
-			commons_militia:0,
-			swap_battle_attacker:0,
-			supply_depot:0,
-			loyalty_and_trust:0,
-			warden_of_the_marches:0,
-			naval_blockade:0
+			naval_blockade: 0,
+			parliament_votes: 0,
+			sail_to_port: 0,
+			succession: 0,
+			supply_depot: 0,
+			surprise_landing: 0,
+			swap_battle_attacker: 0,
+			warden_of_the_marches: 0,
 		},
 
 		command: NOBODY,
@@ -8282,15 +8321,6 @@ exports.setup = function (seed, scenario, options) {
 		vassal: NOVASSAL,
 		what: null,
 		count: 0,
-		event_data: 0,
-		check: null,
-		arts_of_war: null,
-
-		supply: 0,
-		march: null,
-		battle: null,
-		spoils: null,
-		parley: 0,
 	}
 
 	log_h1(scenario)
@@ -10011,12 +10041,12 @@ function end_immediate_event() {
 
 function goto_lancaster_event_scots() {
 	game.state = "scots"
-	game.event_data = []
 	game.who = NOBODY
+	game.event_scots = []
 }
 
 function end_lancaster_event_scots() {
-	game.event_data = 0
+	delete game.event_scots
 	game.who = NOBODY
 	end_immediate_event()
 }
@@ -10026,13 +10056,13 @@ states.scots = {
 	prompt() {
 		view.prompt = "Scots: You may add 1 Men-at-Arms and 1 Militia to each Lord."
 		for (let lord of all_lancaster_lords) {
-			if (is_lord_on_map(lord) && map_get(game.event_data, lord, 0) < 3) {
+			if (is_lord_on_map(lord) && map_get(game.event_scots, lord, 0) < 3) {
 				gen_action_lord(lord)
 			}
 		}
 
 		if (game.who !== NOBODY) {
-			let troops = map_get(game.event_data, game.who, 0)
+			let troops = map_get(game.event_scots, game.who, 0)
 			if ((troops & 1) === 0)
 				view.actions.add_militia = 1
 			if ((troops & 2) === 0)
@@ -10045,15 +10075,15 @@ states.scots = {
 	},
 	add_militia() {
 		add_lord_forces(game.who, MILITIA, 1)
-		let troops = map_get(game.event_data, game.who, 0)
-		map_set(game.event_data, game.who, troops + 1)
+		let troops = map_get(game.event_scots, game.who, 0)
+		map_set(game.event_scots, game.who, troops + 1)
 		if (troops !== 0)
 			game.who = NOBODY
 	},
 	add_men_at_arms() {
 		add_lord_forces(game.who, MEN_AT_ARMS, 1)
-		let troops = map_get(game.event_data, game.who, 0)
-		map_set(game.event_data, game.who, troops + 2)
+		let troops = map_get(game.event_scots, game.who, 0)
+		map_set(game.event_scots, game.who, troops + 2)
 		if (troops !== 0)
 			game.who = NOBODY
 	},
@@ -10163,15 +10193,15 @@ states.french_troops = {
 // === EVENT: WARWICKS PROPAGANDA ===
 
 function add_propaganda_target(loc: Locale) {
-	set_add(game.event_data, loc)
+	set_add(game.event_propaganda, loc)
 }
 
 function remove_propaganda_target(loc: Locale) {
-	set_delete(game.event_data, loc)
+	set_delete(game.event_propaganda, loc)
 }
 
 function is_propaganda_target(loc: Locale) {
-	return set_has(game.event_data, loc)
+	return set_has(game.event_propaganda, loc)
 }
 
 function goto_warwicks_propaganda() {
@@ -10184,7 +10214,7 @@ function goto_warwicks_propaganda() {
 
 	if (can_play) {
 		game.state = "warwicks_propaganda"
-		game.event_data = []
+		game.event_propaganda = []
 		game.where = NOWHERE
 		game.count = 0
 	} else {
@@ -10262,7 +10292,7 @@ states.warwicks_propaganda_yorkist_choice = {
 }
 
 function end_warwicks_propaganda() {
-	game.event_data = 0
+	delete game.event_propaganda
 	game.where = NOWHERE
 	game.count = 0
 	set_active_enemy()
@@ -10419,7 +10449,7 @@ function goto_lancaster_event_luniverselle_aragne() {
 	}
 	if (can_play) {
 		game.state = "aragne_1"
-		game.event_data = []
+		game.event_aragne = []
 	} else {
 		logi("No Effect")
 		end_immediate_event()
@@ -10430,9 +10460,9 @@ states.aragne_1 = {
 	inactive: "L'universelle Aragne",
 	prompt() {
 		view.prompt = "Select up to 2 Vassals"
-		if (game.event_data.length < 2) {
+		if (game.event_aragne.length < 2) {
 			for (let v of all_vassals) {
-				if (!set_has(game.event_data, v) && is_vassal_mustered_with_york_lord(v)) {
+				if (!set_has(game.event_aragne, v) && is_vassal_mustered_with_york_lord(v)) {
 					gen_action_vassal(v)
 				}
 			}
@@ -10441,7 +10471,7 @@ states.aragne_1 = {
 	},
 	vassal(v) {
 		push_undo()
-		set_add(game.event_data, v)
+		set_add(game.event_aragne, v)
 		logi(`Vassal ${data.vassals[v].name} selected`)
 	},
 	done() {
@@ -10460,7 +10490,7 @@ states.aragne_2 = {
 	prompt() {
 		view.prompt = `For Each vassal, influence check : failure disbands it`
 		let done = true
-		for (let v of game.event_data) {
+		for (let v of game.event_aragne) {
 			gen_action_vassal(v)
 			done = false
 		}
@@ -10501,15 +10531,14 @@ states.aragne_3 = {
 
 		end_influence_check()
 
-		set_delete(game.event_data, game.vassal)
+		set_delete(game.event_aragne, game.vassal)
 		game.vassal = NOVASSAL
 		game.state = "aragne_2"
 	},
 }
 
 function end_universelle_aragne() {
-	game.who = NOBODY
-	game.event_data = 0
+	delete game.event_aragne
 	end_immediate_event()
 }
 
@@ -10793,7 +10822,7 @@ function goto_york_event_shewolf_of_france() {
 	}
 	if (can_play) {
 		game.state = "she_wolf"
-		game.event_data = []
+		game.event_she_wolf = []
 		game.who = NOBODY
 	} else {
 		logi(`No Effect`)
@@ -10807,7 +10836,7 @@ states.she_wolf = {
 		view.prompt = "Shift each Yorkist Vassal's Calendar marker 1 box right."
 		let done = true
 		for (let v of all_vassals) {
-			if (!set_has(game.event_data, v) && is_vassal_mustered_with_friendly_lord(v)) {
+			if (!set_has(game.event_she_wolf, v) && is_vassal_mustered_with_friendly_lord(v)) {
 				gen_action_vassal(v)
 				done = false
 			}
@@ -10819,11 +10848,11 @@ states.she_wolf = {
 		push_undo()
 		if (current_turn() < 16)
 			set_vassal_lord_and_service(v, get_vassal_lord(v), get_vassal_service(v) + 1)
-		set_add(game.event_data, v)
+		set_add(game.event_she_wolf, v)
 		logi(`Vassal ${data.vassals[v].name} shifted one calendar box`)
 	},
 	done() {
-		game.event_data = 0
+		delete game.event_she_wolf
 		end_immediate_event()
 	},
 }
@@ -10926,12 +10955,12 @@ function goto_york_event_yorkist_north() {
 
 function goto_york_event_earl_rivers() {
 	game.state = "earl_rivers"
-	game.event_data = []
+	game.event_earl_rivers = []
 	game.who = NOBODY
 }
 
 function end_york_event_earl_rivers() {
-	game.event_data = 0
+	delete game.event_earl_rivers
 	game.who = NOBODY
 	end_immediate_event()
 }
@@ -10942,18 +10971,18 @@ states.earl_rivers = {
 		view.prompt = "Earl Rivers: Add up to 2 Militia to each lord"
 		view.actions.done = 1
 		for (let lord of all_york_lords) {
-			if (is_lord_on_map(lord) && map_get(game.event_data, lord, 0) < 3) {
+			if (is_lord_on_map(lord) && map_get(game.event_earl_rivers, lord, 0) < 3) {
 				gen_action_lord(lord)
 			}
 		}
 
 		if (game.who !== NOBODY) {
-			let troops = map_get(game.event_data, game.who, 0)
+			let troops = map_get(game.event_earl_rivers, game.who, 0)
 			if ((troops & 1) === 0)
 				view.actions.add_militia = 1
 		}
 		if (game.who !== NOBODY) {
-			let troops = map_get(game.event_data, game.who, 0)
+			let troops = map_get(game.event_earl_rivers, game.who, 0)
 			if ((troops & 1) === 0)
 				view.actions.add_militia2 = 1
 		}
@@ -10964,16 +10993,16 @@ states.earl_rivers = {
 	add_militia() {
 		push_undo()
 		add_lord_forces(game.who, MILITIA, 1)
-		let troops = map_get(game.event_data, game.who, 0)
-		map_set(game.event_data, game.who, troops + 1)
+		let troops = map_get(game.event_earl_rivers, game.who, 0)
+		map_set(game.event_earl_rivers, game.who, troops + 1)
 		if (troops > 1)
 			game.who = NOBODY
 	},
 	add_militia2() {
 		push_undo()
 		add_lord_forces(game.who, MILITIA, 2)
-		let troops = map_get(game.event_data, game.who, 0)
-		map_set(game.event_data, game.who, troops + 1)
+		let troops = map_get(game.event_earl_rivers, game.who, 0)
+		map_set(game.event_earl_rivers, game.who, troops + 1)
 		if (troops > 1)
 			game.who = NOBODY
 	},
@@ -11434,7 +11463,7 @@ states.rebel_supply_depot = {
 
 function end_rebel_supply_depot() {
 	pop_state()
-	game.spoils = null
+	delete game.spoils
 }
 
 // === HELD EVENT: SURPRISE LANDING ===
@@ -11450,7 +11479,7 @@ function can_play_surprise_landing() {
 
 function goto_play_surprise_landing() {
 	game.state = "surprise_landing"
-	game.flags.surprise_landing = 2
+	game.flags.surprise_landing = 1
 	game.who = NOBODY
 }
 
@@ -11792,32 +11821,21 @@ function pop_state() {
 }
 
 function save_state_for_the_kings_name() {
-	let copy = {}
-	for (let k in game) {
-		let v = game[k]
-		if (k === "undo")
-			v = undefined
-		else if (k === "log")
-			v = undefined
-		else if (typeof v === "object" && v !== null)
-			v = object_copy(v)
-		copy[k] = v
-	}
-	game.event_data = copy
+	game.event_the_kings_name = game.undo[game.undo.length - 1]
 }
 
 function restore_state_for_the_kings_name() {
-	let save_log = game.log
-	let save_influence = game.influence
-	game = game.event_data
+	let current_log = game.log
+	let current_influence = game.influence
+	game = game.event_the_kings_name
 	game.undo = []
-	game.log = save_log
-	game.influence = save_influence
-	game.event_data = 0
+	game.log = current_log
+	game.influence = current_influence
+	delete game.event_the_kings_name
 }
 
 function delete_state_for_the_kings_name() {
-	game.event_data = 0
+	delete game.event_the_kings_name
 }
 
 function clear_undo() {
@@ -12133,6 +12151,11 @@ function map_delete(map, item) {
 			return
 		}
 	}
+}
+
+function map_for_each<K,V>(map: MyMap<K,V>, f: (K,V)=>void) {
+	for (let i = 0; i < map.length; i += 2)
+		f(map[i] as K, map[i+1] as V)
 }
 
 // === FUZZING ASSERTS ===
