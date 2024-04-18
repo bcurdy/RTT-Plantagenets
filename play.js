@@ -1613,6 +1613,7 @@ function on_update() {
 	update_court()
 
 	// Misc
+	action_button("final_charge", "Final Charge")
 	action_button("lordship", "Lordship")
 	action_button("march", "March")
 	action_button("avoid", "Avoid Battle")

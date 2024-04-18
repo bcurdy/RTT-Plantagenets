@@ -184,6 +184,7 @@ interface Battle {
 	dhits: number,
 	attacker_artillery: number,
 	defender_artillery: number,
+	final_charge: 0 | 1,
 	ravine?: Lord,
 	caltrops?: Lord,
 	force?: Force,
@@ -274,6 +275,7 @@ interface State {
 	tax?(): void,
 	valour?(): void,
 
+	final_charge?(): void,
 	commission_of_array?(): void,
 	loyalty_and_trust?(): void,
 	soldiers_of_fortune?(): void,
@@ -3219,7 +3221,7 @@ function can_add_troops_sof(lord: Lord, locale: Locale) {
 // === 3.4.5 LEVY TRANSPORT
 
 function can_add_transport(who: Lord, what: Asset) {
-	return get_lord_assets(who, what) < 14
+	return get_lord_assets(who, what) < 15
 }
 
 // === 3.4.6 LEVY CAPABILITY ===
@@ -5393,6 +5395,7 @@ function goto_battle() {
 		dhits: 0,
 		attacker_artillery: 0,
 		defender_artillery: 0,
+		final_charge: 0,
 	}
 
 	if (is_flank_attack_in_play()) {
@@ -6131,6 +6134,43 @@ states.swift_maneuver = {
 	},
 }
 
+// === BATTLE CAPABILITY: FINAL CHARGE ===
+
+function can_final_charge() {
+	// If LORD_RICHARD_III with RETINUE in engagement before melee strike.
+	if (is_melee_step()) {
+		for (let pos of game.battle.engagements[0]) {
+			let lord = game.battle.array[pos]
+			if (lord === LORD_RICHARD_III && get_lord_forces(lord, RETINUE) > 0)
+				return true
+		}
+	}
+	return false
+}
+
+states.final_charge = {
+	prompt() {
+		view.prompt = "Final Charge: Retinue may suffer +1 Hit to add +3 extra Hits against Enemy."
+		view.actions.final_charge = 1
+		view.actions.done = 1
+	},
+	final_charge() {
+		logcap(AOW_YORK_FINAL_CHARGE)
+		game.battle.final_charge = 1
+		if (game.battle.attacker === YORK) {
+			game.battle.ahits += 1
+			game.battle.dhits += 3
+		} else {
+			game.battle.ahits += 3
+			game.battle.dhits += 1
+		}
+		goto_defender_assign_hits()
+	},
+	done() {
+		goto_defender_assign_hits()
+	},
+}
+
 // === 4.4.2 BATTLE ROUNDS ===
 
 function goto_battle_rounds() {
@@ -6520,6 +6560,15 @@ function goto_engagement_total_hits() {
 	log_br()
 	log_hits(game.battle.ahits, "Hit")
 	game.battle.target = null
+
+	game.battle.final_charge = 0
+
+	if (can_final_charge()) {
+		set_active(YORK)
+		game.state = "final_charge"
+		return
+	}
+
 	goto_defender_assign_hits()
 }
 
@@ -6588,6 +6637,7 @@ function no_remaining_targets() {
 
 function goto_attacker_assign_hits() {
 	set_active_attacker()
+
 	if (game.battle.dhits === 0)
 		return end_attacker_assign_hits()
 
@@ -6620,6 +6670,12 @@ function for_each_target(fn) {
 
 function prompt_hit_forces() {
 	for_each_target(lord => {
+		// Note: Must take hit from Final Charge on Retinue.
+		if (lord === LORD_RICHARD_III && game.battle.final_charge) {
+			gen_action_retinue(lord)
+			return
+		}
+
 		if (get_lord_forces(lord, RETINUE) > 0)
 			gen_action_retinue(lord)
 		if (get_lord_forces(lord, BURGUNDIANS) > 0)
@@ -6654,6 +6710,7 @@ states.assign_hits = {
 			action_assign_hits(lord, MEN_AT_ARMS)
 		else
 			action_assign_hits(lord, RETINUE)
+		game.battle.final_charge = 0
 	},
 	burgundians(lord) {
 		action_assign_hits(lord, BURGUNDIANS)
