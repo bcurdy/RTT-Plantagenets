@@ -7100,7 +7100,6 @@ function end_death_or_disband() {
 }
 
 function prompt_held_event_at_death_check() {
-	// both attacker and defender events
 	if (game.active === LANCASTER) {
 		if (can_play_escape_ship())
 			gen_action_card_if_held(EVENT_LANCASTER_ESCAPE_SHIP)
@@ -7202,12 +7201,12 @@ function can_escape_at(here: Locale) {
 		return true
 	if (game.active === LANCASTER && has_favourl_marker(here) && is_seaport(here))
 		return true
-	if (search_escape_route(here))
+	if (search_escape_ship(here))
 		return true
 	return false
 }
 
-function search_escape_route(start: Locale) {
+function search_escape_ship(start: Locale) {
 	search_seen.fill(0)
 	search_seen[start] = 1
 	let queue = [start]
@@ -7241,20 +7240,21 @@ states.escape_ship = {
 	inactive: `Escape ship`,
 	prompt() {
 		view.prompt = "Escape Ship: Your lords go to Exile."
+		for (let lord of game.battle.fled)
+			gen_action_lord(lord)
+		for (let lord of game.battle.routed)
+			gen_action_lord(lord)
 		view.actions.done = 1
+	},
+	lord(lord) {
+		push_undo()
+		log(`${lord_name[lord]} went to exile.`)
+		exile_lord(lord)
+		set_delete(game.battle.fled, lord)
+		set_delete(game.battle.routed, lord)
 	},
 	done() {
 		push_undo()
-		for (let lord of game.battle.fled) {
-			log(`${lord_name[lord]} went to exile.`)
-			exile_lord(lord)
-			set_delete(game.battle.fled, lord)
-		}
-		for (let lord of game.battle.routed) {
-			log(`${lord_name[lord]} went to exile.`)
-			exile_lord(lord)
-			set_delete(game.battle.routed, lord)
-		}
 		game.state = "death_check"
 	},
 }
@@ -7262,82 +7262,93 @@ states.escape_ship = {
 // === DEATH CHECK EVENT: TALBOT TO THE RESCUE ===
 
 function can_play_talbot_to_the_rescue() {
+	// TODO: has any friendly routed lords
 	return true
 }
 
 function goto_play_talbot_to_the_rescue() {
-	throw "TODO"
+	game.state = "talbot_to_the_rescue"
+}
+
+states.talbot_to_the_rescue = {
+	inactive: "Talbot to the Rescue",
+	prompt() {
+		view.prompt = "Talbot to the Rescue: Disband any Routed Lancastrians instead of rolling for Death."
+		for (let lord of game.battle.routed)
+			gen_action_lord(lord)
+		view.actions.done = 1
+	},
+	lord(lord) {
+		push_undo()
+		log(`${lord_name[lord]} disbanded.`)
+		disband_lord(lord)
+		set_delete(game.battle.routed, lord)
+	},
+	done() {
+		push_undo()
+		game.state = "death_check"
+	},
 }
 
 // === DEATH CHECK EVENT: WARDEN OF THE MARCHES ===
 
 function can_play_warden_of_the_marches() {
-	// TODO : Maybe a bug with blocked ford/exile ?
-	let can_play = false
-	for (let loc of all_locales) {
-		if (is_friendly_locale(loc) && is_north(loc) && loc !== game.battle.where) {
-			can_play = true
-		}
+	// TODO: has any friendly routed lords
+	// TODO: blocked ford?
+	if (is_north(game.battle.where)) {
+		for (let loc of all_locales)
+			if (is_north(loc) && loc !== game.battle.where && is_friendly_locale(loc))
+				return true
 	}
-	if (!can_play) {
-		return false
-	}
-	// if blocked ford then flee
-	if (is_north(game.where)) // XXX BLOCKED FORD?
-		return true
-	// if battle
-	if (is_north(game.battle.where))
-		return true
 	return false
 }
 
 function goto_play_warden_of_the_marches() {
-	push_undo()
 	game.state = "warden_of_the_marches"
+	game.where = NOWHERE
 }
 
 states.warden_of_the_marches = {
 	inactive: "Warden of the Marches",
 	prompt() {
-		let done = true
-		view.prompt = "Warden of the Marches: Select a friendly locale in the North to move routed lords there"
-		for (let loc of all_locales) {
-			if (is_friendly_locale(loc) && is_north(loc) && loc !== game.battle.where) {
-				done = false
-				gen_action_locale(loc)
-			}
-		}
-		if (done) {
+		if (game.where === NOWHERE) {
+			view.prompt = "Warden of the Marches: Move any Routed Lancastrians to a Friendly Stronghold in the North."
+			for (let loc of all_locales)
+				if (is_north(loc) && loc !== game.battle.where && is_friendly_locale(loc))
+					gen_action_locale(loc)
+		} else {
+			for (let lord of game.battle.routed)
+				gen_action_lord(lord)
 			view.actions.done = 1
 		}
 	},
 	locale(loc) {
 		push_undo()
-		for (let lord of all_lancaster_lords) {
-			if (get_lord_locale(lord) === game.battle.where) {
-				set_lord_locale(lord, loc)
-				if (!lord_has_unrouted_troops(lord)) {
-					disband_lord(lord, false)
-				}
-				else {
-					set_lord_forces(lord, RETINUE, 1)
-				}
-				for (let x of all_force_types) {
-					set_lord_forces(lord, x, 0)
-					if (get_lord_routed_forces(lord, x) > 0) {
-						set_lord_routed_forces(lord, x, 0)
-					}
-				}
-				for_each_vassal_with_lord(lord, v => {
-					if (set_has(game.battle.routed_vassals, v)) {
-						array_remove(game.battle.routed_vassals, v)
-						disband_vassal(v)
-					}
-				})
+		game.where = loc
+	},
+	lord(lord) {
+		push_undo()
+		logi(`Moved lord to ${data.locales[game.where].name}`)
+
+		// TODO: move this stuff to somewhere common?
+		set_lord_locale(lord, game.where)
+		if (!lord_has_unrouted_troops(lord)) {
+			disband_lord(lord, false)
+		} else {
+			set_lord_forces(lord, RETINUE, 1)
+		}
+		for (let x of all_force_types) {
+			set_lord_forces(lord, x, 0)
+			if (get_lord_routed_forces(lord, x) > 0) {
+				set_lord_routed_forces(lord, x, 0)
 			}
 		}
-		logi(`Moved to ${data.locales[loc].name}`)
-		end_warden_of_the_marches()
+		for_each_vassal_with_lord(lord, v => {
+			if (set_has(game.battle.routed_vassals, v)) {
+				array_remove(game.battle.routed_vassals, v)
+				disband_vassal(v)
+			}
+		})
 	},
 	done() {
 		end_warden_of_the_marches()
@@ -7345,8 +7356,7 @@ states.warden_of_the_marches = {
 }
 
 function end_warden_of_the_marches() {
-	game.flags.warden_of_the_marches = 1
-	game.who = NOBODY
+	game.where = NOWHERE
 	game.state = "death_check"
 }
 
