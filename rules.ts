@@ -55,9 +55,8 @@ interface Game {
 	state: string,
 	active: Player,
 
-	rebel: Side,
-
-	victory_check: number,
+	flags: number,
+	turn: number,
 	influence: number,
 
 	hand_y: Card[],
@@ -66,7 +65,6 @@ interface Game {
 	plan_y: Lord[],
 	plan_l: Lord[],
 
-	turn: number,
 	events: Card[],
 
 	pieces: {
@@ -89,8 +87,16 @@ interface Game {
 		favoury: number[],
 	},
 
-	flags: number,
+	actions: number,
+	command: Lord,
+	who: Lord,
+	other: Lord,
+	where: Locale,
+	vassal: Vassal,
+	group: Lord[],
+	count: number,
 
+	/* flags to track events during levy phase */
 	levy_flags?: {
 		gloucester_as_heir: number,
 		jack_cade: number,
@@ -101,20 +107,10 @@ interface Game {
 		thomas_stanley: number,
 	},
 
-	command: Lord,
-	actions: number,
-	group: Lord[],
-	intercept_group: Lord[],
-	who: Lord,
-	other: Lord,
-	where: Locale,
-	vassal: Vassal,
-	what: string,
-	count: number,
-
 	/* temporary properties for various phases and actions */
 	arts_of_war?: Card[],
 	march?: { from: Locale, to: Locale },
+	intercept?: Lord[],
 	battle?: Battle,
 	supply?: MyMap<Locale,number>,
 	parley?: MyMap<Locale,number>,
@@ -946,7 +942,7 @@ function all_enemy_lords() {
 }
 
 function update_aliases() {
-	if (game.rebel === YORK) {
+	if (has_flag(FLAG_REBEL_IS_YORK)) {
 		P1 = YORK
 		P2 = LANCASTER
 	} else {
@@ -1030,13 +1026,14 @@ function max_plan_length() {
 
 // === STATE: FLAGS ===
 
-const FLAG_FIRST_ACTION = 1
-const FLAG_FIRST_MARCH_HIGHWAY = 2
-const FLAG_MARCH_TO_PORT = 4
-const FLAG_SAIL_TO_PORT = 8
-const FLAG_SUPPLY_DEPOT = 16
-const FLAG_SURPRISE_LANDING = 32
-const FLAG_BURGUNDIANS = 64
+const FLAG_REBEL_IS_YORK = 1
+const FLAG_FIRST_ACTION = 2
+const FLAG_FIRST_MARCH_HIGHWAY = 4
+const FLAG_MARCH_TO_PORT = 8
+const FLAG_SAIL_TO_PORT = 16
+const FLAG_SUPPLY_DEPOT = 32
+const FLAG_SURPRISE_LANDING = 64
+const FLAG_BURGUNDIANS = 128
 
 function has_flag(bit) {
 	return !!(game.flags & bit)
@@ -2336,7 +2333,10 @@ states.pillage = {
 		}
 
 		if (done) {
-			view.prompt = `Pillage: Unable to Pillage, you must disband your ${game.what} lords.`
+			if (is_levy_phase())
+				view.prompt = `Pillage: You must disband your unpaid lords.`
+			else
+				view.prompt = `Pillage: You must disband your unfed lords.`
 			for (let x of all_friendly_lords()) {
 				if (is_lord_on_map(x) && is_lord_unfed(x)) {
 					gen_action_lord(x)
@@ -4736,7 +4736,7 @@ function goto_intercept() {
 			if (has_enemy_lord(next)) {
 				game.state = "intercept"
 				set_active_enemy()
-				game.intercept_group = []
+				game.intercept = []
 				game.who = NOBODY
 				return
 			}
@@ -4746,7 +4746,7 @@ function goto_intercept() {
 }
 
 function end_intercept() {
-	game.intercept_group = null
+	delete game.intercept
 	game.who = NOBODY
 	goto_kings_parley()
 }
@@ -4777,17 +4777,17 @@ states.intercept = {
 		}
 
 		view.actions.pass = 1
-		view.group = game.intercept_group
+		view.group = game.intercept
 	},
 	lord(lord) {
 		if (game.who === NOBODY) {
 			game.who = lord
-			set_toggle(game.intercept_group, lord)
+			set_toggle(game.intercept, lord)
 		} else if (lord === game.who) {
 			game.who = NOBODY
-			game.intercept_group = []
+			game.intercept = []
 		} else {
-			set_toggle(game.intercept_group, lord)
+			set_toggle(game.intercept, lord)
 		}
 	},
 	card(c) {
@@ -4820,7 +4820,7 @@ states.intercept = {
 }
 
 function goto_intercept_march() {
-	if (count_group_carts(game.intercept_group, false) >= count_group_provender(game.intercept_group)) {
+	if (count_group_carts(game.intercept, false) >= count_group_provender(game.intercept)) {
 		do_intercept_march()
 	} else {
 		game.state = "intercept_march"
@@ -4828,7 +4828,7 @@ function goto_intercept_march() {
 }
 
 function do_intercept_march() {
-	for (let lord of game.intercept_group) {
+	for (let lord of game.intercept) {
 		set_lord_locale(lord, get_lord_locale(game.command))
 		set_lord_moved(lord, 1)
 		levy_burgundians(lord)
@@ -4846,16 +4846,16 @@ states.intercept_march = {
 	inactive: "Intercept",
 	prompt() {
 		let to = game.march.to
-		let transport = count_group_carts(game.intercept_group, false)
-		let prov = count_group_provender(game.intercept_group)
+		let transport = count_group_carts(game.intercept, false)
+		let prov = count_group_provender(game.intercept)
 
-		view.group = game.intercept_group
+		view.group = game.intercept
 
 		view.prompt = `Intercept: Unladen.`
 
 		if (prov > transport) {
 			view.prompt = `Intercept: Hindered with ${prov} Provender, and ${transport} Transport.`
-			for (let lord of game.intercept_group) {
+			for (let lord of game.intercept) {
 				if (get_lord_assets(lord, PROV) > 0) {
 					view.prompt += " Discard Provender."
 					gen_action_prov(lord)
@@ -8328,7 +8328,7 @@ function check_disband_victory() {
 function check_threshold_victory() {
 	// This needs to change to account for graduated victory thresholds in some scenarios.
 
-	if (Math.abs(game.influence) > game.victory_check) {
+	if (Math.abs(game.influence) > scenario_victory_check[game.scenario]) {
 		if (game.influence > 0)
 			goto_game_over(LANCASTER, `${LANCASTER} won with ${game.influence} Influence.`)
 		else
@@ -8366,7 +8366,7 @@ const SCENARIO_IC = 2
 const SCENARIO_II = 3
 const SCENARIO_III = 4
 
-const SCENARIO_NAMES = exports.scenarios = [
+const scenario_name = exports.scenarios = [
 	"Ia. Henry VI",
 	"Ib. Towton",
 	"Ic. Somerset's Return",
@@ -8375,12 +8375,28 @@ const SCENARIO_NAMES = exports.scenarios = [
 // TODO	"I-III. Wars of the Roses",
 ]
 
+const scenario_setup = [
+	setup_Ia,
+	setup_Ib,
+	setup_Ic,
+	setup_II,
+	setup_III,
+]
+
 const scenario_last_turn = [
 	15,
 	2,
 	8,
 	15,
 	15,
+]
+
+const scenario_victory_check = [
+	40,
+	45,
+	40,
+	40,
+	40,
 ]
 
 function is_card_in_scenario(c: Card): boolean {
@@ -8424,7 +8440,7 @@ function muster_lord(lord: Lord, locale: Locale) {
 exports.setup = function (seed, scenario, options) {
 	game = {
 		seed,
-		scenario: SCENARIO_NAMES.indexOf(scenario),
+		scenario: scenario_name.indexOf(scenario),
 		hidden: options.hidden ? 1 : 0,
 
 		log: [],
@@ -8433,10 +8449,9 @@ exports.setup = function (seed, scenario, options) {
 		active: null,
 		state: "setup_lords",
 
-		victory_check: 0,
+		flags: 0,
 		turn: 0,
 		influence: 0,
-		rebel: null,
 
 		hand_y: [],
 		hand_l: [],
@@ -8465,43 +8480,20 @@ exports.setup = function (seed, scenario, options) {
 			favoury: [],
 		},
 
-		flags: 0,
 
-		command: NOBODY,
 		actions: 0,
-		group: null,
-		intercept_group: null,
-		who: NOBODY,
+		command: NOBODY,
 		other: NOBODY,
-		where: NOWHERE,
+		who: NOBODY,
 		vassal: NOVASSAL,
-		what: null,
+		where: NOWHERE,
 		count: 0,
+		group: null,
 	}
 
 	log_h1(scenario)
 
-	switch (scenario) {
-		default:
-		case "Ia. Henry VI":
-			setup_Ia()
-			break
-		case "Ib. Towton":
-			setup_Ib()
-			break
-		case "Ic. Somerset's Return":
-			setup_Ic()
-			break
-		case "II. Warwicks' Rebellion":
-			setup_II()
-			break
-		case "III. My Kingdom for a Horse":
-			setup_III()
-			break
-		case "I-III. Wars of the Roses":
-			setup_ItoIII()
-			break
-	}
+	scenario_setup[game.scenario]()
 
 	update_aliases()
 
@@ -8513,9 +8505,8 @@ exports.setup = function (seed, scenario, options) {
 function setup_Ia() {
 	game.turn = 1 << 1
 
-	game.rebel = YORK
+	set_flag(FLAG_REBEL_IS_YORK)
 	game.active = YORK
-	game.victory_check = 40
 	game.influence = 0
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
@@ -8545,9 +8536,8 @@ function setup_Ia() {
 function setup_Ib() {
 	game.turn = 1 << 1
 
-	game.rebel = YORK
+	set_flag(FLAG_REBEL_IS_YORK)
 	game.active = YORK
-	game.victory_check = 45
 	game.influence = 0
 	muster_lord(LORD_NORFOLK, LOC_LONDON)
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
@@ -8590,9 +8580,8 @@ function setup_Ib() {
 function setup_Ic() {
 	game.turn = 5 << 1
 
-	game.rebel = YORK
+	set_flag(FLAG_REBEL_IS_YORK)
 	game.active = YORK
-	game.victory_check = 40
 	game.influence = 6
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 	muster_lord(LORD_MARCH, LOC_LONDON)
@@ -8636,9 +8625,8 @@ function setup_Ic() {
 function setup_II() {
 	game.turn = 1 << 1
 
-	game.rebel = LANCASTER
+	clear_flag(FLAG_REBEL_IS_YORK)
 	game.active = LANCASTER
-	game.victory_check = 40
 	game.influence = 0
 	muster_lord(LORD_EDWARD_IV, LOC_LONDON)
 	muster_lord(LORD_PEMBROKE, LOC_PEMBROKE)
@@ -8682,9 +8670,8 @@ function setup_II() {
 function setup_III() {
 	game.turn = 1 << 1
 
-	game.rebel = LANCASTER
+	clear_flag(FLAG_REBEL_IS_YORK)
 	game.active = LANCASTER
-	game.victory_check = 40
 	game.influence = 0
 	muster_lord(LORD_RICHARD_III, LOC_LONDON)
 	muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
@@ -8709,10 +8696,14 @@ function setup_III() {
 	setup_vassals([ VASSAL_OXFORD, VASSAL_NORFOLK ])
 }
 
+// === 6.0 CAMPAIGN ===
+
+/*
+
 function setup_ItoIII() {
 	game.turn = 1 << 1
 
-	game.rebel = YORK
+	set_flag(FLAG_REBEL_IS_YORK)
 	game.active = YORK
 	game.victory_check = 45
 	game.influence = 0
@@ -8741,9 +8732,6 @@ function setup_ItoIII() {
 	setup_vassals()
 }
 
-// === 6.0 CAMPAIGN ===
-/*
-
 function should_remove_Y28_event_card() {
 	return game.scenario !== "I-III. Wars of the Roses"
 }
@@ -8764,7 +8752,7 @@ function remove_card_scenario(c) {
 function setup_II_Y() {
 	game.turn = 1 << 1
 	game.scenario = "IIY. The Kingmaker"
-	game.rebel = LANCASTER
+	clear_flag(FLAG_REBEL_IS_YORK)
 	game.active = LANCASTER
 	game.victory_check = 45
 	game.influence = 0
@@ -8887,7 +8875,7 @@ function setup_II_Y() {
 function setup_II_L() {
 	game.turn = 1 << 1
 	game.scenario = "IIL. Lancastrian Legitimacy Fades"
-	game.rebel = YORK
+	set_flag(FLAG_REBEL_IS_YORK)
 	game.active = YORK
 	game.victory_check = 40
 	game.influence = 0
@@ -9016,7 +9004,7 @@ function setup_II_L() {
 function setup_III_Y() {
 	game.turn = 1 << 1
 	game.scenario = "IIIY. New Rivals"
-	game.rebel = LANCASTER
+	clear_flag(FLAG_REBEL_IS_YORK)
 	game.active = LANCASTER
 	game.victory_check = 45
 	game.influence = 0
@@ -9213,7 +9201,7 @@ function setup_III_Y() {
 function setup_III_L() {
 	game.turn = 1 << 1
 	game.scenario = "IIIL. Yorkists Last Stand"
-	game.rebel = YORK
+	set_flag(FLAG_REBEL_IS_YORK)
 	game.active = YORK
 	game.victory_check = 45
 	game.influence = 0
@@ -11001,10 +10989,9 @@ function push_the_kings_name() {
 		save_state_for_the_kings_name()
 }
 
-function goto_the_kings_name(action) {
+function goto_the_kings_name(_action_name) {
 	if (eligible_kings_name()) {
 		// TODO: pause for confirmation before changing control?
-		game.what = action
 		set_active_enemy()
 		game.state = "the_kings_name"
 	} else {
@@ -11015,13 +11002,13 @@ function goto_the_kings_name(action) {
 states.the_kings_name = {
 	inactive: "The King's Name",
 	prompt() {
-		view.prompt = `The King's Name: You pay may 1 Influence to cancel last ${game.what} action.`
+		view.prompt = `The King's Name: Pay 1 Influence to cancel the last Levy action?`
 		view.actions.pass = 1
 		view.actions.pay = 1
 	},
 	pay() {
 		restore_state_for_the_kings_name()
-		log(`${game.what} action cancelled.`)
+		log(`Levy action cancelled.`)
 		logevent(EVENT_YORK_THE_KINGS_NAME)
 		reduce_york_influence(1)
 		resume_muster_lord()
@@ -11582,7 +11569,7 @@ exports.view = function (state, current) {
 
 		end: scenario_last_turn[game.scenario],
 		turn: game.turn,
-		victory_check: game.victory_check,
+		victory_check: scenario_victory_check[game.scenario],
 		influence: game.influence,
 
 		events: game.events,
