@@ -24,23 +24,6 @@
 	Review all log messages.
 */
 
-/*
-function check_london_protected() {
-// TODO IF HENRY/MARGARET ARE MUSTERED IT DOES NOT CHANGE FAVOUR
-// ONLY L17/L18 and Pillage will cancel that event
-//(it is annuled when london go to neutral
-	if (game.state === "pillage") {
-		return false
-	}
-	if (game.flags.london_for_york === 1 && game.where === LOC_LONDON) {
-		return true
-	}
-	else {
-		return false
-	}
-}
-*/
-
 // === TYPES ===
 
 declare function require(name: string): any
@@ -106,15 +89,7 @@ interface Game {
 		favoury: number[],
 	},
 
-	flags: {
-		burgundians: 0 | 1,
-		first_action: 0 | 1,
-		first_march_highway: 0 | 1,
-		march_to_port: 0 | 1,
-		sail_to_port: 0 | 1,
-		supply_depot: 0 | 1,
-		surprise_landing: 0 | 1,
-	},
+	flags: number,
 
 	levy_flags?: {
 		gloucester_as_heir: number,
@@ -1051,6 +1026,28 @@ function max_plan_length() {
 			return 6
 	}
 	return 0
+}
+
+// === STATE: FLAGS ===
+
+const FLAG_FIRST_ACTION = 1
+const FLAG_FIRST_MARCH_HIGHWAY = 2
+const FLAG_MARCH_TO_PORT = 4
+const FLAG_SAIL_TO_PORT = 8
+const FLAG_SUPPLY_DEPOT = 16
+const FLAG_SURPRISE_LANDING = 32
+const FLAG_BURGUNDIANS = 64
+
+function has_flag(bit) {
+	return !!(game.flags & bit)
+}
+
+function set_flag(bit) {
+	game.flags |= bit
+}
+
+function clear_flag(bit) {
+	game.flags &= ~bit
 }
 
 // === STATE: CARDS ===
@@ -3414,16 +3411,13 @@ function end_campaign_plan() {
 
 // First action vs actions that take full command card
 function is_first_action() {
-	return game.flags.first_action
+	return has_flag(FLAG_FIRST_ACTION)
 }
 
 // If march on a highway, set the flag so the lord can go through
 // a second highway at no cost
 function is_first_march_highway() {
-	if (game.flags.first_march_highway === 1)
-		return true
-	else
-		return false
+	return has_flag(FLAG_FIRST_MARCH_HIGHWAY)
 }
 
 function goto_command_activation() {
@@ -3473,11 +3467,11 @@ function goto_command() {
 
 	game.group = [ game.command ]
 
-	game.flags.surprise_landing = 0
-	game.flags.first_action = 1
-	game.flags.first_march_highway = 0
-	game.flags.march_to_port = 0
-	game.flags.sail_to_port = 0
+	set_flag(FLAG_FIRST_ACTION)
+	clear_flag(FLAG_SURPRISE_LANDING)
+	clear_flag(FLAG_FIRST_MARCH_HIGHWAY)
+	clear_flag(FLAG_MARCH_TO_PORT)
+	clear_flag(FLAG_SAIL_TO_PORT)
 
 	resume_command()
 }
@@ -3488,23 +3482,23 @@ function resume_command() {
 
 // Spending an action reset some flags
 function spend_action(cost) {
-	game.flags.surprise_landing = 0
-	game.flags.first_action = 0
-	game.flags.first_march_highway = 0
+	clear_flag(FLAG_SURPRISE_LANDING)
+	clear_flag(FLAG_FIRST_ACTION)
+	clear_flag(FLAG_FIRST_MARCH_HIGHWAY)
 	game.actions -= cost
 }
 
 function spend_march_action(cost) {
-	game.flags.surprise_landing = 0
-	game.flags.first_action = 0
-	game.flags.first_march_highway = 0
+	clear_flag(FLAG_SURPRISE_LANDING)
+	clear_flag(FLAG_FIRST_ACTION)
+	clear_flag(FLAG_FIRST_MARCH_HIGHWAY)
 	game.actions -= cost
 }
 
 function spend_all_actions() {
-	game.flags.surprise_landing = 0
-	game.flags.first_action = 0
-	game.flags.first_march_highway = 0
+	clear_flag(FLAG_SURPRISE_LANDING)
+	clear_flag(FLAG_FIRST_ACTION)
+	clear_flag(FLAG_FIRST_MARCH_HIGHWAY)
 	game.actions = 0
 }
 
@@ -3512,8 +3506,8 @@ function end_command() {
 	log_br()
 
 	game.group = null
-	game.flags.first_action = 0
-	game.flags.first_march_highway = 0
+	clear_flag(FLAG_FIRST_ACTION)
+	clear_flag(FLAG_FIRST_MARCH_HIGHWAY)
 
 	// NOTE: Feed currently acting side first for expedience.
 	set_active_command()
@@ -4046,11 +4040,11 @@ states.blockade_sail = {
 function do_sail(to: Locale) {
 	log(`Sailed to %${to}${format_group_move()}.`)
 
-	game.flags.march_to_port = 0
+	clear_flag(FLAG_MARCH_TO_PORT)
 	if (is_seaport(to))
-		game.flags.sail_to_port = 1
+		set_flag(FLAG_SAIL_TO_PORT)
 	else
-		game.flags.sail_to_port = 0
+		clear_flag(FLAG_SAIL_TO_PORT)
 
 	for (let lord of game.group) {
 		set_lord_locale(lord, to)
@@ -4585,7 +4579,7 @@ function prompt_march() {
 				gen_action_locale(to)
 		}
 	}
-	if (game.actions > 0 || game.flags.surprise_landing === 1) {
+	if (game.actions > 0 || has_flag(FLAG_SURPRISE_LANDING)) {
 		for (let to of data.locales[from].roads) {
 			if (can_march_to(to))
 				gen_action_locale(to)
@@ -4670,21 +4664,21 @@ function march_with_group_2() {
 
 	switch (type) {
 		case "highway":
-			if (is_first_march_highway() || game.flags.surprise_landing === 1) {
+			if (is_first_march_highway() || has_flag(FLAG_SURPRISE_LANDING)) {
 				spend_march_action(0)
 			} else {
 				spend_march_action(1)
-				game.flags.first_march_highway = 1
+				set_flag(FLAG_FIRST_MARCH_HIGHWAY)
 			}
 			break
 
 		case "road":
-			if ((alone && is_first_march_highway()) || game.flags.surprise_landing === 1) {
+			if ((alone && is_first_march_highway()) || has_flag(FLAG_SURPRISE_LANDING)) {
 				spend_march_action(0)
 			} else {
 				spend_march_action(1)
 				if (alone && (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT) || (is_event_in_play(EVENT_LANCASTER_FORCED_MARCHES) && game.active === LANCASTER)))
-					game.flags.first_march_highway = 1
+					set_flag(FLAG_FIRST_MARCH_HIGHWAY)
 			}
 			break
 
@@ -4715,10 +4709,10 @@ function end_march() {
 
 	let here = get_lord_locale(game.command)
 	if (is_seaport(here))
-		game.flags.march_to_port = 1
+		set_flag(FLAG_MARCH_TO_PORT)
 	else
-		game.flags.march_to_port = 0
-	game.flags.sail_to_port = 0
+		clear_flag(FLAG_MARCH_TO_PORT)
+	clear_flag(FLAG_SAIL_TO_PORT)
 
 	delete game.march
 	resume_command()
@@ -7589,8 +7583,8 @@ function can_pay_from_shared(lord: Lord) {
 }
 
 function has_friendly_lord_who_must_feed() {
-	if (is_campaign_phase() && game.flags.supply_depot === 1 && game.active === LANCASTER) {
-		game.flags.supply_depot = 0
+	if (is_campaign_phase() && has_flag(FLAG_SUPPLY_DEPOT) && game.active === LANCASTER) {
+		clear_flag(FLAG_SUPPLY_DEPOT)
 		logi(`No feed ${EVENT_LANCASTER_REBEL_SUPPLY_DEPOT}`)
 		return false
 	}
@@ -8471,15 +8465,7 @@ exports.setup = function (seed, scenario, options) {
 			favoury: [],
 		},
 
-		flags: {
-			burgundians: 0,
-			first_action: 0,
-			first_march_highway: 0,
-			march_to_port: 0,
-			sail_to_port: 0,
-			supply_depot: 0,
-			surprise_landing: 0,
-		},
+		flags: 0,
 
 		command: NOBODY,
 		actions: 0,
@@ -9450,10 +9436,10 @@ function capability_muster_effects_common(lord: Lord, c: Card) {
 		if (is_seaport(get_lord_locale(lord)) && !is_exile(get_lord_locale(lord))) {
 			add_lord_forces(lord, BURGUNDIANS, 2)
 			logcap(c)
-			game.flags.burgundians = 1
+			set_flag(FLAG_BURGUNDIANS)
 		}
 		else {
-			game.flags.burgundians = 0
+			clear_flag(FLAG_BURGUNDIANS)
 		}
 	}
 }
@@ -9779,13 +9765,13 @@ function count_deplete(loc: Locale) {
 // === CAPABILITY: BURGUNDIANS ===
 
 function levy_burgundians(lord: Lord) {
-	if (is_seaport(get_lord_locale(lord)) && !is_exile(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_BURGUNDIANS) && game.flags.burgundians === 0) {
+	if (is_seaport(get_lord_locale(lord)) && !is_exile(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_BURGUNDIANS) && !has_flag(FLAG_BURGUNDIANS)) {
 		add_lord_forces(lord, BURGUNDIANS, 2)
 		if (lord_has_capability(lord, AOW_YORK_BURGUNDIANS[0]))
 			logcap(AOW_YORK_BURGUNDIANS[0])
 		if (lord_has_capability(lord, AOW_YORK_BURGUNDIANS[1]))
 			logcap(AOW_YORK_BURGUNDIANS[1])
-		game.flags.burgundians = 1
+		set_flag(FLAG_BURGUNDIANS)
 	}
 }
 
@@ -11417,13 +11403,13 @@ states.aspielles = {
 // === HELD EVENT: REBEL SUPPLY DEPOT ===
 
 function can_play_rebel_supply_depot() {
-	if (game.flags.sail_to_port || game.flags.march_to_port)
+	if (has_flag(FLAG_SAIL_TO_PORT) || has_flag(FLAG_MARCH_TO_PORT))
 		return true
 	return false
 }
 
 function goto_play_rebel_supply_depot() {
-	game.flags.supply_depot = 1
+	set_flag(FLAG_SUPPLY_DEPOT)
 	add_spoils(PROV, 4)
 	game.state = "rebel_supply_depot"
 }
@@ -11465,7 +11451,7 @@ function end_rebel_supply_depot() {
 
 function can_play_surprise_landing() {
 	let here = get_lord_locale(game.command)
-	if (game.flags.sail_to_port) {
+	if (has_flag(FLAG_SAIL_TO_PORT)) {
 		if (here !== LOC_CALAIS && here !== LOC_PEMBROKE && here !== LOC_HARLECH && here !== LOC_LANCASTER)
 			return true
 	}
@@ -11474,7 +11460,7 @@ function can_play_surprise_landing() {
 
 function goto_play_surprise_landing() {
 	game.state = "surprise_landing"
-	game.flags.surprise_landing = 1
+	set_flag(FLAG_SURPRISE_LANDING)
 	game.who = NOBODY
 }
 
