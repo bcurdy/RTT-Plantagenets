@@ -1363,12 +1363,17 @@ function update_plan() {
 		if (is_planning) {
 			ui.plan_actions.classList.remove("hide")
 			for (let lord = 0; lord < 28; ++lord) {
-				if (is_action("plan", lord)) {
-					ui.plan_action_cards[lord].classList.add("action")
-					ui.plan_action_cards[lord].classList.remove("disabled")
+				if (is_lord_in_game(lord)) {
+					ui.plan_action_cards[lord].classList.remove("hide")
+					if (is_action("plan", lord)) {
+						ui.plan_action_cards[lord].classList.add("action")
+						ui.plan_action_cards[lord].classList.remove("disabled")
+					} else {
+						ui.plan_action_cards[lord].classList.remove("action")
+						ui.plan_action_cards[lord].classList.add("disabled")
+					}
 				} else {
-					ui.plan_action_cards[lord].classList.remove("action")
-					ui.plan_action_cards[lord].classList.add("disabled")
+					ui.plan_action_cards[lord].classList.add("hide")
 				}
 			}
 			if (is_action("plan", -1)) {
