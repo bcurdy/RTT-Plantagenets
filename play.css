@@ -24,12 +24,8 @@ header.your_turn { background-color: orange; }
 #log .card_tip { font-style: italic; }
 #log .card_tip:hover { text-decoration: underline; }
 #log .lord_tip:hover { cursor: pointer; text-decoration: underline; }
-#log .lord_vassal:hover { cursor: pointer; text-decoration: underline; }
+#log .vassal_tip:hover { cursor: pointer; text-decoration: underline; }
 #log .locale_tip:hover { cursor: pointer; text-decoration: underline; }
-
-.action {
-	cursor: pointer;
-}
 
 #log {
 	font-variant-numeric: tabular-nums;
@@ -184,10 +180,6 @@ body.Lancaster #plan_actions .york { display: none }
 	background-size: 375px 375px;
 	background-repeat: no-repeat;
 	z-index: 4;
-}
-
-#battle_grid .mat.ambushed .background {
-	filter: grayscale(50%)
 }
 
 .court_body .mat.hidden .background {
@@ -359,6 +351,9 @@ body.shift .exhausted  {
 .unit {
 	background-size: contain;
 	background-repeat: no-repeat;
+}
+
+.unit.shape {
 	width: 43px;
 	height: 35px;
 	filter: drop-shadow(0px 2px 2px #0004);
@@ -380,7 +375,15 @@ body.shift .exhausted  {
 	margin: 0 2px;
 }
 
-.unit.action {
+.unit.retinue.action {
+	box-shadow: 0 0 0 2px white;
+}
+
+.unit.vassal.action {
+	box-shadow: 0 0 0 2px white;
+}
+
+.unit.shape.action {
 	filter:
 		drop-shadow(2px 0px 0px white)
 		drop-shadow(0px 2px 0px white)

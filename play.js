@@ -208,6 +208,7 @@ const MERCENARIES = 6
 const force_type_count = 7
 
 const force_action_name = [ "retinue", "vassal", "men_at_arms", "longbowmen", "militia", "burgundians", "mercenaries" ]
+const force_class_name = [ "retinue", "vassal", "shape men_at_arms", "shape longbowmen", "shape militia", "shape burgundians", "shape mercenaries" ]
 const routed_force_action_name = [ "routed_retinue", "routed_vassal", "routed_men_at_arms", "routed_longbowmen", "routed_militia", "routed_burgundians", "routed_mercenaries" ]
 
 const COIN = 1
@@ -309,7 +310,7 @@ function get_locale_tip(id) {
 	let list = []
 	for (let lord = 0; lord < data.lords.length; ++lord) {
 		if (data.lords[lord].seat === id)
-			list.push(data.lords[lord].name)
+			list.push(data.lords[lord].short_name)
 	}
 	if (list.length > 0)
 		tip += " - " + list.join(", ")
@@ -320,7 +321,7 @@ function on_focus_cylinder(evt) {
 	let lord = evt.target.my_id
 	let info = data.lords[lord]
 	let loc = get_lord_locale(lord)
-	let tip = info.name
+	let tip = info.short_name
 	on_focus(tip)
 }
 
@@ -352,25 +353,6 @@ function is_lord_on_left_or_right(lord) {
 	if (view.battle.array[A3] === lord) return true
 	if (view.battle.array[D1] === lord) return true
 	if (view.battle.array[D3] === lord) return true
-	return false
-}
-
-function is_lord_ambushed(lord) {
-	if (view.battle) {
-		// ambush & 2 = attacker played ambush
-		// ambush & 1 = defender played ambush
-		if (view.battle.attacker === "York") {
-			if ((view.battle.ambush & 1) && is_york_lord(lord))
-				return is_lord_on_left_or_right(lord)
-			if ((view.battle.ambush & 2) && is_lancaster_lord(lord))
-				return is_lord_on_left_or_right(lord)
-		} else {
-			if ((view.battle.ambush & 1) && is_lancaster_lord(lord))
-				return is_lord_on_left_or_right(lord)
-			if ((view.battle.ambush & 2) && is_york_lord(lord))
-				return is_lord_on_left_or_right(lord)
-		}
-	}
 	return false
 }
 
@@ -1083,26 +1065,26 @@ function add_vassal(parent, vassal, lord, routed) {
 	if (routed) {
 		if (is_action(routed_force_action_name[VASSAL], vassal))
 			elt = get_cached_element(
-				"action unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
+				"action unit " + force_class_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
 				routed_force_action_name[VASSAL],
 				vassal
 			)
 		else
 			elt = get_cached_element(
-				"unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
+				"unit " + force_class_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
 				routed_force_action_name[VASSAL],
 				vassal
 			)
 	} else {
 		if (is_action(force_action_name[VASSAL], vassal))
 			elt = get_cached_element(
-				"action unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
+				"action unit " + force_class_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
 				force_action_name[VASSAL],
 				vassal
 			)
 		else
 			elt = get_cached_element(
-				"unit " + force_action_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
+				"unit " + force_class_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
 				force_action_name[VASSAL],
 				vassal
 			)
@@ -1114,14 +1096,14 @@ function add_force(parent, type, lord, routed) {
 	let elt
 	if (routed) {
 		if (is_action(routed_force_action_name[type], lord))
-			elt = get_cached_element("action unit " + force_action_name[type], routed_force_action_name[type], lord)
+			elt = get_cached_element("action unit " + force_class_name[type], routed_force_action_name[type], lord)
 		else
-			elt = get_cached_element("unit " + force_action_name[type], routed_force_action_name[type], lord)
+			elt = get_cached_element("unit " + force_class_name[type], routed_force_action_name[type], lord)
 	} else {
 		if (is_action(force_action_name[type], lord))
-			elt = get_cached_element("action unit " + force_action_name[type], force_action_name[type], lord)
+			elt = get_cached_element("action unit " + force_class_name[type], force_action_name[type], lord)
 		else
-			elt = get_cached_element("unit " + force_action_name[type], force_action_name[type], lord)
+			elt = get_cached_element("unit " + force_class_name[type], force_action_name[type], lord)
 	}
 	parent.appendChild(elt)
 }
@@ -1250,8 +1232,6 @@ function update_lord(ix) {
 
 	ui.lord_cylinder[ix].classList.toggle("command", is_lord_command(ix))
 	ui.lord_mat[ix].classList.toggle("command", is_lord_command(ix))
-
-	ui.lord_mat[ix].classList.toggle("ambushed", is_lord_ambushed(ix))
 
 	ui.seat[ix].classList.toggle("hide", !is_lord_in_game(ix))
 }
@@ -1779,7 +1759,7 @@ function sub_locale_name(match, p1) {
 
 function sub_lord_name(match, p1) {
 	let x = p1 | 0
-	let n = data.lords[x].name
+	let n = data.lords[x].short_name
 	return `<span class="lord_tip" onclick="on_click_lord_tip(${x})">${n}</span>`
 }
 

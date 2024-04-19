@@ -815,6 +815,7 @@ let lords = [
 	{
 		side: "York",
 		name: "York",
+		short_name: "York",
 		full_name: "Richard Plantagenet",
 		title: "Duke of York",
 		seat: locmap["Ely"],
@@ -840,7 +841,8 @@ let lords = [
 
 	{
 		side: "York",
-		name:"March",
+		name: "March",
+		short_name: "March",
 		full_name:"Edward Plantagenet",
 		title:"Earl of March",
 		seat: locmap["Ludlow"],
@@ -866,6 +868,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Edward IV",
+		short_name: "Edward IV",
 		full_name: "Edward Plantagenet",
 		title: "King of England",
 		seat: locmap["London"],
@@ -891,6 +894,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Salisbury",
+		short_name: "Salisbury",
 		full_name: "Richard Neville",
 		title: "Earl of Salisbury",
 		seat: locmap["York"],
@@ -915,6 +919,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Rutland",
+		short_name: "Rutland",
 		full_name: "Edmund Plantagenet",
 		title: "Earl of Rutland",
 		seat: locmap["Canterbury"],
@@ -940,6 +945,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Pembroke",
+		short_name: "Pembroke",
 		full_name: "William Herbert",
 		title: "Earl of Pembroke",
 		seat: locmap["Pembroke"],
@@ -964,6 +970,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Devon",
+		short_name: "Devon",
 		full_name: "Humpfrey Stafford",
 		title: "Earl of Devon",
 		seat: locmap["Exeter"],
@@ -989,6 +996,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Northumberland Y1",
+		short_name: "Northumberland",
 		full_name: "Henry Percy",
 		title: "Northumberland",
 		seat: locmap["Carlisle"],
@@ -1014,6 +1022,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Northumberland Y2",
+		short_name: "Northumberland",
 		full_name: "Henry Percy",
 		title: "Northumberland",
 		seat: locmap["Carlisle"],
@@ -1039,6 +1048,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Gloucester 1",
+		short_name: "Gloucester",
 		full_name: "Richard Plantagenet",
 		title: "Duke of Gloucester",
 		seat: locmap["Gloucester"],
@@ -1063,6 +1073,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Gloucester 2",
+		short_name: "Gloucester",
 		full_name: "Richard Plantagenet",
 		title: "Duke of Gloucester",
 		seat: locmap["Gloucester"],
@@ -1088,6 +1099,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Richard III",
+		short_name: "Richard III",
 		full_name: "Richard Plantagenet",
 		title: "King of England",
 		seat: locmap["London"],
@@ -1113,6 +1125,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Norfolk",
+		short_name: "Norfolk",
 		full_name: "John Howard",
 		title: "Duke of Norfolk",
 		seat: locmap["Arundel"],
@@ -1138,6 +1151,7 @@ let lords = [
 	{
 		side: "York",
 		name: "Warwick Y",
+		short_name: "Warwick",
 		full_name: "Richard Neville",
 		title: "Earl of Warwick",
 		seat: locmap["Calais"],
@@ -1161,6 +1175,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Henry VI",
+		short_name: "Henry VI",
 		full_name: "Henry VI",
 		title: "King of England",
 		seat: locmap["London"],
@@ -1186,6 +1201,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Margaret",
+		short_name: "Margaret",
 		full_name: "Margaret d'Anjou",
 		title: "Queen of England",
 		seat: locmap["London"],
@@ -1210,6 +1226,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Somerset 1",
+		short_name: "Somerset",
 		full_name: "Henry Beaufort",
 		title: "Duke of Somerset",
 		seat: locmap["Wells"],
@@ -1234,6 +1251,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Somerset 2",
+		short_name: "Somerset",
 		full_name: "Edmund Beaufort",
 		title: "Duke of Somerset",
 		seat: locmap["Wells"],
@@ -1258,6 +1276,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Exeter 1",
+		short_name: "Exeter",
 		full_name: "Henry Holland",
 		title: "Duke of Exeter",
 		seat: locmap["Exeter"],
@@ -1282,6 +1301,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Exeter 2",
+		short_name: "Exeter",
 		full_name: "Henry Holland",
 		title: "Duke of Exeter",
 		seat: locmap["Exeter"],
@@ -1306,6 +1326,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Buckingham",
+		short_name: "Buckingham",
 		full_name: "Humphrey Stafford",
 		title: "Duke of Buckingham",
 		seat: locmap["Coventry"],
@@ -1330,6 +1351,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Northumberland L",
+		short_name: "Northumberland",
 		full_name: "Henry Percy",
 		title: "Earl of Northumberland",
 		seat: locmap["Carlisle"],
@@ -1355,6 +1377,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Clarence",
+		short_name: "Clarence",
 		full_name: "George Plantagenet",
 		title: "Duke of Clarence",
 		seat: locmap["York"],
@@ -1380,6 +1403,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Jasper Tudor 1",
+		short_name: "Jasper Tudor",
 		full_name: "Jasper Tudor",
 		title: "Earl of Pembroke",
 		seat: locmap["Harlech"],
@@ -1404,6 +1428,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Jasper Tudor 2",
+		short_name: "Jasper Tudor",
 		full_name: "Jasper Tudor",
 		title: "Earl of Pembroke",
 		seat: locmap["Pembroke"],
@@ -1427,6 +1452,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Henry Tudor",
+		short_name: "Henry Tudor",
 		full_name: "Henry Tudor",
 		title: "",
 		seat: locmap["London"],
@@ -1452,6 +1478,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Oxford",
+		short_name: "Oxford",
 		full_name: "John de Vere",
 		title: "Earl of Oxford",
 		seat: locmap["Oxford"],
@@ -1477,6 +1504,7 @@ let lords = [
 	{
 		side: "Lancaster",
 		name: "Warwick L",
+		short_name: "Warwick",
 		full_name: "Richard Neville",
 		title: "Earl of Warwick",
 		seat: locmap["Calais"],

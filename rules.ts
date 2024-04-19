@@ -405,7 +405,9 @@ function make_list(first, last) {
 	return list
 }
 
-const lord_name = data.lords.map(lord => lord.name)
+const lord_name = data.lords.map(lord => lord.short_name)
+const locale_name = data.locales.map(locale => locale.name)
+const vassal_name = data.vassals.map(vassal => vassal.name)
 
 const lord_count = data.lords.length
 const vassal_count = data.vassals.length
@@ -1417,7 +1419,7 @@ function get_force_name(lord: Lord, n: Force, x: Vassal = NOVASSAL) {
 	if (n === RETINUE)
 		return `${lord_name[lord]}'s Retinue`
 	if (n === VASSAL)
-		return `Vassal ${data.vassals[x].name}`
+		return `Vassal ${vassal_name[x]}`
 	return FORCE_TYPE_NAME[n]
 }
 
@@ -2400,7 +2402,7 @@ states.pillage = {
 states.pillage_locale = {
 	inactive: "Pillage",
 	prompt() {
-		view.prompt = `Pillage: Choose Lord to Pillage ${data.locales[game.where].name}.`
+		view.prompt = `Pillage: Choose Lord to Pillage ${locale_name[game.where]}.`
 
 		for (let x of all_friendly_lords()) {
 			if (get_lord_locale(x) === game.where && is_lord_unfed(x)) {
@@ -3167,7 +3169,7 @@ function can_levy_vassal(vassal: Vassal) {
 states.levy_vassal = {
 	inactive: "Levy Vassal",
 	prompt() {
-		view.prompt = `Levy Vassal ${data.vassals[game.vassal].name}. `
+		view.prompt = `Levy Vassal ${vassal_name[game.vassal]}. `
 		let cost = get_levy_vassal_influence_cost()
 		if (is_automatic_levy_vassal_success(game.command))
 			prompt_influence_check_success(cost)
@@ -4259,7 +4261,7 @@ states.tax = {
 			for (let loc of search_tax([], get_lord_locale(game.command), game.command))
 				gen_action_locale(loc)
 		} else {
-			view.prompt = `Tax: Attempt to Tax ${data.locales[game.where].name}. `
+			view.prompt = `Tax: Attempt to Tax ${locale_name[game.where]}. `
 			prompt_influence_check(game.command)
 		}
 	},
@@ -4480,7 +4482,7 @@ states.parley = {
 				gen_action_locale(game.parley[i] as Locale)
 		} else {
 			let lord = game.command
-			view.prompt = "Parley at " + data.locales[game.where].name + "."
+			view.prompt = "Parley at " + locale_name[game.where] + "."
 			if (is_automatic_parley_success(lord))
 				prompt_influence_check_success(get_parley_influence_cost())
 			else
@@ -5160,7 +5162,7 @@ function take_spoils(type: Asset) {
 const battle_strike_positions = [ D1, D2, D3, A1, A2, A3 ]
 
 const battle_steps = [
-	{ name: "Archery", hits: count_archery_hits },
+	{ name: "Missiles", hits: count_archery_hits },
 	{ name: "Melee", hits: count_melee_hits },
 ]
 
@@ -5241,7 +5243,7 @@ function count_lord_hits(lord: Lord) {
 }
 
 function format_strike_step() {
-	return battle_steps[game.battle.step].name
+	return battle_steps[game.battle.step]
 }
 
 function format_hits() {
@@ -5747,7 +5749,7 @@ states.ravine = {
 	},
 	lord(lord) {
 		game.battle.ravine = lord
-		logi(`${data.lords[lord].name} ignored for Engage and Strike Round 1`)
+		logi(`${lord_name[lord]} ignored for Engage and Strike Round 1`)
 		logevent(EVENT_LANCASTER_RAVINE)
 		resume_battle_events()
 	},
@@ -5866,7 +5868,7 @@ states.caltrops = {
 		push_undo()
 		game.battle.caltrops = lord
 		resume_battle_events()
-		logi(`2 Hits added to ${data.lords[lord].name} each Melee round`)
+		logi(`2 Hits added to ${lord_name[lord]} each Melee round`)
 		logevent(EVENT_YORK_CALTROPS)
 	},
 }
@@ -5951,11 +5953,11 @@ states.suspicion_3 = {
 		let other = game.other
 
 		if (roll_influence_check(game.who, bonus)) {
-			log(`${data.lords[other].name} disbanded`)
+			log(`${lord_name[other]} disbanded`)
 			remove_lord_from_battle(other)
 			disband_lord(other)
 		} else {
-			log(`${data.lords[other].name} stays`)
+			log(`${lord_name[other]} stays`)
 		}
 
 		game.who = NOBODY
@@ -6027,7 +6029,7 @@ function goto_influence_check_for_trust_not_him() {
 states.for_trust_not_him_bribe = {
 	inactive: `Influence check`,
 	prompt() {
-		view.prompt = `Influence check : Success bribes ${data.vassals[game.vassal].name} `
+		view.prompt = `Influence check : Success bribes ${vassal_name[game.vassal]} `
 		if (is_automatic_levy_vassal_success(game.who))
 			prompt_influence_check_success()
 		else
@@ -6165,9 +6167,9 @@ states.culverins_and_falconets = {
 		if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE) && game.active === YORK) {
 			logcap(EVENT_YORK_PATRICK_DE_LA_MOTE)
 			die2 = roll_die()
-			logi(`${data.lords[lord].name} Artillery does ${die1} + ${die2} hits`)
+			logi(`${lord_name[lord]} Artillery does ${die1} + ${die2} hits`)
 		} else {
-			logi(`${data.lords[lord].name} Artillery does ${die1} hits`)
+			logi(`${lord_name[lord]} Artillery does ${die1} hits`)
 		}
 
 		if (is_attacker())
@@ -7524,7 +7526,7 @@ states.warden_of_the_marches = {
 		set_delete(game.battle.fled, lord)
 		set_delete(game.battle.routed, lord)
 
-		logi(`Moved lord to ${data.locales[game.where].name}`)
+		logi(`Moved lord to ${locale_name[game.where]}`)
 
 		// TODO: move this stuff to somewhere common?
 		set_lord_locale(lord, game.where)
@@ -8010,14 +8012,14 @@ function tides_calc() {
 		for (let y of all_york_lords) {
 			if (is_lord_on_map(y)) {
 				domy += data.lords[y].influence
-				log(`Gain Lords Influence : Yorkists gain ${data.lords[y].influence} for ${data.lords[y].name}`)
+				log(`Gain Lords Influence : Yorkists gain ${lord_name[y].influence} for ${lord_name[y]}`)
 			}
 		}
 
 		for (let l of all_lancaster_lords) {
 			if (is_lord_on_map(l)) {
 				doml += data.lords[l].influence
-				log(`Gain Lords Influence : Lancastrians gain ${data.lords[l].influence} for ${data.lords[l].name}`)
+				log(`Gain Lords Influence : Lancastrians gain ${lord_name[l].influence} for ${lord_name[l]}`)
 			}
 		}
 	}
@@ -10121,7 +10123,7 @@ function goto_lancaster_event_henrys_proclamation() {
 	for (let vassal of all_vassals) {
 		if (is_vassal_mustered_with_york_lord(vassal)) {
 			set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), current_turn())
-			logi(`Vassal ${data.vassals[vassal].name} moved to current turn`)
+			logi(`Vassal ${vassal_name[vassal]} moved to current turn`)
 
 		}
 	}
@@ -10350,7 +10352,7 @@ states.welsh_rebellion_remove_troops = {
 			}
 		}
 		else {
-			view.prompt = `Remove ${game.count} Troops from ${data.lords[game.who].name}.`
+			view.prompt = `Remove ${game.count} Troops from ${lord_name[game.who]}.`
 			if (get_lord_forces(game.who, BURGUNDIANS) > 0)
 				gen_action_burgundians(game.who)
 			if (get_lord_forces(game.who, MERCENARIES) > 0)
@@ -10423,7 +10425,7 @@ states.welsh_rebellion_remove_favour = {
 	locale(loc) {
 		push_undo()
 		remove_york_favour(loc)
-		logi(`Removed favour at ${data.locales[loc].name}`)
+		logi(`Removed favour at ${locale_name[loc]}`)
 		game.count++
 	},
 	done() {
@@ -10475,7 +10477,7 @@ states.aragne_1 = {
 	vassal(v) {
 		push_undo()
 		set_add(game.event_aragne, v)
-		logi(`Vassal ${data.vassals[v].name} selected`)
+		logi(`Vassal ${vassal_name[v]} selected`)
 	},
 	done() {
 		push_undo()
@@ -10513,7 +10515,7 @@ states.aragne_2 = {
 states.aragne_3 = {
 	inactive: "L'Universelle Aragne",
 	prompt() {
-		view.prompt = `L'Universelle Aragne: ${data.vassals[game.vassal].name}.`
+		view.prompt = `L'Universelle Aragne: ${vassal_name[game.vassal]}.`
 		let lord = get_vassal_lord(game.vassal)
 		prompt_influence_check(lord, 0, vassal_influence(game.vassal))
 	},
@@ -10588,7 +10590,7 @@ function goto_lancaster_event_french_war_loans() {
 		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
 			add_lord_assets(lord, PROV, 1)
 			add_lord_assets(lord, COIN, 1)
-			logi(`1 Coin and 1 Provender added to ${data.lords[lord].name}`)
+			logi(`1 Coin and 1 Provender added to ${lord_name[lord]}`)
 		}
 	}
 	end_immediate_event()
@@ -10627,7 +10629,7 @@ states.robins_rebellion = {
 	locale(loc) {
 		push_undo()
 		shift_favour_toward(loc)
-		logi(`Placed/Removed favour at ${data.locales[loc].name}`)
+		logi(`Placed/Removed favour at ${locale_name[loc]}`)
 		game.count++
 	},
 	done() {
@@ -10675,7 +10677,7 @@ states.tudor_banners = {
 		push_undo()
 		remove_york_favour(loc)
 		add_lancaster_favour(loc)
-		logi(`Placed Lancastrian favour at ${data.locales[loc].name}`)
+		logi(`Placed Lancastrian favour at ${locale_name[loc]}`)
 	},
 	done() {
 		end_immediate_event()
@@ -10725,7 +10727,7 @@ states.tax_collectors_lord = {
 			for (let loc of search_tax([], get_lord_locale(game.who), game.who))
 				gen_action_locale(loc)
 		} else {
-			view.prompt = `Tax Collectors: Attempt to Tax ${data.locales[game.where].name}. `
+			view.prompt = `Tax Collectors: Attempt to Tax ${locale_name[game.where]}. `
 			prompt_influence_check(game.who)
 		}
 	},
@@ -10779,7 +10781,7 @@ states.london_for_york = {
 	locale(loc) {
 		push_undo()
 		add_york_favour(LONDON_FOR_YORK)
-		logi(`Second marker placed at ${data.locales[loc].name}`)
+		logi(`Second marker placed at ${locale_name[loc]}`)
 		logi(`Immune to Lancastrian parley unless aided by event`)
 		end_immediate_event()
 	},
@@ -10823,7 +10825,7 @@ states.she_wolf = {
 		if (current_turn() < 16)
 			set_vassal_lord_and_service(v, get_vassal_lord(v), get_vassal_service(v) + 1)
 		set_add(game.event_she_wolf, v)
-		logi(`Vassal ${data.vassals[v].name} shifted one calendar box`)
+		logi(`Vassal ${vassal_name[v]} shifted one calendar box`)
 	},
 	done() {
 		delete game.event_she_wolf
@@ -10862,7 +10864,7 @@ function goto_york_event_charles_the_bold() {
 		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
 			add_lord_assets(lord, PROV, 1)
 			add_lord_assets(lord, COIN, 1)
-			logi(`1 Coin and 1 Provender added to ${data.lords[lord].name}`)
+			logi(`1 Coin and 1 Provender added to ${lord_name[lord]}`)
 		}
 	}
 	end_immediate_event()
@@ -11323,7 +11325,7 @@ states.sun_in_splendour = {
 		muster_lord(LORD_EDWARD_IV, loc)
 		// TODO: remove_lord_from_exile(LORD_EDWARD_IV) ?
 		// TODO: muster to exile box ?
-		logi(`Mustered Edward IV at ${data.locales[loc].name}`)
+		logi(`Mustered Edward IV at ${locale_name[loc]}`)
 
 		game.state = "muster"
 	},
