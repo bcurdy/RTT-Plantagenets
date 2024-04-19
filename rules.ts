@@ -216,7 +216,6 @@ interface State {
 	heralds?(): void,
 	hold?(): void,
 	intercept?(): void,
-	laden_march?(): void,
 	levy_beloved_warwick?(): void,
 	levy_irishmen?(): void,
 	levy_troops?(): void,
@@ -272,6 +271,7 @@ interface View {
 	group?: Lord[],
 	what?: Card,
 	who?: Lord,
+	where?: Locale,
 }
 
 // === GLOBALS ===
@@ -4618,13 +4618,12 @@ function march_with_group_1() {
 	let transport = count_group_carts(game.group, true)
 	let prov = count_group_provender(game.group)
 	if (prov > transport)
-		game.state = "march_laden"
+		game.state = "march_haul"
 	else
 		march_with_group_2()
 }
 
-// No laden but re-used to discard extra provender
-states.march_laden = {
+states.march_haul = {
 	inactive: "March",
 	prompt() {
 		let to = game.march.to
@@ -4632,11 +4631,13 @@ states.march_laden = {
 		let prov = count_group_provender(game.group)
 
 		view.group = game.group
-		view.prompt = `March: Unladen. `
+		view.where = game.march.to
+
+		view.prompt = `March: Haul.`
 
 		if (prov > transport) {
 			let overflow_prov = prov - transport
-			view.prompt += `Please discard ${overflow_prov} Provender`
+			view.prompt += ` Discard ${overflow_prov} Provender`
 			for (let lord of game.group) {
 				if (prov > transport) {
 					if (get_lord_assets(lord, PROV) > 0) {
@@ -4652,7 +4653,6 @@ states.march_laden = {
 	prov: drop_prov,
 	march: march_with_group_2,
 	locale: march_with_group_2,
-	laden_march: march_with_group_2,
 }
 
 function march_with_group_2() {
@@ -4694,7 +4694,7 @@ function march_with_group_2() {
 		// See end_kings_parley.
 	}
 
-	goto_intercept()
+	goto_march_confirm()
 }
 
 function end_march() {
@@ -4717,6 +4717,36 @@ function end_march() {
 	resume_command()
 }
 
+function goto_march_confirm() {
+	let here = get_lord_locale(game.command)
+	if (has_enemy_lord(here))
+		game.state = "march_confirm_approach"
+	else if (may_be_intercepted())
+		game.state = "march_confirm_intercept"
+	else
+		goto_intercept()
+}
+
+states.march_confirm_approach = {
+	prompt() {
+		view.prompt = "March: Confirm approach?"
+		view.actions.approach = 1
+	},
+	approach() {
+		goto_intercept()
+	},
+}
+
+states.march_confirm_intercept = {
+	prompt() {
+		view.prompt = "March: You may be intercepted."
+		view.actions.approach = 1
+	},
+	approach() {
+		goto_intercept()
+	},
+}
+
 // === 4.3.4 INTERCEPT ===
 
 function can_intercept_to(to: Locale) {
@@ -4728,20 +4758,24 @@ function can_intercept_to(to: Locale) {
 	return true
 }
 
-function goto_intercept() {
+function may_be_intercepted() {
 	let here = get_lord_locale(game.command)
-	if (can_intercept_to(here)) {
-		for (let next of data.locales[here].not_paths) {
-			if (has_enemy_lord(next)) {
-				game.state = "intercept"
-				set_active_enemy()
-				game.intercept = []
-				game.who = NOBODY
-				return
-			}
-		}
+	if (can_intercept_to(here))
+		for (let next of data.locales[here].not_paths)
+			if (has_enemy_lord(next))
+				return true
+	return false
+}
+
+function goto_intercept() {
+	if (may_be_intercepted()) {
+		game.state = "intercept"
+		set_active_enemy()
+		game.intercept = []
+		game.who = NOBODY
+	} else {
+		end_intercept()
 	}
-	end_intercept()
 }
 
 function end_intercept() {
@@ -4822,7 +4856,7 @@ function goto_intercept_march() {
 	if (count_group_carts(game.intercept, false) >= count_group_provender(game.intercept)) {
 		do_intercept_march()
 	} else {
-		game.state = "intercept_march"
+		game.state = "intercept_haul"
 	}
 }
 
@@ -4841,7 +4875,7 @@ function end_intercept_march() {
 	end_intercept()
 }
 
-states.intercept_march = {
+states.intercept_haul = {
 	inactive: "Intercept",
 	prompt() {
 		let to = game.march.to
@@ -4850,7 +4884,7 @@ states.intercept_march = {
 
 		view.group = game.intercept
 
-		view.prompt = `Intercept: Unladen.`
+		view.prompt = `Intercept: Haul.`
 
 		if (prov > transport) {
 			view.prompt = `Intercept: Hindered with ${prov} Provender, and ${transport} Transport.`
