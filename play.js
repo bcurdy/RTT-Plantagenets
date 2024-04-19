@@ -64,6 +64,7 @@ function pack4_get(word, n) {
 
 function find_lord(name) { return data.lords.findIndex((x) => x.name === name) }
 function find_card(name) { return data.cards.findIndex((x) => x.name === name) }
+function find_locale(name) { return data.locales.findIndex(x => x.name === name) }
 
 const LORD_YORK = find_lord("York")
 const LORD_MARCH = find_lord("March")
@@ -99,6 +100,8 @@ const LORD_JASPER_TUDOR_2 = find_lord("Jasper Tudor 2")
 const LORD_HENRY_TUDOR = find_lord("Henry Tudor")
 const LORD_OXFORD = find_lord("Oxford")
 const LORD_WARWICK_L = find_lord("Warwick L")
+
+const LOC_LONDON = find_locale("London")
 
 const first_york_lord = 0
 const last_york_lord = 13
@@ -214,6 +217,7 @@ const asset_type_x34 = [ 1, 1, 1, 0 ]
 
 const NOWHERE = -1
 const CALENDAR = 100
+const LONDON_FOR_YORK = 200 as Locale // extra london marker
 
 const VASSAL_READY = 29
 const VASSAL_CALENDAR = 30
@@ -1318,6 +1322,12 @@ function update_locale(loc) {
 		ui.locale_markers_rose[loc].classList.add(cn)
 		cn = "lancaster"
 		ui.locale_markers_rose[loc].classList.remove(cn)
+	}
+
+	if (loc === LOC_LONDON) {
+		if (set_has(view.pieces.favoury, LONDON_FOR_YORK)) {
+			// TODO: extra rose marker
+		}
 	}
 }
 

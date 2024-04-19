@@ -111,7 +111,6 @@ interface Game {
 		sail_to_port: 0 | 1,
 		supply_depot: 0 | 1,
 		surprise_landing: 0 | 1,
-		london_for_york: number,
 	},
 
 	levy_flags?: {
@@ -356,6 +355,7 @@ const NOWHERE = -1 as Locale
 const NOCARD = -1 as Card
 
 const CALENDAR = 100 as Locale
+const LONDON_FOR_YORK = 200 as Locale // extra london marker
 
 const VASSAL_READY = 29 as Lord
 const VASSAL_CALENDAR = 30 as Lord
@@ -1567,39 +1567,41 @@ function vassal_influence(vassal) {
 
 function is_favour_friendly(loc: Locale) {
 	if (game.active === YORK)
-		return has_favoury_marker(loc)
+		return has_york_favour(loc)
 	else
-		return has_favourl_marker(loc)
+		return has_lancaster_favour(loc)
 }
 
 function is_favour_enemy(loc: Locale) {
 	if (game.active === LANCASTER)
-		return has_favoury_marker(loc)
+		return has_york_favour(loc)
 	else
-		return has_favourl_marker(loc)
+		return has_lancaster_favour(loc)
 }
 
-function has_favourl_marker(loc: Locale) {
+function has_lancaster_favour(loc: Locale) {
 	return set_has(game.pieces.favourl, loc)
 }
 
-function add_favourl_marker(loc: Locale) {
+function add_lancaster_favour(loc: Locale) {
 	set_add(game.pieces.favourl, loc)
 }
 
-function remove_favourl_marker(loc: Locale) {
+function remove_lancaster_favour(loc: Locale) {
 	set_delete(game.pieces.favourl, loc)
 }
 
-function has_favoury_marker(loc: Locale) {
+function has_york_favour(loc: Locale) {
 	return set_has(game.pieces.favoury, loc)
 }
 
-function add_favoury_marker(loc: Locale) {
+function add_york_favour(loc: Locale) {
 	set_add(game.pieces.favoury, loc)
 }
 
-function remove_favoury_marker(loc: Locale) {
+function remove_york_favour(loc: Locale) {
+	if (loc === LOC_LONDON)
+		set_delete(game.pieces.favoury, LONDON_FOR_YORK)
 	set_delete(game.pieces.favoury, loc)
 }
 
@@ -1618,26 +1620,26 @@ function shift_favour_toward(loc: Locale) {
 }
 
 function shift_favour_toward_york(loc: Locale) {
-	if (has_favourl_marker(loc))
-		remove_favourl_marker(loc)
+	if (has_lancaster_favour(loc))
+		remove_lancaster_favour(loc)
 	else
-		add_favoury_marker(loc)
+		add_york_favour(loc)
 }
 
 function shift_favour_toward_lancaster(loc: Locale) {
-	if (has_favoury_marker(loc))
-		remove_favoury_marker(loc)
+	if (has_york_favour(loc))
+		remove_york_favour(loc)
 	else
-		add_favourl_marker(loc)
+		add_lancaster_favour(loc)
 }
 
 function set_favour_enemy(loc: Locale) {
 	if (game.active === YORK) {
-		remove_favoury_marker(loc)
-		add_favourl_marker(loc)
+		remove_york_favour(loc)
+		add_lancaster_favour(loc)
 	} else {
-		remove_favourl_marker(loc)
-		add_favoury_marker(loc)
+		remove_lancaster_favour(loc)
+		add_york_favour(loc)
 	}
 }
 
@@ -1685,14 +1687,14 @@ function deplete_locale(loc: Locale) {
 }
 
 function is_neutral_locale(loc: Locale) {
-	return !has_favourl_marker(loc) && !has_favoury_marker(loc)
+	return !has_lancaster_favour(loc) && !has_york_favour(loc)
 }
 
 function has_favour_in_locale(side: Player, loc: Locale) {
 	if (side === YORK)
-		return has_favoury_marker(loc)
+		return has_york_favour(loc)
 	else
-		return has_favourl_marker(loc)
+		return has_lancaster_favour(loc)
 }
 
 function is_friendly_locale(loc: Locale) {
@@ -3103,11 +3105,11 @@ states.levy_lord_at_seat = {
 		set_lord_moved(game.other, 1)
 		muster_lord(game.other, loc)
 		if (game.active === YORK) {
-			add_favoury_marker(loc)
-			remove_favourl_marker(loc)
+			add_york_favour(loc)
+			remove_lancaster_favour(loc)
 		} else {
-			add_favourl_marker(loc)
-			remove_favoury_marker(loc)
+			add_lancaster_favour(loc)
+			remove_york_favour(loc)
 		}
 
 		goto_the_kings_name("Levy Lord")
@@ -4293,6 +4295,11 @@ function do_tax(where, who, mul) {
 // === 4.6.4 ACTION: PARLEY ===
 
 function can_parley_at(loc: Locale) {
+	if (loc === LOC_LONDON) {
+		// TODO: unless aided by event!
+		if (has_york_favour(LONDON_FOR_YORK))
+			return false
+	}
 	return !is_exile(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc) && !is_sea(loc)
 }
 
@@ -5303,11 +5310,11 @@ function add_battle_capability_troops() {
 		if (get_lord_locale(lord) !== here)
 			continue
 
-		if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_favoury_marker(here)) {
+		if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_york_favour(here)) {
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 			add_lord_forces(lord, LONGBOWMEN, 1)
 		}
-		if (lord_has_capability(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS) && has_favourl_marker(here)) {
+		if (lord_has_capability(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS) && has_lancaster_favour(here)) {
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 			add_lord_forces(lord, LONGBOWMEN, 1)
 		}
@@ -5347,11 +5354,11 @@ function remove_battle_capability_troops() {
 		if (get_lord_locale(lord) !== here)
 			continue
 
-		if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_favoury_marker(here)) {
+		if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_york_favour(here)) {
 			add_lord_forces(lord, MEN_AT_ARMS, -2)
 			add_lord_forces(lord, LONGBOWMEN, -1)
 		}
-		if (lord_has_capability(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS) && has_favourl_marker(here)) {
+		if (lord_has_capability(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS) && has_lancaster_favour(here)) {
 			add_lord_forces(lord, MEN_AT_ARMS, -2)
 			add_lord_forces(lord, LONGBOWMEN, -1)
 		}
@@ -6825,7 +6832,7 @@ function check_protection_capabilities(protection) {
 	}
 
 	if (game.battle.force === MEN_AT_ARMS) {
-		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_favoury_marker(game.battle.where))
+		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_york_favour(game.battle.where))
 			protection += 1
 	}
 	if (game.battle.force === MEN_AT_ARMS) {
@@ -6834,7 +6841,7 @@ function check_protection_capabilities(protection) {
 		}
 	}
 	if (game.battle.force === MILITIA || game.battle.force === LONGBOWMEN) {
-		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_favoury_marker(game.battle.where))
+		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_york_favour(game.battle.where))
 			protection += 1
 	}
 	return protection
@@ -7373,9 +7380,9 @@ function can_play_escape_ship() {
 }
 
 function can_escape_at(here: Locale) {
-	if (game.active === YORK && has_favoury_marker(here) && is_seaport(here))
+	if (game.active === YORK && has_york_favour(here) && is_seaport(here))
 		return true
-	if (game.active === LANCASTER && has_favourl_marker(here) && is_seaport(here))
+	if (game.active === LANCASTER && has_lancaster_favour(here) && is_seaport(here))
 		return true
 	if (search_escape_ship(here))
 		return true
@@ -7761,84 +7768,84 @@ function tides_calc() {
 	// DOMINATION CALC
 
 	for (let x of all_north_locales) {
-		if (has_favourl_marker(x)) {
+		if (has_lancaster_favour(x)) {
 			domnl += 1
 		}
-		if (has_favoury_marker(x)) {
+		if (has_york_favour(x)) {
 			domny += 1
 		}
 	}
 
 	for (let x of all_south_locales) {
-		if (has_favourl_marker(x)) {
+		if (has_lancaster_favour(x)) {
 			domsl += 1
 		}
-		if (has_favoury_marker(x)) {
+		if (has_york_favour(x)) {
 			domsy += 1
 		}
 	}
 
 	for (let x of all_wales_locales) {
-		if (has_favourl_marker(x)) {
+		if (has_lancaster_favour(x)) {
 			domwl += 1
 		}
-		if (has_favoury_marker(x)) {
+		if (has_york_favour(x)) {
 			domwy += 1
 		}
 	}
 
 	// SPECIAL LOCALES
 
-	if (has_favourl_marker(LOC_LONDON)) {
+	if (has_lancaster_favour(LOC_LONDON)) {
 		log(`London control 2 Influence for Lancaster`)
 		doml += 2
 	}
-	if (has_favoury_marker(LOC_LONDON)) {
+	if (has_york_favour(LOC_LONDON)) {
 		log(`London control 2 Influence for York`)
 		domy += 2
 	}
 
-	if (has_favourl_marker(LOC_CALAIS)) {
+	if (has_lancaster_favour(LOC_CALAIS)) {
 		log(`Calais control 2 Influence for Lancastrians`)
 		doml += 2
 	}
-	if (has_favoury_marker(LOC_CALAIS)) {
+	if (has_york_favour(LOC_CALAIS)) {
 		log(`Calais control 2 Influence for York`)
 		domy += 2
 	}
 
-	if (has_favourl_marker(LOC_HARLECH)) {
+	if (has_lancaster_favour(LOC_HARLECH)) {
 		log(`Harlech control 1 Influence for Lancaster`)
 		doml += 1
 	}
-	if (has_favoury_marker(LOC_HARLECH)) {
+	if (has_york_favour(LOC_HARLECH)) {
 		log(`Harlech control 1 Influence for York`)
 		domy += 1
 	}
 
 	for (let x of all_city_locales) {
-		if (has_favourl_marker(x)) {
+		if (has_lancaster_favour(x)) {
 			cities -= 1
 		}
-		if (has_favoury_marker(x)) {
+		if (has_york_favour(x)) {
 			cities += 1
 		}
 	}
 
 	for (let x of all_town_locales) {
-		if (has_favourl_marker(x)) {
+		if (has_lancaster_favour(x)) {
 			town -= 1
 		}
-		if (has_favoury_marker(x)) {
+		if (has_york_favour(x)) {
 			town += 1
 		}
 	}
 
 	for (let x of all_fortress_locales) {
-		if (has_favourl_marker(x)) {
+		if (has_lancaster_favour(x)) {
 			fortress -= 1
 		}
-		if (has_favoury_marker(x)) {
+		if (has_york_favour(x)) {
 			fortress += 1
 		}
 	}
@@ -8448,7 +8455,6 @@ exports.setup = function (seed, scenario, options) {
 			burgundians: 0,
 			first_action: 0,
 			first_march_highway: 0,
-			london_for_york: 0,
 			march_to_port: 0,
 			sail_to_port: 0,
 			supply_depot: 0,
@@ -8517,15 +8523,15 @@ function setup_Ia() {
 	set_lord_calendar(LORD_WARWICK_Y, 3)
 	set_lord_calendar(LORD_RUTLAND, 5)
 
-	add_favourl_marker(LOC_LONDON)
-	add_favourl_marker(LOC_WELLS)
-	add_favourl_marker(LOC_SCOTLAND)
-	add_favourl_marker(LOC_FRANCE)
+	add_lancaster_favour(LOC_LONDON)
+	add_lancaster_favour(LOC_WELLS)
+	add_lancaster_favour(LOC_SCOTLAND)
+	add_lancaster_favour(LOC_FRANCE)
 
-	add_favoury_marker(LOC_ELY)
-	add_favoury_marker(LOC_LUDLOW)
-	add_favoury_marker(LOC_BURGUNDY)
-	add_favoury_marker(LOC_IRELAND)
+	add_york_favour(LOC_ELY)
+	add_york_favour(LOC_LUDLOW)
+	add_york_favour(LOC_BURGUNDY)
+	add_york_favour(LOC_IRELAND)
 
 	setup_vassals()
 }
@@ -8544,32 +8550,32 @@ function setup_Ib() {
 	muster_lord(LORD_SOMERSET_1, LOC_NEWCASTLE)
 	muster_lord(LORD_NORTHUMBERLAND_L, LOC_CARLISLE)
 
-	add_favourl_marker(LOC_ST_ALBANS)
-	add_favourl_marker(LOC_SCARBOROUGH)
-	add_favourl_marker(LOC_NEWCASTLE)
-	add_favourl_marker(LOC_BAMBURGH)
-	add_favourl_marker(LOC_HEXHAM)
-	add_favourl_marker(LOC_APPLEBY)
-	add_favourl_marker(LOC_CARLISLE)
-	add_favourl_marker(LOC_SCOTLAND)
-	add_favourl_marker(LOC_FRANCE)
+	add_lancaster_favour(LOC_ST_ALBANS)
+	add_lancaster_favour(LOC_SCARBOROUGH)
+	add_lancaster_favour(LOC_NEWCASTLE)
+	add_lancaster_favour(LOC_BAMBURGH)
+	add_lancaster_favour(LOC_HEXHAM)
+	add_lancaster_favour(LOC_APPLEBY)
+	add_lancaster_favour(LOC_CARLISLE)
+	add_lancaster_favour(LOC_SCOTLAND)
+	add_lancaster_favour(LOC_FRANCE)
 
-	add_favoury_marker(LOC_LONDON)
-	add_favoury_marker(LOC_CALAIS)
-	add_favoury_marker(LOC_GLOUCESTER)
-	add_favoury_marker(LOC_HEREFORD)
-	add_favoury_marker(LOC_OXFORD)
-	add_favoury_marker(LOC_SALISBURY)
-	add_favoury_marker(LOC_WINCHESTER)
-	add_favoury_marker(LOC_GUILDFORD)
-	add_favoury_marker(LOC_ARUNDEL)
-	add_favoury_marker(LOC_HASTINGS)
-	add_favoury_marker(LOC_DOVER)
-	add_favoury_marker(LOC_ROCHESTER)
-	add_favoury_marker(LOC_CANTERBURY)
-	add_favoury_marker(LOC_SOUTHAMPTON)
-	add_favoury_marker(LOC_BURGUNDY)
-	add_favoury_marker(LOC_IRELAND)
+	add_york_favour(LOC_LONDON)
+	add_york_favour(LOC_CALAIS)
+	add_york_favour(LOC_GLOUCESTER)
+	add_york_favour(LOC_HEREFORD)
+	add_york_favour(LOC_OXFORD)
+	add_york_favour(LOC_SALISBURY)
+	add_york_favour(LOC_WINCHESTER)
+	add_york_favour(LOC_GUILDFORD)
+	add_york_favour(LOC_ARUNDEL)
+	add_york_favour(LOC_HASTINGS)
+	add_york_favour(LOC_DOVER)
+	add_york_favour(LOC_ROCHESTER)
+	add_york_favour(LOC_CANTERBURY)
+	add_york_favour(LOC_SOUTHAMPTON)
+	add_york_favour(LOC_BURGUNDY)
+	add_york_favour(LOC_IRELAND)
 
 	setup_vassals([ VASSAL_FAUCONBERG, VASSAL_NORFOLK ])
 	muster_vassal(VASSAL_FAUCONBERG, LORD_MARCH)
@@ -8588,35 +8594,35 @@ function setup_Ic() {
 
 	set_lord_calendar(LORD_HENRY_VI, 5)
 
-	add_favourl_marker(LOC_SCARBOROUGH)
-	add_favourl_marker(LOC_NEWCASTLE)
-	add_favourl_marker(LOC_BAMBURGH)
-	add_favourl_marker(LOC_HEXHAM)
-	add_favourl_marker(LOC_APPLEBY)
-	add_favourl_marker(LOC_CARLISLE)
-	add_favourl_marker(LOC_HARLECH)
-	add_favourl_marker(LOC_PEMBROKE)
-	add_favourl_marker(LOC_CARDIFF)
-	add_favourl_marker(LOC_CHESTER)
-	add_favourl_marker(LOC_LANCASTER)
-	add_favourl_marker(LOC_SCOTLAND)
-	add_favourl_marker(LOC_FRANCE)
+	add_lancaster_favour(LOC_SCARBOROUGH)
+	add_lancaster_favour(LOC_NEWCASTLE)
+	add_lancaster_favour(LOC_BAMBURGH)
+	add_lancaster_favour(LOC_HEXHAM)
+	add_lancaster_favour(LOC_APPLEBY)
+	add_lancaster_favour(LOC_CARLISLE)
+	add_lancaster_favour(LOC_HARLECH)
+	add_lancaster_favour(LOC_PEMBROKE)
+	add_lancaster_favour(LOC_CARDIFF)
+	add_lancaster_favour(LOC_CHESTER)
+	add_lancaster_favour(LOC_LANCASTER)
+	add_lancaster_favour(LOC_SCOTLAND)
+	add_lancaster_favour(LOC_FRANCE)
 
-	add_favoury_marker(LOC_LONDON)
-	add_favoury_marker(LOC_CALAIS)
-	add_favoury_marker(LOC_LUDLOW)
-	add_favoury_marker(LOC_HEREFORD)
-	add_favoury_marker(LOC_SALISBURY)
-	add_favoury_marker(LOC_WINCHESTER)
-	add_favoury_marker(LOC_GUILDFORD)
-	add_favoury_marker(LOC_ARUNDEL)
-	add_favoury_marker(LOC_HASTINGS)
-	add_favoury_marker(LOC_DOVER)
-	add_favoury_marker(LOC_ROCHESTER)
-	add_favoury_marker(LOC_CANTERBURY)
-	add_favoury_marker(LOC_SOUTHAMPTON)
-	add_favoury_marker(LOC_BURGUNDY)
-	add_favoury_marker(LOC_IRELAND)
+	add_york_favour(LOC_LONDON)
+	add_york_favour(LOC_CALAIS)
+	add_york_favour(LOC_LUDLOW)
+	add_york_favour(LOC_HEREFORD)
+	add_york_favour(LOC_SALISBURY)
+	add_york_favour(LOC_WINCHESTER)
+	add_york_favour(LOC_GUILDFORD)
+	add_york_favour(LOC_ARUNDEL)
+	add_york_favour(LOC_HASTINGS)
+	add_york_favour(LOC_DOVER)
+	add_york_favour(LOC_ROCHESTER)
+	add_york_favour(LOC_CANTERBURY)
+	add_york_favour(LOC_SOUTHAMPTON)
+	add_york_favour(LOC_BURGUNDY)
+	add_york_favour(LOC_IRELAND)
 
 	setup_vassals()
 }
@@ -8646,20 +8652,20 @@ function setup_II() {
 	set_lord_calendar(LORD_EXETER_2, 9)
 	set_lord_in_exile(LORD_EXETER_2)
 
-	add_favourl_marker(LOC_CALAIS)
-	add_favourl_marker(LOC_YORK)
-	add_favourl_marker(LOC_HARLECH)
-	add_favourl_marker(LOC_COVENTRY)
-	add_favourl_marker(LOC_WELLS)
-	add_favourl_marker(LOC_FRANCE)
+	add_lancaster_favour(LOC_CALAIS)
+	add_lancaster_favour(LOC_YORK)
+	add_lancaster_favour(LOC_HARLECH)
+	add_lancaster_favour(LOC_COVENTRY)
+	add_lancaster_favour(LOC_WELLS)
+	add_lancaster_favour(LOC_FRANCE)
 
-	add_favoury_marker(LOC_LONDON)
-	add_favoury_marker(LOC_ELY)
-	add_favoury_marker(LOC_LUDLOW)
-	add_favoury_marker(LOC_CARLISLE)
-	add_favoury_marker(LOC_PEMBROKE)
-	add_favoury_marker(LOC_EXETER)
-	add_favoury_marker(LOC_BURGUNDY)
+	add_york_favour(LOC_LONDON)
+	add_york_favour(LOC_ELY)
+	add_york_favour(LOC_LUDLOW)
+	add_york_favour(LOC_CARLISLE)
+	add_york_favour(LOC_PEMBROKE)
+	add_york_favour(LOC_EXETER)
+	add_york_favour(LOC_BURGUNDY)
 
 	setup_vassals([ VASSAL_DEVON, VASSAL_OXFORD ])
 
@@ -8681,18 +8687,18 @@ function setup_III() {
 	muster_lord(LORD_JASPER_TUDOR_2, LOC_FRANCE)
 	muster_lord(LORD_OXFORD, LOC_FRANCE)
 
-	add_favourl_marker(LOC_FRANCE)
-	add_favourl_marker(LOC_OXFORD)
-	add_favourl_marker(LOC_HARLECH)
-	add_favourl_marker(LOC_PEMBROKE)
+	add_lancaster_favour(LOC_FRANCE)
+	add_lancaster_favour(LOC_OXFORD)
+	add_lancaster_favour(LOC_HARLECH)
+	add_lancaster_favour(LOC_PEMBROKE)
 
-	add_favoury_marker(LOC_BURGUNDY)
-	add_favoury_marker(LOC_LONDON)
-	add_favoury_marker(LOC_CALAIS)
-	add_favoury_marker(LOC_CARLISLE)
-	add_favoury_marker(LOC_ARUNDEL)
-	add_favoury_marker(LOC_YORK)
-	add_favoury_marker(LOC_GLOUCESTER)
+	add_york_favour(LOC_BURGUNDY)
+	add_york_favour(LOC_LONDON)
+	add_york_favour(LOC_CALAIS)
+	add_york_favour(LOC_CARLISLE)
+	add_york_favour(LOC_ARUNDEL)
+	add_york_favour(LOC_YORK)
+	add_york_favour(LOC_GLOUCESTER)
 
 	setup_vassals([ VASSAL_OXFORD, VASSAL_NORFOLK ])
 }
@@ -8716,15 +8722,15 @@ function setup_ItoIII() {
 	set_lord_calendar(LORD_WARWICK_Y, 3)
 	set_lord_calendar(LORD_RUTLAND, 5)
 
-	add_favourl_marker(LOC_LONDON)
-	add_favourl_marker(LOC_WELLS)
-	add_favourl_marker(LOC_SCOTLAND)
-	add_favourl_marker(LOC_FRANCE)
+	add_lancaster_favour(LOC_LONDON)
+	add_lancaster_favour(LOC_WELLS)
+	add_lancaster_favour(LOC_SCOTLAND)
+	add_lancaster_favour(LOC_FRANCE)
 
-	add_favoury_marker(LOC_ELY)
-	add_favoury_marker(LOC_LUDLOW)
-	add_favoury_marker(LOC_BURGUNDY)
-	add_favoury_marker(LOC_IRELAND)
+	add_york_favour(LOC_ELY)
+	add_york_favour(LOC_LUDLOW)
+	add_york_favour(LOC_BURGUNDY)
+	add_york_favour(LOC_IRELAND)
 
 	setup_vassals()
 }
@@ -8765,8 +8771,8 @@ function setup_II_Y() {
 	for (let loc of all_locales) {
 		remove_exhausted_marker(loc)
 		remove_depleted_marker(loc)
-		remove_favourl_marker(loc)
-		remove_favoury_marker(loc)
+		remove_lancaster_favour(loc)
+		remove_york_favour(loc)
 	}
 	discard_events("this_levy")
 	discard_events("hold")
@@ -8778,7 +8784,7 @@ function setup_II_Y() {
 
 	if (is_lord_in_play(LORD_RUTLAND) && main_york_heir !== LORD_RUTLAND) {
 		muster_lord(LORD_RUTLAND, LOC_CANTERBURY)
-		add_favoury_marker(LOC_CANTERBURY)
+		add_york_favour(LOC_CANTERBURY)
 	}
 
 	set_lord_calendar(LORD_DEVON, 1)
@@ -8787,7 +8793,7 @@ function setup_II_Y() {
 
 	if (main_york_heir === LORD_YORK) {
 		muster_lord(LORD_YORK, LOC_CANTERBURY)
-		add_favoury_marker(LOC_LONDON)
+		add_york_favour(LOC_LONDON)
 		if (is_lord_in_play(LORD_MARCH)) {
 			muster_lord(LORD_MARCH, LOC_LUDLOW)
 		}
@@ -8847,22 +8853,22 @@ function setup_II_Y() {
 	set_lord_calendar(LORD_EXETER_2, 9)
 	set_lord_in_exile(LORD_EXETER_2)
 
-	add_favourl_marker(LOC_CALAIS)
-	add_favourl_marker(LOC_YORK)
-	add_favourl_marker(LOC_HARLECH)
-	add_favourl_marker(LOC_COVENTRY)
-	add_favourl_marker(LOC_WELLS)
+	add_lancaster_favour(LOC_CALAIS)
+	add_lancaster_favour(LOC_YORK)
+	add_lancaster_favour(LOC_HARLECH)
+	add_lancaster_favour(LOC_COVENTRY)
+	add_lancaster_favour(LOC_WELLS)
 
-	add_favoury_marker(LOC_LONDON)
-	add_favoury_marker(LOC_ELY)
-	add_favoury_marker(LOC_LUDLOW)
-	add_favoury_marker(LOC_CARLISLE)
-	add_favoury_marker(LOC_PEMBROKE)
-	add_favoury_marker(LOC_EXETER)
+	add_york_favour(LOC_LONDON)
+	add_york_favour(LOC_ELY)
+	add_york_favour(LOC_LUDLOW)
+	add_york_favour(LOC_CARLISLE)
+	add_york_favour(LOC_PEMBROKE)
+	add_york_favour(LOC_EXETER)
 
 	// Exile box setup
-	add_favourl_marker(LOC_FRANCE)
-	add_favoury_marker(LOC_BURGUNDY)
+	add_lancaster_favour(LOC_FRANCE)
+	add_york_favour(LOC_BURGUNDY)
 
 	setup_vassals([ VASSAL_DEVON, VASSAL_OXFORD ])
 
@@ -8888,8 +8894,8 @@ function setup_II_L() {
 	for (let loc of all_locales) {
 		remove_exhausted_marker(loc)
 		remove_depleted_marker(loc)
-		remove_favourl_marker(loc)
-		remove_favoury_marker(loc)
+		remove_lancaster_favour(loc)
+		remove_york_favour(loc)
 	}
 	discard_events("this_levy")
 	discard_events("hold")
@@ -8976,22 +8982,22 @@ function setup_II_L() {
 	set_lord_calendar(LORD_EXETER_2, 2)
 	set_lord_calendar(LORD_NORTHUMBERLAND_L, 8)
 
-	add_favourl_marker(LOC_LONDON)
-	add_favourl_marker(LOC_HARLECH)
-	add_favourl_marker(LOC_OXFORD)
-	add_favourl_marker(LOC_WELLS)
-	add_favourl_marker(LOC_EXETER)
-	add_favourl_marker(LOC_CARLISLE)
+	add_lancaster_favour(LOC_LONDON)
+	add_lancaster_favour(LOC_HARLECH)
+	add_lancaster_favour(LOC_OXFORD)
+	add_lancaster_favour(LOC_WELLS)
+	add_lancaster_favour(LOC_EXETER)
+	add_lancaster_favour(LOC_CARLISLE)
 
-	add_favoury_marker(LOC_CALAIS)
-	add_favoury_marker(LOC_YORK)
-	add_favoury_marker(LOC_ELY)
-	add_favoury_marker(LOC_LUDLOW)
-	add_favoury_marker(LOC_PEMBROKE)
+	add_york_favour(LOC_CALAIS)
+	add_york_favour(LOC_YORK)
+	add_york_favour(LOC_ELY)
+	add_york_favour(LOC_LUDLOW)
+	add_york_favour(LOC_PEMBROKE)
 
 	// Exile box setup
-	add_favourl_marker(LOC_FRANCE)
-	add_favoury_marker(LOC_BURGUNDY)
+	add_lancaster_favour(LOC_FRANCE)
+	add_york_favour(LOC_BURGUNDY)
 
 	setup_vassals([ VASSAL_DEVON, VASSAL_OXFORD ])
 
@@ -9042,8 +9048,8 @@ function setup_III_Y() {
 	for (let loc of all_locales) {
 		remove_exhausted_marker(loc)
 		remove_depleted_marker(loc)
-		remove_favourl_marker(loc)
-		remove_favoury_marker(loc)
+		remove_lancaster_favour(loc)
+		remove_york_favour(loc)
 	}
 	discard_events("this_levy")
 	discard_events("hold")
@@ -9064,9 +9070,9 @@ function setup_III_Y() {
 		disband_lord(LORD_RUTLAND, true)
 		//Warwick becomes king
 		muster_lord(LORD_WARWICK_Y, LOC_LONDON)
-		add_favoury_marker(LOC_LONDON)
+		add_york_favour(LOC_LONDON)
 		muster_lord(LORD_SALISBURY, LOC_YORK)
-		add_favoury_marker(LOC_YORK)
+		add_york_favour(LOC_YORK)
 
 		// TODO: Add Y16, Y17, Y22
 	}
@@ -9074,28 +9080,28 @@ function setup_III_Y() {
 	// If only 1 is alive
 	if (main_york_heir === LORD_YORK && !is_lord_in_play(LORD_MARCH) && !is_lord_in_play(LORD_RUTLAND) && !is_lord_in_play(LORD_GLOUCESTER_1)) {
 		muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
-		add_favoury_marker(LOC_CARLISLE)
+		add_york_favour(LOC_CARLISLE)
 
 		// TODO: Add Y37
 	}
 	if ((main_york_heir === LORD_MARCH || main_york_heir === LORD_EDWARD_IV) && !is_lord_in_play(LORD_RUTLAND) && !is_lord_in_play(LORD_GLOUCESTER_1)) {
 		muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
-		add_favoury_marker(LOC_CARLISLE)
+		add_york_favour(LOC_CARLISLE)
 		// TODO: Add Y37
 	}
 	if (main_york_heir === LORD_GLOUCESTER_1 || main_york_heir === LORD_RICHARD_III) {
 		muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
-		add_favoury_marker(LOC_CARLISLE)
+		add_york_favour(LOC_CARLISLE)
 		// TODO: Add Y37
 	}
 	muster_lord(LORD_NORFOLK, LOC_ARUNDEL)
-	add_favoury_marker(LOC_ARUNDEL)
+	add_york_favour(LOC_ARUNDEL)
 
 	if (main_york_heir === LORD_YORK) {
 		// TODO: Add Y14, Y21
 		if (is_lord_in_play(LORD_MARCH)) {
 			muster_lord(LORD_MARCH, LOC_LUDLOW)
-			add_favoury_marker(LOC_LUDLOW)
+			add_york_favour(LOC_LUDLOW)
 			// Add Y20
 			// Only 2 heirs can stay
 			disband_lord(LORD_RUTLAND, true)
@@ -9103,37 +9109,37 @@ function setup_III_Y() {
 		}
 		if (!is_lord_in_play(LORD_MARCH) && is_lord_in_play(LORD_RUTLAND)) {
 			muster_lord(LORD_RUTLAND, LOC_CANTERBURY)
-			add_favoury_marker(LOC_CANTERBURY)
+			add_york_favour(LOC_CANTERBURY)
 			// TODO: Add Y20
 		}
 		if (is_lord_in_play(LORD_GLOUCESTER_1)) {
 			muster_lord(LORD_GLOUCESTER_1, LOC_GLOUCESTER)
-			add_favoury_marker(LOC_GLOUCESTER)
+			add_york_favour(LOC_GLOUCESTER)
 			// TODO: Y34
 		}
 	}
 	if (main_york_heir === LORD_MARCH || main_york_heir === LORD_EDWARD_IV) {
 		muster_lord(LORD_EDWARD_IV, LOC_LONDON)
-		add_favoury_marker(LOC_LONDON)
+		add_york_favour(LOC_LONDON)
 
 		// If Edward IV is on the map, remove March
 		disband_lord(LORD_MARCH, true)
 		// TODO: Add Y23, Y24
 		if (is_lord_in_play(LORD_RUTLAND)) {
 			muster_lord(LORD_RUTLAND, LOC_CANTERBURY)
-			add_favoury_marker(LOC_CANTERBURY)
+			add_york_favour(LOC_CANTERBURY)
 			// TODO: Add Y31
 		}
 		if (is_lord_in_play(LORD_GLOUCESTER_1)) {
 			muster_lord(LORD_GLOUCESTER_1, LOC_GLOUCESTER)
-			add_favoury_marker(LOC_GLOUCESTER)
+			add_york_favour(LOC_GLOUCESTER)
 			// TODO: Add Y28, Y34
 		}
 
 	}
 	if (main_york_heir === LORD_RUTLAND) {
 		muster_lord(LORD_RUTLAND, LOC_LONDON)
-		add_favoury_marker(LOC_LONDON)
+		add_york_favour(LOC_LONDON)
 		// TODO: Add Y20, Y21
 		if (is_lord_in_play(LORD_GLOUCESTER_1)) {
 			muster_lord(LORD_GLOUCESTER_2, LOC_LONDON)
@@ -9144,7 +9150,7 @@ function setup_III_Y() {
 	}
 	if (main_york_heir === LORD_GLOUCESTER_1) {
 		muster_lord(LORD_RICHARD_III, LOC_LONDON)
-		add_favoury_marker(LOC_LONDON)
+		add_york_favour(LOC_LONDON)
 		// if Richard III is here, both gloucester are gone
 		disband_lord(LORD_GLOUCESTER_1, true)
 		disband_lord(LORD_GLOUCESTER_2, true)
@@ -9171,29 +9177,29 @@ function setup_III_Y() {
 	}
 	if (!is_lord_on_map(LORD_MARGARET) && !is_lord_on_map(LORD_HENRY_TUDOR)) {
 		muster_lord(LORD_WARWICK_L, LOC_CALAIS)
-		add_favourl_marker(LOC_CALAIS)
+		add_lancaster_favour(LOC_CALAIS)
 		// TODO: Add L23, L30
 	}
 
 	if (is_lord_on_map(LORD_MARGARET) || is_lord_on_map(LORD_HENRY_TUDOR)) {
 		muster_lord(LORD_OXFORD, LOC_FRANCE)
-		add_favourl_marker(LOC_OXFORD)
+		add_lancaster_favour(LOC_OXFORD)
 		muster_lord(LORD_JASPER_TUDOR_2, LOC_FRANCE)
-		add_favoury_marker(LOC_PEMBROKE)
+		add_york_favour(LOC_PEMBROKE)
 	}
 	else if (is_lord_on_map(LORD_WARWICK_L)) {
 		muster_lord(LORD_OXFORD, LOC_CALAIS)
-		add_favourl_marker(LOC_OXFORD)
+		add_lancaster_favour(LOC_OXFORD)
 		muster_lord(LORD_JASPER_TUDOR_2, LOC_CALAIS)
-		add_favoury_marker(LOC_PEMBROKE)
+		add_york_favour(LOC_PEMBROKE)
 	}
 	else {
 		throw Error("Error Lancastrian setup III.Y")
 	}
 
 	// Exile box setup
-	add_favourl_marker(LOC_FRANCE)
-	add_favoury_marker(LOC_BURGUNDY)
+	add_lancaster_favour(LOC_FRANCE)
+	add_york_favour(LOC_BURGUNDY)
 
 	setup_vassals([ VASSAL_OXFORD, VASSAL_NORFOLK ])
 }
@@ -9239,8 +9245,8 @@ function setup_III_L() {
 	for (let loc of all_locales) {
 		remove_exhausted_marker(loc)
 		remove_depleted_marker(loc)
-		remove_favourl_marker(loc)
-		remove_favoury_marker(loc)
+		remove_lancaster_favour(loc)
+		remove_york_favour(loc)
 	}
 	discard_events("this_levy")
 	discard_events("hold")
@@ -9259,21 +9265,21 @@ function setup_III_L() {
 	}
 	if (main_lancaster_heir === LORD_SOMERSET_1) {
 		muster_lord(LORD_SOMERSET_1, LOC_LONDON)
-		add_favourl_marker(LOC_WELLS)
+		add_lancaster_favour(LOC_WELLS)
 		// TODO: Add L18, L20, L27
 	}
 	// Should never happen but as a failsafe
 	if (main_lancaster_heir === LORD_SOMERSET_2) {
 		muster_lord(LORD_SOMERSET_1, LOC_LONDON)
-		add_favourl_marker(LOC_WELLS)
+		add_lancaster_favour(LOC_WELLS)
 		disband_lord(LORD_SOMERSET_2, true)
 		// TODO: Add L18, L20, L27
 	}
 	muster_lord(LORD_OXFORD, LOC_OXFORD)
 	muster_lord(LORD_JASPER_TUDOR_2, LOC_PEMBROKE)
-	add_favourl_marker(LOC_OXFORD)
-	add_favourl_marker(LOC_PEMBROKE)
-	add_favourl_marker(LOC_LONDON)
+	add_lancaster_favour(LOC_OXFORD)
+	add_lancaster_favour(LOC_PEMBROKE)
+	add_lancaster_favour(LOC_LONDON)
 
 	// York Setup
 	// TOOD: Add Y1-Y13, Y36
@@ -9294,7 +9300,7 @@ function setup_III_L() {
 
 	if (main_york_heir === LORD_YORK) {
 		muster_lord(LORD_YORK, LOC_BURGUNDY)
-		add_favoury_marker(LOC_ELY)
+		add_york_favour(LOC_ELY)
 		// TODO: Add Y14, Y18
 		if (is_lord_in_play(LORD_MARCH)) {
 			// Only next highest heir alive
@@ -9302,7 +9308,7 @@ function setup_III_L() {
 			disband_lord(LORD_GLOUCESTER_1, true)
 			disband_lord(LORD_GLOUCESTER_2, true)
 			muster_lord(LORD_MARCH, LOC_BURGUNDY)
-			add_favoury_marker(LOC_LUDLOW)
+			add_york_favour(LOC_LUDLOW)
 			//TODO: Add Y20
 		}
 		else if (!is_lord_in_play(LORD_MARCH) && is_lord_in_play(LORD_RUTLAND)) {
@@ -9310,20 +9316,20 @@ function setup_III_L() {
 			disband_lord(LORD_GLOUCESTER_1, true)
 			disband_lord(LORD_GLOUCESTER_2, true)
 			muster_lord(LORD_RUTLAND, LOC_BURGUNDY)
-			add_favoury_marker(LOC_CANTERBURY)
+			add_york_favour(LOC_CANTERBURY)
 			//TODO: Add Y20
 		}
 		else if (!is_lord_in_play(LORD_MARCH) && !is_lord_in_play(LORD_RUTLAND) && (is_lord_in_play(LORD_GLOUCESTER_1) || is_lord_in_play(LORD_GLOUCESTER_2))) {
 			// Final Scenario, and no succession rule
 			disband_lord(LORD_GLOUCESTER_2, true)
 			muster_lord(LORD_GLOUCESTER_1, LOC_BURGUNDY)
-			add_favoury_marker(LOC_GLOUCESTER)
+			add_york_favour(LOC_GLOUCESTER)
 			// TODO: Add Y4
 		}
 		else {
 			// If York alone
 			muster_lord(LORD_SALISBURY, LOC_BURGUNDY)
-			add_favoury_marker(LOC_YORK)
+			add_york_favour(LOC_YORK)
 			//TODO: Add Y17, Y22
 		}
 	}
@@ -9332,14 +9338,14 @@ function setup_III_L() {
 		disband_lord(LORD_MARCH, true)
 		disband_lord(LORD_RUTLAND, true)
 		muster_lord(LORD_WARWICK_Y, LOC_CALAIS)
-		add_favoury_marker(LOC_CALAIS)
+		add_york_favour(LOC_CALAIS)
 		//TODO: Add Y16
 	}
 
 	if (main_york_heir === LORD_WARWICK_Y) {
 		muster_lord(LORD_NORFOLK, LOC_CALAIS)
 		muster_lord(LORD_SALISBURY, LOC_CALAIS)
-		add_favoury_marker(LOC_CALAIS)
+		add_york_favour(LOC_CALAIS)
 		//TODO: Add Y17, Y22
 	}
 	else (
@@ -9353,11 +9359,11 @@ function setup_III_L() {
 		//TODO: Add Y17, Y22
 	}
 
-	add_favoury_marker(LOC_ARUNDEL)
+	add_york_favour(LOC_ARUNDEL)
 
 	// Exile box setup
-	add_favourl_marker(LOC_FRANCE)
-	add_favoury_marker(LOC_BURGUNDY)
+	add_lancaster_favour(LOC_FRANCE)
+	add_york_favour(LOC_BURGUNDY)
 
 	setup_vassals([ VASSAL_OXFORD, VASSAL_NORFOLK ])
 }
@@ -10218,7 +10224,7 @@ function is_propaganda_target(loc: Locale) {
 function goto_warwicks_propaganda() {
 	let can_play = false
 	for (let loc of all_locales) {
-		if (has_favoury_marker(loc)) {
+		if (has_york_favour(loc)) {
 			can_play = true
 		}
 	}
@@ -10237,7 +10243,7 @@ states.warwicks_propaganda = {
 	prompt() {
 		view.prompt = `Select up to ${3-game.count} Yorkists Locales.`
 		for (let loc of all_locales) {
-			if (game.count < 3 && has_favoury_marker(loc) && !is_exile(loc) && !is_propaganda_target(loc)) {
+			if (game.count < 3 && has_york_favour(loc) && !is_exile(loc) && !is_propaganda_target(loc)) {
 				gen_action_locale(loc)
 			}
 		}
@@ -10284,7 +10290,7 @@ states.warwicks_propaganda_yorkist_choice = {
 	},
 	remove_favour() {
 		push_undo()
-		remove_favoury_marker(game.where)
+		remove_york_favour(game.where)
 		remove_propaganda_target(game.where)
 		logi(`Removed favour in ${game.where}`)
 		game.where = NOWHERE
@@ -10321,7 +10327,7 @@ function goto_lancaster_event_welsh_rebellion() {
 		}
 	}
 	for (let loc of all_locales) {
-		if (is_wales(loc) && has_favoury_marker(loc))
+		if (is_wales(loc) && has_york_favour(loc))
 			can_remove_favour = true
 	}
 
@@ -10421,7 +10427,7 @@ states.welsh_rebellion_remove_favour = {
 	prompt() {
 		view.prompt = `Select up to ${2-game.count} Locales in Wales.`
 		for (let loc of all_locales) {
-			if (game.count < 2 && is_wales(loc) && has_favoury_marker(loc)) {
+			if (game.count < 2 && is_wales(loc) && has_york_favour(loc)) {
 				gen_action_locale(loc)
 			}
 		}
@@ -10429,7 +10435,7 @@ states.welsh_rebellion_remove_favour = {
 	},
 	locale(loc) {
 		push_undo()
-		remove_favoury_marker(loc)
+		remove_york_favour(loc)
 		logi(`Removed favour at ${data.locales[loc].name}`)
 		game.count++
 	},
@@ -10441,7 +10447,7 @@ states.welsh_rebellion_remove_favour = {
 // === EVENT: HENRY RELEASED ===
 
 function goto_lancaster_event_henry_released() {
-	if (has_favourl_marker(LOC_LONDON)) {
+	if (has_lancaster_favour(LOC_LONDON)) {
 		logi(`Henry Released : 5 Influence for Lancaster`)
 		increase_lancaster_influence(5)
 	}
@@ -10545,7 +10551,7 @@ function end_universelle_aragne() {
 function goto_lancaster_event_to_wilful_disobediance() {
 	let can_play = false
 	for (let loc of all_locales){
-		if (has_favoury_marker(loc) && !has_enemy_lord(loc) && !has_adjacent_enemy(loc) && (has_friendly_lord(loc) || has_adjacent_friendly(loc))) {
+		if (has_york_favour(loc) && !has_enemy_lord(loc) && !has_adjacent_enemy(loc) && (has_friendly_lord(loc) || has_adjacent_friendly(loc))) {
 			can_play = true
 		}
 	}
@@ -10566,7 +10572,7 @@ states.wilful_disobediance = {
 		for (let loc of all_locales) {
 			if (
 				game.count < 2 &&
-				has_favoury_marker(loc) &&
+				has_york_favour(loc) &&
 				!has_enemy_lord(loc) &&
 				!has_adjacent_enemy(loc) &&
 				(has_friendly_lord(loc) || has_adjacent_friendly(loc))
@@ -10578,7 +10584,7 @@ states.wilful_disobediance = {
 	},
 	locale(loc) {
 		push_undo()
-		remove_favoury_marker(loc)
+		remove_york_favour(loc)
 		game.count++
 		logi(`Favour removed at ${loc}`)
 	},
@@ -10606,7 +10612,7 @@ function goto_lancaster_event_french_war_loans() {
 function goto_lancaster_event_robins_rebellion() {
 	let can_play = false
 	for (let loc of all_locales) {
-		if (is_north(loc) && !has_favourl_marker(loc)) {
+		if (is_north(loc) && !has_lancaster_favour(loc)) {
 			can_play = true
 		}
 	}
@@ -10625,7 +10631,7 @@ states.robins_rebellion = {
 	prompt() {
 		view.prompt = `Select up to ${3-game.count} Locales in North.`
 		for (let loc of all_locales) {
-			if (game.count < 3 && is_north(loc) && !has_favourl_marker(loc)) {
+			if (game.count < 3 && is_north(loc) && !has_lancaster_favour(loc)) {
 				gen_action_locale(loc)
 			}
 		}
@@ -10670,7 +10676,7 @@ states.tudor_banners = {
 		view.prompt = `Select locales adjacent to Henry to make them Lancastrian`
 		let done = true
 		for (let next of data.locales[get_lord_locale(LORD_HENRY_TUDOR)].adjacent) {
-			if (!has_enemy_lord(next) && !has_favourl_marker(next)) {
+			if (!has_enemy_lord(next) && !has_lancaster_favour(next)) {
 				gen_action_locale(next)
 				done = false
 			}
@@ -10680,8 +10686,8 @@ states.tudor_banners = {
 	},
 	locale(loc) {
 		push_undo()
-		remove_favoury_marker(loc)
-		add_favourl_marker(loc)
+		remove_york_favour(loc)
+		add_lancaster_favour(loc)
 		logi(`Placed Lancastrian favour at ${data.locales[loc].name}`)
 	},
 	done() {
@@ -10769,12 +10775,7 @@ function end_tax_collectors() {
 // === EVENT: LONDON FOR YORK ===
 
 function goto_york_event_london_for_york() {
-	let can_play = false
-	if (has_favoury_marker(LOC_LONDON)) {
-		can_play = true
-	}
-	if (can_play) {
-		game.who = NOBODY
+	if (has_york_favour(LOC_LONDON) && !has_york_favour(LONDON_FOR_YORK)) {
 		game.state = "london_for_york"
 	} else {
 		logi(`No Effect`)
@@ -10783,14 +10784,14 @@ function goto_york_event_london_for_york() {
 }
 
 states.london_for_york = {
-	inactive: "London For York",
+	inactive: "London for York",
 	prompt() {
-		view.prompt = `Select London to add a second favour marker`
+		view.prompt = `London for York: Add a second favour marker at London.`
 		gen_action_locale(LOC_LONDON)
 	},
 	locale(loc) {
 		push_undo()
-		game.flags.london_for_york = 1
+		add_york_favour(LONDON_FOR_YORK)
 		logi(`Second marker placed at ${data.locales[loc].name}`)
 		logi(`Immune to Lancastrian parley unless aided by event`)
 		end_immediate_event()
@@ -10846,7 +10847,7 @@ states.she_wolf = {
 // === EVENT: RICHARD LEIGH ===
 
 function goto_york_event_sir_richard_leigh() {
-	if (!has_favoury_marker(LOC_LONDON)) {
+	if (!has_york_favour(LOC_LONDON)) {
 		game.state = "richard_leigh"
 	} else {
 		logi(`No Effect`)
@@ -10920,7 +10921,7 @@ function goto_york_event_yorkist_north() {
 			influence_gained++
 	}
 	for (let loc of all_locales) {
-		if (loc !== NOWHERE && loc < CALENDAR && has_favoury_marker(loc) && is_north(loc)) {
+		if (loc !== NOWHERE && loc < CALENDAR && has_york_favour(loc) && is_north(loc)) {
 			influence_gained++
 		}
 	}
@@ -11099,7 +11100,7 @@ function end_the_commons() {
 function is_york_dominating_north() {
 	let dom = 0
 	for (let loc of all_north_locales) {
-		if (has_favoury_marker(loc)) {
+		if (has_york_favour(loc)) {
 			dom++
 		}
 	}
@@ -11111,7 +11112,7 @@ function is_york_dominating_north() {
 function is_york_dominating_south() {
 	let dom = 0
 	for (let loc of all_south_locales) {
-		if (has_favoury_marker(loc)) {
+		if (has_york_favour(loc)) {
 			dom++
 		}
 	}
@@ -11128,7 +11129,7 @@ function is_york_dominating_south() {
 function is_york_dominating_wales() {
 	let dom = 0
 	for (let loc of all_wales_locales) {
-		if (has_favoury_marker(loc)) {
+		if (has_york_favour(loc)) {
 			dom++
 		}
 	}
