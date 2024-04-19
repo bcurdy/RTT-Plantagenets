@@ -1588,8 +1588,8 @@ function on_update() {
 	ui.fortress.classList.toggle("york", fortress < 0)
 	ui.fortress.classList.toggle("lancaster", fortress >= 0)
 
-	ui.influence.style.top = (track_xy[Math.abs(view.influence)][1]) + "px"
-	ui.influence.style.left = (track_xy[Math.abs(view.influence)][0]) + "px"
+	ui.influence.style.top = (track_xy[Math.min(45,Math.abs(view.influence))][1]) + "px"
+	ui.influence.style.left = (track_xy[Math.min(45,Math.abs(view.influence))][0]) + "px"
 	ui.influence.classList.toggle("york", view.influence < 0)
 	ui.influence.classList.toggle("lancaster", view.influence >= 0)
 

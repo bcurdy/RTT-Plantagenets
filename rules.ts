@@ -1812,19 +1812,19 @@ function reduce_influence(amt: number) {
 }
 
 function reduce_york_influence(amt: number) {
-	game.influence += amt
+	game.influence = Math.max(-45, Math.min(45, game.influence + amt))
 }
 
 function increase_york_influence(amt: number) {
-	game.influence -= amt
+	game.influence = Math.max(-45, Math.min(45, game.influence - amt))
 }
 
 function reduce_lancaster_influence(amt: number) {
-	game.influence -= amt
+	game.influence = Math.max(-45, Math.min(45, game.influence - amt))
 }
 
 function increase_lancaster_influence(amt: number) {
-	game.influence += amt
+	game.influence = Math.max(-45, Math.min(45, game.influence + amt))
 }
 
 function is_automatic_levy_vassal_success(lord: Lord) {
@@ -8009,8 +8009,8 @@ function tides_calc() {
 	log(`Total ` + domy + ` Influence for York`)
 	log(`Total ` + doml + ` Influence for Lancaster`)
 
-	game.influence += doml
-	game.influence -= domy
+	increase_lancaster_influence(doml)
+	increase_york_influence(domy)
 }
 
 function goto_tides_of_war() {
@@ -8142,10 +8142,7 @@ function disband_influence_penalty(lord: Lord) {
 		}
 	}
 
-	if (game.active === LANCASTER)
-		game.influence -= influence
-	else
-		game.influence += influence
+	reduce_influence(influence)
 }
 
 function goto_advance_campaign() {
