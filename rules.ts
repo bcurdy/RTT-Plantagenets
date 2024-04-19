@@ -3,28 +3,50 @@
 // TODO: "approach" pause when about to move into intercept range?
 // TODO: log end victory conditions at scenario start
 // Check all push/clear_undo
-
 // TODO: check all who = NOBODY etc resets
-
-// TODO: remove unneccessary game.who = NOBODY etc
-
 // TODO: call end_influence_check earlier when possible?
-
 // TODO: use game.command instead of game.who for levy -- can we avoid saving who and count in push_state?
 // TODO: can we simplify push_state to not push count and who?
-
 // TODO: verify all push_state uses
+// TODO check all game.count uses
+// TODO check all game.who uses
+
+// TODO: game.battle.routed to also include lords in game.battle.fled
 
 /*
-REDO
-	parley - needs push_state? probably.
-	pillage - needs push_state?
-	feed - needs push_state?
+	TODO
+		NAVAL BLOCKADE - Tax and Tax Collectors
 
-REDO
-	suspicion
-	naval_blockade
-	ravine
+	TODO
+		rewrite influence checks to be sane...
+		check and balance all init_influence_check / do_influence_check / end_influence_check
+
+		revisit remaining game.flags
+			jack cade
+
+	Battle resolution order (engagement / step nesting)
+
+	Y30 REGROUP
+		before strike, after hits, before end
+	Y36 VANGUARD
+		before round 1 engagement
+
+	Y15 LONDON FOR YORK (protective effects + ui)
+		extra favour marker in magic locale
+
+	scenario card lists
+		number of roses in data
+
+	Scenario special rules.
+
+	CLEANUPS
+		influence checks and capabilities (don't check game.state === "parley" etc)
+		clean up end_feed transition between command/disembark
+
+		parley - needs push_state? probably.
+		parley - levy and campaign separate states?
+		pillage - needs push_state?
+		feed - needs push_state?
 */
 
 /*
@@ -876,7 +898,7 @@ const AOW_YORK_FIRST_SON = Y28
 const AOW_YORK_STAFFORD_BRANCH = Y29
 const AOW_YORK_CAPTAIN = Y30
 const AOW_YORK_WOODWILLES = Y31
-const AOW_YORK_FINAL_CHARGE = Y32 // TODO AFTER ALL OTHER BATTLE PROMPTS TO SEE WHERE TO PLACE IT
+const AOW_YORK_FINAL_CHARGE = Y32
 const AOW_YORK_BLOODY_THOU_ART = Y33
 const AOW_YORK_SO_WISE_SO_YOUNG = Y34
 const AOW_YORK_KINGDOM_UNITED = Y35
@@ -1488,9 +1510,18 @@ function for_each_vassal_with_lord(lord: Lord, f) {
 
 function count_vassals_with_lord(lord: Lord) {
 	let n = 0
-	for (let x of all_vassals)
-		if (is_vassal_mustered_with(x, lord))
+	for (let v of all_vassals)
+		if (is_vassal_mustered_with(v, lord))
 			++n
+	return n
+}
+
+function count_unrouted_vassals_with_lord(lord: Lord) {
+	let n = 0
+	for (let v of all_vassals)
+		if (is_vassal_mustered_with(v, lord))
+			if (!set_has(game.battle.routed_vassals, v))
+				++n
 	return n
 }
 
@@ -5154,6 +5185,41 @@ function take_spoils(type: Asset) {
 
 // === 4.4 BATTLE ===
 
+/*
+
+	BATTLE SEQUENCE
+
+	defender position lords
+	attacker position lords
+
+	play events (defender)
+	play events (attacker)
+
+	SUSPICION - end battle if necessary
+
+	battle rounds
+
+	award influence
+	award spoils
+	determine losses
+	death check
+	aftermath
+
+*/
+
+function remove_lord_from_battle(lord) {
+	if (set_has(game.battle.reserves, lord)) {
+		array_remove(game.battle.reserves, lord)
+	} else {
+		for (let x = 0; x < 6; x++) {
+			if (game.battle.array[x] === lord) {
+				game.battle.array[x] = NOBODY
+				break
+			}
+		}
+	}
+}
+
 function get_lord_array_position(lord: Lord) {
 	for (let p = 0; p < 12; ++p)
 		if (game.battle.array[p] === lord)
@@ -5172,17 +5238,10 @@ function set_active_defender() {
 		set_active(P1)
 }
 
-function ravine_check(lord: Lord, pos: number) {
-	// TODO: if no lord in pos and no ravine? -- if (lord !== NOBODY)
-	if (game.battle.array[pos] === lord)
-		return true
-	return false
-}
-
 function filled(pos) {
-	if (game.battle.array[pos] !== NOBODY && !ravine_check(game.battle.ravine, pos)) {
+	let lord = game.battle.array[pos]
+	if (lord !== NOBODY && lord !== game.battle.ravine)
 		return true
-	}
 	return false
 }
 
@@ -5201,17 +5260,16 @@ function count_archery_hits(lord: Lord) {
 	hits += get_lord_forces(lord, MERCENARIES)
 
 	if (is_leeward_battle_line_in_play(lord)) {
-		// TODO: rounding?
-		return hits/2
+		// half rounded up!
+		return (hits + 1) >> 1
 	}
 
 	return hits
 }
 
 function count_melee_hits(lord: Lord) {
-	let hits = 0
-	hits += /*retinue*/ 3 << 1
-	//hits += count_vassals_with_lord(lord) << 2
+	let hits = 3 << 1 // Retinue
+	hits += count_unrouted_vassals_with_lord(lord) << 2
 	if (lord_has_capability(lord, AOW_LANCASTER_CHEVALIERS))
 		hits += get_lord_forces(lord, MEN_AT_ARMS) << 2
 	else
@@ -5221,7 +5279,8 @@ function count_melee_hits(lord: Lord) {
 	hits += get_lord_forces(lord, BURGUNDIANS) << 1
 
 	if (lord === game.battle.caltrops) {
-		hits += 2
+		logcap(EVENT_YORK_CALTROPS)
+		hits += 2 << 1
 	}
 
 	return hits
@@ -5406,50 +5465,26 @@ function goto_battle() {
 	}
 
 	// Troops by capability
-
 	add_battle_capability_troops()
 
-	// All attacking lords to reserve
-	for (let lord of all_friendly_lords()) {
+	// All participating lords to reserve
+	for (let lord of all_lords) {
 		if (get_lord_locale(lord) === here) {
 			set_lord_fought(lord)
 			set_add(game.battle.reserves, lord)
+			game.battle.valour[lord] = data.lords[lord].valour
 			if (
 				lord_has_capability(lord, AOW_LANCASTER_EXPERT_COUNSELLORS) ||
 				lord_has_capability(lord, AOW_LANCASTER_VETERAN_OF_FRENCH_WARS)
 			)
-				game.battle.valour[lord] = data.lords[lord].valour + 2
+				game.battle.valour[lord] += 2
 			else if (
 				lord_has_capability(lord, AOW_LANCASTER_ANDREW_TROLLOPE) ||
 				lord_has_capability(lord, AOW_LANCASTER_MY_FATHERS_BLOOD) ||
 				lord_has_capability(lord, AOW_LANCASTER_EDWARD) ||
 				(lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET) && get_lord_locale(LORD_MARGARET) === here)
 			)
-				game.battle.valour[lord] = data.lords[lord].valour + 1
-			else
-				game.battle.valour[lord] = data.lords[lord].valour
-		}
-	}
-
-	// All defending lords to reserve
-	for (let lord of all_enemy_lords()) {
-		if (get_lord_locale(lord) === here) {
-			set_lord_fought(lord)
-			set_add(game.battle.reserves, lord)
-			if (
-				lord_has_capability(lord, AOW_LANCASTER_EXPERT_COUNSELLORS) ||
-				lord_has_capability(lord, AOW_LANCASTER_VETERAN_OF_FRENCH_WARS)
-			)
-				game.battle.valour[lord] = data.lords[lord].valour + 2
-			else if (
-				lord_has_capability(lord, AOW_LANCASTER_ANDREW_TROLLOPE) ||
-				lord_has_capability(lord, AOW_LANCASTER_MY_FATHERS_BLOOD) ||
-				lord_has_capability(lord, AOW_LANCASTER_EDWARD) ||
-				(lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET) && get_lord_locale(LORD_MARGARET) === here)
-			)
-				game.battle.valour[lord] = data.lords[lord].valour + 1
-			else
-				game.battle.valour[lord] = data.lords[lord].valour
+				game.battle.valour[lord] += 1
 		}
 	}
 
@@ -5457,13 +5492,6 @@ function goto_battle() {
 }
 
 // === 4.4.1 BATTLE ARRAY ===
-
-// 0) Defender decides to stand for Battle, not Exile
-// 1) Defender decides how he wants to array his lords
-// 2) Defender positions front D
-// 3) Attacker positions front A.
-// 4) Defender plays event
-// 5) ATtacker plays event
 
 function has_friendly_reserves() {
 	for (let lord of game.battle.reserves)
@@ -5895,15 +5923,7 @@ states.suspicion_3 = {
 		logi(`Attempt to disband ${data.lords[other].name} ${results.success ? "Successful" : "Failed"}: (${range(results.rating)}) ${results.success ? HIT[results.roll] : MISS[results.roll]}`)
 		if (results.success) {
 			log(`${data.lords[other].name} disbanded`)
-			for (let x = 0; x < 6; x++) {
-				if (game.battle.array[x] === other) {
-					game.battle.array[x] = NOBODY
-					break
-				}
-				else if (set_has(game.battle.reserves, other)) {
-					array_remove(game.battle.reserves, other)
-				}
-			}
+			remove_lord_from_battle(other)
 			disband_lord(other)
 		} else {
 			log(`${data.lords[other].name} stays`)
@@ -6158,9 +6178,13 @@ states.final_charge = {
 		logcap(AOW_YORK_FINAL_CHARGE)
 		game.battle.final_charge = 1
 		if (game.battle.attacker === YORK) {
+			log_hits(1, "attacker hit")
+			log_hits(3, "defender hit")
 			game.battle.ahits += 1
 			game.battle.dhits += 3
 		} else {
+			log_hits(3, "attacker hit")
+			log_hits(1, "defender hit")
 			game.battle.ahits += 3
 			game.battle.dhits += 1
 		}
@@ -6172,6 +6196,32 @@ states.final_charge = {
 }
 
 // === 4.4.2 BATTLE ROUNDS ===
+
+/*
+
+	for each round (until one side is fully routed)
+		flee (defender)
+		flee (attacker)
+		reposition (defender)
+		reposition (attacker)
+		determine engagements
+		VANGUARD (round 1 only)
+		for each engagement
+			archery strike
+				total hits
+				assign hits (defender then attacker)
+					REGROUP
+					SWIFT MANEUVER - skip to check lord rout
+			melee strike
+				total hits
+				FINAL CHARGE
+				assign hits (defender then attacker)
+					REGROUP
+					SWIFT MANEUVER - skip to check lord rout
+		check lord rout (defender then attacker)
+			REGROUP
+
+*/
 
 function goto_battle_rounds() {
 	set_active_defender()
@@ -6217,16 +6267,7 @@ states.flee_battle = {
 		push_undo()
 		log(`${lord_name[lord]} Fled the battle of %${game.battle.where}.`)
 		set_add(game.battle.fled, lord)
-		if (set_has(game.battle.reserves, lord)) {
-			array_remove(game.battle.reserves, lord)
-		} else {
-			for (let x = 0; x < 6; x++) {
-				if (game.battle.array[x] === lord) {
-					game.battle.array[x] = NOBODY
-					break
-				}
-			}
-		}
+		remove_lord_from_battle(lord)
 	},
 }
 
@@ -6558,7 +6599,9 @@ function goto_engagement_total_hits() {
 	game.battle.dhits = dhits
 
 	log_br()
-	log_hits(game.battle.ahits, "Hit")
+	log_hits(game.battle.ahits, "attacker hit")
+	log_hits(game.battle.dhits, "defender hit")
+
 	game.battle.target = null
 
 	game.battle.final_charge = 0
@@ -6620,7 +6663,6 @@ function goto_assign_hits() {
 }
 
 function end_defender_assign_hits() {
-	log_hits(game.battle.dhits, "Hit")
 	game.battle.target = null
 	goto_attacker_assign_hits()
 }
@@ -6655,6 +6697,7 @@ function end_assign_hits() {
 	for (let pos of game.battle.engagements[0]) {
 		game.battle.ah[pos] = 0
 	}
+
 	game.battle.target = null
 	game.battle.ahits = 0
 	game.battle.dhits = 0
@@ -7328,12 +7371,19 @@ states.bloody_thou_art = {
 		view.prompt = "Bloody thou art: All Routed Lancastrian Lords Die."
 
 		let done = true
+		for (let lord of game.battle.fled) {
+			if (is_friendly_lord(lord)) {
+				gen_action_lord(lord)
+				done = false
+			}
+		}
 		for (let lord of game.battle.routed) {
 			if (is_friendly_lord(lord)) {
 				gen_action_lord(lord)
 				done = false
 			}
 		}
+
 
 		if (done)
 			view.actions.done = 1
@@ -7432,6 +7482,8 @@ states.talbot_to_the_rescue = {
 	inactive: "Talbot to the Rescue",
 	prompt() {
 		view.prompt = "Talbot to the Rescue: Disband any Routed Lancastrians instead of rolling for Death."
+		for (let lord of game.battle.fled)
+			gen_action_lord(lord)
 		for (let lord of game.battle.routed)
 			gen_action_lord(lord)
 		view.actions.done = 1
@@ -7440,6 +7492,7 @@ states.talbot_to_the_rescue = {
 		push_undo()
 		log(`${lord_name[lord]} disbanded.`)
 		disband_lord(lord)
+		set_delete(game.battle.fled, lord)
 		set_delete(game.battle.routed, lord)
 	},
 	done() {
@@ -7487,6 +7540,7 @@ states.warden_of_the_marches = {
 	lord(lord) {
 		push_undo()
 
+		set_delete(game.battle.fled, lord)
 		set_delete(game.battle.routed, lord)
 
 		logi(`Moved lord to ${data.locales[game.where].name}`)
