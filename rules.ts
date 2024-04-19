@@ -6133,11 +6133,26 @@ states.culverins_and_falconets = {
 	inactive: "Culverins and Falconets",
 	prompt() {
 		view.prompt = `Use Culverins and Falconets?`
-		if (game.active === LANCASTER)
-			gen_action_card(AOW_LANCASTER_CULVERINS_AND_FALCONETS)
-		else
-			gen_action_card(AOW_YORK_CULVERINS_AND_FALCONETS)
-		view.actions.done = 1
+
+		for (let p of battle_strike_positions) {
+			let lord = game.battle.array[p]
+			if (lord !== NOBODY) {
+				if (game.active === LANCASTER) {
+					if (lord_has_capability(lord, AOW_LANCASTER_CULVERINS_AND_FALCONETS[0]))
+						gen_action_card(AOW_LANCASTER_CULVERINS_AND_FALCONETS[0])
+					if (lord_has_capability(lord, AOW_LANCASTER_CULVERINS_AND_FALCONETS[1]))
+						gen_action_card(AOW_LANCASTER_CULVERINS_AND_FALCONETS[1])
+				}
+				if (game.active === YORK) {
+					if (lord_has_capability(lord, AOW_YORK_CULVERINS_AND_FALCONETS[0]))
+						gen_action_card(AOW_YORK_CULVERINS_AND_FALCONETS[0])
+					if (lord_has_capability(lord, AOW_YORK_CULVERINS_AND_FALCONETS[1]))
+						gen_action_card(AOW_YORK_CULVERINS_AND_FALCONETS[1])
+				}
+			}
+		}
+
+		view.actions.pass = 1
 	},
 	card(c) {
 		let lord = find_lord_with_capability_card(c)
@@ -6162,7 +6177,7 @@ states.culverins_and_falconets = {
 		discard_lord_capability(lord, c)
 		end_culverins_and_falconets()
 	},
-	done() {
+	pass() {
 		end_culverins_and_falconets()
 	},
 }
