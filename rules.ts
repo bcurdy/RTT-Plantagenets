@@ -7622,7 +7622,7 @@ function end_feed() {
 			goto_feed()
 	} else {
 		// during disembark
-		game.state = "disembark"
+		goto_disembark()
 	}
 }
 
@@ -8044,13 +8044,13 @@ function is_lord_at_sea(lord: Lord) {
 function goto_disembark() {
 	if (has_lords_at_sea()) {
 		game.state = "disembark"
+		game.who = NOBODY
 	} else {
 		end_disembark()
 	}
 }
 
 function end_disembark() {
-	game.who = NOBODY
 	set_active_enemy()
 	if (has_lords_at_sea())
 		goto_disembark()
@@ -8060,7 +8060,7 @@ function end_disembark() {
 	}
 }
 
-function do_disembark() {
+function roll_disembark() {
 	let roll = roll_die()
 	let success = roll >= 5
 
@@ -8080,68 +8080,50 @@ states.disembark = {
 	inactive: "Disembark",
 	prompt() {
 		view.prompt = "Disembark your lords at sea."
-		let done = true
-		if (game.who === NOBODY) {
-			for (let lord of all_friendly_lords()) {
-				if (is_lord_at_sea(lord)) {
-					gen_action_lord(lord)
-					done = false
-				}
-			}
-		} else {
-			for (let loc of find_ports(get_lord_locale(game.who), NOBODY))
-				if (!has_enemy_lord(loc))
-					gen_action_locale(loc)
-		}
-		if (done) {
-			view.actions.done = 1
-		}
+		for (let lord of all_friendly_lords())
+			if (is_lord_at_sea(lord))
+				gen_action_lord(lord)
 	},
 	lord(lord) {
-		if (do_disembark()) {
+		if (roll_disembark()) {
 			if (has_safe_ports(get_lord_locale(lord))) {
+				game.state = "disembark_to"
 				game.who = lord
 			} else {
-				no_safe_disembark(lord)
+				disband_lord(lord)
+				goto_disembark()
 			}
 		} else {
-			shipwreck(lord)
+			// Shipwreck!
+			disband_influence_penalty(lord)
+			disband_lord(lord, true)
+			goto_disembark()
 		}
 	},
+}
+
+states.disembark_to = {
+	inactive: "Disembark",
+	prompt() {
+		view.prompt = "Disembark your lords at sea."
+		for (let loc of find_ports(get_lord_locale(game.who), NOBODY))
+			if (!has_enemy_lord(loc))
+				gen_action_locale(loc)
+	},
 	locale(loc) {
-		successful_disembark(game.who, loc)
+		set_lord_locale(game.who, loc)
+		set_lord_moved(game.who, 1)
+		levy_burgundians(game.who)
+		game.who = NOBODY
+		goto_feed()
 	},
-	done() {
-		end_disembark()
-	},
-}
-
-function successful_disembark(lord: Lord, loc: Locale) {
-	set_lord_locale(lord, loc)
-	set_lord_moved(lord, 1)
-	levy_burgundians(lord)
-	game.who = NOBODY
-	goto_feed()
-}
-
-function shipwreck(lord: Lord) {
-	disband_influence_penalty(lord)
-	disband_lord(lord, true)
-}
-
-function no_safe_disembark(lord: Lord) {
-	disband_lord(lord)
 }
 
 function disband_influence_penalty(lord: Lord) {
 	let influence = data.lords[lord].influence
-
-	for (let v of all_vassals) {
-		if (is_vassal_mustered_with(v, lord)) {
+	for (let v of all_vassals)
+		if (is_vassal_mustered_with(v, lord))
 			influence += 1
-		}
-	}
-
 	reduce_influence(influence)
 }
 
