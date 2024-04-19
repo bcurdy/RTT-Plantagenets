@@ -207,6 +207,7 @@ interface State {
 	coin?(lord: Lord): void,
 	cart?(lord: Lord): void,
 	ship?(lord: Lord): void,
+	valour?(lord: Lord): void,
 
 	burgundians?(lord: Lord): void,
 	retinue?(lord: Lord): void,
@@ -273,7 +274,6 @@ interface State {
 	take_prov?(): void,
 	take_ship?(): void,
 	tax?(): void,
-	valour?(): void,
 
 	final_charge?(): void,
 	commission_of_array?(): void,
@@ -6890,14 +6890,14 @@ states.spend_valour = {
 	inactive: "Spend Valour",
 	prompt() {
 		view.prompt = `Spend Valour: Reroll Hit on ${get_force_name(game.who, game.battle.force, game.vassal)}?`
-		view.actions.valour = 1
+		gen_action_valour(game.who)
 		view.actions.pass = 1
 	},
 	pass() {
 		rout_unit(game.who, game.battle.force, game.vassal)
 		finish_action_assign_hits(game.who)
 	},
-	valour() {
+	valour(_) {
 		let protection = check_protection_capabilities(FORCE_PROTECTION[game.battle.force])
 
 		spend_valour(game.who)
@@ -11727,6 +11727,10 @@ function gen_action_coin(lord: Lord) {
 
 function gen_action_cart(lord: Lord) {
 	gen_action("cart", lord)
+}
+
+function gen_action_valour(lord: Lord) {
+	gen_action("valour", lord)
 }
 
 function gen_action_mercenaries(lord: Lord) {
