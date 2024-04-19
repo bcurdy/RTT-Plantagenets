@@ -217,7 +217,7 @@ const asset_type_x34 = [ 1, 1, 1, 0 ]
 
 const NOWHERE = -1
 const CALENDAR = 100
-const LONDON_FOR_YORK = 200 as Locale // extra london marker
+const LONDON_FOR_YORK = 200
 
 const VASSAL_READY = 29
 const VASSAL_CALENDAR = 30
