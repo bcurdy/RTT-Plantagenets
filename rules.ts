@@ -3399,6 +3399,7 @@ states.campaign_plan = {
 	inactive: "Plan",
 	prompt(current) {
 		let plan = current === YORK ? game.plan_y : game.plan_l
+		let my_lords = current === YORK ? all_york_lords : all_lancaster_lords
 		view.plan = plan
 		view.actions.plan = []
 
@@ -3412,7 +3413,7 @@ states.campaign_plan = {
 			if (count_cards_in_plan(plan, NOBODY) < 7)
 				gen_action_plan(NOBODY)
 
-			for (let lord of all_friendly_lords()) {
+			for (let lord of my_lords) {
 				if (is_lord_on_map(lord) && count_cards_in_plan(plan, lord) < 3)
 					gen_action_plan(lord)
 			}
