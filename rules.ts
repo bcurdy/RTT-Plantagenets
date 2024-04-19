@@ -2079,7 +2079,7 @@ states.levy_arts_of_war_first = {
 		let c = game.arts_of_war.shift()
 		log(`${game.active} deployed Capability.`)
 		add_lord_capability(lord, c)
-		capability_muster_effects(lord, c)
+		capability_muster_effects_common(lord, c)
 		resume_levy_arts_of_war_first()
 	},
 	discard() {
@@ -3316,7 +3316,8 @@ states.levy_capability = {
 	},
 	card(c) {
 		add_lord_capability(game.command, c)
-		capability_muster_effects(game.command, c)
+		capability_muster_effects_common(game.command, c)
+		capability_muster_effects_levy(game.command, c)
 		goto_the_kings_name("Capability C${c}")
 	},
 }
@@ -9404,9 +9405,7 @@ function get_main_lancaster_heir() {
 // === CAPABILITY MUSTER EFFECTS ===
 
 // When a lord levies a capability, its muster vassal applies instantly.
-// When a lord levies a capability, its +Lordship effects apply instantly.
-
-function capability_muster_effects(lord: Lord, c: Card) {
+function capability_muster_effects_common(lord: Lord, c: Card) {
 	if (c === AOW_LANCASTER_MONTAGU)
 		muster_vassal(VASSAL_MONTAGU, lord)
 
@@ -9421,19 +9420,11 @@ function capability_muster_effects(lord: Lord, c: Card) {
 
 	if (c === AOW_LANCASTER_THOMAS_STANLEY) {
 		muster_vassal(VASSAL_THOMAS_STANLEY, lord)
-		game.levy_flags.thomas_stanley = 1
 	}
 
 	if (c === AOW_YORK_HASTINGS) {
 		add_lord_forces(lord, MEN_AT_ARMS, 2)
 		muster_vassal(VASSAL_HASTINGS, lord)
-	}
-
-	if (c === AOW_YORK_FAIR_ARBITER && is_friendly_locale(get_lord_locale(LORD_SALISBURY))) {
-		game.actions += 1
-	}
-	if (c === AOW_YORK_FALLEN_BROTHER && !is_lord_in_play(LORD_CLARENCE)) {
-		game.actions += 1
 	}
 
 	if (AOW_YORK_BURGUNDIANS.includes(c)) {
@@ -9446,6 +9437,16 @@ function capability_muster_effects(lord: Lord, c: Card) {
 			game.flags.burgundians = 0
 		}
 	}
+}
+
+// When a lord levies a capability during Levy (not first Arts of War), its Lordship effects must apply.
+function capability_muster_effects_levy(_lord: Lord, c: Card) {
+	if (c === AOW_LANCASTER_THOMAS_STANLEY)
+		game.levy_flags.thomas_stanley = 1
+	if (c === AOW_YORK_FAIR_ARBITER && is_friendly_locale(get_lord_locale(LORD_SALISBURY)))
+		game.actions += 1
+	if (c === AOW_YORK_FALLEN_BROTHER && !is_lord_in_play(LORD_CLARENCE))
+		game.actions += 1
 }
 
 // === LORDSHIP AND THIS LEVY EFFECTS ===
