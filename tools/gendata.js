@@ -1504,7 +1504,7 @@ let AOW = {}
 let cards = []
 
 function arts_of_war_event(name, event, when) {
-	let c = { name, event, when, capability: null, lords: null }
+	let c = { name, event, roses: 0, when, capability: null, lords: null }
 	cards.push(c)
 	AOW[name] = c
 }
@@ -1522,6 +1522,11 @@ function arts_of_war_capability(name, capability, lord_names) {
 	else if (Array.isArray(lord_names)) {
 		AOW[name].lords = lord_names.map(n => lords.findIndex(l => l.name === n)).sort(cmpnum)
 	}
+}
+
+function arts_of_war_roses(roses, side, a, b) {
+	for (let n = a; n <= b; ++n)
+		AOW[side + n].roses = roses
 }
 
 arts_of_war_event("Y1", "Leeward Battle Line", "hold")
@@ -1600,6 +1605,9 @@ arts_of_war_capability("Y35", "Kingdom United", ["Gloucester 1", "Gloucester 2"]
 arts_of_war_capability("Y36", "Vanguard", ["Norfolk"])
 arts_of_war_capability("Y37", "Percy's North", ["Northumberland Y1", "Northumberland Y2"])
 
+arts_of_war_roses(1, "Y", 14, 22)
+arts_of_war_roses(2, "Y", 23, 31)
+arts_of_war_roses(3, "Y", 32, 37)
 
 arts_of_war_event("L1", "Leeward Battle Line", "hold")
 arts_of_war_event("L2", "Flank Attack", "hold")
@@ -1676,6 +1684,10 @@ arts_of_war_capability("L34", "Piquiers", ["Oxford", "Henry Tudor"])
 arts_of_war_capability("L35", "Thomas Stanley", ["Jasper Tudor 1", "Jasper Tudor 2", "Henry Tudor"] )
 arts_of_war_capability("L36", "Chevaliers", ["Oxford", "Jasper Tudor 1", "Jasper Tudor 2", "Henry Tudor"])
 arts_of_war_capability("L37", "Madame La Grande", ["Oxford", "Jasper Tudor 1", "Jasper Tudor 2", "Henry Tudor"])
+
+arts_of_war_roses(1, "L", 14, 22)
+arts_of_war_roses(2, "L", 23, 31)
+arts_of_war_roses(3, "L", 32, 37)
 
 let vassals = []
 function vassal(service, name, seat, influence, capability) {

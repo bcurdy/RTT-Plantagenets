@@ -2,23 +2,26 @@
 
 // TODO: "approach" pause when about to move into intercept range?
 // TODO: log end victory conditions at scenario start
-// Check all push/clear_undo
 // TODO: check all who = NOBODY etc resets
-// TODO check all game.count uses
-// TODO check all game.who uses
 
 /*
 	TODO
 
-	NAVAL BLOCKADE - Tax and Tax Collectors
-
-	Y15 LONDON FOR YORK (protective effects + ui)
-		extra favour marker in magic locale
+	NAVAL BLOCKADE - for Tax and Tax Collectors
+	Y15 LONDON FOR YORK - except by Event exception
 
 	scenario card lists
 		number of roses in data
 
 	Scenario special rules.
+
+	Review all undo steps.
+	Review all states for needless pauses.
+	Review all states for adding extra pauses to prevent loss of control.
+
+	Review all prompts.
+	Review all inactive prompts.
+	Review all log messages.
 */
 
 /*
@@ -60,7 +63,7 @@ type MyMap<K,V> = (K|V)[]
 
 interface Game {
 	seed: number,
-	scenario: string,
+	scenario: number,
 	hidden: 0 | 1,
 
 	log: string[],
@@ -8363,7 +8366,13 @@ function check_scenario_end_victory() {
 
 // === 6.0 SCENARIOS ===
 
-exports.scenarios = [
+const SCENARIO_IA = 0
+const SCENARIO_IB = 1
+const SCENARIO_IC = 2
+const SCENARIO_II = 3
+const SCENARIO_III = 4
+
+const SCENARIO_NAMES = exports.scenarios = [
 	"Ia. Henry VI",
 	"Ib. Towton",
 	"Ic. Somerset's Return",
@@ -8372,18 +8381,28 @@ exports.scenarios = [
 // TODO	"I-III. Wars of the Roses",
 ]
 
-const scenario_last_turn = {
-	"Ia. Henry VI": 15,
-	"Ib. Towton": 2,
-	"Ic. Somerset's Return": 8,
-	"II. Warwicks' Rebellion": 15,
-	"III. My Kingdom for a Horse": 15,
-	"I-III. Wars of the Roses": 15,
-}
+const scenario_last_turn = [
+	15,
+	2,
+	8,
+	15,
+	15,
+]
 
-function is_card_in_scenario(_c: Card) {
-	// TODO: Cards setup
-	return true
+function is_card_in_scenario(c: Card): boolean {
+	let roses = data.cards[c].roses
+	let scenario = game.scenario
+	switch (scenario) {
+		case SCENARIO_IA:
+		case SCENARIO_IB:
+		case SCENARIO_IC:
+			return roses === 0 || roses === 1
+		case SCENARIO_II:
+			return (roses === 0 || roses === 2) && c !== L4
+		case SCENARIO_III:
+			return (roses === 0 || roses === 3)
+	}
+	throw "INVALID SCENARIO"
 }
 
 function muster_lord_forces(lord: Lord) {
@@ -8411,7 +8430,7 @@ function muster_lord(lord: Lord, locale: Locale) {
 exports.setup = function (seed, scenario, options) {
 	game = {
 		seed,
-		scenario,
+		scenario: SCENARIO_NAMES.indexOf(scenario),
 		hidden: options.hidden ? 1 : 0,
 
 		log: [],
@@ -9661,7 +9680,6 @@ states.we_done_deeds_of_charity = {
 		game.count--
 	},
 	done() {
-		clear_undo()
 		logi(`${AOW_YORK_WE_DONE_DEEDS_OF_CHARITY}`)
 		log("York paid " + game.count + " provender to add " + game.count + " Influence Points")
 		game.count = 0
