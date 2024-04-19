@@ -19,13 +19,6 @@
 		number of roses in data
 
 	Scenario special rules.
-
-	CLEANUPS
-		influence checks and capabilities (don't check game.state === "parley" etc)
-		clean up end_feed transition between command/disembark
-
-		parley - levy and campaign separate states?
-		feed - needs push_state?
 */
 
 /*
@@ -74,7 +67,6 @@ interface Game {
 	undo: any[],
 
 	state: string,
-	stack: any[], // TODO
 	active: Player,
 
 	rebel: Side,
@@ -8405,7 +8397,6 @@ exports.setup = function (seed, scenario, options) {
 
 		active: null,
 		state: "setup_lords",
-		stack: [],
 
 		victory_check: 0,
 		turn: 0,
@@ -11782,17 +11773,6 @@ states.game_over = {
 }
 
 // === UTILITY FUNCTIONS ===
-
-function push_state(next) {
-	if (!states[next])
-		throw Error("No such state: " + next)
-	game.stack.push(game.state)
-	game.state = next
-}
-
-function pop_state() {
-	game.state = game.stack.pop()
-}
 
 function save_state_for_the_kings_name() {
 	game.event_the_kings_name = game.undo[game.undo.length - 1]
