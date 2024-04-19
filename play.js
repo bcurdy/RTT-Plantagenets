@@ -753,7 +753,7 @@ function build_map() {
 
 		// Locale Markers
 		e = ui.locale_markers_rose[ix] = document.createElement("div")
-		e.className = "locale marker rose favour " + locale.name // York/Lancaster to add favour
+		e.className = "marker rose favour " + locale.name // York/Lancaster to add favour
 		e.style.top = y + h - small + "px"
 		e.style.left = x + (w - small) / 2 + "px"
 		e.style.width = small + "px"
@@ -765,7 +765,7 @@ function build_map() {
 
 		// Depleted markers
 		e = ui.locale_markers[ix] = document.createElement("div")
-		e.className = "locale marker " + locale.name // depleted or exhausted to add markers
+		e.className = "depexh marker " + locale.name // depleted or exhausted to add markers
 		e.style.top = y + h - small - offsetdeplete + "px"
 		e.style.left = offsetdeplete + x + (w - small) / 2 + "px"
 		e.style.width = small + "px"
@@ -1240,7 +1240,7 @@ function update_locale(loc) {
 	layout_locale_cylinders(loc)
 
 	ui.locale[loc].classList.toggle("action", is_action("locale", loc) || is_action("laden_march", loc))
-	ui.locale[loc].classList.toggle("laden", is_action("laden_march", loc))
+	ui.locale[loc].classList.toggle("selected", view.where === loc)
 	ui.locale[loc].classList.toggle("supply_path", !!(view.supply && view.supply[0] === loc))
 	ui.locale[loc].classList.toggle("supply_source", !!(view.supply && view.supply[1] === loc))
 	if (ui.locale_name[loc]) {

@@ -321,7 +321,7 @@ body.shift .exhausted  {
 }
 
 .marker {
-	border: 2px solid aqua;
+	border: 2px solid transparent;
 	border-radius: 8px;
 	background-size: cover;
 	background-position: center;
@@ -482,20 +482,32 @@ body.shift .exhausted  {
 	background-color: #fff6;
 }
 
+.marker.rose {
+	position: absolute;
+}
+
+.marker.depexh { position: absolute; }
+.marker.depleted { position: absolute; }
+.marker.exhausted { position: absolute; }
+
 .locale {
 	box-sizing: border-box;
 	position: absolute;
 	border: 3px solid transparent;
 }
 
-.locale.town { border-radius: 24px 24px 0 0 }
-.locale.city { border-radius: 18px 18px 0 0 }
+.locale.town { border-radius: 50% }
+.locale.city { border-radius: 50% }
 .locale.fortress { border-radius: 0 0 0 0 }
 .locale.calais { border-radius: 0 0 0 0 }
 .locale.sea { border-radius: 50% }
 .locale.exile { border-radius: 0 0 50% 50% }
 
 .locale.action { border-color: white; box-shadow: 0 0 4px white; }
+
+.locale.selected {
+	border-color: cyan;
+}
 
 .locale.tip {
 	background-color: #ff08;
@@ -532,14 +544,6 @@ body.shift .exhausted  {
 	filter: drop-shadow(0px 2px 4px #0004);
 }
 
-.cylinder.command {
-	filter:
-		drop-shadow(2px 0px 0px gold)
-		drop-shadow(0px 2px 0px gold)
-		drop-shadow(0px -2px 0px gold)
-		drop-shadow(-2px 0px 0px gold);
-}
-
 .cylinder.action {
 	filter:
 		drop-shadow(2px 0px 0px white)
@@ -554,6 +558,14 @@ body.shift .exhausted  {
 		drop-shadow(0px 2px 0px yellow)
 		drop-shadow(0px -2px 0px yellow)
 		drop-shadow(-2px 0px 0px yellow);
+}
+
+.cylinder.command {
+	filter:
+		drop-shadow(2px 0px 0px gold)
+		drop-shadow(0px 2px 0px gold)
+		drop-shadow(0px -2px 0px gold)
+		drop-shadow(-2px 0px 0px gold);
 }
 
 .cylinder > .exile {
