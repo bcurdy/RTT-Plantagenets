@@ -4489,7 +4489,7 @@ states.parley = {
 			if (is_automatic_parley_success(lord))
 				prompt_influence_check_success(get_parley_influence_cost())
 			else
-				prompt_influence_check(lord, get_parley_influence_cost(), get_parley_influence_bonus())
+				prompt_influence_check(lord, get_parley_influence_cost(), get_parley_influence_bonus(lord))
 		}
 	},
 	locale(loc) {
@@ -4504,7 +4504,7 @@ states.parley = {
 	},
 	check(bonus) {
 		let lord = game.command
-		if (roll_influence_check(lord, bonus, get_parley_influence_cost(), get_parley_influence_bonus())) {
+		if (roll_influence_check(lord, bonus, get_parley_influence_cost(), get_parley_influence_bonus(lord))) {
 			shift_favour_toward(game.where)
 			end_parley(true)
 		} else {
