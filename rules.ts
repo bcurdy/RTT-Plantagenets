@@ -11,8 +11,6 @@
 // TODO check all game.count uses
 // TODO check all game.who uses
 
-// TODO: game.battle.routed to also include lords in game.battle.fled
-
 /*
 	TODO
 		NAVAL BLOCKADE - Tax and Tax Collectors
@@ -6266,6 +6264,7 @@ states.flee_battle = {
 	lord(lord) {
 		push_undo()
 		log(`${lord_name[lord]} Fled the battle of %${game.battle.where}.`)
+		set_add(game.battle.routed, lord)
 		set_add(game.battle.fled, lord)
 		remove_lord_from_battle(lord)
 	},
@@ -7025,9 +7024,6 @@ function end_battle() {
 }
 
 function has_defeated_lords() {
-	for (let lord of game.battle.fled)
-		if (is_friendly_lord(lord))
-			return true
 	for (let lord of game.battle.routed)
 		if (is_friendly_lord(lord))
 			return true
@@ -7041,9 +7037,6 @@ function goto_battle_influence() {
 		set_active_loser()
 
 		let influence = 0
-		for (let lord of game.battle.fled)
-			if (is_friendly_lord(lord))
-				influence += data.lords[lord].influence + count_vassals_with_lord(lord)
 		for (let lord of game.battle.routed)
 			if (is_friendly_lord(lord))
 				influence += data.lords[lord].influence + count_vassals_with_lord(lord)
@@ -7158,13 +7151,6 @@ function calculate_spoils() {
 
 	if (has_favour_in_locale(game.battle.loser, game.battle.where))
 		return
-
-	for (let lord of game.battle.fled) {
-		if (is_enemy_lord(lord)) {
-			n_prov += get_lord_assets(lord, PROV)
-			n_cart += get_lord_assets(lord, CART)
-		}
-	}
 
 	for (let lord of game.battle.routed) {
 		if (is_enemy_lord(lord)) {
@@ -7319,12 +7305,6 @@ states.death_check = {
 		prompt_held_event_at_death_check()
 
 		let done = true
-		for (let lord of game.battle.fled) {
-			if (is_friendly_lord(lord)) {
-				gen_action_lord(lord)
-				done = false
-			}
-		}
 		for (let lord of game.battle.routed) {
 			if (is_friendly_lord(lord)) {
 				gen_action_lord(lord)
@@ -7371,20 +7351,12 @@ states.bloody_thou_art = {
 		view.prompt = "Bloody thou art: All Routed Lancastrian Lords Die."
 
 		let done = true
-		for (let lord of game.battle.fled) {
-			if (is_friendly_lord(lord)) {
-				gen_action_lord(lord)
-				done = false
-			}
-		}
 		for (let lord of game.battle.routed) {
 			if (is_friendly_lord(lord)) {
 				gen_action_lord(lord)
 				done = false
 			}
 		}
-
-
 		if (done)
 			view.actions.done = 1
 	},
@@ -7448,8 +7420,6 @@ states.escape_ship = {
 	inactive: `Escape ship`,
 	prompt() {
 		view.prompt = "Escape Ship: Your lords go to Exile."
-		for (let lord of game.battle.fled)
-			gen_action_lord(lord)
 		for (let lord of game.battle.routed)
 			gen_action_lord(lord)
 		view.actions.done = 1
@@ -7482,8 +7452,6 @@ states.talbot_to_the_rescue = {
 	inactive: "Talbot to the Rescue",
 	prompt() {
 		view.prompt = "Talbot to the Rescue: Disband any Routed Lancastrians instead of rolling for Death."
-		for (let lord of game.battle.fled)
-			gen_action_lord(lord)
 		for (let lord of game.battle.routed)
 			gen_action_lord(lord)
 		view.actions.done = 1
