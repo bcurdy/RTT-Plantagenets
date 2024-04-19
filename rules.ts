@@ -6104,9 +6104,9 @@ function is_culverins_and_falconets_in_battle() {
 	for (let p of battle_strike_positions) {
 		let lord = game.battle.array[p]
 		if (lord !== NOBODY) {
-			if (lord_has_capability(lord, AOW_LANCASTER_CULVERINS_AND_FALCONETS))
+			if (game.active === LANCASTER && lord_has_capability(lord, AOW_LANCASTER_CULVERINS_AND_FALCONETS))
 				return true
-			if (lord_has_capability(lord, AOW_YORK_CULVERINS_AND_FALCONETS))
+			if (game.active === YORK && lord_has_capability(lord, AOW_YORK_CULVERINS_AND_FALCONETS))
 				return true
 		}
 	}
