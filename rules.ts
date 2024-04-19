@@ -7289,6 +7289,20 @@ states.battle_spoils = {
 function goto_death_or_disband() {
 	remove_battle_capability_troops()
 
+	// TODO: manually disband routed vassals
+
+	// Routed Vassals get disbanded
+	for (let lord of all_lords) {
+		if (is_lord_on_map(lord)) {
+			for_each_vassal_with_lord(lord, v => {
+				if (set_has(game.battle.routed_vassals, v)) {
+					array_remove(game.battle.routed_vassals, v)
+					disband_vassal(v)
+				}
+			})
+		}
+	}
+
 	if (has_defeated_lords()) {
 		if (is_bloody_thou_art_triggered())
 			game.state = "bloody_thou_art"
@@ -7596,18 +7610,6 @@ function end_warden_of_the_marches() {
 
 function goto_battle_aftermath() {
 	set_active(game.battle.attacker)
-
-	// Routed Vassals get disbanded
-	for (let lord of all_lords) {
-		if (is_lord_on_map(lord)) {
-			for_each_vassal_with_lord(lord, v => {
-				if (set_has(game.battle.routed_vassals, v)) {
-					array_remove(game.battle.routed_vassals, v)
-					disband_vassal(v)
-				}
-			})
-		}
-	}
 
 	// Events
 	discard_events("hold")

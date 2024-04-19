@@ -376,11 +376,11 @@ body.shift .exhausted  {
 }
 
 .unit.retinue.action {
-	box-shadow: 0 0 0 2px white;
+	box-shadow: 0 0 0 1px black, 0 0 0 4px white !important;
 }
 
 .unit.vassal.action {
-	box-shadow: 0 0 0 2px white;
+	box-shadow: 0 0 0 1px black, 0 0 0 4px white !important;
 }
 
 .unit.shape.action {
