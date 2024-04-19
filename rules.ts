@@ -1706,7 +1706,7 @@ function is_friendly_locale(loc: Locale) {
 
 function is_adjacent_friendly_port_english_channel(loc: Locale) {
 	for (let next of data.locales[loc].adjacent) {
-		if (is_friendly_locale(next) && data.port_2.includes(next))
+		if (is_friendly_locale(next) && set_has(data.port_2, next))
 			return true
 	}
 	return false
@@ -2184,7 +2184,7 @@ function goto_pay_troops() {
 		if (is_lord_on_map(lord) &&
 			!is_lord_on_calendar(lord) &&
 			lord_has_capability(lord, AOW_LANCASTER_MADAME_LA_GRANDE) &&
-			(((is_friendly_locale(here)) && data.port_2.includes(here)) ||
+			(((is_friendly_locale(here)) && set_has(data.port_2, here)) ||
 			is_adjacent_friendly_port_english_channel(here))) {
 			add_lord_assets(lord, COIN, 1)
 		}
@@ -3191,7 +3191,7 @@ function can_add_troops_irishmen(lord: Lord, locale: Locale) {
 	return (
 		lord_has_capability(lord, AOW_YORK_IRISHMEN) &&
 		!has_exhausted_marker(locale) &&
-		(locale === LOC_IRELAND || !!data.port_3.includes(locale))
+		(locale === LOC_IRELAND || !set_has(data.port_3, locale))
 	)
 }
 
@@ -3938,9 +3938,9 @@ function can_action_sail() {
 	if (game.actions === 0)
 		return false
 
-	// at a seaport
+	// at a seaport (or sea)
 	let here = get_lord_locale(game.command)
-	if (!is_seaport(here))
+	if (!is_seaport(here) && !is_sea(here))
 		return false
 
 	// with enough ships to carry all the army
@@ -5333,7 +5333,7 @@ function add_battle_capability_troops() {
 			is_lord_on_map(lord) &&
 			!is_lord_on_calendar(lord) &&
 			lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) &&
-			((is_friendly_locale(here) && !!data.port_2.includes(here)) || is_adjacent_friendly_port_english_channel(here))
+			((is_friendly_locale(here) && set_has(data.port_2, here)) || is_adjacent_friendly_port_english_channel(here))
 		) {
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 		}
@@ -10117,7 +10117,7 @@ function goto_lancaster_event_henrys_proclamation() {
 function goto_lancaster_event_french_troops() {
 	let can_play = false
 	for (let lord of all_friendly_lords()) {
-		if (is_lord_on_map(lord) && data.seaports.includes(get_lord_locale(lord))) {
+		if (is_lord_on_map(lord) && is_seaport(get_lord_locale(lord))) {
 			can_play = true
 		}
 	}

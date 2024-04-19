@@ -788,7 +788,7 @@ let port_3 = ["Bristol","Pembroke","Harlech"].map(name => locmap[name]).sort(cmp
 let all_ports = [ ...port_1, ...port_2, ...port_3 ].sort(cmpnum)
 
 let seaports = [
-	"English Channel", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea", "Burgundy", "Dover", "Hastings", "Calais", "France", "Arundel", "Southampton","Dorchester","Exeter","Plymouth","Truro","Bristol","Pembroke","Harlech", "Ireland", "Irish Sea"
+	"Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "Burgundy", "Dover", "Hastings", "Calais", "France", "Arundel", "Southampton","Dorchester","Exeter","Plymouth","Truro","Bristol","Pembroke","Harlech", "Ireland"
 ].map(name => locmap[name]).sort(cmpnum)
 
 let exile_boxes = [
