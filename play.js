@@ -1648,14 +1648,13 @@ function on_update() {
 	action_button("soldiers_of_fortune", "Soldiers of Fortune")
 	action_button("commission_of_array", "Commission of Array")
 
-
-
 	action_button("capability", "Capability")
 
-	// Parley
-	action_button("check", "Influence Check")
-	action_button("spend1", "Spend 1 Influence")
-	action_button("spend3", "Spend 3 Influence")
+	// Influence Check
+	action_button_with_argument("check", 2, "Check +2")
+	action_button_with_argument("check", 1, "Check +1")
+	action_button_with_argument("check", 0, "Check")
+	action_button_with_argument("check_success", "Success")
 
 	// Supply
 	action_button("stronghold", "Stronghold")
