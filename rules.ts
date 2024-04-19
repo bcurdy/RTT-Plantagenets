@@ -1828,36 +1828,6 @@ function increase_lancaster_influence(amt: number) {
 	game.influence += amt
 }
 
-/*
-
-// Bonus score but still maxed at 5 --- TODO this wasn't used, find out where it's needed
-function influence_capabilities(lord: Lord, score: number) {
-	let here = get_lord_locale(lord)
-	if (game.active === YORK && is_event_in_play(EVENT_YORK_YORKIST_PARADE))
-		score += 2
-	if (game.active === YORK && is_event_in_play(EVENT_YORK_PRIVY_COUNCIL))
-		score += 1
-	if (game.state === "parley" && ((is_event_in_play(EVENT_YORK_RICHARD_OF_YORK) && game.active === YORK) || lord_has_capability(lord, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING)))
-		score += 1
-	if (get_lord_locale(LORD_MARGARET) === here && lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET))
-		score += 1
-	if (lord_has_capability(lord, AOW_YORK_YORKS_FAVOURED_SON))
-		score += 1
-	if (
-		get_lord_locale(LORD_WARWICK_L) === here &&
-		lord_has_capability(lord, AOW_LANCASTER_MARRIED_TO_A_NEVILLE) &&
-		is_friendly_locale(here)
-	)
-		score += 2
-	if (has_favoury_marker(here) && lord_has_capability(lord, AOW_YORK_FAIR_ARBITER))
-		score += 1
-	if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
-		score += 2
-	return score
-}
-
-*/
-
 function is_automatic_levy_vassal_success(lord: Lord) {
 	if (game.active === LANCASTER) {
 		if (is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND))
@@ -1916,6 +1886,49 @@ function get_parley_influence_cost() {
 	return cost
 }
 
+function get_common_influence_bonus(lord: Lord) {
+	// Applies to ALL influence checks.
+	// Automatically added to checks.
+	let bonus = 0
+	let here = get_lord_locale(lord)
+	if (game.active === YORK) {
+		if (is_event_in_play(EVENT_YORK_YORKIST_PARADE))
+			bonus += 2
+		if (is_event_in_play(EVENT_YORK_PRIVY_COUNCIL))
+			bonus += 1
+		if (lord_has_capability(lord, AOW_YORK_YORKS_FAVOURED_SON))
+			bonus += 1
+		if (lord_has_capability(lord, AOW_YORK_FAIR_ARBITER))
+			if (is_friendly_locale(here))
+				bonus += 1
+		if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER))
+			if (!is_lord_in_play(LORD_CLARENCE))
+				bonus += 2
+	} else {
+		if (lord_has_capability(lord, AOW_LANCASTER_MARRIED_TO_A_NEVILLE))
+			if (get_lord_locale(LORD_WARWICK_L) === here)
+				if (is_friendly_locale(here))
+					bonus += 2
+		if (lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET))
+			if (get_lord_locale(LORD_MARGARET) === here)
+				bonus += 1
+	}
+	return bonus
+}
+
+function get_parley_influence_bonus(lord: Lord) {
+	// Only applies to Parley influence checks.
+	let bonus = 0
+	if (game.active === YORK) {
+		if (is_event_in_play(EVENT_YORK_RICHARD_OF_YORK))
+			bonus += 1
+	} else {
+		if (lord_has_capability(lord, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
+			bonus += 1
+	}
+	return bonus
+}
+
 function calc_influence_check_cost(bonus, add_cost) {
 	let cost = 1
 	// TODO: "free" influence check specials
@@ -1927,10 +1940,11 @@ function calc_influence_check_cost(bonus, add_cost) {
 	return cost
 }
 
-function calc_influence_check_rating(lord, bonus, add_rating) {
+function calc_influence_check_rating(lord, spend, add_rating) {
 	let rating = data.lords[lord].influence
-	rating += bonus
+	rating += spend
 	rating += add_rating
+	rating += get_common_influence_bonus(lord)
 	if (rating < 1)
 		rating = 1
 	if (rating > 5)
@@ -4468,7 +4482,7 @@ states.parley = {
 			if (is_automatic_parley_success(lord))
 				prompt_influence_check_success(get_parley_influence_cost())
 			else
-				prompt_influence_check(lord, get_parley_influence_cost())
+				prompt_influence_check(lord, get_parley_influence_cost(), get_parley_influence_bonus())
 		}
 	},
 	locale(loc) {
@@ -4483,7 +4497,7 @@ states.parley = {
 	},
 	check(bonus) {
 		let lord = game.command
-		if (roll_influence_check(lord, bonus, get_parley_influence_cost())) {
+		if (roll_influence_check(lord, bonus, get_parley_influence_cost(), get_parley_influence_bonus())) {
 			shift_favour_toward(game.where)
 			end_parley(true)
 		} else {
