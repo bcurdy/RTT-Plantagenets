@@ -2730,15 +2730,7 @@ function end_muster() {
 }
 
 function can_lord_muster(lord: Lord) {
-	// already mustered (except free levy)! TODO : re-check parley henry if ships are levied and at exile
-	if (
-		get_lord_moved(lord) &&
-		(game.levy_flags.thomas_stanley !== 1 || lord !== LORD_HENRY_TUDOR) &&
-		(game.levy_flags.my_crown_is_in_my_heart === 0 ||
-			lord !== LORD_HENRY_VI ||
-			(lord === LORD_HENRY_VI && !can_action_parley_levy())) &&
-		(game.levy_flags.gloucester_as_heir === 0 || lord !== LORD_GLOUCESTER_1 || lord !== LORD_GLOUCESTER_2)
-	)
+	if (get_lord_moved(lord))
 		return false
 
 	// must be on map
@@ -2985,6 +2977,7 @@ states.muster_lord = {
 
 	done() {
 		set_lord_moved(game.command, 1)
+		game.command = NOBODY
 		game.state = "muster"
 	},
 }
