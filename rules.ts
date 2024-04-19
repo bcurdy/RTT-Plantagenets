@@ -5277,7 +5277,7 @@ function count_lord_hits(lord: Lord) {
 }
 
 function format_strike_step() {
-	return battle_steps[game.battle.step]
+	return battle_steps[game.battle.step].name
 }
 
 function format_hits() {
