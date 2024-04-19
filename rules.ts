@@ -7139,17 +7139,18 @@ function calculate_spoils() {
 	add_spoils(CART, n_cart)
 }
 
-function find_lone_victor() {
-	let found = NOBODY
-	for (let pos of battle_strike_positions) {
-		let lord = game.battle.array[pos]
-		if (is_friendly_lord(lord)) {
-			if (found !== NOBODY)
-				return NOBODY
-			found = lord
+function find_lone_friendly_lord_at(loc: Locale) {
+	let who = NOBODY
+	let n = 0
+	for (let lord of all_friendly_lords()) {
+		if (get_lord_locale(lord) === loc) {
+			who = lord
+			++n
 		}
 	}
-	return found
+	if (n === 1)
+		return who
+	return NOBODY
 }
 
 function goto_battle_spoils() {
@@ -7160,7 +7161,7 @@ function goto_battle_spoils() {
 		log_h4("Spoils")
 		log_spoils()
 		game.state = "battle_spoils"
-		game.who = find_lone_victor()
+		game.who = find_lone_friendly_lord_at(game.battle.where)
 	} else {
 		end_battle_spoils()
 	}
