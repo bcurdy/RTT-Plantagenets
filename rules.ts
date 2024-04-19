@@ -1014,6 +1014,14 @@ function set_active_command() {
 		set_active(LANCASTER)
 }
 
+function is_active_command() {
+	if (is_york_lord(game.command))
+		return game.active === YORK
+	else
+		return game.active === LANCASTER
+}
+
+
 // === STATE: TURN ===
 
 function current_turn() {
@@ -7591,11 +7599,23 @@ function goto_feed() {
 	log_br()
 	set_lord_feed_requirements()
 	if (has_friendly_lord_who_must_feed()) {
-		push_state("feed")
+		game.state = "feed"
 	} else {
-		// TODO: clean up transitions for End Command -> Feed and Disembark -> Feed
-		if (game.state !== "disembark")
+		end_feed()
+	}
+}
+
+function end_feed() {
+	if (game.command !== NOBODY) {
+		// during campaign
+		set_active_enemy()
+		if (is_active_command())
 			goto_remove_markers()
+		else
+			goto_feed()
+	} else {
+		// during disembark
+		game.state = "disembark"
 	}
 }
 
@@ -7691,13 +7711,6 @@ states.feed_lord_shared = {
 		feed_lord(game.who)
 		resume_feed_lord_shared()
 	},
-}
-
-function end_feed() {
-	pop_state()
-	// TODO: clean up transitions for End Command -> Feed and Disembark -> Feed
-	if (game.state !== "disembark")
-		goto_remove_markers()
 }
 
 // === 4.7 FEED: REMOVE MARKERS ===
