@@ -3176,9 +3176,12 @@ function can_add_troops(locale: Locale) {
 }
 
 function can_add_troops_coa(lord: Lord, locale: Locale) {
-	for (let next of data.locales[locale].adjacent) {
-		if (is_friendly_locale(next) && lord_has_capability(lord, AOW_LANCASTER_COMMISION_OF_ARRAY) && (!has_exhausted_marker(locale) && !is_exile(locale)))
-			return true
+	if (lord_has_capability(lord, AOW_LANCASTER_COMMISION_OF_ARRAY)) {
+		for (let next of data.locales[locale].adjacent) {
+			if (is_friendly_locale(next) && !has_enemy_lord(next))
+				if (can_add_troops(next))
+					return true
+		}
 	}
 	return false
 }
@@ -9490,7 +9493,7 @@ states.soldiers_of_fortune = {
 		// Done
 		if (done) {
 			view.prompt = "Soldiers of fortune: Done."
-			view.actions.end_sof = 1
+			view.actions.done = 1
 		}
 	},
 	coin(lord) {
@@ -9540,7 +9543,7 @@ states.soldiers_of_fortune = {
 		add_lord_forces(game.command, MERCENARIES, merc)
 		set_lord_unfed(game.command, 0)
 	},
-	end_sof() {
+	done() {
 		end_soldiers_of_fortune()
 	},
 }
@@ -9568,7 +9571,7 @@ states.commission_of_array = {
 		// Done
 		if (done) {
 			view.prompt = "Commission of Array: Done."
-			view.actions.end_coa = 1
+			view.actions.done = 1
 		}
 	},
 	locale(loc) {
@@ -9606,6 +9609,9 @@ states.commission_of_array = {
 			++game.actions
 			game.levy_flags.thomas_stanley = 0
 		}
+		end_commission_of_array()
+	},
+	done() {
 		end_commission_of_array()
 	},
 }
