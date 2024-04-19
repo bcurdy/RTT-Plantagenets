@@ -24,9 +24,7 @@
 		influence checks and capabilities (don't check game.state === "parley" etc)
 		clean up end_feed transition between command/disembark
 
-		parley - needs push_state? probably.
 		parley - levy and campaign separate states?
-		pillage - needs push_state?
 		feed - needs push_state?
 */
 
@@ -2247,19 +2245,19 @@ states.pay_troops = {
 	lord(lord) {
 		push_undo()
 		game.who = lord
-		game.state = "pay_lord_shared"
+		game.state = "pay_troops_shared"
 	},
 	pillage() {
 		push_undo()
 		reset_unpaid_lords()
-		goto_pillage_coin()
+		goto_pillage()
 	},
 	end_pay() {
 		end_pay_troops()
 	},
 }
 
-states.pay_lord_shared = {
+states.pay_troops_shared = {
 	inactive: "Pay",
 	prompt() {
 		view.prompt = `Pay: You must Feed ${lord_name[game.who]} with Shared Coin.`
@@ -2275,11 +2273,11 @@ states.pay_lord_shared = {
 		push_undo()
 		add_lord_assets(lord, COIN, -1)
 		pay_lord(game.who)
-		resume_pay_lord_shared()
+		resume_pay_troops_shared()
 	},
 }
 
-function resume_pay_lord_shared() {
+function resume_pay_troops_shared() {
 	if (!is_lord_unfed(game.who) || !can_pay_from_shared(game.who)) {
 		game.who = NOBODY
 		game.state = "pay_troops"
@@ -2297,14 +2295,8 @@ function end_pay_troops() {
 
 // === 3.2.1 PAY TROOPS (PILLAGE) ===
 
-function goto_pillage_food() {
-	push_state("pillage")
-	game.what = "unfed"
-}
-
-function goto_pillage_coin() {
-	push_state("pillage")
-	game.what = "unpaid"
+function goto_pillage() {
+	game.state = "pillage"
 }
 
 function can_pillage(loc: Locale) {
@@ -2314,7 +2306,10 @@ function can_pillage(loc: Locale) {
 states.pillage = {
 	inactive: "Pillage",
 	prompt() {
-		view.prompt = `Pillage: Pillage the locales where your ${game.what} lords are.`
+		if (is_levy_phase())
+			view.prompt = `Pillage: Pillage the locales where your unpaid lords are.`
+		else
+			view.prompt = `Pillage: Pillage the locales where your unfed lords are.`
 
 		let done = true
 		for (let x of all_friendly_lords()) {
@@ -2348,7 +2343,10 @@ states.pillage = {
 		disband_lord(lord)
 	},
 	done() {
-		pop_state()
+		if (is_levy_phase())
+			game.state = "pay_troops"
+		else
+			game.state = "feed"
 	},
 }
 
@@ -3140,10 +3138,8 @@ states.levy_vassal = {
 		let cost = get_levy_vassal_influence_cost()
 		if (roll_influence_check(game.command, bonus, cost, vassal_influence(game.vassal))) {
 			muster_vassal(game.vassal, game.command)
-			pop_state()
 			goto_the_kings_name("Levy Vassal")
 		} else {
-			pop_state()
 			resume_muster_lord()
 		}
 	},
@@ -4394,7 +4390,7 @@ function goto_parley_levy() {
 	let lord = game.command
 	let here = get_lord_locale(lord)
 
-	push_state("parley")
+	game.state = "parley"
 
 	game.parley = search_parley_levy([], here, lord)
 
@@ -4408,7 +4404,7 @@ function goto_parley_campaign() {
 	let lord = game.command
 	let here = get_lord_locale(lord)
 
-	push_state("parley")
+	game.state = "parley"
 
 	// Campaign phase, and current location is no cost (except some events), and always successful.
 	if (can_parley_at(here)) {
@@ -4426,7 +4422,6 @@ function goto_parley_campaign() {
 }
 
 function end_parley(success: boolean) {
-	pop_state()
 	game.where = NOWHERE
 	delete game.parley
 
@@ -7663,7 +7658,7 @@ states.feed = {
 	pillage() {
 		push_undo()
 		set_lord_feed_requirements()
-		goto_pillage_food()
+		goto_pillage()
 	},
 	end_feed() {
 		push_undo()
