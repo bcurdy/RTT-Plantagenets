@@ -179,6 +179,7 @@ interface Game {
 	event_she_wolf?: Vassal[],
 	event_earl_rivers?: MyMap<Lord,number>,
 	event_the_kings_name?: any,
+	event_regroup?: number[],
 
 	/* game over properties */
 	victory?: string,
@@ -429,7 +430,6 @@ const MILITIA = 4 as Force
 const BURGUNDIANS = 5 as Force
 const MERCENARIES = 6 as Force
 
-const FORCE_TYPE_COUNT = 7
 const FORCE_TYPE_NAME = [ "Retinue", "Vassal", "Men-at-Arms", "Longbowmen", "Militia", "Burgundians", "Mercenary" ]
 const FORCE_PROTECTION = [ 4, 4, 3, 1, 1, 3, 3 ]
 
@@ -5823,12 +5823,93 @@ states.ravine = {
 // === BATTLE EVENT: REGROUP ===
 
 function is_regroup_in_play() {
-	if (game.active === YORK)
-		return is_event_in_play(EVENT_YORK_REGROUP)
+	if (is_event_in_play(EVENT_YORK_REGROUP)) {
+		for (let lord of all_york_lords)
+			if (lord_has_routed_troops(lord))
+				return true
+	}
 	return false
 }
 
-// TODO
+function goto_regroup() {
+	set_active(YORK)
+	game.state = "regroup"
+}
+
+states.regroup = {
+	prompt() {
+		view.prompt = "Regroup: Use Regroup event?"
+		for (let lord of all_york_lords)
+			if (lord_has_routed_troops(lord))
+				gen_action_lord(lord)
+	},
+	lord(lord) {
+		push_undo()
+		game.who = lord
+		game.state = "regroup_roll_protection"
+		game.event_regroup = [
+			0,
+			0,
+			get_lord_routed_forces(lord, MEN_AT_ARMS),
+			get_lord_routed_forces(lord, LONGBOWMEN),
+			get_lord_routed_forces(lord, MILITIA),
+			get_lord_routed_forces(lord, BURGUNDIANS),
+			get_lord_routed_forces(lord, MERCENARIES),
+		]
+	},
+}
+
+states.regroup_roll_protection = {
+	prompt() {
+		view.prompt = "Regroup: Roll for each routed troop."
+		if (game.event_regroup[MEN_AT_ARMS] > 0)
+			gen_action_routed_men_at_arms(game.who)
+		if (game.event_regroup[LONGBOWMEN] > 0)
+			gen_action_routed_longbowmen(game.who)
+		if (game.event_regroup[MILITIA] > 0)
+			gen_action_routed_militia(game.who)
+		if (game.event_regroup[BURGUNDIANS] > 0)
+			gen_action_routed_burgundians(game.who)
+		if (game.event_regroup[MERCENARIES] > 0)
+			gen_action_routed_mercenaries(game.who)
+	},
+	routed_burgundians(lord) {
+		action_roll_protection(lord, BURGUNDIANS)
+	},
+	routed_mercenaries(lord) {
+		action_roll_protection(lord, MERCENARIES)
+	},
+	routed_longbowmen(lord) {
+		action_roll_protection(lord, LONGBOWMEN)
+	},
+	routed_men_at_arms(lord) {
+		action_roll_protection(lord, MEN_AT_ARMS)
+	},
+	routed_militia(lord) {
+		action_roll_protection(lord, MILITIA)
+	},
+}
+
+function action_roll_protection(lord: Lord, force: Force) {
+	roll_protection(lord, force)
+
+	game.event_regroup[force]--
+
+	for (let i = 2; i < 7; ++i)
+		if (game.event_regroup[i] > 0)
+			return
+	end_regroup()
+}
+
+function end_regroup() {
+	// remove event from play once used
+	set_delete(game.events, EVENT_YORK_REGROUP)
+
+	game.who = NOBODY
+	delete game.event_regroup
+
+	goto_battle_lord_rout()
+}
 
 // === BATTLE EVENT: CALTROPS ===
 
@@ -6091,7 +6172,7 @@ states.swift_maneuver = {
 		logevent(EVENT_YORK_SWIFT_MANEUVER)
 		log("Ended Action Round.")
 		set_active_enemy()
-		goto_end_battle_round()
+		goto_battle_lord_rout()
 	},
 	pass() {
 		logevent(EVENT_YORK_SWIFT_MANEUVER)
@@ -6262,13 +6343,11 @@ states.vanguard = {
 			archery strike
 				total hits
 				assign hits (defender then attacker)
-					REGROUP
 					SWIFT MANEUVER - skip to check lord rout
 			melee strike
 				total hits
-				FINAL CHARGE
+					FINAL CHARGE
 				assign hits (defender then attacker)
-					REGROUP
 					SWIFT MANEUVER - skip to check lord rout
 		check lord rout (defender then attacker)
 			REGROUP
@@ -6528,7 +6607,7 @@ function goto_select_engagement() {
 	set_active_attacker()
 	if (game.battle.engagements.length === 0)
 		// if round is over
-		goto_end_battle_round()
+		goto_battle_lord_rout()
 	else if (game.battle.engagements.length === 1)
 		// if no choice, just select the one engagement
 		goto_missile_strike_step()
@@ -6936,7 +7015,12 @@ function will_lord_rout(lord: Lord) {
 	return false
 }
 
-function goto_end_battle_round() {
+function goto_battle_lord_rout() {
+	if (is_regroup_in_play()) {
+		goto_regroup()
+		return
+	}
+
 	log_h5("Lord Rout")
 
 	// TODO: manually rout lords for clarity?
@@ -7064,14 +7148,8 @@ function resume_battle_losses() {
 		goto_death_or_disband()
 }
 
-function action_losses(lord: Lord, type: Force) {
+function roll_protection(lord: Lord, type: Force) {
 	let protection = FORCE_PROTECTION[type]
-
-	if (game.who !== lord) {
-		log(`L${lord}`)
-		game.who = lord
-	}
-
 	let die = roll_die()
 	if (die <= protection) {
 		logi(`${get_force_name(lord, type)} ${range(protection)}: ${MISS[die]}`)
@@ -7082,6 +7160,14 @@ function action_losses(lord: Lord, type: Force) {
 		add_lord_routed_forces(lord, type, -1)
 	}
 
+}
+
+function action_losses(lord: Lord, type: Force) {
+	if (game.who !== lord) {
+		log(`L${lord}`)
+		game.who = lord
+	}
+	roll_protection(lord, type)
 	resume_battle_losses()
 }
 
