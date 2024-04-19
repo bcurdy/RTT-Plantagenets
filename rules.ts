@@ -7,11 +7,12 @@
 /*
 	TODO
 
+	EVENTS and CAPABILITIES trigger - Pass instead of Done
+
+	handle both lords at same sea...
+
 	NAVAL BLOCKADE - for Tax and Tax Collectors
 	Y15 LONDON FOR YORK - except by Event exception
-
-	scenario card lists
-		number of roses in data
 
 	Scenario special rules.
 
@@ -1206,6 +1207,36 @@ function set_lord_capability(lord: Lord, n: 0 | 1, x: Card) {
 		map2_delete(game.pieces.capabilities, lord, n)
 	else
 		map2_set(game.pieces.capabilities, lord, n, x)
+}
+
+function lord_has_capability_card(lord: Lord, c: Card) {
+	if (get_lord_capability(lord, 0) === c)
+		return true
+	if (get_lord_capability(lord, 1) === c)
+		return true
+	return false
+}
+
+function lord_has_capability(lord: Lord, card_or_list: Card | Card[]) {
+	if (Array.isArray(card_or_list)) {
+		for (let card of card_or_list)
+			if (lord_has_capability_card(lord, card))
+				return true
+		return false
+	}
+	return lord_has_capability_card(lord, card_or_list)
+}
+
+function lord_already_has_capability(lord: Lord, c: Card) {
+	// compare capabilities by name...
+	let name = data.cards[c].capability
+	let c1 = get_lord_capability(lord, 0)
+	if (c1 >= 0 && data.cards[c1].capability === name)
+		return true
+	let c2 = get_lord_capability(lord, 1)
+	if (c2 >= 0 && data.cards[c2].capability === name)
+		return true
+	return false
 }
 
 function get_lord_assets(lord: Lord, n: Asset): number {
@@ -3218,36 +3249,6 @@ function can_add_transport(who: Lord, what: Asset) {
 }
 
 // === 3.4.6 LEVY CAPABILITY ===
-
-function lord_has_capability_card(lord: Lord, c: Card) {
-	if (get_lord_capability(lord, 0) === c)
-		return true
-	if (get_lord_capability(lord, 1) === c)
-		return true
-	return false
-}
-
-function lord_has_capability(lord: Lord, card_or_list: Card | Card[]) {
-	if (Array.isArray(card_or_list)) {
-		for (let card of card_or_list)
-			if (lord_has_capability_card(lord, card))
-				return true
-		return false
-	}
-	return lord_has_capability_card(lord, card_or_list)
-}
-
-function lord_already_has_capability(lord: Lord, c: Card) {
-	// compare capabilities by name...
-	let name = data.cards[c].capability
-	let c1 = get_lord_capability(lord, 0)
-	if (c1 >= 0 && data.cards[c1].capability === name)
-		return true
-	let c2 = get_lord_capability(lord, 1)
-	if (c2 >= 0 && data.cards[c2].capability === name)
-		return true
-	return false
-}
 
 function can_add_lord_capability(lord: Lord) {
 	if (get_lord_capability(lord, 0) < 0)
