@@ -4,15 +4,11 @@
 // TODO: log end victory conditions at scenario start
 // Check all push/clear_undo
 // TODO: check all who = NOBODY etc resets
-// TODO: verify all push_state uses
 // TODO check all game.count uses
 // TODO check all game.who uses
 
 /*
 	TODO
-
-	// use game.command instead of game.who for muster
-	// then we can drop push_state who/count stashing
 
 	NAVAL BLOCKADE - Tax and Tax Collectors
 
@@ -864,7 +860,7 @@ const AOW_YORK_YORKISTS_NEVER_WAIT = Y11
 const AOW_YORK_SOLDIERS_OF_FORTUNE = Y12
 const AOW_YORK_SCOURERS = Y13
 const AOW_YORK_BURGUNDIANS = [ Y14, Y23 ]
-const AOW_YORK_NAVAL_BLOCKADE = Y15 // TODO DEBUG pop_state() going into parley and not after province selection
+const AOW_YORK_NAVAL_BLOCKADE = Y15
 const AOW_YORK_BELOVED_WARWICK = Y16
 const AOW_YORK_ALICE_MONTAGU = Y17
 const AOW_YORK_IRISHMEN = Y18
@@ -1874,6 +1870,14 @@ function is_automatic_levy_vassal_success(lord: Lord) {
 	return false
 }
 
+function get_levy_vassal_influence_cost() {
+	if (game.active === YORK) {
+		if (is_event_in_play(EVENT_LANCASTER_BUCKINGHAMS_PLOT))
+			return 2
+	}
+	return 0
+}
+
 function is_automatic_parley_success(lord: Lord) {
 	if (game.active === LANCASTER) {
 		if (is_levy_phase()) {
@@ -1985,6 +1989,7 @@ function roll_influence_check(lord: Lord, bonus: number, add_cost: number = 0, a
 function goto_setup_lords() {
 	// setup will be used in some scenarios
 	end_setup_lords()
+	end_setup_lords()
 }
 
 states.setup_lords = {
@@ -2077,7 +2082,7 @@ function end_levy_arts_of_war_first() {
 	if (game.active === P2)
 		goto_levy_arts_of_war_first()
 	else
-		goto_levy_muster()
+		goto_muster()
 }
 
 // === 3.1 LEVY: ARTS OF WAR ===
@@ -2147,7 +2152,7 @@ function end_levy_arts_of_war() {
 	if (game.active === P2)
 		goto_levy_arts_of_war()
 	else
-		goto_pay()
+		goto_pay_troops()
 }
 
 // === 3.2 LEVY: PAY ===
@@ -2160,7 +2165,7 @@ function reset_unpaid_lords() {
 	}
 }
 
-function goto_pay() {
+function goto_pay_troops() {
 	log_br()
 	let n = 0
 	for (let lord of all_friendly_lords()) {
@@ -2185,10 +2190,10 @@ function goto_pay() {
 			set_lord_unfed(lord, n)
 		}
 	}
-	game.state = "pay"
+	game.state = "pay_troops"
 }
 
-states.pay = {
+states.pay_troops = {
 	inactive: "Pay",
 	prompt() {
 		view.prompt = "Pay: You must Pay your Lord's Troops"
@@ -2250,7 +2255,7 @@ states.pay = {
 		goto_pillage_coin()
 	},
 	end_pay() {
-		end_pay()
+		end_pay_troops()
 	},
 }
 
@@ -2277,15 +2282,15 @@ states.pay_lord_shared = {
 function resume_pay_lord_shared() {
 	if (!is_lord_unfed(game.who) || !can_pay_from_shared(game.who)) {
 		game.who = NOBODY
-		game.state = "pay"
+		game.state = "pay_troops"
 	}
 }
 
-function end_pay() {
+function end_pay_troops() {
 	game.who = NOBODY
 	set_active_enemy()
 	if (game.active === P2) {
-		goto_pay()
+		goto_pay_troops()
 	} else
 		goto_pay_lords()
 }
@@ -2668,12 +2673,12 @@ function goto_ready_vassals() {
 		}
 	}
 
-	goto_levy_muster()
+	goto_muster()
 }
 
 // === 3.4 MUSTER ===
 
-function goto_levy_muster() {
+function goto_muster() {
 	clear_lords_moved()
 
 	game.levy_flags = {
@@ -2698,14 +2703,14 @@ function goto_levy_muster() {
 	else
 		log_h2("Lancaster Muster")
 
-	game.state = "levy_muster"
+	game.state = "muster"
 }
 
-function end_levy_muster() {
+function end_muster() {
 	clear_lords_moved()
 	set_active_enemy()
 	if (game.active === P2)
-		goto_levy_muster()
+		goto_muster()
 	else
 		goto_levy_discard_events()
 }
@@ -2748,10 +2753,10 @@ function has_locale_to_muster(lord: Lord) {
 	return false
 }
 
-states.levy_muster = {
+states.muster = {
 	inactive: "Muster",
 	prompt() {
-		view.prompt = "Levy: Muster with your Lords."
+		view.prompt = "Muster with your Lords."
 
 		prompt_held_event_at_levy()
 
@@ -2759,104 +2764,106 @@ states.levy_muster = {
 		for (let lord of all_friendly_lords()) {
 			if (can_lord_muster(lord)) {
 				gen_action_lord(lord)
-				done = false // ???
+				done = false
 			}
 		}
-		if (done) {
-			view.prompt += ""
+		if (done)
 			view.actions.end_muster = 1
-		}
 	},
 	lord(lord) {
 		push_undo()
 		log(`Mustered with L${lord}.`)
-		push_state("levy_muster_lord")
-		game.who = lord
+		game.state = "muster_lord"
+		game.command = lord
 		game.actions = data.lords[lord].lordship
 		apply_lordship_effects(lord)
 	},
 	end_muster() {
-		end_levy_muster()
+		end_muster()
 	},
-
 	card: action_held_event_at_levy,
 }
 
-function resume_levy_muster_lord() {
-	game.state = "levy_muster_lord"
+function resume_muster_lord() {
+	game.state = "muster_lord"
+
+	// Pay for Levy action
 	--game.actions
 
 	// muster over only if the lord has not spend their free levy actions
-	if (game.actions === 0 && game.levy_flags.jack_cade === 0 && game.levy_flags.thomas_stanley === 0 && can_add_troops(game.who, get_lord_locale(game.who))) {
-		set_lord_moved(game.who, 1)
-		pop_state()
+	// TODO: why is the can_add_troops check here?
+	if (game.actions === 0 && game.levy_flags.jack_cade === 0 && game.levy_flags.thomas_stanley === 0 && can_add_troops(get_lord_locale(game.command))) {
+		set_lord_moved(game.command, 1)
+		game.command = NOBODY
+		game.state = "muster"
 	}
 }
 
-states.levy_muster_lord = {
+states.muster_lord = {
 	inactive: "Muster",
 	prompt() {
 		if (game.actions === 1)
-			view.prompt = `Levy: ${lord_name[game.who]} has ${game.actions} action.`
+			view.prompt = `Muster: ${lord_name[game.command]} has ${game.actions} action.`
 		else
-			view.prompt = `Levy: ${lord_name[game.who]} has ${game.actions} actions.`
+			view.prompt = `Muster: ${lord_name[game.command]} has ${game.actions} actions.`
 
-		let here = get_lord_locale(game.who)
+		let here = get_lord_locale(game.command)
 
 		if (is_friendly_locale(here)) {
 			if (game.actions > 0) {
-				// Roll to muster Ready Lord at Seat
+				// Levy another ready Lord
 				for (let lord of all_friendly_lords()) {
 					if (is_lord_ready(lord) && has_locale_to_muster(lord))
 						gen_action_lord(lord)
 				}
 
-				// Muster Ready Vassal Forces
+				// Levy Vassal
 				for (let vassal of all_vassals)
-					if (eligible_vassal(vassal))
+					if (can_levy_vassal(vassal))
 						gen_action_vassal(vassal)
 
 				// Add Transport
-				if (is_seaport(here) && get_lord_assets(game.who, SHIP) < 2)
+				if (is_seaport(here) && get_lord_assets(game.command, SHIP) < 2)
 					view.actions.take_ship = 1
 
-				if (can_add_transport(game.who, CART))
+				if (can_add_transport(game.command, CART))
 					view.actions.take_cart = 1
 
-				if (can_add_troops(game.who, here))
+				if (can_add_troops(here))
 					view.actions.levy_troops = 1
 
 				// Add Capability
-				if (can_add_lord_capability(game.who))
+				if (can_add_lord_capability(game.command))
 					view.actions.capability = 1
 
 				if (can_action_parley_levy())
 					view.actions.parley = 1
 
-				if (can_add_troops_beloved_warwick(game.who, here))
+				if (can_add_troops_beloved_warwick(game.command, here))
 					view.actions.levy_beloved_warwick = 1
 
-				if (can_add_troops_irishmen(game.who, here))
+				if (can_add_troops_irishmen(game.command, here))
 					view.actions.levy_irishmen = 1
 
-				if (can_add_troops_sof(game.who, here))
+				if (can_add_troops_sof(game.command, here))
 					view.actions.soldiers_of_fortune = 1
 
-				if (can_add_troops_coa(game.who, here))
+				if (can_add_troops_coa(game.command, here))
 					view.actions.commission_of_array = 1
 			}
 
-			if (game.actions === 0 && lord_has_capability(game.who, AOW_LANCASTER_THOMAS_STANLEY) && can_add_troops(game.who, here)) {
+			if (game.actions === 0 && lord_has_capability(game.command, AOW_LANCASTER_THOMAS_STANLEY) && can_add_troops(here)) {
 				view.actions.levy_troops = 1
 			}
+
 			// Rising wages event
-			if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && !can_pay_from_shared(game.who)) {
+			if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && !can_pay_from_shared(game.command)) {
 				view.actions.levy_troops = 0
 			}
-			if (game.actions === 0 && game.levy_flags.my_crown_is_in_my_heart > 0 && game.who === LORD_HENRY_VI) {
+			if (game.actions === 0 && game.levy_flags.my_crown_is_in_my_heart > 0 && game.command === LORD_HENRY_VI) {
 				view.actions.parley = 1
 			}
-			if (game.actions === 0 && game.levy_flags.gloucester_as_heir > 0 && (game.who === LORD_GLOUCESTER_2 || game.who === LORD_GLOUCESTER_1)) {
+			if (game.actions === 0 && game.levy_flags.gloucester_as_heir > 0 && (game.command === LORD_GLOUCESTER_2 || game.command === LORD_GLOUCESTER_1)) {
 				view.actions.parley = 1
 			}
 			if (game.actions === 0 && game.levy_flags.jack_cade > 0) {
@@ -2878,20 +2885,21 @@ states.levy_muster_lord = {
 		view.actions.done = 1
 	},
 
-	lord(other) {
+	lord(lord) {
 		push_undo()
-		goto_levy_muster_lord_attempt(other)
+		game.other = lord
+		game.state = "levy_lord"
 	},
 
 	vassal(vassal) {
 		push_undo()
 		game.vassal = vassal
-		goto_levy_muster_vassal()
+		game.state = "levy_vassal"
 	},
 
 	take_ship() {
 		push_undo()
-		if (can_naval_blockade(get_lord_locale(game.who)))
+		if (can_naval_blockade(get_lord_locale(game.command)))
 			game.state = "blockade_levy_ship"
 		else
 			do_levy_ship()
@@ -2900,7 +2908,7 @@ states.levy_muster_lord = {
 	take_cart() {
 		push_undo()
 		push_the_kings_name()
-		add_lord_assets(game.who, CART, 2)
+		add_lord_assets(game.command, CART, 2)
 		goto_the_kings_name("Levy Cart")
 	},
 
@@ -2919,22 +2927,22 @@ states.levy_muster_lord = {
 	levy_beloved_warwick() {
 		push_undo()
 		push_the_kings_name()
-		add_lord_forces(game.who, MILITIA, 5)
+		add_lord_forces(game.command, MILITIA, 5)
 		goto_the_kings_name("Beloved Warwick")
 	},
 
 	levy_irishmen() {
 		push_undo()
 		push_the_kings_name()
-		add_lord_forces(game.who, MILITIA, 5)
+		add_lord_forces(game.command, MILITIA, 5)
 		goto_the_kings_name("Irishmen")
 	},
 
 	soldiers_of_fortune() {
 		push_undo()
 		push_the_kings_name()
-		set_lord_unfed(game.who, 1)
-		push_state("soldiers_of_fortune")
+		set_lord_unfed(game.command, 1)
+		game.state = "soldiers_of_fortune"
 	},
 
 	commission_of_array() {
@@ -2946,7 +2954,7 @@ states.levy_muster_lord = {
 	capability() {
 		push_undo()
 		push_the_kings_name()
-		game.state = "muster_capability"
+		game.state = "levy_capability"
 	},
 
 	parley() {
@@ -2962,8 +2970,8 @@ states.levy_muster_lord = {
 	},
 
 	done() {
-		set_lord_moved(game.who, 1)
-		pop_state()
+		set_lord_moved(game.command, 1)
+		game.state = "muster"
 	},
 }
 
@@ -2977,20 +2985,20 @@ states.blockade_levy_ship = {
 		if (roll_blockade())
 			do_levy_ship()
 		else
-			resume_levy_muster_lord()
+			resume_muster_lord()
 	},
 }
 
 function do_levy_ship() {
 	push_the_kings_name()
-	add_lord_assets(game.who, SHIP, 1)
+	add_lord_assets(game.command, SHIP, 1)
 	goto_the_kings_name("Levy Ship")
 }
 
 // Check if the levy troops is at vassal seat
 function chamberlains_eligible_levy(loc: Locale) {
 	for (let vassal of all_vassals)
-		if (is_vassal_mustered_with(vassal, game.who) && lord_has_capability(game.who, AOW_LANCASTER_CHAMBERLAINS)) {
+		if (is_vassal_mustered_with(vassal, game.command) && lord_has_capability(game.command, AOW_LANCASTER_CHAMBERLAINS)) {
 			if (loc === data.vassals[vassal].seat)
 				return true
 		}
@@ -2998,10 +3006,10 @@ function chamberlains_eligible_levy(loc: Locale) {
 }
 
 function do_levy_troops() {
-	let here = get_lord_locale(game.who)
+	let here = get_lord_locale(game.command)
 	if (
-		!lord_has_capability(game.who, AOW_LANCASTER_QUARTERMASTERS) &&
-		!lord_has_capability(game.who, AOW_YORK_WOODWILLES) &&
+		!lord_has_capability(game.command, AOW_LANCASTER_QUARTERMASTERS) &&
+		!lord_has_capability(game.command, AOW_YORK_WOODWILLES) &&
 		!chamberlains_eligible_levy(here)
 	)
 		deplete_locale(here)
@@ -3009,28 +3017,28 @@ function do_levy_troops() {
 	let here_type = data.locales[here].type
 	switch (here_type) {
 		case "calais":
-			add_lord_forces(game.who, MEN_AT_ARMS, 2)
-			add_lord_forces(game.who, LONGBOWMEN, 1)
+			add_lord_forces(game.command, MEN_AT_ARMS, 2)
+			add_lord_forces(game.command, LONGBOWMEN, 1)
 			break
 		case "london":
-			add_lord_forces(game.who, MEN_AT_ARMS, 1)
-			add_lord_forces(game.who, LONGBOWMEN, 1)
-			add_lord_forces(game.who, MILITIA, 1)
+			add_lord_forces(game.command, MEN_AT_ARMS, 1)
+			add_lord_forces(game.command, LONGBOWMEN, 1)
+			add_lord_forces(game.command, MILITIA, 1)
 			break
 		case "harlech":
-			add_lord_forces(game.who, MEN_AT_ARMS, 1)
-			add_lord_forces(game.who, LONGBOWMEN, 2)
+			add_lord_forces(game.command, MEN_AT_ARMS, 1)
+			add_lord_forces(game.command, LONGBOWMEN, 2)
 			break
 		case "city":
-			add_lord_forces(game.who, LONGBOWMEN, 1)
-			add_lord_forces(game.who, MILITIA, 1)
+			add_lord_forces(game.command, LONGBOWMEN, 1)
+			add_lord_forces(game.command, MILITIA, 1)
 			break
 		case "town":
-			add_lord_forces(game.who, MILITIA, 2)
+			add_lord_forces(game.command, MILITIA, 2)
 			break
 		case "fortress":
-			add_lord_forces(game.who, MEN_AT_ARMS, 1)
-			add_lord_forces(game.who, MILITIA, 1)
+			add_lord_forces(game.command, MEN_AT_ARMS, 1)
+			add_lord_forces(game.command, MILITIA, 1)
 			break
 	}
 	if (game.levy_flags.thomas_stanley === 1) {
@@ -3043,35 +3051,27 @@ function do_levy_troops() {
 
 // === 3.4.2 LEVY LORD ===
 
-function goto_levy_muster_lord_attempt(lord: Lord) {
-	game.other = lord
-	push_state("levy_muster_lord_attempt")
-}
-
-states.levy_muster_lord_attempt = {
+states.levy_lord = {
 	inactive: "Levy Lord",
 	prompt() {
 		view.prompt = `Levy Lord ${lord_name[game.other]}. `
-		prompt_influence_check(game.who)
+		prompt_influence_check(game.command)
 	},
 	check(bonus) {
-		if (roll_influence_check(game.who, bonus)) {
-			pop_state()
-			push_state("muster_lord_at_seat")
-			game.who = game.other
+		if (roll_influence_check(game.command, bonus)) {
+			game.state = "levy_lord_at_seat"
 		} else {
-			pop_state()
-			resume_levy_muster_lord()
+			resume_muster_lord()
 		}
 	},
 }
 
-states.muster_lord_at_seat = {
+states.levy_lord_at_seat = {
 	inactive: "Muster",
 	prompt() {
-		view.prompt = `Muster: Select Locale for ${lord_name[game.who]}.`
+		view.prompt = `Muster: Select Locale for ${lord_name[game.other]}.`
 		let found = false
-		let seat = data.lords[game.who].seat
+		let seat = data.lords[game.other].seat
 		if (!has_enemy_lord(seat)) {
 			gen_action_locale(seat)
 			found = true
@@ -3088,8 +3088,8 @@ states.muster_lord_at_seat = {
 	locale(loc) {
 		push_undo()
 
-		set_lord_moved(game.who, 1)
-		muster_lord(game.who, loc)
+		set_lord_moved(game.other, 1)
+		muster_lord(game.other, loc)
 		if (game.active === YORK) {
 			add_favoury_marker(loc)
 			remove_favourl_marker(loc)
@@ -3098,20 +3098,19 @@ states.muster_lord_at_seat = {
 			remove_favoury_marker(loc)
 		}
 
-		pop_state()
 		goto_the_kings_name("Levy Lord")
 	},
 }
 
 // === 3.4.3 LEVY VASSAL ===
 
-function eligible_vassal(vassal: Vassal) {
+function can_levy_vassal(vassal: Vassal) {
 	if (!is_vassal_ready(vassal)) {
 		return false
 	}
 	if (
 		!is_favour_friendly(data.vassals[vassal].seat) &&
-		(game.who !== LORD_HENRY_TUDOR || !is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))
+		(game.command !== LORD_HENRY_TUDOR || !is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))
 	) {
 		return false
 	}
@@ -3127,44 +3126,38 @@ function eligible_vassal(vassal: Vassal) {
 	return true
 }
 
-function goto_levy_muster_vassal() {
-	let influence_cost = 0
-	if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_BUCKINGHAMS_PLOT))
-		influence_cost += 2
-
-	push_state("levy_muster_vassal")
-}
-
-states.levy_muster_vassal = {
+states.levy_vassal = {
 	inactive: "Levy Vassal",
 	prompt() {
 		view.prompt = `Levy Vassal ${data.vassals[game.vassal].name}. `
-		if (is_automatic_levy_vassal_success(game.who))
-			prompt_influence_check_success()
+		let cost = get_levy_vassal_influence_cost()
+		if (is_automatic_levy_vassal_success(game.command))
+			prompt_influence_check_success(cost)
 		else
-			prompt_influence_check(game.who, 0, vassal_influence(game.vassal))
+			prompt_influence_check(game.command, cost, vassal_influence(game.vassal))
 	},
 	check(bonus) {
-		if (roll_influence_check(game.who, bonus, 0, vassal_influence(game.vassal))) {
-			muster_vassal(game.vassal, game.who)
+		let cost = get_levy_vassal_influence_cost()
+		if (roll_influence_check(game.command, bonus, cost, vassal_influence(game.vassal))) {
+			muster_vassal(game.vassal, game.command)
 			pop_state()
 			goto_the_kings_name("Levy Vassal")
 		} else {
 			pop_state()
-			resume_levy_muster_lord()
+			resume_muster_lord()
 		}
 	},
 	check_success() {
-		roll_influence_check_success()
-		muster_vassal(game.vassal, game.who)
-		pop_state()
+		let cost = get_levy_vassal_influence_cost()
+		roll_influence_check_success(cost)
+		muster_vassal(game.vassal, game.command)
 		goto_the_kings_name("Levy Vassal")
 	}
 }
 
 // === 3.4.4 LEVY TROOPS ===
 
-function can_add_troops(_lord: Lord, locale: Locale) {
+function can_add_troops(locale: Locale) {
 	if (!has_exhausted_marker(locale) && !is_exile(locale))
 		return true
 	return false
@@ -3258,7 +3251,7 @@ function can_add_lord_capability(lord: Lord) {
 
 function forbidden_levy_capabilities(c: Card) {
 	// Some capabilities override the forbidden levy vassals
-	if (lord_has_capability(game.who, AOW_LANCASTER_TWO_ROSES)) {
+	if (lord_has_capability(game.command, AOW_LANCASTER_TWO_ROSES)) {
 		if (c === AOW_LANCASTER_THOMAS_STANLEY || AOW_LANCASTER_MY_FATHERS_BLOOD) {
 			return true
 		}
@@ -3296,22 +3289,22 @@ function discard_lord_capability(lord: Lord, c: Card) {
 	throw new Error("capability not found")
 }
 
-states.muster_capability = {
+states.levy_capability = {
 	inactive: "Muster",
 	prompt() {
 		let deck = list_deck()
-		view.prompt = `Muster: Select a new Capability for ${lord_name[game.who]}.`
+		view.prompt = `Levy Capability for ${lord_name[game.command]}.`
 		view.arts_of_war = deck
 		for (let c of deck) {
-			if (!data.cards[c].lords || set_has(data.cards[c].lords, game.who)) {
-				if (!lord_already_has_capability(game.who, c) && forbidden_levy_capabilities(c))
+			if (!data.cards[c].lords || set_has(data.cards[c].lords, game.command)) {
+				if (!lord_already_has_capability(game.command, c) && forbidden_levy_capabilities(c))
 					gen_action_card(c)
 			}
 		}
 	},
 	card(c) {
-		add_lord_capability(game.who, c)
-		capability_muster_effects(game.who, c)
+		add_lord_capability(game.command, c)
+		capability_muster_effects(game.command, c)
 		goto_the_kings_name("Capability C${c}")
 	},
 }
@@ -4387,18 +4380,18 @@ function search_parley_campaign(here: Locale, lord: Lord) {
 
 function can_action_parley_levy(): boolean {
 	if (game.actions <= 0
-		&& (game.who !== LORD_HENRY_VI || game.levy_flags.my_crown_is_in_my_heart === 0)
-		&& ((game.who !== LORD_GLOUCESTER_1 && game.who !== LORD_GLOUCESTER_2) || game.levy_flags.gloucester_as_heir === 0)
+		&& (game.command !== LORD_HENRY_VI || game.levy_flags.my_crown_is_in_my_heart === 0)
+		&& ((game.command !== LORD_GLOUCESTER_1 && game.command !== LORD_GLOUCESTER_2) || game.levy_flags.gloucester_as_heir === 0)
 		&& (!game.levy_flags.jack_cade))
 		return true
-	let here = get_lord_locale(game.who)
+	let here = get_lord_locale(game.command)
 	if (can_parley_at(here))
 		return true
-	return search_parley_levy(false, here, game.who)
+	return search_parley_levy(false, here, game.command)
 }
 
 function goto_parley_levy() {
-	let lord = game.who
+	let lord = game.command
 	let here = get_lord_locale(lord)
 
 	push_state("parley")
@@ -4439,11 +4432,11 @@ function end_parley(success: boolean) {
 
 	// Free Levy Lordship action
 	if (is_levy_phase()) {
-		if (game.levy_flags.my_crown_is_in_my_heart > 0 && game.who === LORD_HENRY_VI) {
+		if (game.levy_flags.my_crown_is_in_my_heart > 0 && game.command === LORD_HENRY_VI) {
 			--game.levy_flags.my_crown_is_in_my_heart
 			++game.actions
 		}
-		if (game.levy_flags.gloucester_as_heir > 0 && (game.who === LORD_GLOUCESTER_1 || game.who === LORD_GLOUCESTER_2)) {
+		if (game.levy_flags.gloucester_as_heir > 0 && (game.command === LORD_GLOUCESTER_1 || game.command === LORD_GLOUCESTER_2)) {
 			--game.levy_flags.gloucester_as_heir
 			++game.actions
 		}
@@ -4463,7 +4456,7 @@ function end_parley(success: boolean) {
 		if (success)
 			goto_the_kings_name("Parley")
 		else
-			resume_levy_muster_lord()
+			resume_muster_lord()
 	}
 }
 
@@ -4475,7 +4468,7 @@ states.parley = {
 			for (let i = 0; i < game.parley.length; i += 2)
 				gen_action_locale(game.parley[i] as Locale)
 		} else {
-			let lord = is_levy_phase() ? game.who : game.command
+			let lord = game.command
 			view.prompt = "Parley at " + data.locales[game.where].name + "."
 			if (is_automatic_parley_success(lord))
 				prompt_influence_check_success(get_parley_influence_cost())
@@ -4486,7 +4479,7 @@ states.parley = {
 	locale(loc) {
 		push_undo()
 		game.where = loc
-		let here = get_lord_locale(is_levy_phase() ? game.who : game.command)
+		let here = get_lord_locale(game.command)
 		if (!is_adjacent(here, loc)) {
 			// TODO: check interaction of Naval Blockade with Great Ships when parleying across multiple seas
 			if (can_naval_blockade(here))
@@ -4494,7 +4487,7 @@ states.parley = {
 		}
 	},
 	check(bonus) {
-		let lord = is_levy_phase() ? game.who : game.command
+		let lord = game.command
 		if (roll_influence_check(lord, bonus, get_parley_influence_cost())) {
 			shift_favour_toward(game.where)
 			end_parley(true)
@@ -9469,7 +9462,7 @@ function apply_lordship_effects(lord: Lord) {
 states.soldiers_of_fortune = {
 	inactive: "Levy Troops",
 	prompt() {
-		view.prompt = `Pay 1 Coin for Mercenaries ${lord_name[game.who]}.`
+		view.prompt = `Pay 1 Coin for Mercenaries ${lord_name[game.command]}.`
 		let done = true
 		if (done) {
 			for (let lord of all_friendly_lords()) {
@@ -9489,37 +9482,37 @@ states.soldiers_of_fortune = {
 	},
 	coin(lord) {
 		push_undo()
-		let here = get_lord_locale(game.who)
+		let here = get_lord_locale(game.command)
 		let here_type = data.locales[here].type
-		let number = get_lord_forces(game.who, MERCENARIES)
+		let number = get_lord_forces(game.command, MERCENARIES)
 		let merc = 0
-		if (!lord_has_capability(game.who, AOW_YORK_WOODWILLES))
+		if (!lord_has_capability(game.command, AOW_YORK_WOODWILLES))
 			deplete_locale(here)
 
 		switch (here_type) {
 			case "calais":
-				add_lord_forces(game.who, MEN_AT_ARMS, 2)
-				add_lord_forces(game.who, LONGBOWMEN, 1)
+				add_lord_forces(game.command, MEN_AT_ARMS, 2)
+				add_lord_forces(game.command, LONGBOWMEN, 1)
 				break
 			case "london":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, LONGBOWMEN, 1)
-				add_lord_forces(game.who, MILITIA, 1)
+				add_lord_forces(game.command, MEN_AT_ARMS, 1)
+				add_lord_forces(game.command, LONGBOWMEN, 1)
+				add_lord_forces(game.command, MILITIA, 1)
 				break
 			case "harlech":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, LONGBOWMEN, 2)
+				add_lord_forces(game.command, MEN_AT_ARMS, 1)
+				add_lord_forces(game.command, LONGBOWMEN, 2)
 				break
 			case "city":
-				add_lord_forces(game.who, LONGBOWMEN, 1)
-				add_lord_forces(game.who, MILITIA, 1)
+				add_lord_forces(game.command, LONGBOWMEN, 1)
+				add_lord_forces(game.command, MILITIA, 1)
 				break
 			case "town":
-				add_lord_forces(game.who, MILITIA, 2)
+				add_lord_forces(game.command, MILITIA, 2)
 				break
 			case "fortress":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, MILITIA, 1)
+				add_lord_forces(game.command, MEN_AT_ARMS, 1)
+				add_lord_forces(game.command, MILITIA, 1)
 				break
 		}
 		if (game.levy_flags.thomas_stanley === 1) {
@@ -9531,8 +9524,8 @@ states.soldiers_of_fortune = {
 		else
 			merc = 2
 		add_lord_assets(lord, COIN, -1)
-		add_lord_forces(game.who, MERCENARIES, merc)
-		set_lord_unfed(game.who, 0)
+		add_lord_forces(game.command, MERCENARIES, merc)
+		set_lord_unfed(game.command, 0)
 	},
 	end_sof() {
 		end_soldiers_of_fortune()
@@ -9548,12 +9541,12 @@ function end_soldiers_of_fortune() {
 states.commission_of_array = {
 	inactive: "Levy Troops",
 	prompt() {
-		view.prompt = `Lord troops adjacent to ${lord_name[game.who]}.`
+		view.prompt = `Lord troops adjacent to ${lord_name[game.command]}.`
 		let done = true
-		let here = get_lord_locale(game.who)
+		let here = get_lord_locale(game.command)
 		if (done) {
 			for (let next of data.locales[here].adjacent) {
-				if (is_friendly_locale(next) && lord_has_capability(game.who, AOW_LANCASTER_COMMISION_OF_ARRAY) && (!has_exhausted_marker(next) && !is_exile(next))) {
+				if (is_friendly_locale(next) && lord_has_capability(game.command, AOW_LANCASTER_COMMISION_OF_ARRAY) && (!has_exhausted_marker(next) && !is_exile(next))) {
 					done = false
 					gen_action_locale(next)
 				}
@@ -9572,28 +9565,28 @@ states.commission_of_array = {
 
 		switch (loc_type) {
 			case "calais":
-				add_lord_forces(game.who, MEN_AT_ARMS, 2)
-				add_lord_forces(game.who, LONGBOWMEN, 1)
+				add_lord_forces(game.command, MEN_AT_ARMS, 2)
+				add_lord_forces(game.command, LONGBOWMEN, 1)
 				break
 			case "london":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, LONGBOWMEN, 1)
-				add_lord_forces(game.who, MILITIA, 1)
+				add_lord_forces(game.command, MEN_AT_ARMS, 1)
+				add_lord_forces(game.command, LONGBOWMEN, 1)
+				add_lord_forces(game.command, MILITIA, 1)
 				break
 			case "harlech":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, LONGBOWMEN, 2)
+				add_lord_forces(game.command, MEN_AT_ARMS, 1)
+				add_lord_forces(game.command, LONGBOWMEN, 2)
 				break
 			case "city":
-				add_lord_forces(game.who, LONGBOWMEN, 1)
-				add_lord_forces(game.who, MILITIA, 1)
+				add_lord_forces(game.command, LONGBOWMEN, 1)
+				add_lord_forces(game.command, MILITIA, 1)
 				break
 			case "town":
-				add_lord_forces(game.who, MILITIA, 2)
+				add_lord_forces(game.command, MILITIA, 2)
 				break
 			case "fortress":
-				add_lord_forces(game.who, MEN_AT_ARMS, 1)
-				add_lord_forces(game.who, MILITIA, 1)
+				add_lord_forces(game.command, MEN_AT_ARMS, 1)
+				add_lord_forces(game.command, MILITIA, 1)
 				break
 		}
 		if (game.levy_flags.thomas_stanley === 1) {
@@ -10996,7 +10989,7 @@ function goto_the_kings_name(action) {
 		set_active_enemy()
 		game.state = "the_kings_name"
 	} else {
-		resume_levy_muster_lord()
+		resume_muster_lord()
 	}
 }
 
@@ -11012,12 +11005,12 @@ states.the_kings_name = {
 		log(`${game.what} action cancelled.`)
 		logevent(EVENT_YORK_THE_KINGS_NAME)
 		reduce_york_influence(1)
-		resume_levy_muster_lord()
+		resume_muster_lord()
 	},
 	pass() {
 		delete_state_for_the_kings_name()
 		set_active_enemy()
-		resume_levy_muster_lord()
+		resume_muster_lord()
 	}
 }
 
@@ -11030,7 +11023,7 @@ function goto_rising_wages() {
 states.rising_wages = {
 	inactive: "Rising Wages",
 	prompt() {
-		let here = get_lord_locale(game.who)
+		let here = get_lord_locale(game.command)
 		view.prompt = "Rising Wages: Pay 1 extra coin to levy troops"
 		for (let lord of all_friendly_lords()) {
 			let loc = get_lord_locale(lord)
@@ -11054,7 +11047,7 @@ states.rising_wages = {
 // each Levy Troops action ends with coming here
 
 function goto_the_commons() {
-	if (is_event_in_play(EVENT_YORK_THE_COMMONS) && is_york_lord(game.who))
+	if (is_event_in_play(EVENT_YORK_THE_COMMONS) && is_york_lord(game.command))
 		game.state = "the_commons"
 	else
 		end_the_commons()
@@ -11070,12 +11063,12 @@ states.the_commons = {
 	},
 	add_militia() {
 		push_undo()
-		add_lord_forces(game.who, MILITIA, 1)
+		add_lord_forces(game.command, MILITIA, 1)
 		end_the_commons()
 	},
 	add_militia2() {
 		push_undo()
-		add_lord_forces(game.who, MILITIA, 2)
+		add_lord_forces(game.command, MILITIA, 2)
 		end_the_commons()
 	},
 	done() {
@@ -11313,7 +11306,7 @@ function can_play_sun_in_splendour() {
 }
 
 function goto_play_sun_in_splendour() {
-	push_state("sun_in_splendour")
+	game.state = "sun_in_splendour"
 }
 
 states.sun_in_splendour = {
@@ -11332,7 +11325,7 @@ states.sun_in_splendour = {
 		// TODO: muster to exile box ?
 		logi(`Mustered Edward IV at ${data.locales[loc].name}`)
 
-		pop_state()
+		game.state = "muster"
 	},
 }
 
@@ -11347,7 +11340,7 @@ function can_play_y_aspielles() {
 }
 
 function goto_play_aspielles() {
-	push_state("aspielles")
+	game.state = "aspielles"
 	game.who = NOBODY
 	if (game.active === YORK)
 		log("Lancaster hand shown to the York player")
@@ -11381,7 +11374,10 @@ states.aspielles = {
 		game.who = lord
 	},
 	done() {
-		pop_state()
+		if (is_levy_phase())
+			game.state = "muster"
+		else
+			game.state = "command"
 	},
 }
 
@@ -11396,7 +11392,7 @@ function can_play_rebel_supply_depot() {
 function goto_play_rebel_supply_depot() {
 	game.flags.supply_depot = 1
 	add_spoils(PROV, 4)
-	push_state("rebel_supply_depot")
+	game.state = "rebel_supply_depot"
 }
 
 states.rebel_supply_depot = {
@@ -11428,8 +11424,8 @@ states.rebel_supply_depot = {
 }
 
 function end_rebel_supply_depot() {
-	pop_state()
 	delete game.spoils
+	game.state = "command"
 }
 
 // === HELD EVENT: SURPRISE LANDING ===
@@ -11782,12 +11778,12 @@ states.game_over = {
 function push_state(next) {
 	if (!states[next])
 		throw Error("No such state: " + next)
-	game.stack.push([ game.state, game.who, game.count ])
+	game.stack.push(game.state)
 	game.state = next
 }
 
 function pop_state() {
-	[ game.state, game.who, game.count ] = game.stack.pop()
+	game.state = game.stack.pop()
 }
 
 function save_state_for_the_kings_name() {
