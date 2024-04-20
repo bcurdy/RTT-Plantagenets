@@ -4857,9 +4857,9 @@ states.intercept = {
 		}
 	},
 	card(c) {
+		// Flank Attack
 		push_undo()
 		play_held_event(c)
-		set_add(game.events, c)
 	},
 	pass() {
 		set_active_enemy()
@@ -5037,6 +5037,7 @@ states.parliaments_truce = {
 	},
 	card(c) {
 		play_held_event(c)
+		end_passive_held_event()
 
 		// Cancel approach!
 		for (let lord of game.group)
@@ -5719,6 +5720,7 @@ function end_attacker_events() {
 }
 
 function resume_battle_events() {
+	end_passive_held_event()
 	if (is_attacker())
 		goto_attacker_events()
 	else
@@ -5802,10 +5804,9 @@ function prompt_battle_events() {
 function action_battle_events(c: Card) {
 	push_undo()
 	play_held_event(c)
-	set_add(game.events, c)
 	switch (c) {
 		case EVENT_LANCASTER_LEEWARD_BATTLE_LINE:
-			// nothing to do
+			resume_battle_events()
 			break
 		case EVENT_LANCASTER_SUSPICION:
 			game.state = "suspicion_1"
@@ -5817,7 +5818,7 @@ function action_battle_events(c: Card) {
 			game.state = "ravine"
 			break
 		case EVENT_YORK_LEEWARD_BATTLE_LINE:
-			// nothing to do
+			resume_battle_events()
 			break
 		case EVENT_YORK_SUSPICION:
 			game.state = "suspicion_1"
@@ -5826,10 +5827,10 @@ function action_battle_events(c: Card) {
 			game.state = "caltrops"
 			break
 		case EVENT_YORK_REGROUP:
-			// nothing to do
+			resume_battle_events()
 			break
 		case EVENT_YORK_SWIFT_MANEUVER:
-			// nothing to do
+			resume_battle_events()
 			break
 	}
 }
@@ -5977,9 +5978,9 @@ states.caltrops = {
 	lord(lord) {
 		push_undo()
 		game.battle.caltrops = lord
-		resume_battle_events()
 		logi(`2 Hits added to ${lord_name[lord]} each Melee round`)
 		logevent(EVENT_YORK_CALTROPS)
+		resume_battle_events()
 	},
 }
 
@@ -7582,6 +7583,7 @@ states.escape_ship = {
 	},
 	done() {
 		push_undo()
+		end_held_event()
 		game.state = "death_check"
 	},
 }
@@ -7614,6 +7616,7 @@ states.talbot_to_the_rescue = {
 	},
 	done() {
 		push_undo()
+		end_held_event()
 		game.state = "death_check"
 	},
 }
@@ -7683,13 +7686,10 @@ states.warden_of_the_marches = {
 		})
 	},
 	done() {
-		end_warden_of_the_marches()
+		end_held_event()
+		game.where = NOWHERE
+		game.state = "death_check"
 	},
-}
-
-function end_warden_of_the_marches() {
-	game.where = NOWHERE
-	game.state = "death_check"
 }
 
 // === 4.4.4 ENDING THE BATTLE: AFTERMATH ===
@@ -11316,6 +11316,17 @@ function play_held_event(c: Card) {
 		set_delete(game.hand_y, c)
 	else
 		set_delete(game.hand_l, c)
+	game.this_event = c
+	set_add(game.events, c)
+}
+
+function end_held_event() {
+	set_delete(game.events, game.this_event)
+	delete game.this_event
+}
+
+function end_passive_held_event() {
+	delete game.this_event
 }
 
 function prompt_held_event_at_levy() {
@@ -11379,7 +11390,7 @@ function action_held_event_at_levy(c: Card) {
 
 		// Play in Levy (for passive effect)
 		case EVENT_YORK_YORKIST_PARADE:
-			set_add(game.events, c)
+			end_passive_held_event()
 			break
 
 		default:
@@ -11412,7 +11423,7 @@ function action_held_event_at_campaign(c: Card) {
 		// Play in Campaign (for passive effect)
 		case EVENT_LANCASTER_PARLIAMENTS_TRUCE:
 		case EVENT_YORK_PARLIAMENTS_TRUCE:
-			set_add(game.events, c)
+			end_passive_held_event()
 			break
 
 		default:
@@ -11458,6 +11469,7 @@ states.sun_in_splendour = {
 		// TODO: muster to exile box ?
 		logi(`Mustered Edward IV at ${locale_name[loc]}`)
 
+		end_held_event()
 		game.state = "muster"
 	},
 }
@@ -11507,6 +11519,7 @@ states.aspielles = {
 		game.who = lord
 	},
 	done() {
+		end_held_event()
 		if (is_levy_phase())
 			game.state = "muster"
 		else
@@ -11558,6 +11571,7 @@ states.rebel_supply_depot = {
 
 function end_rebel_supply_depot() {
 	delete game.spoils
+	end_held_event()
 	game.state = "command"
 }
 
@@ -11610,7 +11624,10 @@ states.surprise_landing = {
 	lord(lord) {
 		set_toggle(game.group, lord)
 	},
-	locale: goto_march,
+	locale(loc) {
+		end_held_event()
+		goto_march(loc)
+	},
 }
 
 // === LOGGING ===
