@@ -2089,7 +2089,7 @@ states.levy_arts_of_war_first = {
 		view.what = c
 		let discard = true
 		for (let lord of data.cards[c].lords) {
-			if (is_lord_on_map(lord) && !lord_already_has_capability(lord, c)) {
+			if (is_lord_on_map(lord) && !lord_already_has_capability(lord, c) && can_add_lord_capability(lord)) {
 				gen_action_lord(lord)
 				discard = false
 			}
