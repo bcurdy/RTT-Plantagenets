@@ -505,7 +505,9 @@ function is_seaport(loc: Locale) {
 }
 
 function is_stronghold(loc: Locale) {
-	return data.locales[loc].type !== "exile"
+	if (loc === NOWHERE || loc >= CALENDAR)
+		return false
+	return data.locales[loc].type !== "exile" && data.locales[loc].type !== "sea"
 }
 
 function is_exile(loc: Locale) {
@@ -1747,10 +1749,13 @@ function is_friendly_locale(loc: Locale) {
 	return false
 }
 
-function is_adjacent_friendly_port_english_channel(loc: Locale) {
-	for (let next of data.locales[loc].adjacent) {
-		if (is_friendly_locale(next) && set_has(data.port_2, next))
+function is_at_or_adjacent_to_friendly_english_channel_port(loc: Locale) {
+	if (is_stronghold(loc)) {
+		if (is_friendly_locale(loc) && set_has(data.port_2, loc))
 			return true
+		for (let next of data.locales[loc].adjacent)
+			if (is_friendly_locale(next) && set_has(data.port_2, next))
+				return true
 	}
 	return false
 }
@@ -2221,28 +2226,18 @@ function reset_unpaid_lords() {
 
 function goto_pay_troops() {
 	log_br()
-	let n = 0
 	for (let lord of all_friendly_lords()) {
 		let here = get_lord_locale(lord)
-		if (is_lord_on_map(lord) &&
-			!is_lord_on_calendar(lord) &&
-			lord_has_capability(lord, AOW_LANCASTER_MADAME_LA_GRANDE) &&
-			(((is_friendly_locale(here)) && set_has(data.port_2, here)) ||
-			is_adjacent_friendly_port_english_channel(here))) {
+		let n = Math.ceil(count_lord_all_forces(lord) / 6)
+		if (lord_has_capability(lord, AOW_LANCASTER_MADAME_LA_GRANDE) && is_at_or_adjacent_to_friendly_english_channel_port(here)) {
+			logcap(AOW_LANCASTER_MADAME_LA_GRANDE)
 			add_lord_assets(lord, COIN, 1)
 		}
-		if (
-			game.active === LANCASTER &&
-			is_lord_on_map(lord) &&
-			lord_has_capability(LORD_NORTHUMBERLAND_L, AOW_LANCASTER_PERCYS_POWER) &&
-			is_lord_in_north(LORD_NORTHUMBERLAND_L) &&
-			is_lord_in_north(lord)
-		) {
-			set_lord_unfed(lord, 0)
-		} else {
-			n = Math.ceil(count_lord_all_forces(lord) / 6)
-			set_lord_unfed(lord, n)
+		if (lord_has_capability(lord, AOW_LANCASTER_PERCYS_POWER) && is_lord_in_north(lord)) {
+			logcap(AOW_LANCASTER_PERCYS_POWER)
+			n = 0
 		}
+		set_lord_unfed(lord, n)
 	}
 	game.state = "pay_troops"
 }
@@ -5466,14 +5461,7 @@ function add_battle_capability_troops() {
 		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
 			add_lord_forces(lord, MILITIA, 3)
 		}
-
-		// TODO: check this condition
-		if (
-			is_lord_on_map(lord) &&
-			!is_lord_on_calendar(lord) &&
-			lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) &&
-			((is_friendly_locale(here) && set_has(data.port_2, here)) || is_adjacent_friendly_port_english_channel(here))
-		) {
+		if (lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) && is_at_or_adjacent_to_friendly_english_channel_port(here)) {
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 		}
 	}
@@ -5510,9 +5498,7 @@ function remove_battle_capability_troops() {
 		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
 			add_lord_forces(lord, MILITIA, -3)
 		}
-
-		// TODO: check this condition
-		if (is_lord_on_map(lord) && lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE)) {
+		if (lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) && is_at_or_adjacent_to_friendly_english_channel_port(here)) {
 			add_lord_forces(lord, MEN_AT_ARMS, -2)
 		}
 	}
