@@ -14,6 +14,20 @@
 
 	Scenario special rules.
 
+		Ia: Allied Networks (limit exile boxes)
+		Ia: Capture of the King
+
+		Ib: Norfolk is Late
+		Ib: Test of Arms
+		Ib: check exile boxes (just in case)?
+
+		II: Foreign Haven - Warwick
+		II: Foreign Haven - Edward IV
+		II: Shaky Allies
+		II: Queen Regent
+
+		III: King Richard
+
 	Review all undo steps.
 	Review all states for needless pauses.
 	Review all states for adding extra pauses to prevent loss of control.
@@ -7244,7 +7258,6 @@ function roll_protection(lord: Lord, type: Force) {
 		logi(`${get_force_name(lord, type)} ${range(protection)}: ${HIT[die]}`)
 		add_lord_routed_forces(lord, type, -1)
 	}
-
 }
 
 function action_losses(lord: Lord, type: Force) {
