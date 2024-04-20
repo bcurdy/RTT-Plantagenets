@@ -27,7 +27,7 @@ locales:[
 {"name":"Newcastle","type":"city","region":"North","adjacent":[0,2,3,50,56],"highways":[0,50],"roads":[2,3,56],"paths":[],"not_paths":[0,2,3,50,56],"box":{"x":656,"y":419,"w":70,"h":77}},
 {"name":"Appleby","type":"town","region":"North","adjacent":[1,4,48],"highways":[],"roads":[1,4],"paths":[48],"not_paths":[1,4],"box":{"x":546,"y":465,"w":57,"h":52}},
 {"name":"Hexham","type":"town","region":"North","adjacent":[1,4],"highways":[],"roads":[1,4],"paths":[],"not_paths":[1,4],"box":{"x":561,"y":395,"w":53,"h":47}},
-{"name":"Carlisle","type":"town","region":"North","adjacent":[2,3],"highways":[],"roads":[2,3],"paths":[],"not_paths":[2,3],"box":{"x":436,"y":422,"w":81,"h":63}},
+{"name":"Carlisle","type":"city","region":"North","adjacent":[2,3],"highways":[],"roads":[2,3],"paths":[],"not_paths":[2,3],"box":{"x":436,"y":422,"w":81,"h":63}},
 {"name":"Harlech","type":"harlech","region":"Wales","adjacent":[6,47],"highways":[],"roads":[],"paths":[6,47],"not_paths":[],"box":{"x":278,"y":912,"w":67,"h":61}},
 {"name":"Pembroke","type":"fortress","region":"Wales","adjacent":[5,7],"highways":[],"roads":[],"paths":[5,7],"not_paths":[],"box":{"x":185,"y":1127,"w":58,"h":37}},
 {"name":"Cardiff","type":"city","region":"Wales","adjacent":[6,27],"highways":[],"roads":[27],"paths":[6],"not_paths":[27],"box":{"x":392,"y":1164,"w":65,"h":65}},

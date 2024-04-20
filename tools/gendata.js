@@ -436,7 +436,7 @@ defloc("North", "fortress", "Bamburgh")
 defloc("North", "city", "Newcastle")
 defloc("North", "town", "Appleby")
 defloc("North", "town", "Hexham")
-defloc("North", "town", "Carlisle")
+defloc("North", "city", "Carlisle")
 
 
 defloc("Wales", "harlech", "Harlech")
