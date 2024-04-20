@@ -4100,8 +4100,7 @@ states.confirm_approach_sail = {
 		view.actions.approach = 1
 	},
 	approach() {
-		push_undo()
-		goto_battle()
+		goto_choose_exile_from_sail()
 	},
 }
 
@@ -5116,6 +5115,12 @@ function goto_choose_exile() {
 	}
 }
 
+function goto_choose_exile_from_sail() {
+	spend_all_actions() // end command upon any approach
+	game.state = "choose_exile_from_sail"
+	set_active_enemy()
+}
+
 function end_choose_exile() {
 	if (has_friendly_lord(get_lord_locale(game.command))) {
 		// still some lords not exiled to fight.
@@ -5125,6 +5130,18 @@ function end_choose_exile() {
 		// no one left, goto finish marching.
 		set_active_enemy()
 		end_march()
+	}
+}
+
+function end_choose_exile_from_sail() {
+	if (has_friendly_lord(get_lord_locale(game.command))) {
+		// still some lords not exiled to fight.
+		set_active_enemy()
+		goto_battle()
+	} else {
+		// no one left, goto finish sailing.
+		set_active_enemy()
+		resume_command()
 	}
 }
 
@@ -5144,6 +5161,25 @@ states.choose_exile = {
 	},
 	done() {
 		end_choose_exile()
+	},
+}
+
+states.choose_exile_from_sail = {
+	inactive: "Exiles",
+	prompt() {
+		view.prompt = "Select Lords to go into Exile."
+		for_each_friendly_lord_in_locale(get_lord_locale(game.command), lord => {
+			gen_action_lord(lord)
+		})
+		view.actions.done = 1
+	},
+	lord(lord) {
+		push_undo()
+		// TODO: give up assets as if spoils?
+		exile_lord(lord)
+	},
+	done() {
+		end_choose_exile_from_sail()
 	},
 }
 
