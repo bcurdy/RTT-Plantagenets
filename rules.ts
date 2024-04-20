@@ -2019,9 +2019,9 @@ function roll_influence_check(lord: Lord, bonus: number, add_cost: number = 0, a
 // === 2.0 SETUP ===
 
 function goto_setup_lords() {
+	set_active(P1)
+	game.state = "setup_lords"
 	// setup will be used in some scenarios
-	end_setup_lords()
-	end_setup_lords()
 }
 
 states.setup_lords = {
@@ -2042,13 +2042,17 @@ states.setup_lords = {
 function end_setup_lords() {
 	clear_lords_moved()
 	set_active_enemy()
-	if (game.active === P1) {
-		log_h1("Levy " + current_turn_name())
-		goto_levy_arts_of_war_first()
-	}
+	if (game.active === P1)
+		goto_start_game()
 }
 
 // === 3.1 LEVY: ARTS OF WAR (FIRST TURN) ===
+
+function goto_start_game() {
+	set_active(P1)
+	log_h1("Levy " + current_turn_name())
+	goto_levy_arts_of_war_first()
+}
 
 function discard_card_capability(c: Card) {
 	log(`${game.active} discarded C${c}.`)
@@ -8692,7 +8696,7 @@ exports.setup = function (seed, scenario, options) {
 
 	update_aliases()
 
-	goto_setup_lords()
+	goto_start_game()
 
 	return game
 }
