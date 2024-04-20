@@ -8475,8 +8475,8 @@ function check_campaign_victory_lancaster() {
 }
 
 function check_campaign_victory() {
-	let york_v = check_campaign_victory_york(true)
-	let lancaster_v = check_campaign_victory_lancaster(true)
+	let york_v = check_campaign_victory_york()
+	let lancaster_v = check_campaign_victory_lancaster()
 
 	if (york_v && lancaster_v) {
 		goto_game_over("Draw", "The game ended in a draw.")
@@ -10261,8 +10261,7 @@ function end_lancaster_event_french_troops() {
 states.french_troops = {
 	inactive: "French Troops",
 	prompt() {
-
-		view.prompt = `Add 2 Men at Arms and 2 Militia to a Lord at a port.`
+		view.prompt = `French Troops: Add up to 2 Men at Arms and up to 2 Militia to a Lord at a port.`
 		if (game.who === NOBODY) {
 			for (let lord of all_friendly_lords()) {
 				if (is_lord_on_map(lord) && is_seaport(get_lord_locale(lord))) {
@@ -10270,23 +10269,20 @@ states.french_troops = {
 				}
 			}
 		} else {
-			view.prompt = `Add ${2-pack2_get(game.count, 0)} Men at Arms and ${2-pack2_get(game.count, 1)} Militia to ${lord_name[game.who]}.`
+			view.prompt = `French Troops: Add up to 2 Men at Arms and up to 2 Militia to ${lord_name[game.who]}.`
 			if (pack2_get(game.count, 0) < 2)
 				view.actions.add_men_at_arms = 1
 			if (pack2_get(game.count, 1) < 2)
 				view.actions.add_militia = 1
 		}
-
 		view.actions.done = 1
 	},
 	add_men_at_arms() {
-		push_undo()
 		add_lord_forces(game.who, MEN_AT_ARMS, 1)
 		let c = pack2_get(game.count, 0)
 		game.count = pack2_set(game.count, 0, c+1)
 	},
 	add_militia() {
-		push_undo()
 		add_lord_forces(game.who, MILITIA, 1)
 		let c = pack2_get(game.count, 1)
 		game.count = pack2_set(game.count, 1, c+1)
