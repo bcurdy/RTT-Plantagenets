@@ -4969,8 +4969,6 @@ function is_flank_attack_in_play() {
 
 function goto_kings_parley() {
 	// If Henry VI in space, with King's Parley capability
-	// TODO: ... unless he intercepted York lords already present ?
-	// TODO: ... or remove possibility for above case.
 	if (game.active === YORK) {
 		if (get_lord_locale(LORD_HENRY_VI) === game.march.to) {
 			if (lord_has_capability(LORD_HENRY_VI, AOW_LANCASTER_KINGS_PARLEY)) {
@@ -5443,7 +5441,7 @@ function has_strike(pos: number) {
 
 // Capabilities adding troops at start of the battle
 function add_battle_capability_troops() {
-	let here = get_lord_locale(game.command)
+	let here = game.battle.where
 
 	for (let lord of all_lords) {
 		if (get_lord_locale(lord) !== here)
@@ -5488,7 +5486,7 @@ function add_battle_capability_troops() {
 
 //... And removing them at the end of the battle
 function remove_battle_capability_troops() {
-	let here = get_lord_locale(game.command)
+	let here = game.battle.where
 
 	for (let lord of all_lords) {
 		if (get_lord_locale(lord) !== here)
@@ -7637,7 +7635,6 @@ states.escape_ship = {
 // === DEATH CHECK EVENT: TALBOT TO THE RESCUE ===
 
 function can_play_talbot_to_the_rescue() {
-	// TODO: has any friendly routed lords
 	return true
 }
 
@@ -7669,8 +7666,6 @@ states.talbot_to_the_rescue = {
 // === DEATH CHECK EVENT: WARDEN OF THE MARCHES ===
 
 function can_play_warden_of_the_marches() {
-	// TODO: has any friendly routed lords
-	// TODO: blocked ford?
 	if (is_north(game.battle.where)) {
 		for (let loc of all_locales)
 			if (is_north(loc) && loc !== game.battle.where && is_friendly_locale(loc) && !has_enemy_lord(loc))
