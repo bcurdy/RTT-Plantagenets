@@ -1503,6 +1503,7 @@ function count_group_lords() {
 // === STATE: VASSAL ===
 
 function set_vassal_lord_and_service(vassal: Vassal, lord: Lord, service: number) {
+	service = Math.max(0, Math.min(16, service))
 	game.pieces.vassals[vassal] = lord + (service << 5)
 }
 
@@ -1589,8 +1590,7 @@ function disband_vassal(vassal: Vassal) {
 }
 
 function pay_vassal(vassal: Vassal) {
-	if (current_turn() < 15)
-		set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), current_turn() + 1)
+	set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), current_turn() + 1)
 }
 
 function rout_vassal(_lord: Lord, vassal: Vassal) {
