@@ -12004,10 +12004,6 @@ function object_copy(original) {
 
 // Packed array of small numbers in one word
 
-function pack1_get(word: number, n: number) {
-	return (word >>> n) & 1
-}
-
 function pack2_get(word: number, n: number) {
 	n = n << 1
 	return (word >>> n) & 3
@@ -12016,10 +12012,6 @@ function pack2_get(word: number, n: number) {
 function pack4_get(word: number, n: number) {
 	n = n << 2
 	return (word >>> n) & 15
-}
-
-function pack1_set(word: number, n: number, x: number) {
-	return (word & ~(1 << n)) | (x << n)
 }
 
 function pack2_set(word: number, n: number, x: number) {
