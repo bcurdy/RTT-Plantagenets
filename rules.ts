@@ -4390,14 +4390,17 @@ function can_action_parley_campaign() {
 	if (can_parley_at(here))
 		return true
 
-	for (let next of data.locales[here].adjacent)
-		if (can_parley_at(next))
-			return true
-
-	if (is_exile(here) && count_shared_ships(here, false) > 0)
-		for (let next of find_ports(here, game.command))
+	if (is_friendly_locale(here)) {
+		for (let next of data.locales[here].adjacent) {
 			if (can_parley_at(next))
 				return true
+		}
+
+		if (is_exile(here) && count_shared_ships(here, false) > 0)
+			for (let next of find_ports(here, game.command))
+				if (can_parley_at(next))
+					return true
+	}
 
 	return false
 }
