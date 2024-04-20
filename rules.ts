@@ -3231,16 +3231,15 @@ function can_add_troops_coa(lord: Lord, locale: Locale) {
 
 function can_add_troops_beloved_warwick(lord: Lord, locale: Locale) {
 	return (
-		lord_has_capability(lord, AOW_YORK_BELOVED_WARWICK) &&
-		!has_exhausted_marker(locale) &&
-		!is_exile(locale)
+		can_add_troops(locale) &&
+		lord_has_capability(lord, AOW_YORK_BELOVED_WARWICK)
 	)
 }
 
 function can_add_troops_irishmen(lord: Lord, locale: Locale) {
 	return (
+		can_add_troops(locale) &&
 		lord_has_capability(lord, AOW_YORK_IRISHMEN) &&
-		!has_exhausted_marker(locale) &&
 		(locale === LOC_IRELAND || !set_has(data.port_3, locale))
 	)
 }
