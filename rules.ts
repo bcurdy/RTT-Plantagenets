@@ -10178,14 +10178,15 @@ function end_lancaster_event_scots() {
 states.scots = {
 	inactive: "Scots",
 	prompt() {
-		view.prompt = "Scots: You may add 1 Men-at-Arms and 1 Militia to each Lord."
-		for (let lord of all_lancaster_lords) {
-			if (is_lord_on_map(lord) && map_get(game.event_scots, lord, 0) < 3) {
-				gen_action_lord(lord)
+		if (game.who === NOBODY) {
+			view.prompt = "Scots: You may add 1 Men-at-Arms and 1 Militia to each Lord."
+			for (let lord of all_lancaster_lords) {
+				if (is_lord_on_map(lord) && map_get(game.event_scots, lord, 0) < 3) {
+					gen_action_lord(lord)
+				}
 			}
-		}
-
-		if (game.who !== NOBODY) {
+		} else {
+			view.prompt = `Scots: You may add 1 Men-at-Arms and 1 Militia to ${lord_name[game.who]}.`
 			let troops = map_get(game.event_scots, game.who, 0)
 			if ((troops & 1) === 0)
 				view.actions.add_militia = 1
@@ -10199,16 +10200,16 @@ states.scots = {
 	},
 	add_militia() {
 		add_lord_forces(game.who, MILITIA, 1)
-		let troops = map_get(game.event_scots, game.who, 0)
-		map_set(game.event_scots, game.who, troops + 1)
-		if (troops !== 0)
+		let troops = map_get(game.event_scots, game.who, 0) | 1
+		map_set(game.event_scots, game.who, troops)
+		if (troops === 3)
 			game.who = NOBODY
 	},
 	add_men_at_arms() {
 		add_lord_forces(game.who, MEN_AT_ARMS, 1)
-		let troops = map_get(game.event_scots, game.who, 0)
-		map_set(game.event_scots, game.who, troops + 2)
-		if (troops !== 0)
+		let troops = map_get(game.event_scots, game.who, 0) | 2
+		map_set(game.event_scots, game.who, troops)
+		if (troops === 3)
 			game.who = NOBODY
 	},
 	lord(lord) {
