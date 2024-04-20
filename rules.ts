@@ -8775,7 +8775,7 @@ function setup_Ib() {
 function setup_Ic() {
 	game.turn = 5 << 1
 
-	set_flag(FLAG_REBEL_IS_YORK)
+	clear_flag(FLAG_REBEL_IS_YORK)
 	game.active = YORK
 	game.influence = 6
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
@@ -8783,6 +8783,7 @@ function setup_Ic() {
 	muster_lord(LORD_SOMERSET_1, LOC_BAMBURGH)
 
 	set_lord_calendar(LORD_HENRY_VI, 5)
+	set_lord_in_exile(LORD_HENRY_VI)
 
 	add_lancaster_favour(LOC_SCARBOROUGH)
 	add_lancaster_favour(LOC_NEWCASTLE)
