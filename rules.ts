@@ -12,7 +12,8 @@
 	handle both lords at same sea...
 
 	NAVAL BLOCKADE - for Tax and Tax Collectors
-	Y15 LONDON FOR YORK - except by Event exception
+	LONDON FOR YORK - except by Event exception
+	REGROUP - other timing windows
 
 	Scenario special rules.
 
@@ -2738,10 +2739,6 @@ function goto_muster() {
 		thomas_stanley: 0,
 	}
 
-	if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART))
-		game.levy_flags.my_crown_is_in_my_heart = 2
-	if (is_event_in_play(EVENT_YORK_GLOUCESTER_AS_HEIR))
-		game.levy_flags.gloucester_as_heir = 3
 	if (is_event_in_play(EVENT_YORK_LOYALTY_AND_TRUST))
 		game.levy_flags.loyalty_and_trust = 1
 
@@ -2829,9 +2826,8 @@ function resume_muster_lord() {
 	// Pay for Levy action
 	--game.actions
 
-	// muster over only if the lord has not spend their free levy actions
-	// TODO: why is the can_add_troops check here?
-	if (game.actions === 0 && game.levy_flags.jack_cade === 0 && game.levy_flags.thomas_stanley === 0 && can_add_troops(get_lord_locale(game.command))) {
+	// Muster over unless there are more actions possible
+	if (game.actions === 0 && !has_free_parley_levy() && !has_free_levy_troops()) {
 		set_lord_moved(game.command, 1)
 		game.command = NOBODY
 		game.state = "muster"
@@ -2889,25 +2885,26 @@ states.muster_lord = {
 
 				if (can_add_troops_coa(game.command, here))
 					view.actions.commission_of_array = 1
-			}
+			} else {
 
-			if (game.actions === 0 && lord_has_capability(game.command, AOW_LANCASTER_THOMAS_STANLEY) && can_add_troops(here)) {
-				view.actions.levy_troops = 1
+				// Free Levy Troops
+				if (has_free_levy_troops()) {
+					if (can_add_troops(here))
+						view.actions.levy_troops = 1
+					if (can_add_troops_coa(game.command, here))
+						view.actions.commission_of_array = 1
+				}
+
+				// Free Parley
+				if (has_free_parley_levy())
+					if (can_action_parley_levy())
+						view.actions.parley = 1
 			}
 
 			// Rising wages event
-			if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && !can_pay_from_shared(game.command)) {
-				view.actions.levy_troops = 0
-			}
-			if (game.actions === 0 && game.levy_flags.my_crown_is_in_my_heart > 0 && game.command === LORD_HENRY_VI) {
-				view.actions.parley = 1
-			}
-			if (game.actions === 0 && game.levy_flags.gloucester_as_heir > 0 && (game.command === LORD_GLOUCESTER_2 || game.command === LORD_GLOUCESTER_1)) {
-				view.actions.parley = 1
-			}
-			if (game.actions === 0 && game.levy_flags.jack_cade > 0) {
-				view.actions.parley = 1
-			}
+			if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES))
+				if (!can_pay_from_shared(game.command))
+					view.actions.levy_troops = 0
 
 		} else {
 			// Can only Parley if locale is not friendly.
@@ -2917,7 +2914,7 @@ states.muster_lord = {
 			}
 		}
 
-		if (is_event_in_play(EVENT_YORK_LOYALTY_AND_TRUST) && game.levy_flags.loyalty_and_trust) {
+		if (game.levy_flags.loyalty_and_trust) {
 			view.actions.loyalty_and_trust = 1
 		}
 
@@ -3194,6 +3191,20 @@ states.levy_vassal = {
 }
 
 // === 3.4.4 LEVY TROOPS ===
+
+function has_free_levy_troops() {
+	if (game.levy_flags.thomas_stanley) {
+		let here = get_lord_locale(game.command)
+		if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES))
+			if (!can_pay_from_shared(game.command))
+				return false
+		if (can_add_troops(here))
+			return true
+		if (can_add_troops_coa(game.command, here))
+			return true
+	}
+	return false
+}
 
 function can_add_troops(locale: Locale) {
 	if (!has_exhausted_marker(locale) && !is_exile(locale))
@@ -3564,7 +3575,7 @@ states.command = {
 			view.actions.tax = 1
 		if (can_action_sail())
 			view.actions.sail = 1
-		if (can_action_parley_command())
+		if (can_action_parley_campaign())
 			view.actions.parley = 1
 		if (can_action_heralds())
 			view.actions.heralds = 1
@@ -4291,11 +4302,23 @@ function do_tax(where, who, mul) {
 
 // === 4.6.4 ACTION: PARLEY ===
 
+function has_free_parley_levy() {
+	return (
+		game.levy_flags.my_crown_is_in_my_heart ||
+		game.levy_flags.gloucester_as_heir ||
+		game.levy_flags.jack_cade
+	)
+}
+
 function can_parley_at(loc: Locale) {
 	if (loc === LOC_LONDON) {
-		// TODO: unless aided by event!
-		if (has_york_favour(LONDON_FOR_YORK))
-			return false
+		if (has_york_favour(LONDON_FOR_YORK)) {
+			// No Parley in London except with "My crown is in my heart" and "Parliament Votes".
+			if (is_campaign_phase())
+				return false
+			if (!game.levy_flags.my_crown_is_in_my_heart && !game.levy_flags.parliament_votes)
+				return false
+		}
 	}
 	return !is_exile(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc) && !is_sea(loc)
 }
@@ -4345,7 +4368,7 @@ function search_parley_levy(result, start: Locale, lord: Lord) {
 		return false
 }
 
-function can_action_parley_command() {
+function can_action_parley_campaign() {
 	if (game.actions <= 0)
 		return false
 
@@ -4393,11 +4416,14 @@ function search_parley_campaign(here: Locale, lord: Lord) {
 }
 
 function can_action_parley_levy(): boolean {
-	if (game.actions <= 0
-		&& (game.command !== LORD_HENRY_VI || game.levy_flags.my_crown_is_in_my_heart === 0)
-		&& ((game.command !== LORD_GLOUCESTER_1 && game.command !== LORD_GLOUCESTER_2) || game.levy_flags.gloucester_as_heir === 0)
-		&& (!game.levy_flags.jack_cade))
-		return true
+	if (
+		game.actions <= 0 &&
+		!game.levy_flags.my_crown_is_in_my_heart &&
+		!game.levy_flags.gloucester_as_heir &&
+		!game.levy_flags.jack_cade
+	)
+		return false
+
 	let here = get_lord_locale(game.command)
 	if (can_parley_at(here))
 		return true
@@ -4445,11 +4471,11 @@ function end_parley(success: boolean) {
 
 	// Free Levy Lordship action
 	if (is_levy_phase()) {
-		if (game.levy_flags.my_crown_is_in_my_heart > 0 && game.command === LORD_HENRY_VI) {
+		if (game.levy_flags.my_crown_is_in_my_heart > 0) {
 			--game.levy_flags.my_crown_is_in_my_heart
 			++game.actions
 		}
-		if (game.levy_flags.gloucester_as_heir > 0 && (game.command === LORD_GLOUCESTER_1 || game.command === LORD_GLOUCESTER_2)) {
+		if (game.levy_flags.gloucester_as_heir > 0) {
 			--game.levy_flags.gloucester_as_heir
 			++game.actions
 		}
@@ -9482,6 +9508,16 @@ function apply_lordship_effects(lord: Lord) {
 	if (is_event_in_play(EVENT_YORK_EDWARD_V) && (lord === LORD_GLOUCESTER_1 || lord === LORD_GLOUCESTER_2))
 		game.actions += 3
 
+	game.levy_flags.gloucester_as_heir = 0
+	if (is_event_in_play(EVENT_YORK_GLOUCESTER_AS_HEIR))
+		if (lord === LORD_GLOUCESTER_2 || lord === LORD_GLOUCESTER_1)
+			game.levy_flags.gloucester_as_heir = 3
+
+	game.levy_flags.my_crown_is_in_my_heart = 0
+	if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART))
+		if (lord === LORD_HENRY_VI)
+			game.levy_flags.my_crown_is_in_my_heart = 2
+
 	game.levy_flags.thomas_stanley = 0
 	if (lord_has_capability(lord, AOW_LANCASTER_THOMAS_STANLEY))
 		game.levy_flags.thomas_stanley = 1
@@ -9557,10 +9593,12 @@ states.soldiers_of_fortune = {
 				add_lord_forces(game.command, MILITIA, 1)
 				break
 		}
-		if (game.levy_flags.thomas_stanley === 1) {
+
+		if (game.levy_flags.thomas_stanley) {
 			++game.actions
 			game.levy_flags.thomas_stanley = 0
 		}
+
 		if (number === 5)
 			merc = 1
 		else
@@ -9631,10 +9669,12 @@ states.commission_of_array = {
 				add_lord_forces(game.command, MILITIA, 1)
 				break
 		}
-		if (game.levy_flags.thomas_stanley === 1) {
+
+		if (game.levy_flags.thomas_stanley) {
 			++game.actions
 			game.levy_flags.thomas_stanley = 0
 		}
+
 		end_commission_of_array()
 	},
 	done() {
