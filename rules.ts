@@ -2128,7 +2128,7 @@ function end_levy_arts_of_war_first() {
 	if (game.active === P2)
 		goto_levy_arts_of_war_first()
 	else
-		goto_muster()
+		goto_muster_exiles()
 }
 
 // === 3.1 LEVY: ARTS OF WAR ===
