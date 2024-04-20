@@ -10538,32 +10538,37 @@ states.welsh_rebellion_remove_troops = {
 	},
 	burgundians(lord) {
 		add_lord_forces(lord, BURGUNDIANS, -1)
-		if (--game.count === 0 || !lord_has_unrouted_units(lord))
-			game.who = NOBODY
+		resume_welsh_rebellion_remove_troops(lord)
 	},
 	mercenaries(lord) {
 		add_lord_forces(lord, MERCENARIES, -1)
-		if (--game.count === 0 || !lord_has_unrouted_units(lord))
-			game.who = NOBODY
+		resume_welsh_rebellion_remove_troops(lord)
 	},
 	longbowmen(lord) {
 		add_lord_forces(lord, LONGBOWMEN, -1)
-		if (--game.count === 0 || !lord_has_unrouted_units(lord))
-			game.who = NOBODY
+		resume_welsh_rebellion_remove_troops(lord)
 	},
 	men_at_arms(lord) {
 		add_lord_forces(lord, MEN_AT_ARMS, -1)
-		if (--game.count === 0 || !lord_has_unrouted_units(lord))
-			game.who = NOBODY
+		resume_welsh_rebellion_remove_troops(lord)
 	},
 	militia(lord) {
 		add_lord_forces(lord, MILITIA, -1)
-		if (--game.count === 0 || !lord_has_unrouted_units(lord))
-			game.who = NOBODY
+		resume_welsh_rebellion_remove_troops(lord)
 	},
 	done() {
 		end_welsh_rebellion_remove_troops()
 	},
+}
+
+function resume_welsh_rebellion_remove_troops(lord: Lord) {
+	if (!lord_has_unrouted_troops(lord)) {
+		disband_lord(lord)
+		game.who = NOBODY
+	}
+	if (--game.count === 0) {
+		game.who = NOBODY
+	}
 }
 
 function end_welsh_rebellion_remove_troops() {
