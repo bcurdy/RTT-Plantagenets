@@ -4,6 +4,14 @@
 // TODO: check all who = NOBODY etc resets
 // TODO: show fled retinue backsides
 
+// TODO: check scotland-bamburgh way
+
+// TODO: 1.7.3 English Ships -- no more than 9 lords may have ships
+// TODO: check interaction of Naval Blockade with Great Ships when parleying across multiple seas
+
+// TODO: manually rout lords in battle
+
+// TODO: [Influence] button instead of [Pay] when paying influence (or [Pay influence])?
 
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
@@ -453,7 +461,7 @@ const last_lancaster_lord = 27
 const all_york_lords = make_list(0, 13) as Lord[]
 const all_lancaster_lords = make_list(14, 27) as Lord[]
 
-const YORK_LORD_MASK = 0x1fff
+const YORK_LORD_MASK = 0x3fff
 const LANCASTER_LORD_MASK = YORK_LORD_MASK << 14
 
 function is_york_lord(lord: Lord) {
@@ -499,6 +507,8 @@ function is_lieutenant(lord: Lord) {
 			return false
 	}
 }
+
+// TODO: optimize these functions with range checks (like wilderness war)
 
 function is_seaport(loc: Locale) {
 	return set_has(data.seaports, loc)
