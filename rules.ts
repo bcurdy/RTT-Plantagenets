@@ -2642,15 +2642,20 @@ function exile_lord(lord: Lord) {
 
 // === 3.3.1 MUSTER EXILES ===
 
+function can_muster_exile(lord) {
+	if (get_lord_in_exile(lord) && is_lord_on_calendar(lord)) {
+		let turn = get_lord_calendar(lord)
+		if (turn <= current_turn())
+			return true
+		if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_BE_SENT_FOR))
+			return true
+	}
+	return false
+}
+
 function goto_muster_exiles() {
-	for (let x of all_friendly_lords()) {
-		if (
-			(get_lord_locale(x) === current_turn() + CALENDAR && get_lord_in_exile(x)) ||
-			(is_lancaster_lord(x) &&
-				is_lord_on_calendar(x) &&
-				get_lord_in_exile(x) &&
-				is_event_in_play(EVENT_LANCASTER_BE_SENT_FOR))
-		) {
+	for (let lord of all_friendly_lords()) {
+		if (can_muster_exile(lord)) {
 			game.state = "muster_exiles"
 			return
 		}
@@ -2660,11 +2665,9 @@ function goto_muster_exiles() {
 
 function end_muster_exiles() {
 	set_active_enemy()
-
 	if (game.active === P1) {
-		if (!check_disband_victory()) {
+		if (!check_disband_victory())
 			goto_ready_vassals()
-		}
 	} else {
 		goto_muster_exiles()
 	}
@@ -2674,32 +2677,25 @@ states.muster_exiles = {
 	inactive: "Muster Exiles",
 	prompt() {
 		view.prompt = "Muster Exiled Lords."
-		let done = true
-
 		if (game.who === NOBODY) {
-			for (let x of all_friendly_lords()) {
-				if (
-					(get_lord_locale(x) === current_turn() + CALENDAR && get_lord_in_exile(x)) ||
-					(is_lancaster_lord(x) &&
-						is_lord_on_calendar(x) &&
-						get_lord_in_exile(x) &&
-						is_event_in_play(EVENT_LANCASTER_BE_SENT_FOR))
-				) {
-					gen_action_lord(x)
+			let done = true
+			for (let lord of all_friendly_lords()) {
+				if (can_muster_exile(lord)) {
+					gen_action_lord(lord)
 					done = false
 				}
 			}
+			if (done)
+				view.actions.done = true
 		} else {
 			for (let loc of data.exile_boxes)
 				if (has_favour_in_locale(game.active, loc))
 					gen_action_locale(loc)
 		}
 
-		if (done) {
-			view.actions.done = true
-		}
 	},
 	lord(lord) {
+		push_undo()
 		game.who = lord
 	},
 	locale(loc) {
