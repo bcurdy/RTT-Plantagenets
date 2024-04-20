@@ -1084,6 +1084,12 @@ function add_vassal(parent, vassal, lord, routed) {
 				force_action_name[VASSAL],
 				vassal
 			)
+		else if (view.vassal === vassal || set_has(view.vassal, vassal))
+			elt = get_cached_element(
+				"unit " + force_class_name[VASSAL] + " selected vassal_" + clean_name(data.vassals[vassal].name),
+				force_action_name[VASSAL],
+				vassal
+			)
 		else
 			elt = get_cached_element(
 				"unit " + force_class_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),

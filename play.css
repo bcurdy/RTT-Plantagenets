@@ -317,7 +317,11 @@ body.shift .exhausted  {
 }
 
 .asset.selected {
-	box-shadow: 0 0 0 1px #444, 0 0 0 4px yellow !important;
+	box-shadow: 0 0 0 1px #444, 0 0 0 4px cyan !important;
+}
+
+.vassal.selected {
+	box-shadow: 0 0 0 1px #444, 0 0 0 4px cyan !important;
 }
 
 .marker {

@@ -284,6 +284,7 @@ interface View {
 	what?: Card,
 	who?: Lord,
 	where?: Locale | Locale[],
+	vassal?: Vassal | Vassal[],
 }
 
 // === GLOBALS ===
@@ -6170,10 +6171,10 @@ function can_play_for_trust_not_him() {
 }
 
 states.for_trust_not_him = {
-	inactive: "For trust not him \u2014 Select Lord",
+	inactive: "For trust not him",
 	prompt() {
 		let done = true
-		view.prompt = "Select a friendly lord"
+		view.prompt = "For trust not him: Select a friendly Lord."
 		for (let lord of all_lancaster_lords) {
 			if (is_lancaster_lord(lord) && get_lord_locale(lord) === game.battle.where) {
 				done = false
@@ -6192,9 +6193,9 @@ states.for_trust_not_him = {
 }
 
 states.for_trust_not_him_vassal = {
-	inactive: "For trust not him \u2014 Select Vassal",
+	inactive: "For trust not him",
 	prompt() {
-		view.prompt = "Select an enemy Vassal"
+		view.prompt = "For trust not him: Select an enemy Vassal."
 		for (let vassal of all_vassals) {
 			if (is_vassal_mustered_with_york_lord(vassal) && get_lord_locale(get_vassal_lord(vassal)) === get_lord_locale(game.command)) {
 				// Hastings & Salisbury with Alice Montagu capability are immune.
@@ -6216,9 +6217,9 @@ function goto_influence_check_for_trust_not_him() {
 }
 
 states.for_trust_not_him_bribe = {
-	inactive: `Influence check`,
+	inactive: "For trust not him",
 	prompt() {
-		view.prompt = `Influence check : Success bribes ${vassal_name[game.vassal]} `
+		view.prompt = "For trust not him: Bribe."
 		if (is_automatic_levy_vassal_success(game.who))
 			prompt_influence_check_success()
 		else
@@ -10666,6 +10667,7 @@ states.aragne_1 = {
 	inactive: "L'Universelle Aragne",
 	prompt() {
 		view.prompt = "L'Universelle Aragne: Select up to 2 Vassals"
+		view.vassal = game.event_aragne
 		if (game.event_aragne.length < 2) {
 			for (let v of all_vassals) {
 				if (!set_has(game.event_aragne, v) && is_vassal_mustered_with_york_lord(v)) {
@@ -10733,6 +10735,7 @@ states.aragne_3 = {
 
 function end_universelle_aragne() {
 	delete game.event_aragne
+	set_active_enemy()
 	end_immediate_event()
 }
 
