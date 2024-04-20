@@ -8267,16 +8267,37 @@ function goto_advance_campaign() {
 
 // === 4.8.3 END CAMPAIGN: VICTORY CHECK ===
 
+function is_grow_turn() {
+	// Ravaged Land
+	if (game.scenario === SCENARIO_III)
+		return false
+	return set_has(GROW_TURNS, current_turn())
+}
+
+function is_waste_turn() {
+	// Brief Rebellion
+	if (game.scenario === SCENARIO_IC)
+		return false
+	// Ravaged Land
+	if (game.scenario === SCENARIO_III)
+		return false
+	return set_has(WASTE_TURNS, current_turn())
+}
+
 function goto_victory_check() {
-	if (!(check_scenario_end_victory() || check_campaign_victory() || check_threshold_victory())) {
-		if (set_has(GROW_TURNS, current_turn())) {
-			do_grow()
-		} else if (set_has(WASTE_TURNS, current_turn())) {
-			do_waste()
-		} else {
-			goto_reset()
-		}
-	}
+	if (check_scenario_end_victory())
+		return
+	if (check_campaign_victory())
+		return
+	if (check_threshold_victory())
+		return
+
+	if (is_grow_turn())
+		do_grow()
+	if (is_waste_turn())
+		do_waste()
+
+	goto_reset()
 }
 
 // === 4.8.4 END CAMPAIGN: GROW ===
@@ -8289,7 +8310,6 @@ function do_grow() {
 	for (let x of all_locales) {
 		refresh_locale(x)
 	}
-	goto_reset()
 }
 
 // === 4.8.5 END CAMPAIGN: WASTE ===
@@ -8303,8 +8323,6 @@ function do_waste() {
 			do_lord_waste(x)
 		}
 	}
-
-	goto_reset()
 }
 
 function do_lord_waste(lord: Lord) {
