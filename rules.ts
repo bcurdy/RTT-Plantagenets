@@ -794,7 +794,7 @@ const AOW_LANCASTER_CULVERINS_AND_FALCONETS = [L1 , L2]
 const AOW_LANCASTER_MUSTERD_MY_SOLDIERS = L3
 const AOW_LANCASTER_HERALDS = L4
 const AOW_LANCASTER_CHURCH_BLESSINGS = L5
-const AOW_LANCASTER_GREAT_SHIPS = L6 // TODO Resolve bug about not correctly targeting ports on other seats and further
+const AOW_LANCASTER_GREAT_SHIPS = L6
 const AOW_LANCASTER_HARBINGERS = L7
 const AOW_LANCASTER_HAY_WAINS = L8
 const AOW_LANCASTER_QUARTERMASTERS = L9
@@ -860,7 +860,7 @@ const AOW_YORK_FINAL_CHARGE = Y32
 const AOW_YORK_BLOODY_THOU_ART = Y33
 const AOW_YORK_SO_WISE_SO_YOUNG = Y34
 const AOW_YORK_KINGDOM_UNITED = Y35
-const AOW_YORK_VANGUARD = Y36 // TODO AFTER ALL OTHER BATTLE PROMPTS TO SEE WHERE TO PLACE IT
+const AOW_YORK_VANGUARD = Y36
 const AOW_YORK_PERCYS_NORTH2 = Y37
 
 const EVENT_LANCASTER_LEEWARD_BATTLE_LINE = L1
@@ -916,7 +916,7 @@ const EVENT_YORK_BLOCKED_FORD = Y11
 const EVENT_YORK_PARLIAMENTS_TRUCE = Y12
 const EVENT_YORK_ASPIELLES = Y13
 const EVENT_YORK_RICHARD_OF_YORK = Y14
-const EVENT_YORK_LONDON_FOR_YORK = Y15 // TODO PROTECTION AND UI
+const EVENT_YORK_LONDON_FOR_YORK = Y15
 const EVENT_YORK_THE_COMMONS = Y16
 const EVENT_YORK_SHEWOLF_OF_FRANCE = Y17
 const EVENT_YORK_SUCCESSION = Y18
@@ -931,12 +931,9 @@ const EVENT_YORK_DUBIOUS_CLARENCE = Y26
 const EVENT_YORK_YORKIST_NORTH = Y27
 const EVENT_YORK_GLOUCESTER_AS_HEIR = Y28
 const EVENT_YORK_DORSET = Y29
-const EVENT_YORK_REGROUP = Y30 // TODO
-// Play in Battle at Battle Array step.
-// If played when Yorkist active they pay click on that event to make the lord recover his TROOPS (no vassals/retinue)
-// for recover per armour
+const EVENT_YORK_REGROUP = Y30
 const EVENT_YORK_EARL_RIVERS = Y31
-const EVENT_YORK_THE_KINGS_NAME = Y32 // TODO IMPROVE PROMPTS/QOL
+const EVENT_YORK_THE_KINGS_NAME = Y32
 const EVENT_YORK_EDWARD_V = Y33
 const EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST = Y34
 const EVENT_YORK_PRIVY_COUNCIL = Y35
@@ -1976,7 +1973,6 @@ function get_parley_influence_bonus(lord: Lord) {
 
 function calc_influence_check_cost(bonus, add_cost) {
 	let cost = 1
-	// TODO: "free" influence check specials
 	if (bonus === 1)
 		cost += 1
 	if (bonus === 2)
@@ -4263,24 +4259,6 @@ function get_tax_amount(loc: Locale, lord: Lord) {
 		tax += 1
 	}
 
-	if (lord_has_capability(lord, AOW_YORK_SO_WISE_SO_YOUNG)) {
-		log(`C${AOW_YORK_SO_WISE_SO_YOUNG}.`)
-		tax += 1
-	}
-
-	if (
-		lord === LORD_DEVON && (
-			loc === LOC_EXETER ||
-			loc === LOC_LAUNCESTON ||
-			loc === LOC_PLYMOUTH ||
-			loc === LOC_WELLS ||
-			loc === LOC_DORCHESTER
-		)
-	) {
-		// TODO: log which ability
-		tax += 1
-	}
-
 	return tax
 }
 
@@ -4308,16 +4286,29 @@ states.tax = {
 		if (roll_influence_check(game.command, bonus))
 			do_tax(game.command, game.where, 1)
 		else
-			log(`Tax %${game.where} failed.`)
+			fail_tax(game.command, game.where)
 		end_tax()
 	},
 }
 
-function do_tax(where, who, mul) {
+function apply_so_wise_so_young(lord) {
+	if (lord_has_capability(lord, AOW_YORK_SO_WISE_SO_YOUNG)) {
+		log(`C${AOW_YORK_SO_WISE_SO_YOUNG}.`)
+		add_lord_assets(lord, COIN, 1)
+	}
+}
+
+function do_tax(who: Lord, where: Locale, mul: number) {
 	let amount = get_tax_amount(where, who) * mul
 	log(`Tax %${where} for ${mul} Coin.`)
 	add_lord_assets(who, COIN, amount)
+	apply_so_wise_so_young(who)
 	deplete_locale(where)
+}
+
+function fail_tax(who: Lord, where: Locale) {
+	log(`Tax %${where} failed.`)
+	apply_so_wise_so_young(who)
 }
 
 // === 4.6.4 ACTION: PARLEY ===
@@ -10916,15 +10907,15 @@ states.tax_collectors_lord = {
 		game.where = loc
 		// TODO: naval blockade if only reachable by sea
 		if (loc === data.lords[game.who].seat) {
-			do_tax(game.where, game.who, 2)
+			do_tax(game.who, game.where, 2)
 			end_tax_collectors_lord()
 		}
 	},
 	check(bonus) {
 		if (roll_influence_check(game.who, bonus))
-			do_tax(game.where, game.who, 2)
+			do_tax(game.who, game.where, 2)
 		else
-			log(`Tax %${game.where} failed.`)
+			fail_tax(game.who, game.where)
 		end_tax_collectors_lord()
 	},
 }
