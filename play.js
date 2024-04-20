@@ -220,7 +220,8 @@ const asset_type_x34 = [ 1, 1, 1, 0 ]
 
 const NOWHERE = -1
 const CALENDAR = 100
-const LONDON_FOR_YORK = 200
+const CALENDAR_EXILE = 200
+const LONDON_FOR_YORK = 300
 
 const VASSAL_READY = 29
 const VASSAL_CALENDAR = 30
@@ -382,8 +383,8 @@ function get_lord_capability(lord, n) {
 	return map2_get(view.pieces.capabilities, lord, n, -1)
 }
 
-function is_lord_in_exile(ix) {
-	return pack1_get(view.pieces.in_exile, ix)
+function is_lord_in_exile(lord) {
+	return get_lord_locale(lord) >= CALENDAR_EXILE
 }
 
 function count_lord_all_forces(lord) {
@@ -1220,14 +1221,13 @@ function update_lord(ix) {
 		ui.lord_mat[ix].classList.remove("action")
 		return
 	}
-	if (locale < 100) {
+	if (locale < CALENDAR) {
 		layout_locale_item(locale, ui.lord_cylinder[ix])
 		ui.lord_cylinder[ix].classList.remove("hide")
 		update_lord_mat(ix)
 		ui.lord_exile[ix].classList.add("hide")
 	} else {
-		let t = locale - 100
-		if (t > 16) t = 16
+		let t = locale > CALENDAR_EXILE ? locale - CALENDAR_EXILE : locale - CALENDAR
 		calendar_layout_cylinder[t].push(ui.lord_cylinder[ix])
 		ui.lord_cylinder[ix].classList.remove("hide")
 		ui.lord_exile[ix].classList.toggle("hide", !is_lord_in_exile(ix))

@@ -4,14 +4,14 @@
 // TODO: check all who = NOBODY etc resets
 // TODO: show fled retinue backsides
 
-// TODO: check scotland-bamburgh way
-
 // TODO: 1.7.3 English Ships -- no more than 9 lords may have ships
 // TODO: check interaction of Naval Blockade with Great Ships when parleying across multiple seas
 
 // TODO: manually rout lords in battle
 
 // TODO: [Influence] button instead of [Pay] when paying influence (or [Pay influence])?
+
+// TODO: logcap hidden or not hidden checks
 
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
@@ -41,6 +41,7 @@
 
 	Review all prompts.
 	Review all inactive prompts.
+	Add cap/event effect log messages.
 	Review all log messages.
 */
 
@@ -95,7 +96,6 @@ interface Game {
 		routed: number[],
 		capabilities: number[],
 		moved: number[],
-		in_exile: number,
 
 		// per vassal data
 		vassals: number[],
@@ -351,7 +351,8 @@ const NOWHERE = -1 as Locale
 const NOCARD = -1 as Card
 
 const CALENDAR = 100 as Locale
-const LONDON_FOR_YORK = 200 as Locale // extra london marker
+const CALENDAR_EXILE = 200 as Locale
+const LONDON_FOR_YORK = 300 as Locale // extra london marker
 
 const VASSAL_READY = 29 as Lord
 const VASSAL_CALENDAR = 30 as Lord
@@ -1171,6 +1172,8 @@ function set_lord_locale(lord: Lord, locale: Locale) {
 }
 
 function get_lord_calendar(lord: Lord): number {
+	if (is_lord_in_exile(lord))
+		return get_lord_locale(lord) - CALENDAR_EXILE
 	if (is_lord_on_calendar(lord))
 		return get_lord_locale(lord) - CALENDAR
 	return 0
@@ -1185,15 +1188,29 @@ function set_lord_calendar(lord: Lord, turn: number) {
 }
 
 function set_lord_in_exile(lord: Lord) {
-	game.pieces.in_exile = pack1_set(game.pieces.in_exile, lord, 1)
+	let turn = get_lord_calendar(lord)
+	set_lord_locale(lord, CALENDAR_EXILE + turn as Locale)
 }
 
-function get_lord_in_exile(lord: Lord): number {
-	return pack1_get(game.pieces.in_exile, lord)
+function is_lord_in_exile(lord: Lord) {
+	return get_lord_locale(lord) >= CALENDAR_EXILE
 }
 
-function remove_lord_from_exile(lord: Lord) {
-	game.pieces.in_exile = pack1_set(game.pieces.in_exile, lord, 0)
+function is_lord_on_map(lord: Lord) {
+	let loc = get_lord_locale(lord)
+	return loc !== NOWHERE && loc < CALENDAR
+}
+
+function is_lord_in_play(lord: Lord) {
+	return get_lord_locale(lord) !== NOWHERE
+}
+
+function is_lord_on_calendar(lord: Lord) {
+	return get_lord_locale(lord) >= CALENDAR
+}
+
+function is_lord_ready(lord: Lord) {
+	return (is_lord_on_calendar(lord) && get_lord_calendar(lord) < current_turn())
 }
 
 function get_lord_capability(lord: Lord, n: 0 | 1): Card {
@@ -1331,25 +1348,6 @@ function pay_lord(lord: Lord) {
 	// reuse "moved" flag for pay
 	let n = get_lord_moved(lord) - 1
 	set_lord_moved(lord, n)
-}
-
-function is_lord_on_map(lord: Lord) {
-	let loc = get_lord_locale(lord)
-	return loc !== NOWHERE && loc < CALENDAR
-}
-
-function is_lord_in_play(lord: Lord) {
-	return get_lord_locale(lord) !== NOWHERE
-}
-
-function is_lord_on_calendar(lord: Lord) {
-	let loc = get_lord_locale(lord)
-	return loc >= CALENDAR
-}
-
-function is_lord_ready(lord: Lord) {
-	let loc = get_lord_locale(lord)
-	return loc >= CALENDAR && loc <= CALENDAR + (game.turn >> 1)
 }
 
 function is_friendly_lord(lord: Lord) {
@@ -2649,7 +2647,7 @@ function exile_lord(lord: Lord) {
 // === 3.3.1 MUSTER EXILES ===
 
 function can_muster_exile(lord) {
-	if (get_lord_in_exile(lord) && is_lord_on_calendar(lord)) {
+	if (is_lord_in_exile(lord)) {
 		let turn = get_lord_calendar(lord)
 		if (turn <= current_turn())
 			return true
@@ -2672,8 +2670,8 @@ function goto_muster_exiles() {
 function end_muster_exiles() {
 	set_active_enemy()
 	if (game.active === P1) {
-		if (!check_disband_victory())
-			goto_ready_vassals()
+		// TODO: check for campaign victory if no lords were able to muster?
+		goto_ready_vassals()
 	} else {
 		goto_muster_exiles()
 	}
@@ -2714,7 +2712,6 @@ states.muster_exiles = {
 }
 
 function muster_lord_in_exile(lord: Lord, exile_box: Locale) {
-	remove_lord_from_exile(lord)
 	muster_lord(lord, exile_box)
 }
 
@@ -3445,9 +3442,6 @@ function goto_command_activation() {
 		goto_end_campaign()
 		return
 	}
-
-	if (check_campaign_victory())
-		return
 
 	if (game.plan_l.length > game.plan_y.length) {
 		set_active(LANCASTER)
@@ -8460,23 +8454,23 @@ function end_reset() {
 
 // === 5.1 CAMPAIGN VICTORY ===
 
-function check_campaign_victory_york(inc_exiles = false) {
-	for (let lord of all_lancaster_lords)
-		if (
-			is_lord_on_map(lord) ||
-			(inc_exiles && get_lord_locale(lord) === CALENDAR + current_turn() + 1 && get_lord_in_exile(lord))
-		)
+function check_campaign_victory_york() {
+	for (let lord of all_lancaster_lords) {
+		if (is_lord_on_map(lord))
 			return false
+		if (is_lord_in_exile(lord) && get_lord_calendar(lord) === current_turn() + 1)
+			return false
+	}
 	return true
 }
 
-function check_campaign_victory_lancaster(inc_exiles = false) {
-	for (let lord of all_york_lords)
-		if (
-			is_lord_on_map(lord) ||
-			(inc_exiles && get_lord_locale(lord) === CALENDAR + current_turn() + 1 && get_lord_in_exile(lord))
-		)
+function check_campaign_victory_lancaster() {
+	for (let lord of all_york_lords) {
+		if (is_lord_on_map(lord))
 			return false
+		if (is_lord_in_exile(lord) && get_lord_calendar(lord) === current_turn() + 1)
+			return false
+	}
 	return true
 }
 
@@ -8487,28 +8481,12 @@ function check_campaign_victory() {
 	if (york_v && lancaster_v) {
 		goto_game_over("Draw", "The game ended in a draw.")
 		return true
-	} else if (york_v) {
+	}
+	if (york_v) {
 		goto_game_over(YORK, `${YORK} won a Campaign Victory!`)
-		return true
-	} else if (lancaster_v) {
-		goto_game_over(LANCASTER, `${LANCASTER} won a Campaign Victory!`)
 		return true
 	}
-
-	return false
-}
-
-function check_disband_victory() {
-	let york_v = check_campaign_victory_york()
-	let lancaster_v = check_campaign_victory_lancaster()
-
-	if (york_v && lancaster_v) {
-		goto_game_over("Draw", "The game ended in a draw.")
-		return true
-	} else if (york_v) {
-		goto_game_over(YORK, `${YORK} won a Campaign Victory!`)
-		return true
-	} else if (lancaster_v) {
+	if (lancaster_v) {
 		goto_game_over(LANCASTER, `${LANCASTER} won a Campaign Victory!`)
 		return true
 	}
@@ -8519,17 +8497,13 @@ function check_disband_victory() {
 // === 5.2 THRESHOLD VICTORY ===
 
 function check_threshold_victory() {
-	// This needs to change to account for graduated victory thresholds in some scenarios.
-
 	if (Math.abs(game.influence) >= scenario_victory_threshold()) {
 		if (game.influence > 0)
 			goto_game_over(LANCASTER, `${LANCASTER} won with ${game.influence} Influence.`)
 		else
 			goto_game_over(YORK, `${YORK} won with ${Math.abs(game.influence)} Influence.`)
-
 		return true
 	}
-
 	return false
 }
 
@@ -8537,15 +8511,12 @@ function check_threshold_victory() {
 
 function check_scenario_end_victory() {
 	if (current_turn() === scenario_last_turn[game.scenario]) {
-		// Scenario End Victory
-
 		if (game.influence === 0)
 			goto_game_over("Draw", "The game ended in a draw.")
 		else if (game.influence > 0)
 			goto_game_over(LANCASTER, `${LANCASTER} won with ${game.influence} Influence.`)
 		else
 			goto_game_over(YORK, `${YORK} won with ${Math.abs(game.influence)} Influence.`)
-
 		return true
 	}
 	return false
@@ -8678,7 +8649,6 @@ exports.setup = function (seed, scenario, options) {
 			routed: [],
 			capabilities: [], // TODO map card -> lord instead of lord+slot -> card
 			moved: [],
-			in_exile: 0,
 
 			// per vassal data
 			vassals: Array(vassal_count).fill(VASSAL_OUT_OF_PLAY),
@@ -11477,7 +11447,6 @@ states.sun_in_splendour = {
 	locale(loc) {
 		push_undo()
 		muster_lord(LORD_EDWARD_IV, loc)
-		remove_lord_from_exile(LORD_EDWARD_IV)
 		logi(`Mustered Edward IV at ${locale_name[loc]}`)
 
 		end_held_event()
