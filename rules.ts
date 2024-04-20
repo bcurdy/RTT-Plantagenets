@@ -2984,8 +2984,6 @@ states.muster_lord = {
 	soldiers_of_fortune() {
 		push_undo()
 		push_the_kings_name()
-		// TODO: pay coin immediately?
-		set_lord_unfed(game.command, 1)
 		game.state = "soldiers_of_fortune"
 	},
 
@@ -3247,20 +3245,20 @@ function can_add_troops_irishmen(lord: Lord, locale: Locale) {
 	)
 }
 
+function count_available_mercenaries() {
+	let n = 0
+	for (let lord of all_lords)
+		n += get_lord_forces(lord, MERCENARIES)
+	return 6 - n
+}
+
 function can_add_troops_sof(lord: Lord, locale: Locale) {
-	if (
+	return (
+		can_add_troops(locale) &&
 		lord_has_capability(lord, AOW_YORK_SOLDIERS_OF_FORTUNE) &&
-		!has_exhausted_marker(locale) &&
-		!is_exile(locale) &&
-		get_shared_assets(locale, COIN) > 0
-	) {
-		let number = 6
-		for (let lord of all_friendly_lords())
-			number -= get_lord_forces(lord, MERCENARIES)
-		if (number >= 1)
-			return true
-	}
-	return false
+		get_shared_assets(locale, COIN) > 0 &&
+		count_available_mercenaries() > 0
+	)
 }
 
 // === 3.4.5 LEVY TRANSPORT
@@ -9701,80 +9699,28 @@ function apply_lordship_effects(lord: Lord) {
 states.soldiers_of_fortune = {
 	inactive: "Levy Troops",
 	prompt() {
-		view.prompt = `Pay 1 Coin for Mercenaries ${lord_name[game.command]}.`
-		let done = true
-		if (done) {
-			for (let lord of all_friendly_lords()) {
-				if (is_lord_unfed(lord) && can_pay_from_shared(lord)) {
-					if (get_lord_assets(lord, COIN) > 0) {
-						gen_action_coin(lord)
-						done = false
-					}
-				}
+		view.prompt = `Soldiers of Fortune: Pay 1 Coin to add 2 Mercenaries to ${lord_name[game.command]}.`
+		let here = get_lord_locale(game.command)
+		for (let lord of all_friendly_lords()) {
+			if (get_lord_locale(lord) === here) {
+				if (get_lord_assets(lord, COIN) > 0)
+					gen_action_coin(lord)
 			}
-		}
-		// Done
-		if (done) {
-			view.prompt = "Soldiers of fortune: Done."
-			view.actions.done = 1
 		}
 	},
 	coin(lord) {
 		push_undo()
-		let here = get_lord_locale(game.command)
-		let here_type = data.locales[here].type
-		let number = get_lord_forces(game.command, MERCENARIES)
-		let merc = 0
-		if (!lord_has_capability(game.command, AOW_YORK_WOODWILLES))
-			deplete_locale(here)
 
-		switch (here_type) {
-			case "calais":
-				add_lord_forces(game.command, MEN_AT_ARMS, 2)
-				add_lord_forces(game.command, LONGBOWMEN, 1)
-				break
-			case "london":
-				add_lord_forces(game.command, MEN_AT_ARMS, 1)
-				add_lord_forces(game.command, LONGBOWMEN, 1)
-				add_lord_forces(game.command, MILITIA, 1)
-				break
-			case "harlech":
-				add_lord_forces(game.command, MEN_AT_ARMS, 1)
-				add_lord_forces(game.command, LONGBOWMEN, 2)
-				break
-			case "city":
-				add_lord_forces(game.command, LONGBOWMEN, 1)
-				add_lord_forces(game.command, MILITIA, 1)
-				break
-			case "town":
-				add_lord_forces(game.command, MILITIA, 2)
-				break
-			case "fortress":
-				add_lord_forces(game.command, MEN_AT_ARMS, 1)
-				add_lord_forces(game.command, MILITIA, 1)
-				break
-		}
+		// TODO: to log or not log muster capabilities?
+		logcap(AOW_YORK_SOLDIERS_OF_FORTUNE)
 
-		if (game.levy_flags.thomas_stanley) {
-			++game.actions
-			game.levy_flags.thomas_stanley = 0
-		}
-
-		if (number === 5)
-			merc = 1
-		else
-			merc = 2
 		add_lord_assets(lord, COIN, -1)
-		add_lord_forces(game.command, MERCENARIES, merc)
-		set_lord_unfed(game.command, 0)
-	},
-	done() {
-		end_soldiers_of_fortune()
-	},
-}
 
-function end_soldiers_of_fortune() {
-	goto_the_kings_name("Soldiers of Fortune")
+		let n = Math.min(2, count_available_mercenaries())
+		add_lord_forces(game.command, MERCENARIES, n)
+
+		do_levy_troops()
+	},
 }
 
 // === CAPABILITY: COMMISSION OF ARRAY ===
