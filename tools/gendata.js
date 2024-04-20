@@ -758,11 +758,15 @@ road("Scarborough", "York")
 road("York", "Ravenspur")
 road("Ravenspur", "Lincoln")
 
+// one-way road from Scotland to Bamburgh
+locales[locmap.Scotland].paths.push(locmap.Bamburgh)
+map_set(ways[locmap.Scotland], locmap.Bamburgh, "path")
+
 let way_sea_1 = ["North Sea", "English Channel", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
 let way_sea_2 = ["English Channel","North Sea", "Irish Sea", "Bristol","Pembroke","Harlech", "English Channel","Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich","Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro" ].map(name => locmap[name]).sort(cmpnum)
 let way_sea_3 = ["English Channel", "Bristol","Pembroke","Harlech", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro","Irish Sea"].map(name => locmap[name]).sort(cmpnum)
 
-let way_exile_1 = ["Burgundy", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
+let way_exile_1 = ["Burgundy", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
 let way_exile_2 = ["France", "English Channel",  "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
 let way_exile_3 = ["Ireland", "Irish Sea", "Bristol","Pembroke","Harlech"].map(name => locmap[name]).sort(cmpnum)
 let way_exile_4 = ["Scotland", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
