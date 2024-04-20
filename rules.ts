@@ -89,7 +89,6 @@ interface Game {
 	actions: number,
 	command: Lord,
 	who: Lord,
-	other: Lord,
 	where: Locale,
 	vassal: Vassal,
 	group: Lord[],
@@ -2924,7 +2923,7 @@ states.muster_lord = {
 
 	lord(lord) {
 		push_undo()
-		game.other = lord
+		game.who = lord
 		game.state = "levy_lord"
 	},
 
@@ -3092,7 +3091,7 @@ function do_levy_troops() {
 states.levy_lord = {
 	inactive: "Levy Lord",
 	prompt() {
-		view.prompt = `Levy Lord ${lord_name[game.other]}. `
+		view.prompt = `Levy Lord ${lord_name[game.who]}. `
 		prompt_influence_check(game.command)
 	},
 	check(bonus) {
@@ -3107,9 +3106,9 @@ states.levy_lord = {
 states.levy_lord_at_seat = {
 	inactive: "Muster",
 	prompt() {
-		view.prompt = `Muster: Select Locale for ${lord_name[game.other]}.`
+		view.prompt = `Levy Lord: Select Locale for ${lord_name[game.who]}.`
 		let found = false
-		let seat = data.lords[game.other].seat
+		let seat = data.lords[game.who].seat
 		if (!has_enemy_lord(seat)) {
 			gen_action_locale(seat)
 			found = true
@@ -3126,8 +3125,8 @@ states.levy_lord_at_seat = {
 	locale(loc) {
 		push_undo()
 
-		set_lord_moved(game.other, 1)
-		muster_lord(game.other, loc)
+		set_lord_moved(game.who, 1)
+		muster_lord(game.who, loc)
 		if (game.active === YORK) {
 			add_york_favour(loc)
 			remove_lancaster_favour(loc)
@@ -4874,6 +4873,7 @@ states.intercept = {
 		let valour = data.lords[game.who].valour
 		let success = false
 		if (is_flank_attack_in_play()) {
+			end_passive_held_event()
 			success = true
 		}
 		else {
@@ -5101,6 +5101,7 @@ states.blocked_ford = {
 	},
 	card(c) {
 		play_held_event(c)
+		end_passive_held_event()
 		goto_battle()
 	},
 	pass() {
@@ -5366,11 +5367,9 @@ function format_hits() {
 }
 
 function is_battle_over() {
-	set_active_attacker()
-	if (has_no_unrouted_forces())
+	if (lancaster_has_no_unrouted_forces())
 		return true
-	set_active_defender()
-	if (has_no_unrouted_forces())
+	if (york_has_no_unrouted_forces())
 		return true
 	return false
 }
@@ -5382,6 +5381,28 @@ function has_no_unrouted_forces() {
 			return false
 	for (let lord of game.battle.reserves)
 		if (is_friendly_lord(lord))
+			return false
+	return true
+}
+
+function york_has_no_unrouted_forces() {
+	// All unrouted lords are either in battle array or in reserves
+	for (let p of battle_strike_positions)
+		if (is_york_lord(game.battle.array[p]))
+			return false
+	for (let lord of game.battle.reserves)
+		if (is_york_lord(lord))
+			return false
+	return true
+}
+
+function lancaster_has_no_unrouted_forces() {
+	// All unrouted lords are either in battle array or in reserves
+	for (let p of battle_strike_positions)
+		if (is_lancaster_lord(game.battle.array[p]))
+			return false
+	for (let lord of game.battle.reserves)
+		if (is_lancaster_lord(lord))
 			return false
 	return true
 }
@@ -6027,7 +6048,7 @@ function highest_friendly_influence() {
 states.suspicion_1 = {
 	inactive: "Suspicion",
 	prompt() {
-		view.prompt = "Suspicion: Check one of your lords to influence check"
+		view.prompt = "Suspicion: Check Influence with one participating Lord."
 		let lowest = lowest_enemy_influence()
 		for (let lord of game.battle.array)
 			if (is_friendly_lord(lord) && get_printed_lord_influence(lord) > lowest)
@@ -6038,6 +6059,8 @@ states.suspicion_1 = {
 	},
 	lord(lord) {
 		push_undo()
+		logevent(game.this_event)
+		logi("L" + lord)
 		game.who = lord
 		game.state = "suspicion_2"
 	},
@@ -6046,7 +6069,23 @@ states.suspicion_1 = {
 states.suspicion_2 = {
 	inactive: "Suspicion",
 	prompt() {
-		view.prompt = "Suspicion: Select one enemy lord to influence check"
+		view.prompt = `Suspicion: `
+		prompt_influence_check(game.who)
+	},
+	check(bonus) {
+		if (roll_influence_check(game.who, bonus)) {
+			game.state = "suspicion_3"
+		} else {
+			game.who = NOBODY
+			resume_battle_events()
+		}
+	},
+}
+
+states.suspicion_3 = {
+	inactive: "Suspicion",
+	prompt() {
+		view.prompt = "Suspicion: Disband one enemy Lord with lower Influence rating."
 		let highest = get_printed_lord_influence(game.who)
 		for (let lord of game.battle.array)
 			if (is_enemy_lord(lord) && get_printed_lord_influence(lord) < highest)
@@ -6054,30 +6093,16 @@ states.suspicion_2 = {
 	},
 	lord(lord) {
 		push_undo()
-		game.other = lord
-		game.state = "suspicion_3"
-	},
-}
+		remove_lord_from_battle(lord)
+		disband_lord(lord)
+		game.who = NOBODY
 
-states.suspicion_3 = {
-	inactive: "Suspicion",
-	prompt() {
-		view.prompt = `Suspicion`
-		prompt_influence_check(game.who)
-	},
-	check(bonus) {
-		let other = game.other
-
-		if (roll_influence_check(game.who, bonus)) {
-			log(`${lord_name[other]} disbanded`)
-			remove_lord_from_battle(other)
-			disband_lord(other)
-		} else {
-			log(`${lord_name[other]} stays`)
+		// Skip to end battle if no enemy remains!
+		if (is_battle_over()) {
+			end_battle_round()
+			return
 		}
 
-		game.who = NOBODY
-		game.other = NOBODY
 		resume_battle_events()
 	},
 }
@@ -7377,7 +7402,6 @@ function goto_death_or_disband() {
 		if (is_lord_on_map(lord)) {
 			// Disband lords without troops
 			if (!lord_has_unrouted_troops(lord)) {
-				log(`${lord_name[lord]} disbanded`)
 				disband_lord(lord)
 			}
 		}
@@ -7614,7 +7638,6 @@ states.talbot_to_the_rescue = {
 	},
 	lord(lord) {
 		push_undo()
-		log(`${lord_name[lord]} disbanded.`)
 		disband_lord(lord)
 		set_delete(game.battle.fled, lord)
 		set_delete(game.battle.routed, lord)
@@ -8638,7 +8661,6 @@ exports.setup = function (seed, scenario, options) {
 
 		actions: 0,
 		command: NOBODY,
-		other: NOBODY,
 		who: NOBODY,
 		vassal: NOVASSAL,
 		where: NOWHERE,
@@ -10060,19 +10082,19 @@ states.heralds = {
 }
 
 function goto_heralds_attempt(lord: Lord) {
-	game.other = lord
+	game.who = lord
 	game.state = "heralds_attempt"
 }
 
 states.heralds_attempt = {
 	inactive: "Heralds Attempt",
 	prompt() {
-		view.prompt = `Attempt to shift ${lord_name[game.other]} to next Turn Box. `
+		view.prompt = `Attempt to shift ${lord_name[game.who]} to next Turn Box. `
 		prompt_influence_check(game.command)
 	},
 	check(bonus) {
 		if (roll_influence_check(game.command, bonus)) {
-			set_lord_calendar(game.other, current_turn() + 1)
+			set_lord_calendar(game.who, current_turn() + 1)
 		}
 		end_heralds_attempt()
 	},
@@ -11732,6 +11754,7 @@ exports.view = function (state, current) {
 
 		command: game.command,
 		where: game.where,
+		who: game.who,
 		hand: null,
 		plan: null,
 	}
