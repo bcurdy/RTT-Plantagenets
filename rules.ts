@@ -8742,6 +8742,9 @@ function setup_Ic() {
 	add_york_favour(LOC_BURGUNDY)
 	add_york_favour(LOC_IRELAND)
 
+	add_lord_capability(LORD_WARWICK_Y, AOW_LANCASTER_MONTAGU)
+	capability_muster_effects_common(LORD_WARWICK_Y, AOW_LANCASTER_MONTAGU)
+
 	setup_vassals()
 }
 
