@@ -1649,7 +1649,7 @@ function on_update() {
 	action_button_with_argument("check", 2, "Check +2")
 	action_button_with_argument("check", 1, "Check +1")
 	action_button_with_argument("check", 0, "Check")
-	action_button_with_argument("check_success", "Success")
+	action_button("check_success", "Check")
 
 	// Supply
 	action_button("stronghold", "Stronghold")

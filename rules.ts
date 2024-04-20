@@ -12,7 +12,6 @@
 	handle both lords at same sea...
 
 	NAVAL BLOCKADE - for Tax and Tax Collectors
-	LONDON FOR YORK - except by Event exception
 	REGROUP - other timing windows
 
 	Scenario special rules.
@@ -2002,14 +2001,14 @@ function prompt_influence_check(lord: Lord, add_cost: number = 0, add_rating: nu
 
 function prompt_influence_check_success(add_cost: number = 0) {
 	let cost = calc_influence_check_cost(0, add_cost)
-	view.prompt += ` Influence Check for ${cost} IP.`
+	view.prompt += ` Influence Check success for ${cost} IP.`
 	view.actions.check_success = 1
 }
 
 function roll_influence_check_success(add_cost: number = 0) {
 	let cost = calc_influence_check_cost(0, add_cost)
 	reduce_influence(cost)
-	log(`Influence Check Automatic`)
+	log(`Influence Check success`)
 	return true
 }
 
@@ -2347,7 +2346,7 @@ function goto_pillage() {
 }
 
 function can_pillage(loc: Locale) {
-	return !is_exile(loc) && !has_exhausted_marker(loc)
+	return !is_sea(loc) && !is_exile(loc) && !has_exhausted_marker(loc)
 }
 
 states.pillage = {
@@ -2390,7 +2389,7 @@ states.pillage = {
 	},
 	lord(lord) {
 		disband_influence_penalty(lord)
-		disband_lord(lord)
+		disband_lord(lord, is_lord_at_sea(lord)) // shipwreck if unfed at sea
 	},
 	done() {
 		if (is_levy_phase())
@@ -3925,6 +3924,8 @@ function is_seamanship_in_play() {
 }
 
 function can_sail_to(to: Locale) {
+	if (is_sea(to))
+		return true
 	if (is_wales_forbidden(to))
 		return false
 	if (has_enemy_lord(to)) {
@@ -4068,7 +4069,7 @@ function do_sail(to: Locale) {
 		spend_all_actions()
 
 	// you can go to enemy lord with norfolk capability
-	if (has_enemy_lord(to))
+	if (is_seaport(to) && has_enemy_lord(to))
 		goto_confirm_approach_sail()
 	else
 		resume_command()
@@ -4452,7 +4453,7 @@ function goto_parley_campaign() {
 
 	// Campaign phase, and current location is no cost (except some events), and always successful.
 	if (can_parley_at(here)) {
-		log(`Parley at ${data.locales[here]}`)
+		log(`Parley at ${locale_name[here]}`)
 		shift_favour_toward(here)
 		if (is_lancaster_lord(game.command) && is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
 			reduce_lancaster_influence(1)
