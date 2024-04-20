@@ -5946,26 +5946,34 @@ states.regroup_roll_protection = {
 			gen_action_routed_mercenaries(game.who)
 	},
 	routed_burgundians(lord) {
-		action_roll_protection(lord, BURGUNDIANS)
+		action_regroup_roll(lord, BURGUNDIANS)
 	},
 	routed_mercenaries(lord) {
-		action_roll_protection(lord, MERCENARIES)
+		action_regroup_roll(lord, MERCENARIES)
 	},
 	routed_longbowmen(lord) {
-		action_roll_protection(lord, LONGBOWMEN)
+		action_regroup_roll(lord, LONGBOWMEN)
 	},
 	routed_men_at_arms(lord) {
-		action_roll_protection(lord, MEN_AT_ARMS)
+		action_regroup_roll(lord, MEN_AT_ARMS)
 	},
 	routed_militia(lord) {
-		action_roll_protection(lord, MILITIA)
+		action_regroup_roll(lord, MILITIA)
 	},
 }
 
-function action_roll_protection(lord: Lord, force: Force) {
-	roll_protection(lord, force)
+function action_regroup_roll(lord: Lord, type: Force) {
+	let protection = FORCE_PROTECTION[type]
+	let die = roll_die()
+	if (die <= protection) {
+		logi(`${get_force_name(lord, type)} ${range(protection)}: ${MISS[die]}`)
+		add_lord_routed_forces(lord, type, -1)
+		add_lord_forces(lord, type, 1)
+	} else {
+		logi(`${get_force_name(lord, type)} ${range(protection)}: ${HIT[die]}`)
+	}
 
-	game.event_regroup[force]--
+	game.event_regroup[type]--
 
 	for (let i = 2; i < 7; ++i)
 		if (game.event_regroup[i] > 0)
