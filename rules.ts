@@ -8452,7 +8452,7 @@ function check_disband_victory() {
 function check_threshold_victory() {
 	// This needs to change to account for graduated victory thresholds in some scenarios.
 
-	if (Math.abs(game.influence) >= scenario_victory_threshold(game.scenario)) {
+	if (Math.abs(game.influence) >= scenario_victory_threshold()) {
 		if (game.influence > 0)
 			goto_game_over(LANCASTER, `${LANCASTER} won with ${game.influence} Influence.`)
 		else
@@ -8526,7 +8526,7 @@ function scenario_victory_threshold() {
 		return 30
 	case SCENARIO_IB:
 		return 100 // no threshold
-	case SCENARIO_IC
+	case SCENARIO_IC:
 		return 25
 	case SCENARIO_II:
 		if (turn <= 5)
@@ -11730,7 +11730,7 @@ exports.view = function (state, current) {
 
 		end: scenario_last_turn[game.scenario],
 		turn: game.turn,
-		victory_check: scenario_victory_threshold(game.scenario),
+		victory_check: scenario_victory_threshold(),
 		influence: game.influence,
 
 		events: game.events,
