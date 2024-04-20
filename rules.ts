@@ -4786,8 +4786,19 @@ states.march_confirm_intercept = {
 
 // === 4.3.4 INTERCEPT ===
 
+function has_unmoving_friendly_lord(here) {
+	for (let lord of all_friendly_lords()) {
+		if (get_lord_locale(lord) === here)
+			if (!set_has(game.group, lord))
+				return true
+	}
+	return false
+}
+
 function can_intercept_to(to: Locale) {
-	// TODO: forbid lancaster intercept into york moving to york, and vice versa
+	// forbid lancaster intercept into york moving to york, and vice versa
+	if (has_unmoving_friendly_lord(to))
+		return false
 	if (is_truce_in_effect())
 		return false
 	if (is_wales_forbidden_to_enemy(to))
