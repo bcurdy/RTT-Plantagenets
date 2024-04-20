@@ -1149,26 +1149,6 @@ function discard_events(when) {
 	}
 }
 
-function discard_extra_levy_events() {
-	for (let i = 0; i < game.events.length; ) {
-		let c = game.events[i]
-		if (c === Y20)
-			array_remove(game.events, i)
-		else
-			++i
-	}
-}
-
-function discard_friendly_events(when) {
-	for (let i = 0; i < game.events.length; ) {
-		let c = game.events[i]
-		if (is_friendly_card(c) && data.cards[c].when === when)
-			array_remove(game.events, i)
-		else
-			++i
-	}
-}
-
 function is_event_in_play(c: Card) {
 	return set_has(game.events, c)
 }
@@ -3353,9 +3333,13 @@ states.levy_capability = {
 
 function goto_levy_discard_events() {
 	delete game.levy_flags
+
 	// Discard "This Levy" events from play.
 	discard_events("this_levy")
-	discard_extra_levy_events()
+
+	// Discard Held "This Levy" events.
+	set_delete(game.events, EVENT_YORK_YORKIST_PARADE)
+
 	goto_campaign_plan()
 }
 
@@ -7759,8 +7743,17 @@ states.warden_of_the_marches = {
 function goto_battle_aftermath() {
 	set_active(game.battle.attacker)
 
-	// Events
-	discard_events("hold")
+	// Discard played battle events
+	set_delete(game.events, EVENT_LANCASTER_FOR_TRUST_NOT_HIM)
+	set_delete(game.events, EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
+	set_delete(game.events, EVENT_LANCASTER_RAVINE)
+	set_delete(game.events, EVENT_LANCASTER_SUSPICION)
+	set_delete(game.events, EVENT_YORK_CALTROPS)
+	set_delete(game.events, EVENT_YORK_LEEWARD_BATTLE_LINE)
+	set_delete(game.events, EVENT_YORK_PATRICK_DE_LA_MOTE)
+	set_delete(game.events, EVENT_YORK_REGROUP)
+	set_delete(game.events, EVENT_YORK_SUSPICION)
+	set_delete(game.events, EVENT_YORK_SWIFT_MANEUVER)
 
 	// Recovery
 	spend_all_actions()
@@ -7936,6 +7929,13 @@ function goto_remove_markers() {
 // === 4.8 END CAMPAIGN ===
 
 function goto_end_campaign() {
+	// Discard "This Campaign" events from play.
+	discard_events("this_campaign")
+
+	// Discard Held "This Campaign" events.
+	set_delete(game.events, EVENT_LANCASTER_PARLIAMENTS_TRUCE)
+	set_delete(game.events, EVENT_YORK_PARLIAMENTS_TRUCE)
+
 	log_h1("End Campaign")
 	set_active(P1)
 	goto_tides_of_war()
@@ -8335,7 +8335,6 @@ function disband_influence_penalty(lord: Lord) {
 
 function goto_advance_campaign() {
 	game.turn++
-
 	log_h1("Levy " + current_turn_name())
 	goto_levy_arts_of_war()
 }
@@ -8416,9 +8415,6 @@ function remove_half(lord: Lord, type: Asset) {
 
 function goto_reset() {
 	game.state = "reset"
-
-	// Discard "This Campaign" events from play.
-	discard_friendly_events("this_campaign")
 }
 
 states.reset = {
