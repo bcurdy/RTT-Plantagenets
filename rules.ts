@@ -39,7 +39,7 @@
 // === TYPES ===
 
 declare function require(name: string): any
-declare var exports: any
+declare let exports: any
 
 type Side = "York" | "Lancaster"
 type Player = "York" | "Lancaster" | "Both" | "None"
@@ -1068,12 +1068,6 @@ function current_hand() {
 	if (game.active === YORK)
 		return game.hand_y
 	return game.hand_l
-}
-
-function is_friendly_card(c: Card) {
-	if (game.active === YORK)
-		return is_york_card(c)
-	return is_lancaster_card(c)
 }
 
 function has_card_in_hand(c: Card) {
@@ -5432,10 +5426,6 @@ function is_attacker() {
 	return game.active === game.battle.attacker
 }
 
-function is_defender() {
-	return game.active !== game.battle.attacker
-}
-
 function is_archery_step() {
 	return game.battle.step === 0
 }
@@ -6012,12 +6002,6 @@ function end_regroup() {
 }
 
 // === BATTLE EVENT: CALTROPS ===
-
-function is_caltrops_in_play() {
-	if (game.active === YORK)
-		return is_event_in_play(EVENT_YORK_CALTROPS)
-	return false
-}
 
 states.caltrops = {
 	inactive: "Caltrops",
@@ -8589,24 +8573,24 @@ const scenario_last_turn = [
 function scenario_victory_threshold() {
 	let turn = current_turn()
 	switch (game.scenario) {
-	case SCENARIO_IA:
-		if (turn <= 5)
-			return 40
-		if (turn <= 10)
-			return 35
-		return 30
-	case SCENARIO_IB:
-		return 100 // no threshold
-	case SCENARIO_IC:
-		return 25
-	case SCENARIO_II:
-		if (turn <= 5)
-			return 40
-		if (turn <= 10)
-			return 35
-		return 30
-	case SCENARIO_III:
-		return 45
+		case SCENARIO_IA:
+			if (turn <= 5)
+				return 40
+			if (turn <= 10)
+				return 35
+			return 30
+		case SCENARIO_IB:
+			return 100 // no threshold
+		case SCENARIO_IC:
+			return 25
+		case SCENARIO_II:
+			if (turn <= 5)
+				return 40
+			if (turn <= 10)
+				return 35
+			return 30
+		case SCENARIO_III:
+			return 45
 	}
 	return 45
 }
@@ -8622,7 +8606,7 @@ function is_card_in_scenario(c: Card): boolean {
 		case SCENARIO_II:
 			return (roses === 0 || roses === 2) && c !== L4
 		case SCENARIO_III:
-			return (roses === 0 || roses === 3)
+			return roses === 0 || roses === 3
 	}
 	throw "INVALID SCENARIO"
 }
@@ -12118,13 +12102,6 @@ function pack4_set(word: number, n: number, x: number) {
 
 // Array remove and insert (faster than splice)
 
-function array_remove_item<T>(array: T[], item: T) {
-	let n = array.length
-	for (let i = 0; i < n; ++i)
-		if (array[i] === item)
-			return array_remove(array, i)
-}
-
 function array_remove<T>(array: T[], index: number) {
 	let n = array.length
 	for (let i = index + 1; i < n; ++i)
@@ -12260,22 +12237,6 @@ function map_clear(map) {
 	map.length = 0
 }
 
-function map_has(map, key) {
-	let a = 0
-	let b = (map.length >> 1) - 1
-	while (a <= b) {
-		let m = (a + b) >> 1
-		let x = map[m << 1]
-		if (key < x)
-			b = m - 1
-		else if (key > x)
-			a = m + 1
-		else
-			return true
-	}
-	return false
-}
-
 function map_get(map, key, missing) {
 	let a = 0
 	let b = (map.length >> 1) - 1
@@ -12325,11 +12286,6 @@ function map_delete(map, item) {
 			return
 		}
 	}
-}
-
-function map_for_each<K,V>(map: MyMap<K,V>, f: (k:K,v:V)=>void) {
-	for (let i = 0; i < map.length; i += 2)
-		f(map[i] as K, map[i+1] as V)
 }
 
 // === FUZZING ASSERTS ===
