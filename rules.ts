@@ -3505,9 +3505,12 @@ function spend_march_action(cost) {
 }
 
 function spend_all_actions() {
+	/* No more actions (including free ones)! */
 	clear_flag(FLAG_SURPRISE_LANDING)
 	clear_flag(FLAG_FIRST_ACTION)
 	clear_flag(FLAG_FIRST_MARCH_HIGHWAY)
+	clear_flag(FLAG_MARCH_TO_PORT)
+	clear_flag(FLAG_SAIL_TO_PORT)
 	game.actions = 0
 }
 
@@ -4085,6 +4088,8 @@ function fail_sail() {
 
 function goto_confirm_approach_sail() {
 	game.state = "confirm_approach_sail"
+	clear_flag(FLAG_MARCH_TO_PORT)
+	set_flag(FLAG_SAIL_TO_PORT)
 }
 
 states.confirm_approach_sail = {
@@ -4728,6 +4733,8 @@ function end_march() {
 	// Disbanded in battle!
 	if (!is_lord_on_map(game.command)) {
 		delete game.march
+		clear_flag(FLAG_MARCH_TO_PORT)
+		clear_flag(FLAG_SAIL_TO_PORT)
 		spend_all_actions()
 		resume_command()
 		return
@@ -11512,7 +11519,7 @@ function end_rebel_supply_depot() {
 function can_play_surprise_landing() {
 	let here = get_lord_locale(game.command)
 	if (has_flag(FLAG_SAIL_TO_PORT)) {
-		if (here !== LOC_CALAIS && here !== LOC_PEMBROKE && here !== LOC_HARLECH && here !== LOC_LANCASTER)
+		if (is_seaport(here) && here !== LOC_CALAIS && here !== LOC_PEMBROKE && here !== LOC_HARLECH && here !== LOC_LANCASTER)
 			return true
 	}
 	return false
