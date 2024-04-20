@@ -2639,6 +2639,17 @@ function disband_lord(lord: Lord, permanently = false) {
 	})
 }
 
+function exile_lord(lord: Lord) {
+	log("Exiled L" + lord)
+	disband_lord(lord, false)
+	if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME)) {
+		logcap(AOW_YORK_ENGLAND_IS_MY_HOME)
+		set_lord_calendar(lord, current_turn() + 1)
+	} else {
+		set_lord_in_exile(lord)
+	}
+}
+
 // === 3.3.1 MUSTER EXILES ===
 
 function goto_muster_exiles() {
@@ -4080,7 +4091,7 @@ function do_sail(to: Locale) {
 	if (is_seaport(to) && has_enemy_lord(to))
 		goto_confirm_approach_sail()
 	else
-		resume_command()
+		end_sail()
 }
 
 function fail_sail() {
@@ -4088,7 +4099,7 @@ function fail_sail() {
 		spend_action(1)
 	else
 		spend_all_actions()
-	resume_command()
+	end_sail()
 }
 
 function goto_confirm_approach_sail() {
@@ -4105,8 +4116,18 @@ states.confirm_approach_sail = {
 		view.actions.approach = 1
 	},
 	approach() {
-		goto_choose_exile_from_sail()
+		goto_choose_exile()
 	},
+}
+
+function end_sail() {
+	// Disbanded in battle!
+	if (!is_lord_on_map(game.command)) {
+		clear_flag(FLAG_MARCH_TO_PORT)
+		clear_flag(FLAG_SAIL_TO_PORT)
+		spend_all_actions()
+	}
+	resume_command()
 }
 
 // === 4.6.2 ACTION: FORAGE ===
@@ -4722,19 +4743,21 @@ function march_with_group_2() {
 
 	log(`Marched to %${to}${format_group_move()}.`)
 
-	for (let lord of game.group) {
+	for (let lord of game.group)
 		set_lord_locale(lord, to)
-		// Note: We flag the lords moved and levy burgundians after king's parley and parliament's truce have resolved.
-		// See end_kings_parley.
-	}
+
+	// Note: We flag the lords moved and levy burgundians after king's parley and parliament's truce have resolved.
+	// See end_kings_parley
+	// See end_parliaments_truce
 
 	goto_march_confirm()
 }
 
 function end_march() {
+	delete game.march
+
 	// Disbanded in battle!
 	if (!is_lord_on_map(game.command)) {
-		delete game.march
 		clear_flag(FLAG_MARCH_TO_PORT)
 		clear_flag(FLAG_SAIL_TO_PORT)
 		spend_all_actions()
@@ -4742,14 +4765,6 @@ function end_march() {
 		return
 	}
 
-	let here = get_lord_locale(game.command)
-	if (is_seaport(here))
-		set_flag(FLAG_MARCH_TO_PORT)
-	else
-		clear_flag(FLAG_MARCH_TO_PORT)
-	clear_flag(FLAG_SAIL_TO_PORT)
-
-	delete game.march
 	resume_command()
 }
 
@@ -5073,6 +5088,14 @@ function end_parliaments_truce() {
 		levy_burgundians(lord)
 	}
 
+	// And set marching flags here too.
+	let here = get_lord_locale(game.command)
+	if (is_seaport(here))
+		set_flag(FLAG_MARCH_TO_PORT)
+	else
+		clear_flag(FLAG_MARCH_TO_PORT)
+	clear_flag(FLAG_SAIL_TO_PORT)
+
 	goto_blocked_ford()
 }
 
@@ -5126,37 +5149,10 @@ function goto_choose_exile() {
 		game.state = "choose_exile"
 		set_active_enemy()
 	} else {
-		end_march()
-	}
-}
-
-function goto_choose_exile_from_sail() {
-	spend_all_actions() // end command upon any approach
-	game.state = "choose_exile_from_sail"
-	set_active_enemy()
-}
-
-function end_choose_exile() {
-	if (has_friendly_lord(get_lord_locale(game.command))) {
-		// still some lords not exiled to fight.
-		set_active_enemy()
-		goto_battle()
-	} else {
-		// no one left, goto finish marching.
-		set_active_enemy()
-		end_march()
-	}
-}
-
-function end_choose_exile_from_sail() {
-	if (has_friendly_lord(get_lord_locale(game.command))) {
-		// still some lords not exiled to fight.
-		set_active_enemy()
-		goto_battle()
-	} else {
-		// no one left, goto finish sailing.
-		set_active_enemy()
-		resume_command()
+		if (game.march)
+			end_march()
+		else
+			end_sail()
 	}
 }
 
@@ -5171,46 +5167,24 @@ states.choose_exile = {
 	},
 	lord(lord) {
 		push_undo()
-		// TODO: give up assets as if spoils?
+		add_spoils(PROV, get_lord_assets(lord, PROV))
+		add_spoils(CART, get_lord_assets(lord, CART))
 		exile_lord(lord)
 	},
 	done() {
-		end_choose_exile()
+		set_active_enemy()
+		goto_exile_spoils()
 	},
-}
-
-states.choose_exile_from_sail = {
-	inactive: "Exiles",
-	prompt() {
-		view.prompt = "Select Lords to go into Exile."
-		for_each_friendly_lord_in_locale(get_lord_locale(game.command), lord => {
-			gen_action_lord(lord)
-		})
-		view.actions.done = 1
-	},
-	lord(lord) {
-		push_undo()
-		// TODO: give up assets as if spoils?
-		exile_lord(lord)
-	},
-	done() {
-		end_choose_exile_from_sail()
-	},
-}
-
-function exile_lord(lord: Lord) {
-	if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME)) {
-		disband_lord(lord, false)
-		set_lord_calendar(lord, current_turn() + 1)
-	} else {
-		set_lord_in_exile(lord)
-		disband_lord(lord, false)
-	}
 }
 
 // === 4.3.5 APPROACH - SPOILS AFTER CHOOSING EXILE ===
 
-// TODO: spoils after choosing exile
+function log_spoils() {
+	if (game.spoils[PROV] > 0)
+		logi(game.spoils[PROV] + " Provender")
+	if (game.spoils[CART] > 0)
+		logi(game.spoils[CART] + " Cart")
+}
 
 function has_any_spoils() {
 	return game.spoils && game.spoils[PROV] + game.spoils[COIN] + game.spoils[CART] + game.spoils[SHIP] > 0
@@ -5252,6 +5226,65 @@ function take_spoils(type: Asset) {
 	add_spoils(type, -1)
 	if (!has_any_spoils())
 		game.who = NOBODY
+}
+
+function goto_exile_spoils() {
+	if (has_any_spoils()) {
+		log_h4("Spoils")
+		log_spoils()
+		game.state = "exile_spoils"
+		game.who = find_lone_friendly_lord_at(get_lord_locale(game.command))
+	} else {
+		end_exile_spoils()
+	}
+}
+
+function end_exile_spoils() {
+	game.who = NOBODY
+	delete game.spoils
+	if (has_enemy_lord(get_lord_locale(game.command))) {
+		// still some lords not exiled to fight.
+		goto_battle()
+	} else {
+		// no one left, goto finish marching.
+		if (game.march)
+			end_march()
+		else
+			end_sail()
+	}
+}
+
+states.exile_spoils = {
+	inactive: "Spoils",
+	prompt() {
+		if (has_any_spoils()) {
+			view.prompt = "Spoils: Divide " + list_spoils() + "."
+			let here = get_lord_locale(game.command)
+			for (let lord of all_friendly_lords())
+				if (get_lord_locale(lord) === here)
+					prompt_select_lord(lord)
+			if (game.who !== NOBODY)
+				prompt_spoils()
+		} else {
+			view.prompt = "Spoils: All done."
+			view.actions.end_spoils = 1
+		}
+	},
+	lord: action_select_lord,
+
+	take_prov() {
+		push_undo_without_who()
+		take_spoils(PROV)
+	},
+
+	take_cart() {
+		push_undo_without_who()
+		take_spoils(CART)
+	},
+
+	end_spoils() {
+		end_exile_spoils()
+	},
 }
 
 // === 4.4 BATTLE ===
@@ -7308,13 +7341,6 @@ states.battle_losses = {
 
 // === 4.4.3 ENDING THE BATTLE: SPOILS ===
 
-function log_spoils() {
-	if (game.spoils[PROV] > 0)
-		logi(game.spoils[PROV] + " Provender")
-	if (game.spoils[CART] > 0)
-		logi(game.spoils[CART] + " Cart")
-}
-
 function calculate_spoils() {
 	let n_prov = 0
 	let n_cart = 0
@@ -7742,7 +7768,11 @@ function goto_battle_aftermath() {
 	// Recovery
 	spend_all_actions()
 	delete game.battle
-	end_march()
+
+	if (game.march)
+		end_march()
+	else
+		end_sail()
 }
 
 // === 4.7 FEED ===
