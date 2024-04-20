@@ -1,9 +1,10 @@
 main { background-color: dimgray; }
 #roles { background-color: gray; }
 header { background-color: silver; }
-header.your_turn { background-color: orange; }
-#role_York { background-color: whitesmoke; }
-#role_Lancaster { background-color: salmon; }
+body.York header.your_turn { background-color: hsl(217, 73%, 78%); }
+body.Lancaster header.your_turn { background-color: hsl(355, 83%, 72%); }
+#role_York { background-color: hsl(217, 53%, 88%); }
+#role_Lancaster { background-color: hsl(355, 63%, 82%); }
 #turn_info { background-color: gray; }
 
 #log { background-color: whitesmoke; }
