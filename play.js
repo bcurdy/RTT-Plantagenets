@@ -31,6 +31,8 @@ function map2_get(map, x, y, v) {
 }
 
 function set_has(set, item) {
+	if (!set)
+		return false
 	let a = 0
 	let b = set.length - 1
 	while (a <= b) {
@@ -1240,7 +1242,7 @@ function update_locale(loc) {
 	layout_locale_cylinders(loc)
 
 	ui.locale[loc].classList.toggle("action", is_action("locale", loc) || is_action("laden_march", loc))
-	ui.locale[loc].classList.toggle("selected", view.where === loc)
+	ui.locale[loc].classList.toggle("selected", view.where === loc || set_has(view.where, loc))
 	ui.locale[loc].classList.toggle("supply_path", !!(view.supply && view.supply[0] === loc))
 	ui.locale[loc].classList.toggle("supply_source", !!(view.supply && view.supply[1] === loc))
 	if (ui.locale_name[loc]) {
@@ -1709,7 +1711,8 @@ function on_update() {
 	action_button("add_men_at_arms", "Add Men at Arms")
 	
 	// REMOVE INFLUENCE
-	action_button("remove_favour", "Remove favour")
+	action_button("influence", "Influence")
+	action_button("favour", "Favour")
 
 	action_button("pass", "Pass")
 	action_button("done", "Done")

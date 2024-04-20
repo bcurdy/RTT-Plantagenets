@@ -227,7 +227,8 @@ interface State {
 	pillage?(): void,
 	play?(): void,
 	port?(): void,
-	remove_favour?(): void,
+	favour?(): void,
+	influence?(): void,
 	roll?(): void,
 	sail?(): void,
 	stronghold?(): void,
@@ -270,7 +271,7 @@ interface View {
 	group?: Lord[],
 	what?: Card,
 	who?: Lord,
-	where?: Locale,
+	where?: Locale | Locale[],
 }
 
 // === GLOBALS ===
@@ -2857,6 +2858,7 @@ states.muster_lord = {
 						gen_action_vassal(vassal)
 
 				// Add Transport
+				// TODO: 1.7.3 English Ships -- no more than 9 lords may have ships
 				if (is_seaport(here) && get_lord_assets(game.command, SHIP) < 2)
 					view.actions.take_ship = 1
 
@@ -10356,7 +10358,8 @@ function goto_warwicks_propaganda() {
 states.warwicks_propaganda = {
 	inactive: "Warwick's Propaganda",
 	prompt() {
-		view.prompt = `Select up to ${3-game.count} Yorkists Locales.`
+		view.prompt = `Warwick's Propaganda: Select up to 3 Yorkists Locales.`
+		view.where = game.event_propaganda
 		for (let loc of all_locales) {
 			if (game.count < 3 && has_york_favour(loc) && !is_exile(loc) && !is_propaganda_target(loc)) {
 				gen_action_locale(loc)
@@ -10381,11 +10384,11 @@ function goto_yorkist_choice() {
 }
 
 states.warwicks_propaganda_yorkist_choice = {
-	inactive: "Yorkists to choose to Pay or Remove favour",
+	inactive: "Warwick's Propaganda",
 	prompt() {
-		view.prompt = `For each Stronghold, Pay 2 influence or Remove favour.`
 		let done = true
 		if (game.where === NOWHERE) {
+			view.prompt = "Warwick's Propaganda: Pay 2 influence or Remove favour for each selected stronghold."
 			for (let loc of all_locales) {
 				if (is_propaganda_target(loc)) {
 					gen_action_locale(loc)
@@ -10396,21 +10399,22 @@ states.warwicks_propaganda_yorkist_choice = {
 				view.actions.done = 1
 			}
 		} else {
-			view.actions.remove_favour = 1
-			view.actions.pay = 1
+			view.prompt = `Warwick's Propaganda: Pay 2 influence points or remove Favour for ${locale_name[game.where]}.`
+			view.actions.influence = 1
+			view.actions.favour = 1
 		}
 	},
 	locale(loc) {
 		game.where = loc
 	},
-	remove_favour() {
+	favour() {
 		push_undo()
 		remove_york_favour(game.where)
 		remove_propaganda_target(game.where)
 		logi(`Removed favour in ${game.where}`)
 		game.where = NOWHERE
 	},
-	pay() {
+	influence() {
 		push_undo()
 		reduce_influence(2)
 		logi(`Paid 2 to keep ${game.where}`)
@@ -10462,11 +10466,11 @@ function goto_lancaster_event_welsh_rebellion() {
 }
 
 states.welsh_rebellion_remove_troops = {
-	inactive: "Welsh Rebellion \u2014 Remove troops",
+	inactive: "Welsh Rebellion",
 	prompt() {
-		view.prompt = `Welsh Rebellion: Remove 2 Troops from each enemy Lord in Wales.`
 		let done = true
 		if (game.who === NOBODY) {
+			view.prompt = "Welsh Rebellion: Remove 2 Troops from each Yorkist Lord in Wales."
 			for (let lord of all_enemy_lords()) {
 				if (is_lord_on_map(lord) && is_lord_in_wales(lord) && get_lord_moved(lord)) {
 					gen_action_lord(lord)
@@ -10478,7 +10482,7 @@ states.welsh_rebellion_remove_troops = {
 			}
 		}
 		else {
-			view.prompt = `Remove ${game.count} Troops from ${lord_name[game.who]}.`
+			view.prompt = `Welsh Rebellion: Remove 2 Troops from ${lord_name[game.who]}.`
 			if (get_lord_forces(game.who, BURGUNDIANS) > 0)
 				gen_action_burgundians(game.who)
 			if (get_lord_forces(game.who, MERCENARIES) > 0)
@@ -10543,9 +10547,9 @@ function end_welsh_rebellion_remove_troops() {
 }
 
 states.welsh_rebellion_remove_favour = {
-	inactive: "Welsh Rebellion \u2014 Remove Favour",
+	inactive: "Welsh Rebellion",
 	prompt() {
-		view.prompt = `Select up to ${2-game.count} Locales in Wales.`
+		view.prompt = "Welsh Rebellion: Remove 2 Yorkist favour from Wales."
 		for (let loc of all_locales) {
 			if (game.count < 2 && is_wales(loc) && has_york_favour(loc)) {
 				gen_action_locale(loc)
@@ -11724,6 +11728,7 @@ exports.view = function (state, current) {
 		held_l: game.hand_l.length,
 
 		command: game.command,
+		where: game.where,
 		hand: null,
 		plan: null,
 	}
