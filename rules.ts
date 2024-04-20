@@ -4,7 +4,6 @@
 // TODO: check all who = NOBODY etc resets
 // TODO: show fled retinue backsides
 
-// TODO - show held events when played for effect
 
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
@@ -11497,8 +11496,7 @@ function goto_play_sun_in_splendour() {
 states.sun_in_splendour = {
 	inactive: "Sun in Splendour",
 	prompt() {
-		view.prompt = "Sun in Splendour: Muster Edward IV in any friendly locale with no enemy lord"
-		// ... TODO: or a scenario-designated Yorkist Exile box
+		view.prompt = "Sun in Splendour: Muster Edward IV at any friendly Locale with no enemy Lord."
 		for (let loc of all_locales)
 			if (is_friendly_locale(loc))
 				gen_action_locale(loc)
@@ -11506,8 +11504,7 @@ states.sun_in_splendour = {
 	locale(loc) {
 		push_undo()
 		muster_lord(LORD_EDWARD_IV, loc)
-		// TODO: remove_lord_from_exile(LORD_EDWARD_IV) ?
-		// TODO: muster to exile box ?
+		remove_lord_from_exile(LORD_EDWARD_IV)
 		logi(`Mustered Edward IV at ${locale_name[loc]}`)
 
 		end_held_event()
