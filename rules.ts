@@ -4,6 +4,8 @@
 // TODO: log end victory conditions at scenario start
 // TODO: check all who = NOBODY etc resets
 
+// TODO - show held events when played for effect
+
 /*
 	TODO
 
@@ -7359,11 +7361,21 @@ states.battle_spoils = {
 function goto_death_or_disband() {
 	remove_battle_capability_troops()
 
-	// TODO: manually disband routed vassals
+	// TODO: manually disband lords and vassals
 
-	// Routed Vassals get disbanded
 	for (let lord of all_lords) {
 		if (is_lord_on_map(lord)) {
+			// Disband lords without troops
+			if (!lord_has_unrouted_troops(lord)) {
+				log(`${lord_name[lord]} disbanded`)
+				disband_lord(lord)
+			}
+		}
+	}
+
+	for (let lord of all_lords) {
+		if (is_lord_on_map(lord)) {
+			// Routed Vassals get disbanded
 			for_each_vassal_with_lord(lord, v => {
 				if (set_has(game.battle.routed_vassals, v)) {
 					array_remove(game.battle.routed_vassals, v)
@@ -10458,7 +10470,7 @@ function goto_lancaster_event_welsh_rebellion() {
 states.welsh_rebellion_remove_troops = {
 	inactive: "Welsh Rebellion \u2014 Remove troops",
 	prompt() {
-		view.prompt = `Remove 2 Troops from each enemy Lord in Wales.`
+		view.prompt = `Welsh Rebellion: Remove 2 Troops from each enemy Lord in Wales.`
 		let done = true
 		if (game.who === NOBODY) {
 			for (let lord of all_enemy_lords()) {
