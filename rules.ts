@@ -5439,29 +5439,37 @@ function add_battle_capability_troops() {
 			continue
 
 		if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_york_favour(here)) {
+			logcap(AOW_YORK_MUSTERD_MY_SOLDIERS)
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 			add_lord_forces(lord, LONGBOWMEN, 1)
 		}
 		if (lord_has_capability(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS) && has_lancaster_favour(here)) {
+			logcap(AOW_LANCASTER_MUSTERD_MY_SOLDIERS)
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 			add_lord_forces(lord, LONGBOWMEN, 1)
 		}
 		if (lord_has_capability(lord, AOW_LANCASTER_WELSH_LORD) && is_wales(here)) {
+			logcap(AOW_LANCASTER_WELSH_LORD)
 			add_lord_forces(lord, LONGBOWMEN, 2)
 		}
 		if (lord_has_capability(lord, AOW_YORK_PEMBROKE) && is_wales(here)) {
+			logcap(AOW_YORK_PEMBROKE)
 			add_lord_forces(lord, LONGBOWMEN, 2)
 		}
 		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && is_north(here)) {
+			logcap(AOW_YORK_PERCYS_NORTH1)
 			add_lord_forces(lord, MILITIA, 4)
 		}
 		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
+			logcap(AOW_YORK_PERCYS_NORTH2)
 			add_lord_forces(lord, MILITIA, 4)
 		}
 		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
+			logcap(AOW_YORK_KINGDOM_UNITED)
 			add_lord_forces(lord, MILITIA, 3)
 		}
 		if (lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) && is_at_or_adjacent_to_friendly_english_channel_port(here)) {
+			logcap(AOW_LANCASTER_PHILIBERT_DE_CHANDEE)
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 		}
 	}
