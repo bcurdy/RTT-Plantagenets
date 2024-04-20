@@ -2567,6 +2567,7 @@ states.pay_vassals = {
 			if (!done)
 				view.actions.pay_all = 1
 		} else {
+			view.vassal = game.vassal
 			view.actions.pay = 1
 			view.actions.disband = 1
 		}
@@ -3183,6 +3184,7 @@ states.levy_vassal = {
 	inactive: "Levy Vassal",
 	prompt() {
 		view.prompt = `Levy Vassal ${vassal_name[game.vassal]}. `
+		view.vassal = game.vassal
 		let cost = get_levy_vassal_influence_cost()
 		if (is_automatic_levy_vassal_success(game.command))
 			prompt_influence_check_success(cost)
@@ -6220,6 +6222,7 @@ states.for_trust_not_him_bribe = {
 	inactive: "For trust not him",
 	prompt() {
 		view.prompt = "For trust not him: Bribe."
+		view.vassal = game.vassal
 		if (is_automatic_levy_vassal_success(game.who))
 			prompt_influence_check_success()
 		else
@@ -10719,6 +10722,7 @@ states.aragne_3 = {
 	inactive: "L'Universelle Aragne",
 	prompt() {
 		view.prompt = `L'Universelle Aragne: ${vassal_name[game.vassal]}.`
+		view.vassal = game.vassal
 		let lord = get_vassal_lord(game.vassal)
 		prompt_influence_check(lord, 0, vassal_influence(game.vassal))
 	},
