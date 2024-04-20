@@ -2207,6 +2207,7 @@ function end_levy_arts_of_war() {
 function reset_unpaid_lords() {
 	for (let lord of all_friendly_lords()) {
 		if (is_lord_unfed(lord)) {
+			// Note: Percy's Power only affects Pay -- so will never end up here
 			set_lord_unfed(lord, Math.ceil(count_lord_all_forces(lord) / 6))
 		}
 	}
@@ -2416,8 +2417,13 @@ states.pillage_locale = {
 		for (let next of data.locales[game.where].adjacent)
 			shift_favour_away(next)
 
-		game.state = "pillage"
 		game.where = NOWHERE
+
+		// go back to pay/feed
+		if (is_levy_phase())
+			game.state = "pay_troops"
+		else
+			game.state = "feed"
 	},
 }
 
@@ -2978,6 +2984,7 @@ states.muster_lord = {
 	soldiers_of_fortune() {
 		push_undo()
 		push_the_kings_name()
+		// TODO: pay coin immediately?
 		set_lord_unfed(game.command, 1)
 		game.state = "soldiers_of_fortune"
 	},
