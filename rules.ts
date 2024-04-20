@@ -1,17 +1,12 @@
 "use strict"
 
-// TODO: "approach" pause when about to move into intercept range?
 // TODO: log end victory conditions at scenario start
 // TODO: check all who = NOBODY etc resets
 
 // TODO - show held events when played for effect
 
 /*
-	TODO
-
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
-
-	handle both lords at same sea...
 
 	NAVAL BLOCKADE - for Tax and Tax Collectors
 	REGROUP - other timing windows
@@ -8439,7 +8434,7 @@ function check_disband_victory() {
 function check_threshold_victory() {
 	// This needs to change to account for graduated victory thresholds in some scenarios.
 
-	if (Math.abs(game.influence) > scenario_victory_check[game.scenario]) {
+	if (Math.abs(game.influence) >= scenario_victory_threshold(game.scenario)) {
 		if (game.influence > 0)
 			goto_game_over(LANCASTER, `${LANCASTER} won with ${game.influence} Influence.`)
 		else
@@ -8502,13 +8497,30 @@ const scenario_last_turn = [
 	15,
 ]
 
-const scenario_victory_check = [
-	40,
-	45,
-	40,
-	40,
-	40,
-]
+function scenario_victory_threshold() {
+	let turn = current_turn()
+	switch (game.scenario) {
+	case SCENARIO_IA:
+		if (turn <= 5)
+			return 40
+		if (turn <= 10)
+			return 35
+		return 30
+	case SCENARIO_IB:
+		return 100 // no threshold
+	case SCENARIO_IC
+		return 25
+	case SCENARIO_II:
+		if (turn <= 5)
+			return 40
+		if (turn <= 10)
+			return 35
+		return 30
+	case SCENARIO_III:
+		return 45
+	}
+	return 45
+}
 
 function is_card_in_scenario(c: Card): boolean {
 	let roses = data.cards[c].roses
@@ -11697,7 +11709,7 @@ exports.view = function (state, current) {
 
 		end: scenario_last_turn[game.scenario],
 		turn: game.turn,
-		victory_check: scenario_victory_check[game.scenario],
+		victory_check: scenario_victory_threshold(game.scenario),
 		influence: game.influence,
 
 		events: game.events,

@@ -1552,8 +1552,13 @@ function on_update() {
 	ui.held_york.textContent = `${view.held_y} Held`
 	ui.held_lancaster.textContent = `${view.held_l} Held`
 
-	ui.victory_check.style.top = (track_xy[view.victory_check][1]) + "px"
-	ui.victory_check.style.left = (track_xy[view.victory_check][0]) + "px"
+	if (view.victory_check <= 45) {
+		ui.victory_check.style.display = "block"
+		ui.victory_check.style.top = (track_xy[view.victory_check][1]) + "px"
+		ui.victory_check.style.left = (track_xy[view.victory_check][0]) + "px"
+	} else {
+		ui.victory_check.style.display = "none"
+	}
 
 	let town = count_favour(TOWN)
 	ui.town.style.top = (track_xy[Math.abs(town)][1]) + "px"
