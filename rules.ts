@@ -2,6 +2,7 @@
 
 // TODO: log end victory conditions at scenario start
 // TODO: check all who = NOBODY etc resets
+// TODO: show fled retinue backsides
 
 // TODO - show held events when played for effect
 
@@ -5862,9 +5863,11 @@ states.ravine = {
 
 function is_regroup_in_play() {
 	if (is_event_in_play(EVENT_YORK_REGROUP)) {
-		for (let lord of all_york_lords)
-			if (lord_has_routed_troops(lord))
+		for (let p of battle_strike_positions) {
+			let lord = game.battle.array[p]
+			if (is_york_lord(lord) && lord_has_routed_troops(lord) && get_lord_forces(lord, RETINUE))
 				return true
+		}
 	}
 	return false
 }
@@ -5877,12 +5880,16 @@ function goto_regroup() {
 states.regroup = {
 	prompt() {
 		view.prompt = "Regroup: Use Regroup event?"
-		for (let lord of all_york_lords)
-			if (lord_has_routed_troops(lord))
+		for (let p of battle_strike_positions) {
+			let lord = game.battle.array[p]
+			if (is_york_lord(lord) && lord_has_routed_troops(lord) && get_lord_forces(lord, RETINUE))
 				gen_action_lord(lord)
+		}
 	},
 	lord(lord) {
 		push_undo()
+		logevent(EVENT_YORK_REGROUP)
+		logi("L" + lord)
 		game.who = lord
 		game.state = "regroup_roll_protection"
 		game.event_regroup = [
