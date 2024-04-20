@@ -3049,13 +3049,12 @@ function do_levy_ship() {
 	goto_the_kings_name("Levy Ship")
 }
 
-// Check if the levy troops is at vassal seat
 function chamberlains_eligible_levy(loc: Locale) {
-	for (let vassal of all_vassals)
-		if (is_vassal_mustered_with(vassal, game.command) && lord_has_capability(game.command, AOW_LANCASTER_CHAMBERLAINS)) {
-			if (loc === data.vassals[vassal].seat)
+	if (lord_has_capability(game.command, AOW_LANCASTER_CHAMBERLAINS)) {
+		for (let vassal of all_vassals)
+			if (is_vassal_mustered_with(vassal, game.command) && loc === data.vassals[vassal].seat)
 				return true
-		}
+	}
 	return false
 }
 
@@ -3731,14 +3730,20 @@ function command_has_harbingers() {
 }
 
 function chamberlains_eligible_supply(source: Locale) {
-	for (let vassal of all_vassals)
-		if (
-			is_vassal_mustered_with(vassal, game.command) &&
-			lord_has_capability(game.command, AOW_LANCASTER_CHAMBERLAINS)
-		) {
-			if (source === data.vassals[vassal].seat)
+	if (lord_has_capability(game.command, AOW_LANCASTER_CHAMBERLAINS)) {
+		for (let vassal of all_vassals)
+			if (is_vassal_mustered_with(vassal, game.command) && source === data.vassals[vassal].seat)
 				return true
-		}
+	}
+	return false
+}
+
+function quartermasters_eligible_supply(source: Locale) {
+	if (lord_has_capability(game.command, AOW_LANCASTER_QUARTERMASTERS)) {
+		for (let vassal of all_vassals)
+			if (is_vassal_mustered_with(vassal, game.command) && source === data.vassals[vassal].seat)
+				return true
+	}
 	return false
 }
 
@@ -3861,22 +3866,10 @@ states.supply_source = {
 	},
 }
 
-function quartermasters_eligible_supply(source: Locale) {
-	for (let vassal of all_vassals)
-		if (
-			is_vassal_mustered_with(vassal, game.command) &&
-			lord_has_capability(game.command, AOW_LANCASTER_CHAMBERLAINS)
-		) {
-			if (source === data.vassals[vassal].seat)
-				return true
-		}
-	return false
-}
-
 function use_stronghold_supply(source: Locale, amount: number) {
 	logi(`${amount} from Stronghold at %${source}`)
 	add_lord_assets(game.command, PROV, amount)
-	if (!chamberlains_eligible_supply(source))
+	if (!chamberlains_eligible_supply(source) && !quartermasters_eligible_supply(source))
 		deplete_locale(source)
 }
 
