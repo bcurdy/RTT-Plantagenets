@@ -107,6 +107,7 @@ interface Game {
 
 	/* temporary properties for various phases and actions */
 	arts_of_war?: Card[],
+	this_event?: Card,
 	march?: { from: Locale, to: Locale },
 	intercept?: Lord[],
 	battle?: Battle,
@@ -2189,6 +2190,7 @@ states.levy_arts_of_war = {
 
 function end_levy_arts_of_war() {
 	delete game.arts_of_war
+	discard_events("now")
 	set_active_enemy()
 	if (game.active === P2)
 		goto_levy_arts_of_war()
@@ -10072,86 +10074,36 @@ function end_heralds_attempt() {
 // === EVENTS: IMMEDIATE ===
 
 function goto_immediate_event(c: Card) {
+	set_add(game.events, c)
+	game.this_event = c
 	switch (c) {
 		// This Levy / Campaign
 		case EVENT_LANCASTER_BE_SENT_FOR:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_LANCASTER_SEAMANSHIP:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_LANCASTER_FORCED_MARCHES:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_LANCASTER_RISING_WAGES:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_LANCASTER_PARLIAMENT_VOTES:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_LANCASTER_FRENCH_FLEET:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_LANCASTER_BUCKINGHAMS_PLOT:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_LANCASTER_MARGARET_BEAUFORT:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_LANCASTER_THE_EARL_OF_RICHMOND:
-			set_add(game.events, c)
-			return end_immediate_event()
-
 		case EVENT_YORK_JACK_CADE:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_SEAMANSHIP:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_EXILE_PACT:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_RICHARD_OF_YORK:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_THE_COMMONS:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_SUCCESSION:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_LOYALTY_AND_TRUST:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_OWAIN_GLYNDWR:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_GLOUCESTER_AS_HEIR:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_DORSET:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_THE_KINGS_NAME:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_EDWARD_V:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST:
-			set_add(game.events, c)
-			return end_immediate_event()
 		case EVENT_YORK_PRIVY_COUNCIL:
-			set_add(game.events, c)
 			return end_immediate_event()
 
 		// Immediate effect
@@ -10205,6 +10157,7 @@ function goto_immediate_event(c: Card) {
 }
 
 function end_immediate_event() {
+	delete game.this_event
 	resume_levy_arts_of_war()
 }
 
@@ -11752,6 +11705,9 @@ exports.view = function (state, current) {
 
 	if (!game.hidden)
 		view.reveal = -1
+
+	if (game.this_event !== undefined)
+		view.what = game.this_event
 
 	if (current === YORK) {
 		view.hand = game.hand_y
