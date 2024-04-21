@@ -170,8 +170,8 @@ interface Battle {
 	target: Lord[] | null,
 	ahits: number,
 	dhits: number,
-	attacker_artillery: number,
-	defender_artillery: number,
+	aart: number,
+	dart: number,
 	final_charge: 0 | 1,
 	ravine?: Lord,
 	caltrops?: Lord,
@@ -5596,8 +5596,8 @@ function goto_battle() {
 		target: null,
 		ahits: 0,
 		dhits: 0,
-		attacker_artillery: 0,
-		defender_artillery: 0,
+		aart: 0,
+		dart: 0,
 		final_charge: 0,
 	}
 
@@ -6376,9 +6376,9 @@ states.culverins_and_falconets = {
 		}
 
 		if (is_attacker())
-			game.battle.attacker_artillery = (die1 + die2)
+			game.battle.aart = (die1 + die2)
 		else
-			game.battle.defender_artillery = (die1 + die2)
+			game.battle.dart = (die1 + die2)
 
 		discard_lord_capability(lord, c)
 		end_culverins_and_falconets()
@@ -6825,18 +6825,18 @@ function goto_total_hits() {
 		}
 	}
 
-	if (game.battle.attacker_artillery > 0) {
-		log_hits(game.battle.attacker_artillery, "attacker artillery")
-		ahits += game.battle.attacker_artillery << 1
+	if (game.battle.aart > 0) {
+		log_hits(game.battle.aart, "attacker artillery")
+		ahits += game.battle.aart << 1
 	}
-	if (game.battle.defender_artillery > 0) {
+	if (game.battle.dart > 0) {
 		log_hits(game.battle.dhits, "defender artillery")
-		dhits += game.battle.defender_artillery << 1
+		dhits += game.battle.dart << 1
 	}
 
 	// use artillery only once
-	game.battle.attacker_artillery = 0
-	game.battle.defender_artillery = 0
+	game.battle.aart = 0
+	game.battle.dart = 0
 
 	if (ahits & 1)
 		ahits = (ahits >> 1) + 1
