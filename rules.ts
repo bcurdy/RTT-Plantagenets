@@ -522,38 +522,56 @@ function is_stronghold(loc: Locale) {
 }
 
 function is_exile(loc: Locale) {
+	if (loc === NOWHERE || loc >= CALENDAR)
+		return false
 	return data.locales[loc].type === "exile"
 }
 
 function is_city(loc: Locale) {
+	if (loc === NOWHERE || loc >= CALENDAR)
+		return false
 	return data.locales[loc].type === "city"
 }
 
 function is_town(loc: Locale) {
+	if (loc === NOWHERE || loc >= CALENDAR)
+		return false
 	return data.locales[loc].type === "town"
 }
 
 function is_wales(loc: Locale) {
+	if (loc === NOWHERE || loc >= CALENDAR)
+		return false
 	return data.locales[loc].region === "Wales"
 }
 
 function is_south(loc: Locale) {
+	if (loc === NOWHERE || loc >= CALENDAR)
+		return false
 	return data.locales[loc].region === "South"
 }
 
 function is_north(loc: Locale) {
+	if (loc === NOWHERE || loc >= CALENDAR)
+		return false
 	return data.locales[loc].region === "North"
 }
 
 function is_fortress(loc: Locale) {
+	if (loc === NOWHERE || loc >= CALENDAR)
+		return false
 	return data.locales[loc].type === "fortress"
 }
 
 function is_sea(loc: Locale) {
+	if (loc === NOWHERE || loc >= CALENDAR)
+		return false
 	return data.locales[loc].type === "sea"
 }
 
 function is_adjacent(a: Locale, b: Locale) {
+	if (a === NOWHERE || a >= CALENDAR)
+		return false
 	return set_has(data.locales[a].adjacent, b)
 }
 
@@ -8192,14 +8210,14 @@ function tides_calc() {
 		for (let y of all_york_lords) {
 			if (is_lord_on_map(y)) {
 				domy += data.lords[y].influence
-				log(`Gain Lords Influence : Yorkists gain ${lord_name[y].influence} for ${lord_name[y]}`)
+				log(`Gain Lords Influence : Yorkists gain ${data.lords[y].influence} for ${lord_name[y]}`)
 			}
 		}
 
 		for (let l of all_lancaster_lords) {
 			if (is_lord_on_map(l)) {
 				doml += data.lords[l].influence
-				log(`Gain Lords Influence : Lancastrians gain ${lord_name[l].influence} for ${lord_name[l]}`)
+				log(`Gain Lords Influence : Lancastrians gain ${data.lords[l].influence} for ${lord_name[l]}`)
 			}
 		}
 	}
@@ -10441,10 +10459,15 @@ states.welsh_rebellion_remove_troops = {
 	inactive: "Welsh Rebellion",
 	prompt() {
 		let done = true
+
+		for (let lord of all_enemy_lords())
+			if (is_lord_in_wales(lord))
+				reveal_lord(lord)
+
 		if (game.who === NOBODY) {
 			view.prompt = "Welsh Rebellion: Remove 2 Troops from each Yorkist Lord in Wales."
 			for (let lord of all_enemy_lords()) {
-				if (is_lord_on_map(lord) && is_lord_in_wales(lord) && get_lord_moved(lord)) {
+				if (is_lord_in_wales(lord) && get_lord_moved(lord)) {
 					gen_action_lord(lord)
 					done = false
 				}
@@ -10510,7 +10533,7 @@ function resume_welsh_rebellion_remove_troops(lord: Lord) {
 
 function end_welsh_rebellion_remove_troops() {
 	for (let lord of all_york_lords) {
-		if (is_lord_on_map(lord) && is_lord_in_wales(lord) && !lord_has_unrouted_units(lord))
+		if (is_lord_in_wales(lord) && !lord_has_unrouted_units(lord))
 			disband_lord(lord, false)
 	}
 	game.count = 0
@@ -11479,7 +11502,7 @@ states.aspielles = {
 				for (let lord of all_enemy_lords())
 					gen_action_lord(lord)
 			} else {
-				view.reveal |= (1 << game.who)
+				reveal_lord(game.who)
 				view.actions.done = 1
 			}
 		} else {
@@ -11677,6 +11700,10 @@ function log_h5(msg: string) {
 }
 
 // === VIEW & ACTION ===
+
+function reveal_lord(lord: Lord) {
+	view.reveal |= (1 << lord)
+}
 
 exports.view = function (state, current) {
 	load_state(state)
