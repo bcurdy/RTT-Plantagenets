@@ -8529,7 +8529,7 @@ function check_threshold_victory() {
 // === 5.3 SCENARIO END VICTORY ===
 
 function check_scenario_end_victory() {
-	if (current_turn() === scenario_last_turn[game.scenario]) {
+	if (current_turn() + 1 === scenario_end_marker[game.scenario]) {
 		if (game.influence === 0)
 			goto_game_over("Draw", "The game ended in a draw.")
 		else if (game.influence > 0)
@@ -8566,12 +8566,12 @@ const scenario_setup = [
 	setup_III,
 ]
 
-const scenario_last_turn = [
-	15,
+const scenario_end_marker = [
+	16,
 	2,
 	8,
-	15,
-	15,
+	16,
+	16,
 ]
 
 function scenario_victory_threshold() {
@@ -11713,7 +11713,7 @@ exports.view = function (state, current) {
 		log: game.log,
 		reveal: 0,
 
-		end: scenario_last_turn[game.scenario],
+		end: scenario_end_marker[game.scenario],
 		turn: game.turn,
 		victory_check: scenario_victory_threshold(),
 		influence: game.influence,

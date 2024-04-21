@@ -1554,14 +1554,20 @@ function on_update() {
 	}
 	ui.turn.style.left = (calendar_xy[view.turn >> 1][0] + 91 - 52) + "px"
 	ui.turn.style.top = (calendar_xy[view.turn >> 1][1] + 94) + "px"
-	ui.end.style.left = (calendar_xy[view.end][0] + 91 - 52) + "px"
-	ui.end.style.top = (calendar_xy[view.end][1] + 94) + "px"
+
+	if (view.end < 16) {
+		ui.end.style.display = null
+		ui.end.style.left = (calendar_xy[view.end][0] + 91 - 52) + "px"
+		ui.end.style.top = (calendar_xy[view.end][1] + 94) + "px"
+	} else {
+		ui.end.style.display = "none"
+	}
 
 	ui.held_york.textContent = `${view.held_y} Held`
 	ui.held_lancaster.textContent = `${view.held_l} Held`
 
 	if (view.victory_check <= 45) {
-		ui.victory_check.style.display = "block"
+		ui.victory_check.style.display = null
 		ui.victory_check.style.top = (track_xy[view.victory_check][1]) + "px"
 		ui.victory_check.style.left = (track_xy[view.victory_check][0]) + "px"
 	} else {
