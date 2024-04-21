@@ -2248,9 +2248,9 @@ function goto_pay_troops() {
 }
 
 states.pay_troops = {
-	inactive: "Pay",
+	inactive: "Pay Troops",
 	prompt() {
-		view.prompt = "Pay: You must Pay your Lord's Troops"
+		view.prompt = "Pay Troops: You must Pay your Lord's Troops"
 		let done = true
 
 		// Pay from own mat
@@ -2267,7 +2267,7 @@ states.pay_troops = {
 
 		// Sharing
 		if (done) {
-			view.prompt = "Pay: You must Pay Lords with Shared Coin."
+			view.prompt = "Pay Troops: You must Pay Lords with Shared Coin."
 			for (let lord of all_friendly_lords()) {
 				if (is_lord_unfed(lord) && can_pay_from_shared(lord)) {
 					gen_action_lord(lord)
@@ -2278,10 +2278,10 @@ states.pay_troops = {
 
 		// Pillage
 		if (done) {
-			view.prompt = "Pay: You must Pillage and/or Disband."
+			view.prompt = "Pay Troops: You must Pillage and/or Disband."
 			for (let lord of all_friendly_lords()) {
 				if (is_lord_unfed(lord)) {
-					view.actions.pillage = 1
+					gen_action_lord(lord)
 					done = false
 				}
 			}
@@ -2289,11 +2289,12 @@ states.pay_troops = {
 
 		// All done!
 		if (done) {
-			view.prompt = "Pay: All done."
+			view.prompt = "Pay Troops: All done."
 			view.actions.end_pay = 1
 		}
 	},
 	coin(lord) {
+		// TODO: no choice so no need to undo here?
 		push_undo()
 		add_lord_assets(lord, COIN, -1)
 		pay_lord(lord)
@@ -2301,12 +2302,15 @@ states.pay_troops = {
 	lord(lord) {
 		push_undo()
 		game.who = lord
-		game.state = "pay_troops_shared"
-	},
-	pillage() {
-		push_undo()
-		reset_unpaid_lords()
-		goto_pillage()
+		if (can_pay_from_shared(lord)) {
+			game.state = "pay_troops_shared"
+		} else if (can_pillage(get_lord_locale(lord))) {
+			// TODO: only reset those at pillage locale?
+			reset_unpaid_lords()
+			game.state = "pay_troops_pillage"
+		} else {
+			game.state = "pay_troops_disband"
+		}
 	},
 	end_pay() {
 		end_pay_troops()
@@ -2314,7 +2318,7 @@ states.pay_troops = {
 }
 
 states.pay_troops_shared = {
-	inactive: "Pay",
+	inactive: "Pay Troops",
 	prompt() {
 		view.prompt = `Pay: You must Feed ${lord_name[game.who]} with Shared Coin.`
 		let loc = get_lord_locale(game.who)
@@ -2340,6 +2344,32 @@ function resume_pay_troops_shared() {
 	}
 }
 
+states.pay_troops_pillage = {
+	inactive: "Pay Troops",
+	prompt() {
+		view.prompt = `Pay Troops: You must Pillage with ${lord_name[game.who]}.`
+		view.actions.pillage = 1
+	},
+	pillage() {
+		do_pillage(game.who)
+		game.who = NOBODY
+		game.state = "pay_troops"
+	},
+}
+
+states.pay_troops_disband = {
+	inactive: "Pay Troops",
+	prompt() {
+		view.prompt = `Pay Troops: You must Disband unpaid Lord ${lord_name[game.who]}.`
+		view.actions.disband = 1
+	},
+	disband() {
+		do_pillage_disband(game.who)
+		game.who = NOBODY
+		game.state = "pay_troops"
+	},
+}
+
 function end_pay_troops() {
 	game.who = NOBODY
 	set_active_enemy()
@@ -2349,98 +2379,33 @@ function end_pay_troops() {
 		goto_pay_lords()
 }
 
-// === 3.2.1 PAY TROOPS (PILLAGE) ===
-
-function goto_pillage() {
-	game.state = "pillage"
-}
+// === 3.2.1 PILLAGE ===
 
 function can_pillage(loc: Locale) {
 	return !is_sea(loc) && !is_exile(loc) && !has_exhausted_marker(loc)
 }
 
-states.pillage = {
-	inactive: "Pillage",
-	prompt() {
-		if (is_levy_phase())
-			view.prompt = `Pillage: Pillage the locales where your unpaid lords are.`
-		else
-			view.prompt = `Pillage: Pillage the locales where your unfed lords are.`
+function do_pillage(lord: Lord) {
+	let here = get_lord_locale(lord)
 
-		let done = true
-		for (let x of all_friendly_lords()) {
-			if (is_lord_on_map(x) && is_lord_unfed(x) && can_pillage(get_lord_locale(x))) {
-				gen_action_locale(get_lord_locale(x))
-				done = false
-			}
-		}
+	log(`Pillaged at %${here}.`)
 
-		if (done) {
-			if (is_levy_phase())
-				view.prompt = `Pillage: You must disband your unpaid lords.`
-			else
-				view.prompt = `Pillage: You must disband your unfed lords.`
-			for (let x of all_friendly_lords()) {
-				if (is_lord_on_map(x) && is_lord_unfed(x)) {
-					gen_action_lord(x)
-					done = false
-				}
-			}
-		}
+	// Same values as Taxing.
+	let n = get_tax_amount(here, lord)
+	add_lord_assets(lord, COIN, n)
+	add_lord_assets(lord, PROV, n)
+	reduce_influence(4 * n)
 
-		if (done) {
-			view.prompt = `Pillage: Done.`
-			view.actions.done = 1
-		}
-	},
-	locale(loc) {
-		game.where = loc
-		game.state = "pillage_locale"
-	},
-	lord(lord) {
-		disband_influence_penalty(lord)
-		disband_lord(lord, is_lord_at_sea(lord)) // shipwreck if unfed at sea
-	},
-	done() {
-		if (is_levy_phase())
-			game.state = "pay_troops"
-		else
-			game.state = "feed"
-	},
+	add_exhausted_marker(here)
+
+	set_favour_enemy(here)
+	for (let next of data.locales[here].adjacent)
+		shift_favour_away(next)
 }
 
-states.pillage_locale = {
-	inactive: "Pillage",
-	prompt() {
-		view.prompt = `Pillage: Choose Lord to Pillage ${locale_name[game.where]}.`
-
-		for (let x of all_friendly_lords()) {
-			if (get_lord_locale(x) === game.where && is_lord_unfed(x)) {
-				gen_action_lord(x)
-			}
-		}
-	},
-	lord(lord) {
-		// Pillage
-		// Same values as Taxing.
-		let num = get_tax_amount(game.where, lord)
-		add_lord_assets(lord, COIN, num)
-		add_lord_assets(lord, PROV, num)
-		reduce_influence(4 * num)
-
-		add_exhausted_marker(game.where)
-		set_favour_enemy(game.where)
-		for (let next of data.locales[game.where].adjacent)
-			shift_favour_away(next)
-
-		game.where = NOWHERE
-
-		// go back to pay/feed
-		if (is_levy_phase())
-			game.state = "pay_troops"
-		else
-			game.state = "feed"
-	},
+function do_pillage_disband(lord: Lord) {
+	disband_influence_penalty(lord)
+	disband_lord(game.who, is_lord_at_sea(lord)) // shipwreck if unfed at sea
 }
 
 // === 3.2.2 PAY LORDS ===
@@ -7788,11 +7753,6 @@ function can_pay_from_shared(lord: Lord) {
 }
 
 function has_friendly_lord_who_must_feed() {
-	if (is_campaign_phase() && has_flag(FLAG_SUPPLY_DEPOT) && game.active === LANCASTER) {
-		clear_flag(FLAG_SUPPLY_DEPOT)
-		logi(`No feed ${EVENT_LANCASTER_REBEL_SUPPLY_DEPOT}`)
-		return false
-	}
 	for (let lord of all_friendly_lords())
 		if (is_lord_unfed(lord))
 			return true
@@ -7814,6 +7774,14 @@ function set_lord_feed_requirements() {
 function goto_feed() {
 	log_br()
 	set_lord_feed_requirements()
+
+	if (is_campaign_phase() && has_flag(FLAG_SUPPLY_DEPOT) && game.active === LANCASTER) {
+		clear_flag(FLAG_SUPPLY_DEPOT)
+		logcap(EVENT_LANCASTER_REBEL_SUPPLY_DEPOT)
+		end_feed()
+		return
+	}
+
 	if (has_friendly_lord_who_must_feed()) {
 		game.state = "feed"
 	} else {
@@ -7841,6 +7809,7 @@ states.feed = {
 		view.prompt = "Feed: You must Feed Lords who Moved or Fought."
 
 		let done = true
+
 		// Feed from own mat
 		if (done) {
 			for (let lord of all_friendly_lords()) {
@@ -7866,10 +7835,10 @@ states.feed = {
 
 		// Unfed
 		if (done) {
-			view.prompt = `Feed: You must pillage to feed your troops.`
+			view.prompt = `Feed: You must Pillage to Feed your Troops.`
 			for (let lord of all_friendly_lords()) {
 				if (is_lord_unfed(lord)) {
-					view.actions.pillage = 1
+					gen_action_lord(lord)
 					done = false
 				}
 			}
@@ -7882,6 +7851,7 @@ states.feed = {
 		}
 	},
 	prov(lord) {
+		// TODO: no choice so no need to undo here?
 		push_undo()
 		add_lord_assets(lord, PROV, -1)
 		feed_lord(lord)
@@ -7889,12 +7859,15 @@ states.feed = {
 	lord(lord) {
 		push_undo()
 		game.who = lord
-		game.state = "feed_lord_shared"
-	},
-	pillage() {
-		push_undo()
-		set_lord_feed_requirements()
-		goto_pillage()
+		if (can_feed_from_shared(lord)) {
+			game.state = "feed_lord_shared"
+		} else if (can_pillage(get_lord_locale(lord))) {
+			// TODO: only reset those at pillage locale?
+			set_lord_feed_requirements()
+			game.state = "feed_lord_pillage"
+		} else {
+			game.state = "feed_lord_disband"
+		}
 	},
 	end_feed() {
 		push_undo()
@@ -7926,6 +7899,32 @@ states.feed_lord_shared = {
 		add_lord_assets(lord, PROV, -1)
 		feed_lord(game.who)
 		resume_feed_lord_shared()
+	},
+}
+
+states.feed_lord_pillage = {
+	inactive: "Feed",
+	prompt() {
+		view.prompt = `Feed: You must Pillage with ${lord_name[game.who]}.`
+		view.actions.pillage = 1
+	},
+	pillage() {
+		do_pillage(game.who)
+		game.who = NOBODY
+		game.state = "feed"
+	},
+}
+
+states.feed_lord_disband = {
+	inactive: "Feed",
+	prompt() {
+		view.prompt = `Feed: You must Disband unfed Lord ${lord_name[game.who]}.`
+		view.actions.disband = 1
+	},
+	disband() {
+		do_pillage_disband(game.who)
+		game.who = NOBODY
+		game.state = "feed"
 	},
 }
 
