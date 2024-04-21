@@ -3286,10 +3286,11 @@ function can_add_transport(who: Lord, what: Asset) {
 // === 3.4.6 LEVY CAPABILITY ===
 
 function can_add_lord_capability(lord: Lord) {
-	if (get_lord_capability(lord, 0) < 0)
-		return true
-	if (get_lord_capability(lord, 1) < 0)
-		return true
+	if (get_lord_capability(lord, 0) < 0 || get_lord_capability(lord, 1) < 0) {
+		for (let c of list_deck())
+			if (can_lord_levy_capability_card(lord, c))
+				return true
+	}
 	return false
 }
 
@@ -3333,18 +3334,22 @@ function discard_lord_capability(lord: Lord, c: Card) {
 	throw new Error("capability not found")
 }
 
+function can_lord_levy_capability_card(lord: Lord, c: Card) {
+	if (!data.cards[c].lords || set_has(data.cards[c].lords, lord))
+		if (!lord_already_has_capability(lord, c) && forbidden_levy_capabilities(c))
+			return true
+	return false
+}
+
 states.levy_capability = {
 	inactive: "Muster",
 	prompt() {
 		let deck = list_deck()
 		view.prompt = `Levy Capability for ${lord_name[game.command]}.`
 		view.arts_of_war = deck
-		for (let c of deck) {
-			if (!data.cards[c].lords || set_has(data.cards[c].lords, game.command)) {
-				if (!lord_already_has_capability(game.command, c) && forbidden_levy_capabilities(c))
-					gen_action_card(c)
-			}
-		}
+		for (let c of deck)
+			if (can_lord_levy_capability_card(game.command, c))
+				gen_action_card(c)
 	},
 	card(c) {
 		add_lord_capability(game.command, c)
