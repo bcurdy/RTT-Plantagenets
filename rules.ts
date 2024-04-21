@@ -1391,6 +1391,13 @@ function count_lord_all_forces(lord: Lord) {
 	)
 }
 
+function lord_has_routed_vassals(lord: Lord) {
+	for (let v of game.battle.routed_vassals)
+		if (is_vassal_mustered_with(v, lord))
+			return true
+	return false
+}
+
 function lord_has_unrouted_units(lord: Lord) {
 	for (let x of all_force_types)
 		if (get_lord_forces(lord, x) > 0)
@@ -7463,11 +7470,32 @@ states.battle_spoils = {
 
 // === 4.4.3 ENDING THE BATTLE: DEATH CHECK AND DISBAND ===
 
+function has_any_friendly_routed_vassals() {
+	for (let v of game.battle.routed_vassals)
+		if (is_friendly_lord(get_vassal_lord(v)))
+			return true
+	return false
+}
+
+function gen_each_friendly_routed_vassal() {
+	let done = true
+	for (let v of game.battle.routed_vassals) {
+		if (is_friendly_lord(get_vassal_lord(v))) {
+			gen_action_vassal(v)
+			done = false
+		}
+	}
+	return done
+}
+
 function goto_death_check() {
+
+	log_h4("Death Check")
+
+	// TODO: move this to aftermath.
 	remove_battle_capability_troops()
 
-	// TODO: manually disband lords and vassals
-
+/*
 	for (let lord of all_lords) {
 		if (is_lord_on_map(lord)) {
 			// Disband lords without troops
@@ -7490,22 +7518,24 @@ function goto_death_check() {
 			})
 		}
 	}
+*/
 
-	if (has_defeated_lords()) {
+	set_active_defender()
+	if (has_defeated_lords() || has_any_friendly_routed_vassals()) {
 		if (is_bloody_thou_art_triggered())
-			game.state = "bloody_thou_art"
+			goto_bloody_thou_art()
 		else
 			game.state = "death_check"
 	} else {
-		end_death_or_disband()
+		end_death_check()
 	}
 }
 
-function end_death_or_disband() {
+function end_death_check() {
 	set_active_enemy()
-	if (has_defeated_lords()) {
+	if (has_defeated_lords() || has_any_friendly_routed_vassals()) {
 		if (is_bloody_thou_art_triggered())
-			game.state = "bloody_thou_art"
+			goto_bloody_thou_art()
 		else
 			game.state = "death_check"
 	} else {
@@ -7551,38 +7581,72 @@ function action_held_event_at_death_check(c: Card) {
 states.death_check = {
 	inactive: "Death Check",
 	prompt() {
-		view.prompt = `Death Check: Routed Lords now Die or Disband.`
+		// TODO: extra "roll" step or not?
 
-		prompt_held_event_at_death_check()
+		if (game.who === NOBODY) {
+			view.prompt = `Death Check: Routed Lords now Die or Disband.`
 
-		let done = true
-		for (let lord of game.battle.routed) {
-			if (is_friendly_lord(lord)) {
-				gen_action_lord(lord)
-				done = false
+			prompt_held_event_at_death_check()
+
+			let done = true
+			for (let lord of game.battle.routed) {
+				if (is_friendly_lord(lord)) {
+					gen_action_lord(lord)
+					done = false
+				}
 			}
-		}
-		if (done) {
-			view.prompt = "Death Check: All done."
-			view.actions.done = 1
+
+			if (done) {
+				view.prompt = "Death Check: Disband all Routed Vassals."
+				done = gen_each_friendly_routed_vassal()
+			}
+
+			if (done) {
+				view.prompt = "Death Check: All done."
+				view.actions.done = 1
+			}
+		} else {
+			if (set_has(game.battle.fled, game.who))
+				view.prompt = `Death Check: ${lord_name[game.who]} dies on 5-6.`
+			else
+				view.prompt = `Death Check: ${lord_name[game.who]} dies on 3-6.`
+			view.actions.roll = 1
 		}
 	},
 	lord(lord) {
-		let threshold = 2
-		let modifier = 0
+		push_undo() // TODO: maybe not needed (only undo back to play events)
+		game.who = lord
+	},
+	roll() {
+		let die = roll_die()
+		if (set_has(game.battle.fled, game.who)) {
+			if (die >= 5) {
+				logi("L" + game.who + " 5-6 " + HIT[die])
+				disband_lord(game.who, true)
+			} else {
+				logi("L" + game.who + " 5-6 " + MISS[die])
+				disband_lord(game.who, false)
+			}
+		} else {
+			if (die >= 3) {
+				logi("L" + game.who + " 3-6 " + HIT[die])
+				disband_lord(game.who, true)
+			} else {
+				logi("L" + game.who + " 3-6 " + MISS[die])
+				disband_lord(game.who, false)
+			}
+		}
 
-		let roll = roll_die()
-		if (set_has(game.battle.fled, lord))
-			modifier = -2
-
-		let success = threshold >= roll + modifier
-		log(`Lord ${lord_name[lord]} ${success ? "Survived" : "Died"}: (${range(2)}) ${success ? HIT[roll] : MISS[roll]} ${modifier < 0 ? "(-2 Fled)" : ""}`)
-		disband_lord(lord, !success)
-		set_delete(game.battle.fled, lord)
-		set_delete(game.battle.routed, lord)
+		set_delete(game.battle.fled, game.who)
+		set_delete(game.battle.routed, game.who)
+		game.who = NOBODY
+	},
+	vassal(v) {
+		set_delete(game.battle.routed_vassals, v)
+		disband_vassal(v)
 	},
 	done() {
-		end_death_or_disband()
+		end_death_check()
 	},
 	card: action_held_event_at_death_check,
 }
@@ -7598,6 +7662,11 @@ function is_bloody_thou_art_triggered() {
 	)
 }
 
+function goto_bloody_thou_art() {
+	game.state = "bloody_thou_art"
+	logcap(AOW_YORK_BLOODY_THOU_ART)
+}
+
 states.bloody_thou_art = {
 	inactive: "Bloody thou art",
 	prompt() {
@@ -7610,16 +7679,27 @@ states.bloody_thou_art = {
 				done = false
 			}
 		}
-		if (done)
+
+		if (done) {
+			view.prompt = "Bloody thou art: Disband all Routed Vassals."
+			done = gen_each_friendly_routed_vassal()
+		}
+
+		if (done) {
+			view.prompt = "Bloody thou art: All done."
 			view.actions.done = 1
+		}
 	},
 	lord(lord) {
-		logcap(AOW_YORK_BLOODY_THOU_ART)
 		disband_lord(lord, true)
 		set_delete(game.battle.routed, lord)
 	},
+	vassal(v) {
+		set_delete(game.battle.routed_vassals, v)
+		disband_vassal(v)
+	},
 	done() {
-		game.state = "death_check"
+		end_death_check()
 	},
 }
 

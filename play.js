@@ -1068,16 +1068,16 @@ function layout_track() {
 function add_vassal(parent, vassal, lord, routed) {
 	let elt
 	if (routed) {
-		if (is_action(routed_force_action_name[VASSAL], vassal))
+		if (is_action(force_action_name[VASSAL], vassal))
 			elt = get_cached_element(
 				"action unit " + force_class_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
-				routed_force_action_name[VASSAL],
+				force_action_name[VASSAL],
 				vassal
 			)
 		else
 			elt = get_cached_element(
 				"unit " + force_class_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
-				routed_force_action_name[VASSAL],
+				force_action_name[VASSAL],
 				vassal
 			)
 	} else {
