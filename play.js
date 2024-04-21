@@ -1712,7 +1712,7 @@ function on_update() {
 
 	// ADDING TROOPS THROUGH EVENTS
 	action_button("add_militia", "Add Militia")
-	action_button("add_militia2", "Add 2 Militias")
+	action_button("add_militia2", "Add 2 Militia")
 
 	action_button("add_men_at_arms", "Add Men at Arms")
 	

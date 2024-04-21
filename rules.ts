@@ -2675,9 +2675,11 @@ states.muster_exiles = {
 			if (done)
 				view.actions.done = true
 		} else {
-			for (let loc of data.exile_boxes)
+			for (let loc of data.exile_boxes) {
+				// TODO: Allied Networks
 				if (has_favour_in_locale(game.active, loc))
 					gen_action_locale(loc)
+			}
 		}
 
 	},
@@ -8798,7 +8800,6 @@ function setup_Ic() {
 	add_lancaster_favour(LOC_CHESTER)
 	add_lancaster_favour(LOC_LANCASTER)
 	add_lancaster_favour(LOC_SCOTLAND)
-	add_lancaster_favour(LOC_FRANCE)
 
 	add_york_favour(LOC_LONDON)
 	add_york_favour(LOC_CALAIS)
@@ -8814,7 +8815,6 @@ function setup_Ic() {
 	add_york_favour(LOC_CANTERBURY)
 	add_york_favour(LOC_SOUTHAMPTON)
 	add_york_favour(LOC_BURGUNDY)
-	add_york_favour(LOC_IRELAND)
 
 	add_lord_capability(LORD_WARWICK_Y, AOW_LANCASTER_MONTAGU)
 	capability_muster_effects_common(LORD_WARWICK_Y, AOW_LANCASTER_MONTAGU)
