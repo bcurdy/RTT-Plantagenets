@@ -6,7 +6,6 @@
 // TODO: 1.7.3 English Ships -- no more than 9 lords may have ships
 // TODO: check interaction of Naval Blockade with Great Ships when parleying across multiple seas
 
-// TODO: manually rout lords in battle
 
 // TODO: [Influence] button instead of [Pay] when paying influence (or [Pay influence])?
 
@@ -21,6 +20,8 @@
 
 	NAVAL BLOCKADE - for Tax and Tax Collectors
 	REGROUP - other timing windows
+
+	Manual ADD and REMOVE battle capability troops at reposition and aftermath
 
 	Scenario special rules.
 
@@ -513,6 +514,7 @@ function is_lieutenant(lord: Lord) {
 }
 
 // TODO: optimize these functions with range checks (like wilderness war)
+// TODO: use array tests (and compact NOWHERE/CALENDAR/CALENDAR_EXILE just before and after normal locales for them to also be in the array
 
 function is_seaport(loc: Locale) {
 	return set_has(data.seaports, loc)
@@ -2622,9 +2624,7 @@ function disband_lord(lord: Lord, permanently = false) {
 
 	for (let x of all_force_types) {
 		set_lord_forces(lord, x, 0)
-		if (get_lord_routed_forces(lord, x) > 0) {
-			set_lord_routed_forces(lord, x, 0)
-		}
+		set_lord_routed_forces(lord, x, 0)
 	}
 
 	set_lord_moved(lord, 0)
@@ -5498,6 +5498,8 @@ function has_strike(pos: number) {
 function add_battle_capability_troops() {
 	let here = game.battle.where
 
+	// TODO: track these explicitly in game.battle for better removal
+
 	for (let lord of all_lords) {
 		if (get_lord_locale(lord) !== here)
 			continue
@@ -5540,39 +5542,33 @@ function add_battle_capability_troops() {
 }
 
 //... And removing them at the end of the battle
-function remove_battle_capability_troops() {
+function remove_battle_capability_troops(lord: Lord) {
 	let here = game.battle.where
-
-	for (let lord of all_lords) {
-		if (get_lord_locale(lord) !== here)
-			continue
-
-		if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_york_favour(here)) {
-			add_lord_forces(lord, MEN_AT_ARMS, -2)
-			add_lord_forces(lord, LONGBOWMEN, -1)
-		}
-		if (lord_has_capability(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS) && has_lancaster_favour(here)) {
-			add_lord_forces(lord, MEN_AT_ARMS, -2)
-			add_lord_forces(lord, LONGBOWMEN, -1)
-		}
-		if (lord_has_capability(lord, AOW_LANCASTER_WELSH_LORD) && is_wales(here)) {
-			add_lord_forces(lord, LONGBOWMEN, -2)
-		}
-		if (lord_has_capability(lord, AOW_YORK_PEMBROKE) && is_wales(here)) {
-			add_lord_forces(lord, LONGBOWMEN, -2)
-		}
-		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && is_north(here)) {
-			add_lord_forces(lord, MILITIA, -4)
-		}
-		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
-			add_lord_forces(lord, MILITIA, -4)
-		}
-		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
-			add_lord_forces(lord, MILITIA, -3)
-		}
-		if (lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) && is_at_or_adjacent_to_friendly_english_channel_port(here)) {
-			add_lord_forces(lord, MEN_AT_ARMS, -2)
-		}
+	if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_york_favour(here)) {
+		add_lord_forces(lord, MEN_AT_ARMS, -2)
+		add_lord_forces(lord, LONGBOWMEN, -1)
+	}
+	if (lord_has_capability(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS) && has_lancaster_favour(here)) {
+		add_lord_forces(lord, MEN_AT_ARMS, -2)
+		add_lord_forces(lord, LONGBOWMEN, -1)
+	}
+	if (lord_has_capability(lord, AOW_LANCASTER_WELSH_LORD) && is_wales(here)) {
+		add_lord_forces(lord, LONGBOWMEN, -2)
+	}
+	if (lord_has_capability(lord, AOW_YORK_PEMBROKE) && is_wales(here)) {
+		add_lord_forces(lord, LONGBOWMEN, -2)
+	}
+	if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && is_north(here)) {
+		add_lord_forces(lord, MILITIA, -4)
+	}
+	if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
+		add_lord_forces(lord, MILITIA, -4)
+	}
+	if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
+		add_lord_forces(lord, MILITIA, -3)
+	}
+	if (lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) && is_at_or_adjacent_to_friendly_english_channel_port(here)) {
+		add_lord_forces(lord, MEN_AT_ARMS, -2)
 	}
 }
 
@@ -7494,34 +7490,6 @@ function goto_death_check() {
 
 	log_h4("Death Check")
 
-	// TODO: move this to aftermath.
-	remove_battle_capability_troops()
-
-/*
-	for (let lord of all_lords) {
-		if (is_lord_on_map(lord)) {
-			// Disband lords without troops
-			if (!lord_has_unrouted_troops(lord)) {
-				set_delete(game.battle.routed, lord)
-				set_delete(game.battle.fled, lord)
-				disband_lord(lord)
-			}
-		}
-	}
-
-	for (let lord of all_lords) {
-		if (is_lord_on_map(lord)) {
-			// Routed Vassals get disbanded
-			for_each_vassal_with_lord(lord, v => {
-				if (set_has(game.battle.routed_vassals, v)) {
-					array_remove(game.battle.routed_vassals, v)
-					disband_vassal(v)
-				}
-			})
-		}
-	}
-*/
-
 	set_active_defender()
 	if (has_defeated_lords() || has_any_friendly_routed_vassals()) {
 		if (is_bloody_thou_art_triggered())
@@ -7845,25 +7813,20 @@ states.warden_of_the_marches = {
 
 		logi(`Moved lord to ${locale_name[game.where]}`)
 
-		// TODO: move this stuff to somewhere common?
+		set_lord_forces(lord, RETINUE, 1)
+		for (let x of all_force_types)
+			set_lord_routed_forces(lord, x, 0)
+
+		remove_battle_capability_troops(lord)
+
 		set_lord_locale(lord, game.where)
-		if (!lord_has_unrouted_troops(lord)) {
-			disband_lord(lord, false)
-		} else {
-			set_lord_forces(lord, RETINUE, 1)
-		}
-		for (let x of all_force_types) {
-			set_lord_forces(lord, x, 0)
-			if (get_lord_routed_forces(lord, x) > 0) {
-				set_lord_routed_forces(lord, x, 0)
-			}
-		}
-		for_each_vassal_with_lord(lord, v => {
-			if (set_has(game.battle.routed_vassals, v)) {
-				array_remove(game.battle.routed_vassals, v)
-				disband_vassal(v)
-			}
-		})
+
+		// vassals are disbanded in normal death check state later
+
+		// lords without troops are disbanded during aftermath
+
+		// remember these lords to remove battle capability troops during aftermath
+		// if (!game.battle.warden) game.battle.warden = [] set_add(game.battle.warden, lord)
 	},
 	done() {
 		end_held_event()
@@ -7875,6 +7838,27 @@ states.warden_of_the_marches = {
 // === 4.4.4 ENDING THE BATTLE: AFTERMATH ===
 
 function goto_battle_aftermath() {
+	// TODO: manually remove capability troops and disband lords who are left without troops
+
+	for (let lord of all_lords)
+		if (get_lord_locale(lord) !== game.battle.where)
+			remove_battle_capability_troops(lord)
+
+	for (let lord of all_lords) {
+		if (is_lord_on_map(lord)) {
+			// Disband lords without troops
+			if (!lord_has_unrouted_troops(lord)) {
+				set_delete(game.battle.routed, lord)
+				set_delete(game.battle.fled, lord)
+				disband_lord(lord)
+			}
+		}
+	}
+
+	end_battle_aftermath()
+}
+
+function end_battle_aftermath() {
 	set_active(game.battle.attacker)
 
 	// Discard played battle events
