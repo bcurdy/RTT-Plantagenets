@@ -2441,11 +2441,19 @@ function end_pay_lords() {
 		goto_pay_vassals()
 }
 
+function count_pay_lord_influence_cost() {
+	let n = 0
+	for (let lord of all_friendly_lords())
+		if (is_lord_on_map(lord) && is_lord_unfed(lord))
+			n += is_exile(get_lord_locale(lord)) ? 2 : 1
+	return n
+}
+
 states.pay_lords = {
 	inactive: "Pay Lords",
 	prompt() {
-		view.prompt = "Pay Lords in Influence or Disband them."
 		if (game.who === NOBODY) {
+			let total = count_pay_lord_influence_cost()
 			let done = true
 			for (let lord of all_friendly_lords()) {
 				if (is_lord_on_map(lord) && is_lord_unfed(lord)) {
@@ -2453,11 +2461,16 @@ states.pay_lords = {
 					done = false
 				}
 			}
-			if (!done)
-				view.actions.pay_all = 1
-			if (done)
+			if (done) {
+				view.prompt = `Pay Lords: All done.`
 				view.actions.done = 1
+			} else {
+				view.prompt = `Pay Lords: Pay Influence or Disband your Lords. Pay ${total} for all Lords.`
+				view.actions.pay_all = 1
+			}
 		} else {
+			let total = is_exile(get_lord_locale(game.who)) ? 2 : 1
+			view.prompt = `Pay Lords: Pay ${total} Influence or Disband ${lord_name[game.who]}.`
 			view.actions.disband = 1
 			view.actions.pay = 1
 		}
