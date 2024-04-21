@@ -7285,8 +7285,6 @@ function goto_battle_influence() {
 
 // === 4.4.3 ENDING THE BATTLE: LOSSES ===
 
-// TODO: should we bother to roll for losses on lords whose retinue has routed?
-
 function has_battle_losses() {
 	for (let lord of all_friendly_lords())
 		if (lord_has_routed_troops(lord))
@@ -7633,34 +7631,30 @@ states.bloody_thou_art = {
 // === DEATH CHECK EVENT: ESCAPE SHIP ===
 
 function can_play_escape_ship() {
-	return can_escape_at(game.battle.where)
-}
-
-function can_escape_at(here: Locale) {
-	if (game.active === YORK && has_york_favour(here) && is_seaport(here))
-		return true
-	if (game.active === LANCASTER && has_lancaster_favour(here) && is_seaport(here))
-		return true
-	if (search_escape_ship(here))
-		return true
+	let here = game.battle.where
+	if (is_friendly_locale(here)) {
+		if (is_seaport(here))
+			return true
+		if (search_escape_ship(here))
+			return true
+	}
 	return false
 }
 
 function search_escape_ship(start: Locale) {
 	search_seen.fill(0)
 	search_seen[start] = 1
-	let queue = [start]
+
+	let queue = [ start ]
 
 	while (queue.length > 0) {
 		let here = queue.shift()
 
-		// Check if the current locale is a seaport
-		if (is_seaport(here)) {
+		if (is_seaport(here))
 			return true
-		}
 
-		if (is_friendly_locale(here)) {
-			for (let next of data.locales[here].adjacent) {
+		for (let next of data.locales[here].adjacent) {
+			if (is_friendly_locale(next)) {
 				if (!search_seen[next]) {
 					search_seen[next] = 1
 					queue.push(next)
@@ -7668,6 +7662,7 @@ function search_escape_ship(start: Locale) {
 			}
 		}
 	}
+
 	return false
 }
 
