@@ -1612,18 +1612,22 @@ function vassal_influence(vassal) {
 
 // === STATE: LOCALE ===
 
-function is_favour_friendly(loc: Locale) {
+function is_friendly_locale(loc: Locale) {
 	if (game.active === YORK)
 		return has_york_favour(loc)
 	else
 		return has_lancaster_favour(loc)
 }
 
-function is_favour_enemy(loc: Locale) {
+function is_enemy_locale(loc: Locale) {
 	if (game.active === LANCASTER)
 		return has_york_favour(loc)
 	else
 		return has_lancaster_favour(loc)
+}
+
+function is_neutral_locale(loc: Locale) {
+	return !has_lancaster_favour(loc) && !has_york_favour(loc)
 }
 
 function has_lancaster_favour(loc: Locale) {
@@ -1733,25 +1737,11 @@ function deplete_locale(loc: Locale) {
 	}
 }
 
-function is_neutral_locale(loc: Locale) {
-	return !has_lancaster_favour(loc) && !has_york_favour(loc)
-}
-
 function has_favour_in_locale(side: Player, loc: Locale) {
 	if (side === YORK)
 		return has_york_favour(loc)
 	else
 		return has_lancaster_favour(loc)
-}
-
-function is_friendly_locale(loc: Locale) {
-	if (loc !== NOWHERE && loc < CALENDAR) {
-		if (has_enemy_lord(loc))
-			return false
-		if (is_favour_friendly(loc))
-			return true
-	}
-	return false
 }
 
 function is_at_or_adjacent_to_friendly_english_channel_port(loc: Locale) {
@@ -3169,12 +3159,12 @@ function can_levy_vassal(vassal: Vassal) {
 		return false
 	}
 	if (
-		!is_favour_friendly(data.vassals[vassal].seat) &&
+		!is_friendly_locale(data.vassals[vassal].seat) &&
 		(game.command !== LORD_HENRY_TUDOR || !is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))
 	) {
 		return false
 	}
-	if (!is_favour_friendly(data.vassals[vassal].seat))
+	if (!is_friendly_locale(data.vassals[vassal].seat))
 		return false
 	if (
 		game.active === LANCASTER &&
@@ -4156,7 +4146,7 @@ function goto_forage() {
 		} else {
 			log(`${MISS[die]}, Forage Failure`)
 		}
-	} else if (has_adjacent_enemy(here) || is_favour_enemy(here)) {
+	} else if (has_adjacent_enemy(here) || is_enemy_locale(here)) {
 		let die = roll_die()
 		if (die <= 3) {
 			add_lord_assets(game.command, PROV, 1)
@@ -11514,7 +11504,7 @@ function action_held_event_at_campaign(c: Card) {
 
 function can_play_yorkist_parade() {
 	if (is_levy_phase()) {
-		if (is_favour_friendly(LOC_LONDON) && (get_lord_locale(LORD_WARWICK_Y) === LOC_LONDON || get_lord_locale(LORD_YORK) === LOC_LONDON))
+		if (is_friendly_locale(LOC_LONDON) && (get_lord_locale(LORD_WARWICK_Y) === LOC_LONDON || get_lord_locale(LORD_YORK) === LOC_LONDON))
 			return true
 	}
 	return false
