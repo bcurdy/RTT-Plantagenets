@@ -338,6 +338,7 @@ var seat = []
 var vassalbox = []
 const scale = 1
 
+var is = { stronghold: [] }
 
 function defloc(region, type, name) {
 	let [x, y, w, h] = boxes[name]
@@ -346,7 +347,16 @@ function defloc(region, type, name) {
 	w = Math.ceil(w)
 	h = Math.ceil(h)
 	locmap[name] = locales.length
-	locales.push({ name, type, region, adjacent: [], highways: [], roads: [], paths: [], not_paths: [], box: { x, y, w, h } })
+	let id = locales.length
+	locales.push({ name, type, region, adjacent: [], highways: [], roads: [], paths: [], not_paths: [], box:{x,y,w,h} })
+	if (!is[type]) is[type] = []
+	is[type].push(id)
+	if (region) {
+		if (!is[region]) is[region] = []
+		is[region].push(id)
+	} else {
+		is.stronghold.push(id)
+	}
 	ways.push([])
 }
 
@@ -488,15 +498,18 @@ defloc("England", "town", "Lancaster")
 defloc("England", "city", "Lincoln")
 defloc("England", "city", "York")
 defloc("England", "calais", "Calais")
-defloc("England", "exile", "France")
-defloc("England", "exile", "Scotland")
-defloc("England", "exile", "Ireland")
-defloc("England", "exile", "Burgundy")
+
+defloc(null, "exile_box", "France")
+defloc(null, "exile_box", "Scotland")
+defloc(null, "exile_box", "Ireland")
+defloc(null, "exile_box", "Burgundy")
+
 defloc("North", "town", "Scarborough")
 defloc("England", "fortress", "Ravenspur")
-defloc("England", "sea", "English Channel")
-defloc("England", "sea", "Irish Sea")
-defloc("England", "sea", "North Sea")
+
+defloc(null, "sea", "English Channel")
+defloc(null, "sea", "Irish Sea")
+defloc(null, "sea", "North Sea")
 
 // LOCALE DEPLETION
 
@@ -766,42 +779,32 @@ map_set(ways[locmap.Scotland], locmap.Bamburgh, "path")
 locales[locmap.Scotland].paths.push(locmap.Carlisle)
 map_set(ways[locmap.Scotland], locmap.Carlisle, "path")
 
-let way_sea_1 = ["North Sea", "English Channel", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
-let way_sea_2 = ["English Channel","North Sea", "Irish Sea", "Bristol","Pembroke","Harlech", "English Channel","Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich","Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro" ].map(name => locmap[name]).sort(cmpnum)
-let way_sea_3 = ["English Channel", "Bristol","Pembroke","Harlech", "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro","Irish Sea"].map(name => locmap[name]).sort(cmpnum)
-
-let way_exile_1 = ["Burgundy", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
-let way_exile_2 = ["France", "English Channel",  "Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
-let way_exile_3 = ["Ireland", "Irish Sea", "Bristol","Pembroke","Harlech"].map(name => locmap[name]).sort(cmpnum)
-let way_exile_4 = ["Scotland", "Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
-
-let way_port_1 = ["Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "North Sea"].map(name => locmap[name]).sort(cmpnum)
-let way_port_2 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro", "English Channel"].map(name => locmap[name]).sort(cmpnum)
-let way_port_3 = ["Bristol","Pembroke","Harlech", "Irish Sea"].map(name => locmap[name]).sort(cmpnum)
-
-
-
 let sea_1 = locmap["North Sea"]
 let sea_2 = locmap["English Channel"]
 let sea_3 = locmap["Irish Sea"]
+
+let port_1 = ["Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich"].map(name => locmap[name]).sort(cmpnum)
+let port_2 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
+let port_3 = ["Bristol","Pembroke","Harlech"].map(name => locmap[name]).sort(cmpnum)
+let all_ports = [ ...port_1, ...port_2, ...port_3 ].sort(cmpnum)
 
 let exile_1 = locmap["Burgundy"]
 let exile_2 = locmap["France"]
 let exile_3 = locmap["Ireland"]
 let exile_4 = locmap["Scotland"]
 
-let port_1 = ["Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich"].map(name => locmap[name]).sort(cmpnum)
-let port_2 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
-let port_3 = ["Bristol","Pembroke","Harlech"].map(name => locmap[name]).sort(cmpnum)
-let all_ports = [ ...port_1, ...port_2, ...port_3 ].sort(cmpnum)
+let sail_sea_1 = [ ...port_1, ...port_2, sea_2 ].sort(cmpnum)
+let sail_sea_2 = [ ...port_1, ...port_2, ...port_3, sea_1, sea_3 ].sort(cmpnum)
+let sail_sea_3 = [ ...port_2, ...port_3, sea_2 ].sort(cmpnum)
 
-let seaports = [
-	"Bamburgh", "Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich", "Burgundy", "Dover", "Hastings", "Calais", "France", "Arundel", "Southampton","Dorchester","Exeter","Plymouth","Truro","Bristol","Pembroke","Harlech", "Ireland"
-].map(name => locmap[name]).sort(cmpnum)
+let sail_exile_1 = [ sea_1, ...port_1 ]
+let sail_exile_2 = [ sea_2, ...port_2 ]
+let sail_exile_3 = [ sea_3, ...port_3 ]
+let sail_exile_4 = [ sea_1, ...port_1 ]
 
-let exile_boxes = [
-	"Burgundy", "France", "Ireland", "Scotland"
-].map(name => locmap[name]).sort(cmpnum)
+let sail_port_1 = [ sea_1, ...port_1 ]
+let sail_port_2 = [ sea_2, ...port_2 ]
+let sail_port_3 = [ sea_3, ...port_3 ]
 
 function dumplist(name, list) {
 	print(name + ":[")
@@ -1755,9 +1758,15 @@ vassal(0, "Thomas Stanley", -1, 0, "Thomas Stanley")
 vassal(0, "Montagu", -1, 0, "Alice Montagu")
 vassal(0, "Hastings", -1, 0, "Hastings")
 
+function make_is_list(list) {
+	let out = []
+	for (let i = 0; i < locales.length + 35; ++i)
+		out.push(list.includes(i) ? 1 : 0)
+	return out
+}
+
 print("const data = {")
-print("seaports:" + JSON.stringify(seaports) + ",")
-print("exile_boxes:" + JSON.stringify(exile_boxes) + ",")
+
 print("exile_1:" + JSON.stringify(exile_1) + ",")
 print("exile_2:" + JSON.stringify(exile_2) + ",")
 print("exile_3:" + JSON.stringify(exile_3) + ",")
@@ -1769,26 +1778,60 @@ print("port_1:" + JSON.stringify(port_1) + ",")
 print("port_2:" + JSON.stringify(port_2) + ",")
 print("port_3:" + JSON.stringify(port_3) + ",")
 print("all_ports:" + JSON.stringify(all_ports) + ",")
-print("way_exile_1:" + JSON.stringify(way_exile_1) + ",")
-print("way_exile_2:" + JSON.stringify(way_exile_2) + ",")
-print("way_exile_3:" + JSON.stringify(way_exile_3) + ",")
-print("way_exile_4:" + JSON.stringify(way_exile_4) + ",")
-print("way_sea_1:" + JSON.stringify(way_sea_1) + ",")
-print("way_sea_2:" + JSON.stringify(way_sea_2) + ",")
-print("way_sea_3:" + JSON.stringify(way_sea_3) + ",")
-print("way_port_1:" + JSON.stringify(way_port_1) + ",")
-print("way_port_2:" + JSON.stringify(way_port_2) + ",")
-print("way_port_3:" + JSON.stringify(way_port_3) + ",")
+print("sail_exile_1:" + JSON.stringify(sail_exile_1) + ",")
+print("sail_exile_2:" + JSON.stringify(sail_exile_2) + ",")
+print("sail_exile_3:" + JSON.stringify(sail_exile_3) + ",")
+print("sail_exile_4:" + JSON.stringify(sail_exile_4) + ",")
+print("sail_sea_1:" + JSON.stringify(sail_sea_1) + ",")
+print("sail_sea_2:" + JSON.stringify(sail_sea_2) + ",")
+print("sail_sea_3:" + JSON.stringify(sail_sea_3) + ",")
+print("sail_port_1:" + JSON.stringify(sail_port_1) + ",")
+print("sail_port_2:" + JSON.stringify(sail_port_2) + ",")
+print("sail_port_3:" + JSON.stringify(sail_port_3) + ",")
+
 dumplist("locales", locales)
 dumplist("ways", ways)
 dumplist("lords", lords)
 dumplist("vassals", vassals)
 dumplist("cards", cards)
+
+// layout client only
 dumplist("favour", favour)
 dumplist("deplete",deplete)
 dumplist("seat", seat)
 dumplist("vassalbox", vassalbox)
+
 print("}")
+
 print("if (typeof module !== 'undefined') module.exports = data")
 
 fs.writeFileSync("data.js", data.join("\n") + "\n")
+
+function gen_test(name, set) {
+	let ranges = []
+	let start = -1
+	for (let x = 0; x < locales.length; ++x) {
+		if (set.includes(x)) {
+			if (start < 0)
+				start = x
+		} else {
+			if (start >= 0) {
+				ranges.push([ start, x - 1 ])
+				start = -1
+			}
+		}
+	}
+	if (start >= 0)
+		ranges.push([ start, locales.length - 1 ])
+	console.log("function " + name + "(x: Locale) { return " + ranges.map(([ a, b ]) => (a!==b) ?`(x >= ${a} && x <= ${b})` : `x === ${a}`).join(" || ") + " }")
+}
+
+gen_test("is_seaport", all_ports)
+gen_test("is_port_1", port_1)
+gen_test("is_port_2", port_2)
+gen_test("is_port_3", port_3)
+gen_test("is_adjacent_north_sea", port_1)
+gen_test("is_adjacent_english_channel", port_2)
+gen_test("is_adjacent_irish_sea", port_3)
+for (let key in is)
+	gen_test("is_" + key.toLowerCase(), is[key])

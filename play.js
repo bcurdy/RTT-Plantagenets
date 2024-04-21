@@ -739,7 +739,7 @@ function build_map() {
 		locale_layout[i] = []
 
 	data.locales.forEach((locale, ix) => {
-		let region = clean_name(locale.region)
+		let region = locale.region ? clean_name(locale.region) : ""
 		let { x, y, w, h } = locale.box
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)

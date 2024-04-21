@@ -21,11 +21,8 @@
 	NAVAL BLOCKADE - for Tax and Tax Collectors
 	REGROUP - other timing windows
 
-	Manual ADD and REMOVE battle capability troops at reposition and aftermath
-
 	Scenario special rules.
 
-		Ia: Allied Networks (limit exile boxes)
 		Ia: Capture of the King
 
 		Ib: Norfolk is Late
@@ -513,71 +510,30 @@ function is_lieutenant(lord: Lord) {
 	}
 }
 
-// TODO: optimize these functions with range checks (like wilderness war)
-// TODO: use array tests (and compact NOWHERE/CALENDAR/CALENDAR_EXILE just before and after normal locales for them to also be in the array
-
-function is_seaport(loc: Locale) {
-	return set_has(data.seaports, loc)
-}
-
-function is_stronghold(loc: Locale) {
-	if (loc === NOWHERE || loc >= CALENDAR)
-		return false
-	return data.locales[loc].type !== "exile" && data.locales[loc].type !== "sea"
-}
-
-function is_exile_box(loc: Locale) {
-	if (loc === NOWHERE || loc >= CALENDAR)
-		return false
-	return data.locales[loc].type === "exile"
-}
-
-function is_city(loc: Locale) {
-	if (loc === NOWHERE || loc >= CALENDAR)
-		return false
-	return data.locales[loc].type === "city"
-}
-
-function is_town(loc: Locale) {
-	if (loc === NOWHERE || loc >= CALENDAR)
-		return false
-	return data.locales[loc].type === "town"
-}
-
-function is_wales(loc: Locale) {
-	if (loc === NOWHERE || loc >= CALENDAR)
-		return false
-	return data.locales[loc].region === "Wales"
-}
-
-function is_south(loc: Locale) {
-	if (loc === NOWHERE || loc >= CALENDAR)
-		return false
-	return data.locales[loc].region === "South"
-}
-
-function is_north(loc: Locale) {
-	if (loc === NOWHERE || loc >= CALENDAR)
-		return false
-	return data.locales[loc].region === "North"
-}
-
-function is_fortress(loc: Locale) {
-	if (loc === NOWHERE || loc >= CALENDAR)
-		return false
-	return data.locales[loc].type === "fortress"
-}
-
-function is_sea(loc: Locale) {
-	if (loc === NOWHERE || loc >= CALENDAR)
-		return false
-	return data.locales[loc].type === "sea"
-}
+// from !node tools/gendata.js
+function is_seaport(x: Locale) { return x === 1 || (x >= 5 && x <= 6) || (x >= 14 && x <= 15) || x === 17 || (x >= 19 && x <= 22) || x === 24 || x === 26 || x === 35 || x === 37 || x === 51 || (x >= 56 && x <= 57) }
+function is_port_1(x: Locale) { return x === 1 || x === 35 || x === 37 || (x >= 56 && x <= 57) }
+function is_port_2(x: Locale) { return (x >= 14 && x <= 15) || x === 17 || (x >= 19 && x <= 22) || x === 24 || x === 51 }
+function is_port_3(x: Locale) { return (x >= 5 && x <= 6) || x === 26 }
+function is_adjacent_north_sea(x: Locale) { return x === 1 || x === 35 || x === 37 || (x >= 56 && x <= 57) }
+function is_adjacent_english_channel(x: Locale) { return (x >= 14 && x <= 15) || x === 17 || (x >= 19 && x <= 22) || x === 24 || x === 51 }
+function is_adjacent_irish_sea(x: Locale) { return (x >= 5 && x <= 6) || x === 26 }
+function is_stronghold(x: Locale) { return (x >= 52 && x <= 55) || (x >= 58 && x <= 60) }
+function is_fortress(x: Locale) { return x === 0 || x === 6 || x === 9 || x === 37 || x === 57 }
+function is_north(x: Locale) { return (x >= 0 && x <= 4) || x === 56 }
+function is_city(x: Locale) { return x === 1 || x === 4 || (x >= 7 && x <= 8) || (x >= 10 && x <= 13) || x === 16 || x === 18 || x === 21 || x === 23 || (x >= 25 && x <= 28) || x === 36 || (x >= 38 && x <= 39) || x === 41 || x === 43 || (x >= 46 && x <= 47) || (x >= 49 && x <= 50) }
+function is_town(x: Locale) { return (x >= 2 && x <= 3) || (x >= 14 && x <= 15) || x === 17 || (x >= 19 && x <= 20) || x === 22 || x === 24 || x === 29 || (x >= 31 && x <= 35) || x === 40 || x === 42 || (x >= 44 && x <= 45) || x === 48 || x === 56 }
+function is_harlech(x: Locale) { return x === 5 }
+function is_wales(x: Locale) { return (x >= 5 && x <= 10) }
+function is_south(x: Locale) { return (x >= 11 && x <= 19) }
+function is_england(x: Locale) { return (x >= 20 && x <= 51) || x === 57 }
+function is_london(x: Locale) { return x === 30 }
+function is_calais(x: Locale) { return x === 51 }
+function is_exile_box(x: Locale) { return (x >= 52 && x <= 55) }
+function is_sea(x: Locale) { return (x >= 58 && x <= 60) }
 
 function is_adjacent(a: Locale, b: Locale) {
-	if (a === NOWHERE || a >= CALENDAR)
-		return false
-	return set_has(data.locales[a].adjacent, b)
+	return is_stronghold(a) && is_stronghold(b) && set_has(data.locales[a].adjacent, b)
 }
 
 function find_ports(here: Locale, lord: Lord): Locale[] {
@@ -595,30 +551,31 @@ function find_ports(here: Locale, lord: Lord): Locale[] {
 	if (here === data.exile_2) return data.port_2
 	if (here === data.exile_3) return data.port_3
 	if (here === data.exile_4) return data.port_1
-	if (set_has(data.port_1, here)) return data.port_1
-	if (set_has(data.port_2, here)) return data.port_2
-	if (set_has(data.port_3, here)) return data.port_3
+	if (is_port_1(here)) return data.port_1
+	if (is_port_2(here)) return data.port_2
+	if (is_port_3(here)) return data.port_3
 	return null
 }
 
 function find_sail_locales(here: Locale): Locale[] {
-	if (here === data.sea_1) return data.way_sea_1
-	if (here === data.sea_2) return data.way_sea_2
-	if (here === data.sea_3) return data.way_sea_3
-	if (here === data.exile_1) return data.way_exile_1
-	if (here === data.exile_2) return data.way_exile_2
-	if (here === data.exile_3) return data.way_exile_3
-	if (set_has(data.port_1, here)) return data.way_port_1
-	if (set_has(data.port_2, here)) return data.way_port_2
-	if (set_has(data.port_3, here)) return data.way_port_3
+	if (here === data.sea_1) return data.sail_sea_1
+	if (here === data.sea_2) return data.sail_sea_2
+	if (here === data.sea_3) return data.sail_sea_3
+	if (here === data.exile_1) return data.sail_exile_1
+	if (here === data.exile_2) return data.sail_exile_2
+	if (here === data.exile_3) return data.sail_exile_3
+	if (here === data.exile_4) return data.sail_exile_4
+	if (is_port_1(here)) return data.sail_port_1
+	if (is_port_2(here)) return data.sail_port_2
+	if (is_port_3(here)) return data.sail_port_3
 	return null
 }
 
 function is_on_same_sea(a: Locale, b: Locale) {
 	return (
-		(set_has(data.port_1, a) && set_has(data.port_1, b)) ||
-		(set_has(data.port_2, a) && set_has(data.port_2, b)) ||
-		(set_has(data.port_3, a) && set_has(data.port_3, b))
+		(is_port_1(a) && is_port_1(b)) ||
+		(is_port_2(a) && is_port_2(b)) ||
+		(is_port_3(a) && is_port_3(b))
 	)
 }
 
@@ -636,6 +593,7 @@ const all_wales_locales = make_locale_list(is_wales)
 const all_city_locales = make_locale_list(is_city)
 const all_town_locales = make_locale_list(is_town)
 const all_fortress_locales = make_locale_list(is_fortress)
+const all_exile_boxes = make_locale_list(is_exile_box)
 
 const Y1 = find_card("Y1")
 const Y2 = find_card("Y2")
@@ -1395,13 +1353,6 @@ function count_lord_all_forces(lord: Lord) {
 	)
 }
 
-function lord_has_routed_vassals(lord: Lord) {
-	for (let v of game.battle.routed_vassals)
-		if (is_vassal_mustered_with(v, lord))
-			return true
-	return false
-}
-
 function lord_has_unrouted_units(lord: Lord) {
 	for (let x of all_force_types)
 		if (get_lord_forces(lord, x) > 0)
@@ -1757,10 +1708,10 @@ function has_favour_in_locale(side: Player, loc: Locale) {
 
 function is_at_or_adjacent_to_friendly_english_channel_port(loc: Locale) {
 	if (is_stronghold(loc)) {
-		if (is_friendly_locale(loc) && set_has(data.port_2, loc))
+		if (is_friendly_locale(loc) && is_adjacent_english_channel(loc))
 			return true
 		for (let next of data.locales[loc].adjacent)
-			if (is_friendly_locale(next) && set_has(data.port_2, next))
+			if (is_friendly_locale(next) && is_adjacent_english_channel(next))
 				return true
 	}
 	return false
@@ -2710,7 +2661,7 @@ states.muster_exiles = {
 			if (done)
 				view.actions.done = true
 		} else {
-			for (let loc of data.exile_boxes) {
+			for (let loc of all_exile_boxes) {
 				if (can_use_exile_box(game.who, loc))
 					gen_action_locale(loc)
 			}
@@ -3257,7 +3208,7 @@ function can_add_troops_irishmen(lord: Lord, locale: Locale) {
 	return (
 		can_add_troops(locale) &&
 		lord_has_capability(lord, AOW_YORK_IRISHMEN) &&
-		(locale === LOC_IRELAND || !set_has(data.port_3, locale))
+		(locale === LOC_IRELAND || is_adjacent_irish_sea(locale))
 	)
 }
 
@@ -11458,7 +11409,7 @@ states.exile_pact = {
 	inactive: "Exile Pact",
 	prompt() {
 		view.prompt = "Exile Pact: Place your cylinder in a Friendly Exile box."
-		for (let loc of data.exile_boxes) {
+		for (let loc of all_exile_boxes) {
 			if (has_favour_in_locale(game.active, loc))
 				gen_action_locale(loc)
 		}
