@@ -5161,8 +5161,7 @@ states.choose_exile = {
 	},
 	lord(lord) {
 		push_undo()
-		add_spoils(PROV, get_lord_assets(lord, PROV))
-		add_spoils(CART, get_lord_assets(lord, CART))
+		give_up_spoils(lord)
 		exile_lord(lord)
 	},
 	done() {
@@ -5173,6 +5172,47 @@ states.choose_exile = {
 
 // === 4.3.5 APPROACH - SPOILS AFTER CHOOSING EXILE ===
 
+function add_spoils(type: Asset, n) {
+	if (!game.spoils)
+		game.spoils = [ 0, 0 ]
+	game.spoils[type] += n
+}
+
+function give_up_spoils(lord: Lord) {
+	let here = get_lord_locale(lord)
+
+	// Full spoils if enemy locale
+	if (is_enemy_locale(here)) {
+		add_spoils(PROV, get_lord_assets(lord, PROV))
+		add_spoils(CART, get_lord_assets(lord, CART))
+		set_lord_assets(lord, PROV, 0)
+		set_lord_assets(lord, CART, 0)
+		return
+	}
+
+	// Half spoils if neutral locale
+	if (is_neutral_locale(here)) {
+		add_spoils(PROV, get_lord_assets(lord, PROV) / 2)
+		add_spoils(CART, get_lord_assets(lord, CART) / 2)
+		set_lord_assets(lord, PROV, 0)
+		set_lord_assets(lord, CART, 0)
+		return
+	}
+
+	// No spoils if friendly locale
+}
+
+function round_spoils() {
+	if (game.spoils) {
+		game.spoils[PROV] = Math.ceil(game.spoils[PROV])
+		game.spoils[CART] = Math.ceil(game.spoils[CART])
+	}
+}
+
+function has_any_spoils() {
+	return game.spoils && (game.spoils[PROV] + game.spoils[CART] > 0)
+}
+
 function log_spoils() {
 	if (game.spoils[PROV] > 0)
 		logi(game.spoils[PROV] + " Provender")
@@ -5180,38 +5220,21 @@ function log_spoils() {
 		logi(game.spoils[CART] + " Cart")
 }
 
-function has_any_spoils() {
-	return game.spoils && game.spoils[PROV] + game.spoils[COIN] + game.spoils[CART] + game.spoils[SHIP] > 0
-}
-
-function get_spoils(type: Asset) {
-	if (game.spoils)
-		return game.spoils[type]
-	return 0
-}
-
-function add_spoils(type: Asset, n) {
-	if (game.spoils === undefined)
-		game.spoils = [ 0, 0, 0, 0, 0, 0, 0 ]
-	game.spoils[type] += n
-}
-
 function list_spoils() {
-	let list = []
-	for (let type of all_asset_types) {
-		let n = get_spoils(type)
-		if (n > 0)
-			list.push(`${n} ${ASSET_TYPE_NAME[type]}`)
-	}
-	if (list.length > 0)
-		return list.join(", ")
-	return "nothing"
+	if (game.spoils[PROV] > 0 && game.spoils[CART] > 0)
+		return `${game.spoils[PROV]} Provender and ${game.spoils[CART]} Cart`
+	else if (game.spoils[PROV] > 0)
+		return `${game.spoils[PROV]} Provender`
+	else if (game.spoils[CART] > 0)
+		return `${game.spoils[CART]} Cart`
+	else
+		return `nothing`
 }
 
 function prompt_spoils() {
-	if (get_spoils(PROV) > 0)
+	if (game.spoils[PROV] > 0)
 		view.actions.take_prov = 1
-	if (get_spoils(CART) > 0)
+	if (game.spoils[CART] > 0)
 		view.actions.take_cart = 1
 }
 
@@ -5223,6 +5246,7 @@ function take_spoils(type: Asset) {
 }
 
 function goto_exile_spoils() {
+	round_spoils()
 	if (has_any_spoils()) {
 		log_h4("Spoils")
 		log_spoils()
@@ -7366,29 +7390,6 @@ states.battle_losses = {
 
 // === 4.4.3 ENDING THE BATTLE: SPOILS ===
 
-function calculate_spoils() {
-	let n_prov = 0
-	let n_cart = 0
-
-	if (has_favour_in_locale(game.battle.loser, game.battle.where))
-		return
-
-	for (let lord of game.battle.routed) {
-		if (is_enemy_lord(lord)) {
-			n_prov += get_lord_assets(lord, PROV)
-			n_cart += get_lord_assets(lord, CART)
-		}
-	}
-
-	if (is_neutral_locale(game.battle.where)) {
-		n_prov = Math.ceil(n_prov / 2)
-		n_cart = Math.ceil(n_cart / 2)
-	}
-
-	add_spoils(PROV, n_prov)
-	add_spoils(CART, n_cart)
-}
-
 function find_lone_friendly_lord_at(loc: Locale) {
 	let who = NOBODY
 	let n = 0
@@ -7404,9 +7405,13 @@ function find_lone_friendly_lord_at(loc: Locale) {
 }
 
 function goto_battle_spoils() {
+	set_active_loser()
+	for (let lord of all_friendly_lords())
+		if (get_lord_locale(lord) === game.battle.where)
+			give_up_spoils(lord)
+
 	set_active_victor()
-	// determine Battle Spoils
-	calculate_spoils()
+	round_spoils()
 	if (has_any_spoils() && has_friendly_lord(game.battle.where)) {
 		log_h4("Spoils")
 		log_spoils()
@@ -7671,8 +7676,10 @@ states.escape_ship = {
 	},
 	lord(lord) {
 		push_undo()
-		log(`${lord_name[lord]} went to exile.`)
+
+		// Note: locale must be friendly for this event, so no spoils.
 		exile_lord(lord)
+
 		set_delete(game.battle.fled, lord)
 		set_delete(game.battle.routed, lord)
 	},
