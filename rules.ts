@@ -2,7 +2,6 @@
 
 // TODO: log end victory conditions at scenario start
 // TODO: check all who = NOBODY etc resets
-// TODO: show fled retinue backsides
 
 // TODO: 1.7.3 English Ships -- no more than 9 lords may have ships
 // TODO: check interaction of Naval Blockade with Great Ships when parleying across multiple seas
@@ -12,6 +11,8 @@
 // TODO: [Influence] button instead of [Pay] when paying influence (or [Pay influence])?
 
 // TODO: logcap hidden or not hidden checks
+// TODO: routed lords panel in UI
+// TODO: show fled retinue backsides
 
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
@@ -1409,6 +1410,10 @@ function lord_has_unrouted_troops(lord: Lord) {
 			return true
 	}
 	return false
+}
+
+function lord_has_routed_retinue(lord: Lord) {
+	return get_lord_routed_forces(lord, RETINUE) > 0
 }
 
 function lord_has_routed_troops(lord: Lord) {
@@ -7123,10 +7128,17 @@ function rout_lord(lord: Lord) {
 }
 
 function will_lord_rout(lord: Lord) {
-	if (get_lord_routed_forces(lord, RETINUE) > 0)
+	if (lord_has_routed_retinue(lord))
 		return true
 	if (!lord_has_unrouted_troops(lord))
 		return true
+	return false
+}
+
+function will_any_friendly_lords_rout() {
+	for (let lord of game.battle.array)
+		if (is_friendly_lord(lord) && will_lord_rout(lord))
+			return true
 	return false
 }
 
@@ -7138,16 +7150,47 @@ function goto_battle_lord_rout() {
 
 	log_h5("Lord Rout")
 
-	// TODO: manually rout lords for clarity?
+	set_active_defender()
+	if (will_any_friendly_lords_rout())
+		game.state = "battle_lord_rout"
+	else
+		end_battle_lord_rout()
+}
 
-	for (let pos of battle_strike_positions) {
-		let lord = game.battle.array[pos]
-		if (lord !== NOBODY)
-			if (will_lord_rout(lord))
-				rout_lord(lord)
-	}
+function end_battle_lord_rout() {
+	set_active_enemy()
+	if (will_any_friendly_lords_rout())
+		game.state = "battle_lord_rout"
+	else
+		end_battle_round()
+}
 
-	end_battle_round()
+states.battle_lord_rout = {
+	inactive: "Lord Rout",
+	prompt() {
+		view.prompt = "Lord Rout: Rout Lords whose Retinue or Troops have routed."
+
+		// TODO: play Regroup
+
+		let done = true
+		for (let lord of game.battle.array) {
+			if (is_friendly_lord(lord) && will_lord_rout(lord)) {
+				gen_action_lord(lord)
+				done = false
+			}
+		}
+		if (done) {
+			view.prompt = "Lord Rout: All done."
+			view.actions.done = 1
+		}
+	},
+	lord(lord) {
+		push_undo()
+		rout_lord(lord)
+	},
+	done() {
+		end_battle_lord_rout()
+	},
 }
 
 // === 4.4.2 BATTLE ROUNDS: NEW ROUND ===
@@ -7236,11 +7279,13 @@ function goto_battle_influence() {
 		reduce_influence(influence)
 		goto_battle_spoils()
 	} else {
-		goto_death_or_disband()
+		goto_death_check()
 	}
 }
 
 // === 4.4.3 ENDING THE BATTLE: LOSSES ===
+
+// TODO: should we bother to roll for losses on lords whose retinue has routed?
 
 function has_battle_losses() {
 	for (let lord of all_friendly_lords())
@@ -7260,7 +7305,7 @@ function goto_battle_losses_victor() {
 function resume_battle_losses() {
 	game.state = "battle_losses"
 	if (!has_battle_losses())
-		goto_death_or_disband()
+		goto_death_check()
 }
 
 function roll_protection(lord: Lord, type: Force) {
@@ -7291,7 +7336,7 @@ states.battle_losses = {
 		let done = true
 		view.prompt = "Losses: Determine the fate of your Routed units."
 		for (let lord of all_friendly_lords()) {
-			if (is_lord_on_map(lord) && lord_has_routed_troops(lord)) {
+			if (lord_has_routed_troops(lord) && !lord_has_routed_retinue(lord)) {
 				if (get_lord_routed_forces(lord, MERCENARIES) > 0)
 					gen_action_routed_mercenaries(lord)
 				if (get_lord_routed_forces(lord, LONGBOWMEN) > 0)
@@ -7306,6 +7351,7 @@ states.battle_losses = {
 			}
 		}
 		if (done) {
+			view.prompt = "Losses: All done."
 			view.actions.done = 1
 		}
 	},
@@ -7325,7 +7371,8 @@ states.battle_losses = {
 		action_losses(lord, MILITIA)
 	},
 	done() {
-		goto_death_or_disband()
+		game.who = NOBODY
+		goto_death_check()
 	},
 }
 
@@ -7423,7 +7470,7 @@ states.battle_spoils = {
 
 // === 4.4.3 ENDING THE BATTLE: DEATH CHECK AND DISBAND ===
 
-function goto_death_or_disband() {
+function goto_death_check() {
 	remove_battle_capability_troops()
 
 	// TODO: manually disband lords and vassals
@@ -7432,6 +7479,8 @@ function goto_death_or_disband() {
 		if (is_lord_on_map(lord)) {
 			// Disband lords without troops
 			if (!lord_has_unrouted_troops(lord)) {
+				set_delete(game.battle.routed, lord)
+				set_delete(game.battle.fled, lord)
 				disband_lord(lord)
 			}
 		}
@@ -7507,9 +7556,9 @@ function action_held_event_at_death_check(c: Card) {
 }
 
 states.death_check = {
-	inactive: "Death or Disband",
+	inactive: "Death Check",
 	prompt() {
-		view.prompt = `Death or Disband: Select lords to roll for Death or Disband.`
+		view.prompt = `Death Check: Routed Lords now Die or Disband.`
 
 		prompt_held_event_at_death_check()
 
@@ -7520,8 +7569,10 @@ states.death_check = {
 				done = false
 			}
 		}
-		if (done)
+		if (done) {
+			view.prompt = "Death Check: All done."
 			view.actions.done = 1
+		}
 	},
 	lord(lord) {
 		let threshold = 2

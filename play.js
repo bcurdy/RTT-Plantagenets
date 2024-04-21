@@ -1,5 +1,7 @@
 "use strict"
 
+// TODO: "routed/fled" lords panel under battle
+
 function toggle_pieces() {
 	document.getElementById("pieces").classList.toggle("hide")
 }
