@@ -522,7 +522,7 @@ function is_stronghold(loc: Locale) {
 	return data.locales[loc].type !== "exile" && data.locales[loc].type !== "sea"
 }
 
-function is_exile(loc: Locale) {
+function is_exile_box(loc: Locale) {
 	if (loc === NOWHERE || loc >= CALENDAR)
 		return false
 	return data.locales[loc].type === "exile"
@@ -2377,7 +2377,7 @@ function end_pay_troops() {
 // === 3.2.1 PILLAGE ===
 
 function can_pillage(loc: Locale) {
-	return !is_sea(loc) && !is_exile(loc) && !has_exhausted_marker(loc)
+	return !is_sea(loc) && !is_exile_box(loc) && !has_exhausted_marker(loc)
 }
 
 function do_pillage(lord: Lord) {
@@ -2440,7 +2440,7 @@ function count_pay_lord_influence_cost() {
 	let n = 0
 	for (let lord of all_friendly_lords())
 		if (is_lord_on_map(lord) && is_lord_unfed(lord))
-			n += is_exile(get_lord_locale(lord)) ? 2 : 1
+			n += is_exile_box(get_lord_locale(lord)) ? 2 : 1
 	return n
 }
 
@@ -2464,7 +2464,7 @@ states.pay_lords = {
 				view.actions.pay_all = 1
 			}
 		} else {
-			let total = is_exile(get_lord_locale(game.who)) ? 2 : 1
+			let total = is_exile_box(get_lord_locale(game.who)) ? 2 : 1
 			view.prompt = `Pay Lords: Pay ${total} Influence or Disband ${lord_name[game.who]}.`
 			view.actions.disband = 1
 			view.actions.pay = 1
@@ -2479,7 +2479,7 @@ states.pay_lords = {
 		game.who = NOBODY
 	},
 	pay() {
-		reduce_influence(is_exile(get_lord_locale(game.who)) ? 2 : 1)
+		reduce_influence(is_exile_box(get_lord_locale(game.who)) ? 2 : 1)
 		set_lord_moved(game.who, 0)
 		game.who = NOBODY
 	},
@@ -2487,7 +2487,7 @@ states.pay_lords = {
 		push_undo()
 		for (let lord of all_friendly_lords()) {
 			if (is_lord_on_map(lord) && is_lord_unfed(lord)) {
-				reduce_influence(is_exile(get_lord_locale(lord)) ? 2 : 1)
+				reduce_influence(is_exile_box(get_lord_locale(lord)) ? 2 : 1)
 				set_lord_moved(lord, 0)
 			}
 		}
@@ -3221,7 +3221,7 @@ function has_free_levy_troops() {
 }
 
 function can_add_troops(locale: Locale) {
-	if (!has_exhausted_marker(locale) && !is_exile(locale))
+	if (!has_exhausted_marker(locale) && !is_exile_box(locale))
 		return true
 	return false
 }
@@ -3711,7 +3711,7 @@ function search_supply(result) {
 	let here = get_lord_locale(game.command)
 	let carts = count_shared_carts(here, true)
 	let ships = count_shared_ships(here, true)
-	if (ships > 0 && is_exile(here))
+	if (ships > 0 && is_exile_box(here))
 		result = search_supply_by_sea(result, here)
 	result = search_supply_by_way(result, here, carts, ships)
 	return result
@@ -4339,7 +4339,7 @@ function can_parley_at(loc: Locale) {
 				return false
 		}
 	}
-	return !is_exile(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc) && !is_sea(loc)
+	return !is_exile_box(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc) && !is_sea(loc)
 }
 
 function search_parley_levy(result, start: Locale, lord: Lord) {
@@ -4369,7 +4369,7 @@ function search_parley_levy(result, start: Locale, lord: Lord) {
 				}
 			}
 
-			if (here === start && is_exile(here) && count_shared_ships(start, false) > 0) {
+			if (here === start && is_exile_box(here) && count_shared_ships(start, false) > 0) {
 				for (let next of find_ports(here, lord)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
@@ -4408,7 +4408,7 @@ function can_action_parley_campaign() {
 				return true
 		}
 
-		if (is_exile(here) && count_shared_ships(here, false) > 0)
+		if (is_exile_box(here) && count_shared_ships(here, false) > 0)
 			for (let next of find_ports(here, game.command))
 				if (can_parley_at(next))
 					return true
@@ -4428,7 +4428,7 @@ function search_parley_campaign(here: Locale, lord: Lord) {
 			if (can_parley_at(next))
 				map_set(result, next, 1)
 
-		if (is_exile(here) && count_shared_ships(here, false) > 0)
+		if (is_exile_box(here) && count_shared_ships(here, false) > 0)
 			for (let next of find_ports(here, lord))
 				if (can_parley_at(next))
 					map_set(result, next, 1)
@@ -9689,7 +9689,7 @@ function capability_muster_effects_common(lord: Lord, c: Card) {
 	}
 
 	if (AOW_YORK_BURGUNDIANS.includes(c)) {
-		if (is_seaport(get_lord_locale(lord)) && !is_exile(get_lord_locale(lord))) {
+		if (is_seaport(get_lord_locale(lord)) && !is_exile_box(get_lord_locale(lord))) {
 			add_lord_forces(lord, BURGUNDIANS, 2)
 			logcap(c)
 			set_flag(FLAG_BURGUNDIANS)
@@ -9787,7 +9787,7 @@ states.commission_of_array = {
 		let here = get_lord_locale(game.command)
 		if (done) {
 			for (let next of data.locales[here].adjacent) {
-				if (is_friendly_locale(next) && lord_has_capability(game.command, AOW_LANCASTER_COMMISION_OF_ARRAY) && (!has_exhausted_marker(next) && !is_exile(next))) {
+				if (is_friendly_locale(next) && lord_has_capability(game.command, AOW_LANCASTER_COMMISION_OF_ARRAY) && (!has_exhausted_marker(next) && !is_exile_box(next))) {
 					done = false
 					gen_action_locale(next)
 				}
@@ -9986,7 +9986,7 @@ function count_deplete(loc: Locale) {
 // === CAPABILITY: BURGUNDIANS ===
 
 function levy_burgundians(lord: Lord) {
-	if (is_seaport(get_lord_locale(lord)) && !is_exile(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_BURGUNDIANS) && !has_flag(FLAG_BURGUNDIANS)) {
+	if (is_seaport(get_lord_locale(lord)) && !is_exile_box(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_BURGUNDIANS) && !has_flag(FLAG_BURGUNDIANS)) {
 		add_lord_forces(lord, BURGUNDIANS, 2)
 		if (lord_has_capability(lord, AOW_YORK_BURGUNDIANS[0]))
 			logcap(AOW_YORK_BURGUNDIANS[0])
@@ -10001,7 +10001,7 @@ function levy_burgundians(lord: Lord) {
 function is_naval_blockade_in_play() {
 	if (lord_has_capability(LORD_WARWICK_Y, AOW_YORK_NAVAL_BLOCKADE)) {
 		let war = get_lord_locale(LORD_WARWICK_Y)
-		if (is_seaport(war) && !is_exile(war))
+		if (is_seaport(war) && !is_exile_box(war))
 			return true
 	}
 	return false
@@ -10418,7 +10418,7 @@ states.warwicks_propaganda = {
 		view.prompt = `Warwick's Propaganda: Select up to 3 Yorkists Locales.`
 		view.where = game.event_propaganda
 		for (let loc of all_locales) {
-			if (game.count < 3 && has_york_favour(loc) && !is_exile(loc) && !is_propaganda_target(loc)) {
+			if (game.count < 3 && has_york_favour(loc) && !is_exile_box(loc) && !is_propaganda_target(loc)) {
 				gen_action_locale(loc)
 			}
 		}
