@@ -2673,6 +2673,23 @@ function end_muster_exiles() {
 	}
 }
 
+function can_use_exile_box(lord: Lord, loc: Locale) {
+	// Ia: Allied Networks
+	if (game.scenario === SCENARIO_IA) {
+		if (lord === LORD_HENRY_VI || lord === LORD_SOMERSET_1)
+			return loc === LOC_SCOTLAND
+		if (lord === LORD_NORTHUMBERLAND_L || lord === LORD_EXETER_1 || lord === LORD_BUCKINGHAM)
+			return loc === LOC_FRANCE
+		if (lord === LORD_YORK || lord === LORD_RUTLAND)
+			return loc === LOC_IRELAND
+		if (lord === LORD_MARCH || lord === LORD_WARWICK_Y || lord === LORD_SALISBURY)
+			return loc === LOC_BURGUNDY
+		throw "BAD ALLIED NETWORK DATA"
+	}
+
+	return has_favour_in_locale(game.active, loc)
+}
+
 states.muster_exiles = {
 	inactive: "Muster Exiles",
 	prompt() {
@@ -2689,8 +2706,7 @@ states.muster_exiles = {
 				view.actions.done = true
 		} else {
 			for (let loc of data.exile_boxes) {
-				// TODO: Allied Networks
-				if (has_favour_in_locale(game.active, loc))
+				if (can_use_exile_box(game.who, loc))
 					gen_action_locale(loc)
 			}
 		}
