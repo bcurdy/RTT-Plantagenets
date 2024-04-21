@@ -7393,7 +7393,6 @@ states.battle_losses = {
 		action_losses(lord, MILITIA)
 	},
 	done() {
-		game.who = NOBODY
 		goto_death_check()
 	},
 }
@@ -7492,6 +7491,7 @@ function gen_each_friendly_routed_vassal() {
 }
 
 function goto_death_check() {
+	game.who = NOBODY
 
 	log_h4("Death Check")
 
