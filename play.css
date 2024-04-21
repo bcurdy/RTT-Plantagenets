@@ -64,6 +64,7 @@ body.Lancaster header.your_turn { background-color: hsl(355, 83%, 72%); }
 
 .court_body {
 	gap: 24px;
+	min-height: 524px;
 }
 
 /* ARTS OF WAR */
@@ -341,7 +342,6 @@ body.shift .exhausted  {
 .marker.small {
 	width: 35px;
 	height: 35px;
-	border-radius: 6px;
 }
 
 .marker.circle {
@@ -488,12 +488,13 @@ body.shift .exhausted  {
 }
 
 .marker.rose {
+	border-radius: 0px;
 	position: absolute;
 }
 
-.marker.depexh { position: absolute; }
-.marker.depleted { position: absolute; }
-.marker.exhausted { position: absolute; }
+.marker.depexh { position: absolute; border-radius: 0px; }
+.marker.depleted { position: absolute; border-radius: 0px; }
+.marker.exhausted { position: absolute; border-radius: 0px; }
 
 .locale {
 	box-sizing: border-box;

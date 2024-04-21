@@ -11,6 +11,8 @@
 // TODO: [Influence] button instead of [Pay] when paying influence (or [Pay influence])?
 
 // TODO: logcap hidden or not hidden checks
+// TODO: log IP changes right aligned (like in Algeria)?
+
 // TODO: routed lords panel in UI
 // TODO: show fled retinue backsides
 
