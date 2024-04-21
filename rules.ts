@@ -2600,7 +2600,8 @@ function disband_lord(lord: Lord, permanently = false) {
 	if (permanently) {
 		log(`Removed L${lord}.`)
 		set_lord_locale(lord, NOWHERE)
-	} else if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME)) {
+	}
+	else if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME) && !is_event_in_play(EVENT_LANCASTER_BLOCKED_FORD)) {
 		set_lord_calendar(lord, turn + (extra - data.lords[lord].influence))
 		log(`Disbanded L${lord} to turn ${current_turn() + 1}.`)
 	}
@@ -2632,7 +2633,7 @@ function disband_lord(lord: Lord, permanently = false) {
 function exile_lord(lord: Lord) {
 	log("Exiled L" + lord)
 	disband_lord(lord, false)
-	if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME)) {
+	if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME) && !is_event_in_play(EVENT_LANCASTER_BLOCKED_FORD)) {
 		logcap(AOW_YORK_ENGLAND_IS_MY_HOME)
 		set_lord_calendar(lord, current_turn() + 1)
 	} else {
