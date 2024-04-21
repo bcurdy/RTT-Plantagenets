@@ -2757,7 +2757,8 @@ function goto_muster() {
 	}
 
 	if (is_event_in_play(EVENT_YORK_LOYALTY_AND_TRUST))
-		game.levy_flags.loyalty_and_trust = 1
+		if (game.active === YORK)
+			game.levy_flags.loyalty_and_trust = 1
 
 	if (game.active === YORK)
 		log_h2("York Muster")
@@ -4311,7 +4312,7 @@ function apply_so_wise_so_young(lord) {
 
 function do_tax(who: Lord, where: Locale, mul: number) {
 	let amount = get_tax_amount(where, who) * mul
-	log(`Tax %${where} for ${mul} Coin.`)
+	log(`Tax %${where} for ${amount} Coin.`)
 	add_lord_assets(who, COIN, amount)
 	apply_so_wise_so_young(who)
 	deplete_locale(where)
@@ -5007,6 +5008,7 @@ states.kings_parley = {
 			set_lord_locale(lord, game.march.from)
 
 		set_active_enemy()
+		spend_all_actions() // end command
 		end_march()
 	},
 	pass() {
@@ -6343,9 +6345,9 @@ states.culverins_and_falconets = {
 		if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE) && game.active === YORK) {
 			logcap(EVENT_YORK_PATRICK_DE_LA_MOTE)
 			die2 = roll_die()
-			logi(`${lord_name[lord]} Artillery does ${die1} + ${die2} hits`)
+			logi(`${die1} + ${die2} hits`)
 		} else {
-			logi(`${lord_name[lord]} Artillery does ${die1} hits`)
+			logi(`${die1} hits`)
 		}
 
 		if (is_attacker())
@@ -11512,6 +11514,7 @@ function can_play_y_aspielles() {
 }
 
 function goto_play_aspielles() {
+	clear_undo() // cannot undo after looking at hidden information!
 	game.state = "aspielles"
 	game.who = NOBODY
 	if (game.active === YORK)
@@ -11523,17 +11526,18 @@ function goto_play_aspielles() {
 states.aspielles = {
 	inactive: "Aspielles",
 	prompt() {
-		view.prompt = "Aspielles: You may see enemy held cards"
 		if (game.hidden) {
-			view.prompt += " and an enemy lord to see his mat"
 			if (game.who === NOBODY) {
+				view.prompt = "Aspielles: Inspect enemy Held cards and one hidden Lord mat."
 				for (let lord of all_enemy_lords())
 					gen_action_lord(lord)
 			} else {
+				view.prompt = "Aspielles: Inspect enemy Held cards and ${lord_name[game.who]} mat."
 				reveal_lord(game.who)
 				view.actions.done = 1
 			}
 		} else {
+			view.prompt = "Aspielles: Inspect enemy Held cards."
 			view.actions.done = 1
 		}
 		if (game.active === YORK)
@@ -11542,7 +11546,7 @@ states.aspielles = {
 			view.hand = game.hand_y
 	},
 	lord(lord) {
-		log(`${lord_name[lord]} Spied`)
+		log(`Spied L${lord} mat.`)
 		game.who = lord
 	},
 	done() {
