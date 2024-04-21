@@ -7826,12 +7826,9 @@ states.warden_of_the_marches = {
 
 		set_lord_locale(lord, game.where)
 
-		// vassals are disbanded in normal death check state later
+		// vassals are disbanded in usual death check state
 
 		// lords without troops are disbanded during aftermath
-
-		// remember these lords to remove battle capability troops during aftermath
-		// if (!game.battle.warden) game.battle.warden = [] set_add(game.battle.warden, lord)
 	},
 	done() {
 		end_held_event()
@@ -7842,25 +7839,50 @@ states.warden_of_the_marches = {
 
 // === 4.4.4 ENDING THE BATTLE: AFTERMATH ===
 
-function goto_battle_aftermath() {
-	// TODO: manually remove capability troops and disband lords who are left without troops
+function should_disband_lords_without_troops() {
+	for (let lord of all_friendly_lords())
+		if (is_lord_on_map(lord) && !lord_has_unrouted_troops(lord))
+			return true
+	return false
+}
 
+function goto_battle_aftermath() {
+	// Remove temporary troops granted by capabilities
 	for (let lord of all_lords)
 		if (get_lord_locale(lord) !== game.battle.where)
 			remove_battle_capability_troops(lord)
 
-	for (let lord of all_lords) {
-		if (is_lord_on_map(lord)) {
-			// Disband lords without troops
-			if (!lord_has_unrouted_troops(lord)) {
-				set_delete(game.battle.routed, lord)
-				set_delete(game.battle.fled, lord)
-				disband_lord(lord)
-			}
-		}
-	}
+	set_active_defender()
+	if (should_disband_lords_without_troops())
+		game.state = "aftermath_disband"
+	else
+		end_battle_aftermath_disband()
+}
 
-	end_battle_aftermath()
+function end_battle_aftermath_disband() {
+	set_active_enemy()
+	if (should_disband_lords_without_troops())
+		game.state = "aftermath_disband"
+	else
+		end_battle_aftermath()
+}
+
+states.aftermath_disband = {
+	inactive: "Aftermath",
+	prompt() {
+		view.prompt = "Aftermath: Disband lords with no unrouted troops."
+		for (let lord of all_friendly_lords())
+			if (is_lord_on_map(lord) && !lord_has_unrouted_troops(lord))
+				gen_action_lord(lord)
+	},
+	lord(lord) {
+	throw "STOP"
+		set_delete(game.battle.routed, lord)
+		set_delete(game.battle.fled, lord)
+		disband_lord(lord)
+		if (!should_disband_lords_without_troops())
+			end_battle_aftermath_disband()
+	},
 }
 
 function end_battle_aftermath() {
