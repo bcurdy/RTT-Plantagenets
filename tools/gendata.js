@@ -354,7 +354,6 @@ function defloc(region, type, name) {
 	if (region) {
 		if (!is[region]) is[region] = []
 		is[region].push(id)
-	} else {
 		is.stronghold.push(id)
 	}
 	ways.push([])

@@ -519,7 +519,7 @@ function is_port_3(x: Locale) { return (x >= 5 && x <= 6) || x === 26 }
 function is_adjacent_north_sea(x: Locale) { return x === 1 || x === 35 || x === 37 || (x >= 56 && x <= 57) }
 function is_adjacent_english_channel(x: Locale) { return (x >= 14 && x <= 15) || x === 17 || (x >= 19 && x <= 22) || x === 24 || x === 51 }
 function is_adjacent_irish_sea(x: Locale) { return (x >= 5 && x <= 6) || x === 26 }
-function is_stronghold(x: Locale) { return (x >= 52 && x <= 55) || (x >= 58 && x <= 60) }
+function is_stronghold(x: Locale) { return (x >= 0 && x <= 51) || (x >= 56 && x <= 57) }
 function is_fortress(x: Locale) { return x === 0 || x === 6 || x === 9 || x === 37 || x === 57 }
 function is_north(x: Locale) { return (x >= 0 && x <= 4) || x === 56 }
 function is_city(x: Locale) { return x === 1 || x === 4 || (x >= 7 && x <= 8) || (x >= 10 && x <= 13) || x === 16 || x === 18 || x === 21 || x === 23 || (x >= 25 && x <= 28) || x === 36 || (x >= 38 && x <= 39) || x === 41 || x === 43 || (x >= 46 && x <= 47) || (x >= 49 && x <= 50) }
@@ -11675,7 +11675,7 @@ states.aspielles = {
 				for (let lord of all_enemy_lords())
 					gen_action_lord(lord)
 			} else {
-				view.prompt = "Aspielles: Inspect enemy Held cards and ${lord_name[game.who]} mat."
+				view.prompt = `Aspielles: Inspect enemy Held cards and ${lord_name[game.who]} mat.`
 				reveal_lord(game.who)
 				view.actions.done = 1
 			}
