@@ -1233,7 +1233,7 @@ function is_lord_on_calendar(lord: Lord) {
 }
 
 function is_lord_ready(lord: Lord) {
-	return (is_lord_on_calendar(lord) && get_lord_calendar(lord) < current_turn())
+	return (is_lord_on_calendar(lord) && get_lord_calendar(lord) <= current_turn())
 }
 
 function get_lord_capability(lord: Lord, n: 0 | 1): Card {
@@ -7876,7 +7876,6 @@ states.aftermath_disband = {
 				gen_action_lord(lord)
 	},
 	lord(lord) {
-	throw "STOP"
 		set_delete(game.battle.routed, lord)
 		set_delete(game.battle.fled, lord)
 		disband_lord(lord)
