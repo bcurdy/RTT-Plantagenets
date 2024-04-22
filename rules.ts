@@ -18,13 +18,12 @@
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
 
+	Soldiers of Fortune X Rising Wages interaction
+
 	NAVAL BLOCKADE - for Tax and Tax Collectors
 	REGROUP - other timing windows
 
 	Scenario special rules.
-
-		Ib: Norfolk is Late
-		Ib: Test of Arms
 
 		II: Foreign Haven - Warwick
 		II: Foreign Haven - Edward IV
@@ -5384,7 +5383,9 @@ function count_archery_hits(lord: Lord) {
 }
 
 function count_melee_hits(lord: Lord) {
-	let hits = 3 << 1 // Retinue
+	let hits = 0
+	if (get_lord_forces(lord, RETINUE) > 0)
+		hits += 3 << 1
 	hits += count_unrouted_vassals_with_lord(lord) << 2
 	if (lord_has_capability(lord, AOW_LANCASTER_CHEVALIERS))
 		hits += get_lord_forces(lord, MEN_AT_ARMS) << 2
