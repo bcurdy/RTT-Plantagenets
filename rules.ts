@@ -259,6 +259,7 @@ interface State {
 	take_ship?(): void,
 	tax?(): void,
 
+	richard_iii?(): void,
 	vanguard?(): void,
 	final_charge?(): void,
 	commission_of_array?(): void,
@@ -2005,9 +2006,12 @@ function roll_influence_check(lord: Lord, bonus: number, add_cost: number = 0, a
 // === 2.0 SETUP ===
 
 function goto_setup_lords() {
-	set_active(P1)
-	game.state = "setup_lords"
-	// setup will be used in some scenarios
+	if (game.scenario === SCENARIO_III) {
+		set_active(YORK)
+		game.state = "my_kingdom_for_a_horse_setup"
+		return
+	}
+	goto_start_game()
 }
 
 states.setup_lords = {
@@ -2823,6 +2827,10 @@ states.muster_lord = {
 
 		let here = get_lord_locale(game.command)
 
+		// My Kingdom for a Horse!
+		if (game.scenario === SCENARIO_III && game.command === LORD_GLOUCESTER_2 && here == LOC_LONDON)
+			view.actions.richard_iii = 1
+
 		if (is_friendly_locale(here)) {
 			if (game.actions > 0) {
 				// Levy another ready Lord
@@ -2899,6 +2907,11 @@ states.muster_lord = {
 		}
 
 		view.actions.done = 1
+	},
+
+	richard_iii() {
+		push_undo()
+		replace_gloucester_with_richard_iii()
 	},
 
 	lord(lord) {
@@ -3290,6 +3303,10 @@ function discard_lord_capability(lord: Lord, c: Card) {
 	if (get_lord_capability(lord, 1) === c)
 		return set_lord_capability(lord, 1, NOCARD)
 	throw new Error("capability not found")
+}
+
+function is_capabality_available_to_lord(c: Card, lord: Lord) {
+	return c !== NOCARD && (!data.cards[c].lords || set_has(data.cards[c].lords, lord))
 }
 
 function can_lord_levy_capability_card(lord: Lord, c: Card) {
@@ -8871,10 +8888,12 @@ exports.setup = function (seed, scenario, options) {
 
 	update_aliases()
 
-	goto_start_game()
+	goto_setup_lords()
 
 	return game
 }
+
+// === SCENARIO: IA ===
 
 function setup_Ia() {
 	game.turn = 1 << 1
@@ -8906,6 +8925,8 @@ function setup_Ia() {
 
 	setup_vassals()
 }
+
+// === SCENARIO: IB ===
 
 function setup_Ib() {
 	game.turn = 1 << 1
@@ -8950,6 +8971,8 @@ function setup_Ib() {
 	setup_vassals([ VASSAL_FAUCONBERG, VASSAL_NORFOLK ])
 	muster_vassal(VASSAL_FAUCONBERG, LORD_MARCH)
 }
+
+// === SCENARIO: IC ===
 
 function setup_Ic() {
 	game.turn = 5 << 1
@@ -8998,6 +9021,8 @@ function setup_Ic() {
 	setup_vassals()
 }
 
+// === SCENARIO: II ===
+
 function setup_II() {
 	game.turn = 1 << 1
 
@@ -9043,13 +9068,15 @@ function setup_II() {
 	// TODO: Add Skaky Allies rules
 }
 
+// === SCENARIO: III ===
+
 function setup_III() {
 	game.turn = 1 << 1
 
 	clear_flag(FLAG_REBEL_IS_YORK)
 	game.active = LANCASTER
 	game.influence = 0
-	muster_lord(LORD_RICHARD_III, LOC_LONDON)
+	muster_lord(LORD_GLOUCESTER_2, LOC_LONDON)
 	muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
 	muster_lord(LORD_NORFOLK, LOC_ARUNDEL)
 	muster_lord(LORD_HENRY_TUDOR, LOC_FRANCE)
@@ -9070,6 +9097,51 @@ function setup_III() {
 	add_york_favour(LOC_GLOUCESTER)
 
 	setup_vassals([ VASSAL_OXFORD, VASSAL_NORFOLK ])
+}
+
+states.my_kingdom_for_a_horse_setup = {
+	inactive: "My Kingdom for a Horse",
+	prompt() {
+		view.prompt = "My Kingdom for a Horse: You may replace Gloucester with Richard III."
+		view.actions.richard_iii = 1
+		view.actions.pass = 1
+	},
+	richard_iii() {
+		replace_gloucester_with_richard_iii()
+		goto_start_game()
+	},
+	pass() {
+		goto_start_game()
+	},
+}
+
+function replace_gloucester_with_richard_iii() {
+	log(`Replaced L${LORD_GLOUCESTER_2} with L${LORD_RICHARD_III}.`)
+
+	set_lord_locale(LORD_RICHARD_III, get_lord_locale(LORD_GLOUCESTER_2))
+	set_lord_capability(LORD_RICHARD_III, 0, get_lord_capability(LORD_GLOUCESTER_2, 0))
+	set_lord_capability(LORD_RICHARD_III, 1, get_lord_capability(LORD_GLOUCESTER_2, 1))
+	for (let x of all_asset_types)
+		set_lord_assets(LORD_RICHARD_III, x, get_lord_assets(LORD_GLOUCESTER_2, x))
+	for (let x of all_force_types)
+		set_lord_forces(LORD_RICHARD_III, x, get_lord_forces(LORD_GLOUCESTER_2, x))
+
+	if (!is_capabality_available_to_lord(get_lord_capability(LORD_RICHARD_III, 0), LORD_RICHARD_III))
+		set_lord_capability(LORD_RICHARD_III, 0, NOCARD)
+	if (!is_capabality_available_to_lord(get_lord_capability(LORD_RICHARD_III, 1), LORD_RICHARD_III))
+		set_lord_capability(LORD_RICHARD_III, 1, NOCARD)
+
+	set_lord_locale(LORD_GLOUCESTER_2, NOWHERE)
+	set_lord_capability(LORD_GLOUCESTER_2, 0, NOCARD)
+	set_lord_capability(LORD_GLOUCESTER_2, 1, NOCARD)
+	for (let x of all_asset_types)
+		set_lord_assets(LORD_GLOUCESTER_2, x, 0)
+	for (let x of all_force_types)
+		set_lord_forces(LORD_GLOUCESTER_2, x, 0)
+
+	for_each_vassal_with_lord(LORD_GLOUCESTER_2, v => {
+		set_vassal_lord_and_service(v, LORD_RICHARD_III, get_vassal_service(v))
+	})
 }
 
 // === 6.0 CAMPAIGN ===

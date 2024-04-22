@@ -1640,6 +1640,7 @@ function on_update() {
 	update_court()
 
 	// Misc
+	action_button("richard_iii", "Richard III")
 	action_button("vanguard", "Vanguard")
 	action_button("final_charge", "Final Charge")
 	action_button("lordship", "Lordship")
