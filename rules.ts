@@ -23,18 +23,13 @@
 
 	Scenario special rules.
 
-		Ia: Capture of the King
-
 		Ib: Norfolk is Late
 		Ib: Test of Arms
-		Ib: check exile boxes (just in case)?
 
 		II: Foreign Haven - Warwick
 		II: Foreign Haven - Edward IV
 		II: Shaky Allies
 		II: Queen Regent
-
-		III: King Richard
 
 	Review all undo steps.
 	Review all states for needless pauses.
@@ -1614,6 +1609,16 @@ function has_york_favour(loc: Locale) {
 
 function add_york_favour(loc: Locale) {
 	set_add(game.pieces.favoury, loc)
+}
+
+function set_york_favour(loc: Locale) {
+	set_add(game.pieces.favoury, loc)
+	set_delete(game.pieces.favourl, loc)
+}
+
+function set_lancaster_favour(loc: Locale) {
+	set_add(game.pieces.favourl, loc)
+	set_delete(game.pieces.favoury, loc)
 }
 
 function remove_york_favour(loc: Locale) {
@@ -5617,23 +5622,42 @@ function goto_battle() {
 
 // === 4.4.1 BATTLE ARRAY ===
 
+function norfolk_is_late() {
+	if (game.scenario === SCENARIO_IB && game.battle.round === 1) {
+		let n = 0
+		for (let lord of all_york_lords)
+			if (get_lord_locale(lord) === game.battle.where)
+				++n
+		return n > 1
+	}
+	return false
+}
+
 function has_friendly_reserves() {
-	for (let lord of game.battle.reserves)
+	for (let lord of game.battle.reserves) {
+		if (lord === LORD_NORFOLK && norfolk_is_late())
+			continue
 		if (is_friendly_lord(lord))
 			return true
+	}
 	return false
 }
 
 function count_friendly_reserves() {
 	let n = 0
-	for (let lord of game.battle.reserves)
+	for (let lord of game.battle.reserves) {
+		if (lord === LORD_NORFOLK && norfolk_is_late())
+			continue
 		if (is_friendly_lord(lord))
 			++n
+	}
 	return n
 }
 
 function pop_first_reserve() {
 	for (let lord of game.battle.reserves) {
+		if (lord === LORD_NORFOLK && norfolk_is_late())
+			continue
 		if (is_friendly_lord(lord)) {
 			set_delete(game.battle.reserves, lord)
 			return lord
@@ -5707,6 +5731,8 @@ states.array_attacker = {
 		let done = true
 		if (array[A1] === NOBODY || array[A2] === NOBODY || array[A3] === NOBODY) {
 			for (let lord of game.battle.reserves) {
+				if (lord === LORD_NORFOLK && norfolk_is_late())
+					continue
 				if (lord !== game.who && is_friendly_lord(lord)) {
 					gen_action_lord(lord)
 					done = false
@@ -5732,6 +5758,8 @@ states.array_defender = {
 		let done = true
 		if (array[D1] === NOBODY || array[D2] === NOBODY || array[D3] === NOBODY) {
 			for (let lord of game.battle.reserves) {
+				if (lord === LORD_NORFOLK && norfolk_is_late())
+					continue
 				if (lord !== game.who && is_friendly_lord(lord)) {
 					gen_action_lord(lord)
 					done = false
@@ -7220,6 +7248,17 @@ function end_battle_round() {
 
 		end_battle()
 		return
+	}
+
+	if (game.scenario === SCENARIO_IB && game.battle.where === LOC_YORK) {
+		if (game.battle.loser === YORK) {
+			log("Test of Arms: York favours Lancaster.")
+			set_lancaster_favour(LOC_YORK)
+		}
+		if (game.battle.loser === LANCASTER) {
+			log("Test of Arms: York favours York.")
+			set_york_favour(LOC_YORK)
+		}
 	}
 
 	game.battle.round++
@@ -8722,6 +8761,16 @@ function check_threshold_victory() {
 // === 5.3 SCENARIO END VICTORY ===
 
 function check_scenario_end_victory() {
+	if (game.scenario === SCENARIO_IB) {
+		if (has_york_favour(LOC_YORK))
+			goto_game_over(YORK, "York favours York.")
+		else if (has_lancaster_favour(LOC_YORK))
+			goto_game_over(LANCASTER, "York favours Lancaster.")
+		else
+			goto_game_over("Draw", "York favours nobody.")
+		return true
+	}
+
 	if (current_turn() + 1 === scenario_end_marker[game.scenario]) {
 		if (game.influence === 0)
 			goto_game_over("Draw", "The game ended in a draw.")
