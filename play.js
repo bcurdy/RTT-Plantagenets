@@ -459,6 +459,8 @@ function is_lord_in_battle(lord) {
 				return true
 		if (set_has(view.battle.reserves, lord))
 			return true
+		if (set_has(view.battle.routed, lord))
+			return true
 	}
 	return false
 }
@@ -612,6 +614,9 @@ const ui = {
 
 	reserves_panel: document.getElementById("reserves_panel"),
 	reserves: document.getElementById("reserves"),
+
+	routed_panel: document.getElementById("routed_panel"),
+	routed: document.getElementById("routed"),
 
 	events_panel: document.getElementById("events_panel"),
 	events: document.getElementById("events"),
@@ -1455,6 +1460,10 @@ function update_battle() {
 	ui.reserves.replaceChildren()
 	for (let lord of view.battle.reserves)
 		ui.reserves.appendChild(ui.lord_mat[lord])
+
+	ui.routed.replaceChildren()
+	for (let lord of view.battle.routed)
+		ui.routed.appendChild(ui.lord_mat[lord])
 }
 
 function update_court() {
@@ -1602,29 +1611,24 @@ function on_update() {
 	update_plan()
 	update_cards()
 
-	if (view.battle && view.battle.array) {
-		ui.reserves_panel.classList.remove("hide")
+	if (view.battle) {
+		ui.reserves_panel.classList.toggle("hide", view.battle.reserves.length === 0)
+		ui.routed_panel.classList.remove("hide")
 		ui.battle_panel.classList.remove("hide")
-		if (view.battle.storm)
-			ui.battle_header.textContent = "Storm at " + data.locales[view.battle.where].name
-		else if (view.battle.sally)
-			ui.battle_header.textContent = "Sally at " + data.locales[view.battle.where].name
-		else
-			ui.battle_header.textContent = "Battle at " + data.locales[view.battle.where].name
+		ui.battle_header.textContent = "Battle at " + data.locales[view.battle.where].name
 		if (view.battle.attacker === player) {
 			ui.battle_grid.className = "attacker"
 		} else {
 			ui.battle_grid.className = "defender"
 		}
+
 		update_battle()
 	} else {
 		ui.battle_panel.classList.add("hide")
+		ui.reserves_panel.classList.add("hide")
+		ui.routed_panel.classList.add("hide")
 	}
 
-	if (view.battle && view.battle.array && view.battle.reserves.length > 0)
-		ui.reserves_panel.classList.remove("hide")
-	else
-		ui.reserves_panel.classList.add("hide")
 
 	update_court()
 

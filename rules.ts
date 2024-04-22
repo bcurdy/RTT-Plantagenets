@@ -7277,7 +7277,7 @@ function end_battle() {
 	else
 		log_h4(`${game.battle.loser} Lost`)
 
-	game.battle.array = null
+	//game.battle.array = null
 	game.battle.caltrops = NOBODY
 	goto_battle_influence()
 }
