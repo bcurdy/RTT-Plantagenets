@@ -8764,7 +8764,7 @@ const scenario_end_marker = [
 	2,
 	8,
 	16,
-	16,
+	10,
 ]
 
 function scenario_victory_threshold() {
@@ -9071,32 +9071,36 @@ function setup_II() {
 // === SCENARIO: III ===
 
 function setup_III() {
-	game.turn = 1 << 1
 
 	clear_flag(FLAG_REBEL_IS_YORK)
 	game.active = LANCASTER
 	game.influence = 0
-	muster_lord(LORD_GLOUCESTER_2, LOC_LONDON)
-	muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
-	muster_lord(LORD_NORFOLK, LOC_ARUNDEL)
-	muster_lord(LORD_HENRY_TUDOR, LOC_FRANCE)
-	muster_lord(LORD_JASPER_TUDOR_2, LOC_FRANCE)
-	muster_lord(LORD_OXFORD, LOC_FRANCE)
-
-	add_lancaster_favour(LOC_FRANCE)
-	add_lancaster_favour(LOC_OXFORD)
-	add_lancaster_favour(LOC_HARLECH)
-	add_lancaster_favour(LOC_PEMBROKE)
 
 	add_york_favour(LOC_BURGUNDY)
+	add_lancaster_favour(LOC_FRANCE)
+
+	setup_vassals([ VASSAL_OXFORD, VASSAL_NORFOLK ])
+
 	add_york_favour(LOC_LONDON)
 	add_york_favour(LOC_CALAIS)
 	add_york_favour(LOC_CARLISLE)
 	add_york_favour(LOC_ARUNDEL)
-	add_york_favour(LOC_YORK)
 	add_york_favour(LOC_GLOUCESTER)
+	add_york_favour(LOC_YORK)
 
-	setup_vassals([ VASSAL_OXFORD, VASSAL_NORFOLK ])
+	add_lancaster_favour(LOC_OXFORD)
+	add_lancaster_favour(LOC_HARLECH)
+	add_lancaster_favour(LOC_PEMBROKE)
+
+	muster_lord(LORD_GLOUCESTER_2, LOC_LONDON)
+	muster_lord(LORD_NORTHUMBERLAND_Y2, LOC_CARLISLE)
+	muster_lord(LORD_NORFOLK, LOC_ARUNDEL)
+
+	muster_lord(LORD_HENRY_TUDOR, LOC_FRANCE)
+	muster_lord(LORD_JASPER_TUDOR_2, LOC_FRANCE)
+	muster_lord(LORD_OXFORD, LOC_FRANCE)
+
+	game.turn = 3 << 1
 }
 
 states.my_kingdom_for_a_horse_setup = {
