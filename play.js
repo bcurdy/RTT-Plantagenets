@@ -224,6 +224,7 @@ const NOWHERE = -1
 const CALENDAR = 100
 const CALENDAR_EXILE = 200
 const LONDON_FOR_YORK = 300
+const CAPTURE_OF_THE_KING = 400 // Ia. special rule (400 + lord ID that has him captured)
 
 const VASSAL_READY = 29
 const VASSAL_CALENDAR = 30
@@ -822,6 +823,10 @@ function build_map() {
 		build_lord_mat(lord, ix, side, lord.id)
 	})
 
+	ui.captured_king = document.createElement("div")
+	ui.captured_king.className = "cylinder lancaster " + data.lords[LORD_HENRY_VI].id
+	ui.captured_king.style.position = "static"
+
 	data.vassalbox.forEach((vassal, ix) => {
 		let e = ui.vassal_map[ix] = document.createElement("div")
 		let { x, y, w, h } = vassal.box
@@ -1205,6 +1210,9 @@ function update_lord_mat(ix) {
 		update_forces(ui.forces[ix], view.pieces.forces, ix, false)
 		update_forces(ui.routed[ix], view.pieces.routed, ix, true)
 		ui.lord_feed[ix].classList.toggle("hide", count_lord_all_forces(ix) <= 6)
+
+		if (get_lord_locale(LORD_HENRY_VI) === CAPTURE_OF_THE_KING + ix)
+			ui.assets[ix].appendChild(ui.captured_king)
 	} else {
 		ui.lord_mat[ix].classList.add("hidden")
 		ui.assets[ix].replaceChildren()

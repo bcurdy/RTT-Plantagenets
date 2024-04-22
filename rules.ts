@@ -354,6 +354,7 @@ const NOCARD = -1 as Card
 const CALENDAR = 100 as Locale
 const CALENDAR_EXILE = 200 as Locale
 const LONDON_FOR_YORK = 300 as Locale // extra london marker
+const CAPTURE_OF_THE_KING = 400 as Locale // Ia. special rule (400 + lord ID that has him captured)
 
 const VASSAL_READY = 29 as Lord
 const VASSAL_CALENDAR = 30 as Lord
@@ -1174,7 +1175,8 @@ function set_lord_in_exile(lord: Lord) {
 }
 
 function is_lord_in_exile(lord: Lord) {
-	return get_lord_locale(lord) >= CALENDAR_EXILE
+	let loc = get_lord_locale(lord)
+	return loc >= CALENDAR_EXILE && loc <= CALENDAR_EXILE + 16
 }
 
 function is_lord_on_map(lord: Lord) {
@@ -1187,7 +1189,8 @@ function is_lord_in_play(lord: Lord) {
 }
 
 function is_lord_on_calendar(lord: Lord) {
-	return get_lord_locale(lord) >= CALENDAR
+	let loc = get_lord_locale(lord)
+	return loc >= CALENDAR && loc <= CALENDAR_EXILE + 16
 }
 
 function is_lord_ready(lord: Lord) {
@@ -7444,6 +7447,9 @@ function gen_each_friendly_routed_vassal() {
 function goto_death_check() {
 	game.who = NOBODY
 
+	if (is_capture_of_the_king_triggered())
+		goto_capture_of_the_king()
+
 	log_h4("Death Check")
 
 	set_active_defender()
@@ -7627,6 +7633,52 @@ states.bloody_thou_art = {
 	done() {
 		end_death_check()
 	},
+}
+
+// === SCENARIO IA: CAPTURE OF THE KING ===
+
+function is_capture_of_the_king_triggered() {
+	return game.scenario === SCENARIO_IA && game.battle.loser === LANCASTER && get_lord_locale(LORD_HENRY_VI) === game.battle.where
+}
+
+function goto_capture_of_the_king() {
+	set_active(YORK)
+	game.state = "capture_of_the_king"
+	game.who = LORD_HENRY_VI
+}
+
+states.capture_of_the_king = {
+	inactive: "Capture of the King",
+	prompt() {
+		view.prompt = "Capture of the King: Place Henry VI with any unrouted Yorkist lord."
+		for (let lord of all_york_lords)
+			if (is_lord_on_map(lord) && !set_has(game.battle.routed, lord))
+				gen_action_lord(lord)
+	},
+	lord(lord) {
+		push_undo()
+		disband_lord(LORD_HENRY_VI, true)
+		log(`L${LORD_HENRY_VI} captured by L${lord}.`)
+		set_delete(game.battle.routed, lord)
+		set_delete(game.battle.fled, lord)
+		set_lord_locale(LORD_HENRY_VI, CAPTURE_OF_THE_KING + lord as Locale)
+		// Note: the other 10 influence were already gained from normal battle victory
+		goto_death_check()
+	},
+}
+
+function check_capture_of_the_king() {
+	if (game.scenario === SCENARIO_IA) {
+		let loc = get_lord_locale(LORD_HENRY_VI)
+		if (loc >= CAPTURE_OF_THE_KING) {
+			let who = loc - CAPTURE_OF_THE_KING as Lord
+			if (!is_lord_on_map(who)) {
+				log(`L${LORD_HENRY_VI} released!`)
+				disband_lord(LORD_HENRY_VI, false)
+				increase_lancaster_influence(10)
+			}
+		}
+	}
 }
 
 // === DEATH CHECK EVENT: ESCAPE SHIP ===
