@@ -3105,6 +3105,8 @@ states.levy_lord_at_seat = {
 
 		set_lord_moved(game.who, 1)
 		muster_lord(game.who, loc)
+		levy_burgundians(game.who)
+
 		if (game.active === YORK) {
 			add_york_favour(loc)
 			remove_lancaster_favour(loc)
