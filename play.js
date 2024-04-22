@@ -757,7 +757,6 @@ function build_map() {
 		e.style.top = y + "px"
 		e.style.width = w + "px"
 		e.style.height = h + "px"
-		e.style.zIndex = "-10"
 		register_action(e, "locale", ix, "laden_march")
 		register_tooltip(e, get_locale_tip(ix))
 		document.getElementById("locales").appendChild(e)
@@ -1231,7 +1230,7 @@ function update_lord_mat(ix) {
 
 function update_lord(ix) {
 	let locale = get_lord_locale(ix)
-	if (locale < 0) {
+	if (locale < 0 || locale > CALENDAR_EXILE + 16) {
 		ui.lord_cylinder[ix].classList.add("hide")
 		ui.lord_mat[ix].classList.remove("action")
 		return
@@ -1241,7 +1240,7 @@ function update_lord(ix) {
 		ui.lord_cylinder[ix].classList.remove("hide")
 		update_lord_mat(ix)
 		ui.lord_exile[ix].classList.add("hide")
-	} else {
+	} else if (locale <= CALENDAR_EXILE + 16) {
 		let t = locale > CALENDAR_EXILE ? locale - CALENDAR_EXILE : locale - CALENDAR
 		calendar_layout_cylinder[t].push(ui.lord_cylinder[ix])
 		ui.lord_cylinder[ix].classList.remove("hide")

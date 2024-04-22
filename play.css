@@ -509,7 +509,10 @@ body.shift .exhausted  {
 .locale.sea { border-radius: 50% }
 .locale.exile { border-radius: 0 0 50% 50% }
 
-.locale.action { border-color: white; box-shadow: 0 0 4px white; }
+.locale.action {
+	border-color: white;
+	z-index: 100;
+}
 
 .locale.selected {
 	border-color: cyan;

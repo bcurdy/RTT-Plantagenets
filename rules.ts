@@ -2586,6 +2586,8 @@ function disband_lord(lord: Lord, permanently = false) {
 	for_each_vassal_with_lord(lord, v => {
 		disband_vassal(v)
 	})
+
+	check_capture_of_the_king()
 }
 
 function exile_lord(lord: Lord) {
@@ -7447,8 +7449,10 @@ function gen_each_friendly_routed_vassal() {
 function goto_death_check() {
 	game.who = NOBODY
 
-	if (is_capture_of_the_king_triggered())
+	if (is_capture_of_the_king_triggered()) {
 		goto_capture_of_the_king()
+		return
+	}
 
 	log_h4("Death Check")
 
@@ -7657,10 +7661,10 @@ states.capture_of_the_king = {
 	},
 	lord(lord) {
 		push_undo()
-		disband_lord(LORD_HENRY_VI, true)
 		log(`L${LORD_HENRY_VI} captured by L${lord}.`)
-		set_delete(game.battle.routed, lord)
-		set_delete(game.battle.fled, lord)
+		set_delete(game.battle.routed, LORD_HENRY_VI)
+		set_delete(game.battle.fled, LORD_HENRY_VI)
+		disband_lord(LORD_HENRY_VI, true)
 		set_lord_locale(LORD_HENRY_VI, CAPTURE_OF_THE_KING + lord as Locale)
 		// Note: the other 10 influence were already gained from normal battle victory
 		goto_death_check()
