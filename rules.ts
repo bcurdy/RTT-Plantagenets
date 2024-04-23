@@ -11154,16 +11154,21 @@ function can_tax_collectors(lord: Lord) {
 states.tax_collectors = {
 	inactive: "Tax Collectors",
 	prompt() {
-		view.prompt = "Tax Collectors : You may tax for Double coin with each lord"
+		view.prompt = "Tax Collectors: Each Yorkist lord may immediately tax for twice the coin."
+		let done = true
 		for (let lord of all_york_lords) {
-			if (!get_lord_moved(lord) && can_tax_collectors(lord))
+			if (!get_lord_moved(lord) && can_tax_collectors(lord)) {
 				gen_action_lord(lord)
+				done = false
+			}
 		}
+		if (done)
+			view.prompt = "Tax Collectors: All done."
 		view.actions.done = 1
 	},
 	lord(lord) {
 		push_undo()
-		set_lord_moved(lord, 0)
+		set_lord_moved(lord, 1)
 		game.where = NOWHERE
 		game.who = lord
 		game.state = "tax_collectors_lord"
@@ -11177,11 +11182,11 @@ states.tax_collectors_lord = {
 	inactive: "Tax Collectors",
 	prompt() {
 		if (game.where === NOWHERE) {
-			view.prompt = "Tax Collectors: Select a Stronghold to Tax."
+			view.prompt = `Tax Collectors: ${lord_name[game.who]}. Choose a stronghold.`
 			for (let loc of search_tax([], get_lord_locale(game.who), game.who))
 				gen_action_locale(loc)
 		} else {
-			view.prompt = `Tax Collectors: Attempt to Tax ${locale_name[game.where]}.`
+			view.prompt = `Tax Collectors: Tax ${locale_name[game.where]} with ${lord_name[game.who]}.`
 			prompt_influence_check(game.who)
 		}
 	},
@@ -11212,6 +11217,8 @@ function end_tax_collectors() {
 	game.where = NOWHERE
 	game.who = NOBODY
 	game.count = 0
+	for (let lord of all_york_lords)
+		set_lord_moved(lord, 0)
 	end_immediate_event()
 }
 
