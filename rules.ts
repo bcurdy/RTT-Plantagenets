@@ -10250,7 +10250,7 @@ function is_naval_blockade_in_play() {
 }
 
 function can_naval_blockade(here: Locale) {
-	if (is_naval_blockade_in_play())
+	if (game.active === LANCASTER && is_naval_blockade_in_play())
 		return is_on_same_sea(here, get_lord_locale(LORD_WARWICK_Y))
 	return false
 }
