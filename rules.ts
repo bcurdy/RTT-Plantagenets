@@ -2850,7 +2850,7 @@ states.muster_lord = {
 
 				// Add Transport
 				// TODO: 1.7.3 English Ships -- no more than 9 lords may have ships
-				if (is_seaport(here) && get_lord_assets(game.command, SHIP) < 2)
+				if ((is_seaport(here) || is_exile_box(here)) && get_lord_assets(game.command, SHIP) < 2)
 					view.actions.take_ship = 1
 
 				if (can_add_transport(game.command, CART))
