@@ -18,8 +18,6 @@
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
 
-	Soldiers of Fortune X Rising Wages interaction
-
 	NAVAL BLOCKADE - for Tax and Tax Collectors
 	REGROUP - other timing windows
 
@@ -1881,18 +1879,18 @@ function is_automatic_parley_success(lord: Lord) {
 function get_parley_influence_cost() {
 	let cost = map_get(game.parley, game.where, 0)
 	if (game.active === LANCASTER) {
-		if (is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST))
+		if (is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
 			cost += 1
-		if (is_levy_phase()) {
+		}
+	}
+	if (is_levy_phase()) {
+		if (game.levy_flags.jack_cade > 0) {
+			cost = 0
+		} else {
 			if (game.levy_flags.parliament_votes > 0)
 				cost -= 1
-		}
-	} else {
-		if (is_levy_phase()) {
-			if (game.levy_flags.succession > 0)
+			else if (game.levy_flags.succession > 0)
 				cost -= 1
-			if (game.levy_flags.jack_cade > 0)
-				cost = 0
 		}
 	}
 	return cost
@@ -2835,8 +2833,11 @@ states.muster_lord = {
 		if (game.scenario === SCENARIO_III && game.command === LORD_GLOUCESTER_2 && here == LOC_LONDON)
 			view.actions.richard_iii = 1
 
-		if (is_friendly_locale(here)) {
-			if (game.actions > 0) {
+		if (game.actions > 0) {
+			if (can_action_parley_levy())
+				view.actions.parley = 1
+
+			if (is_friendly_locale(here)) {
 				// Levy another ready Lord
 				for (let lord of all_friendly_lords()) {
 					if (is_lord_ready(lord) && has_locale_to_muster(lord))
@@ -2849,59 +2850,43 @@ states.muster_lord = {
 						gen_action_vassal(vassal)
 
 				// Add Transport
-				// TODO: 1.7.3 English Ships -- no more than 9 lords may have ships
 				if (can_add_transport_ship(game.command, here))
 					view.actions.take_ship = 1
 				if (can_add_transport_cart(game.command))
 					view.actions.take_cart = 1
 
-				if (can_add_troops(here))
-					view.actions.levy_troops = 1
-
 				// Add Capability
 				if (can_add_lord_capability(game.command))
 					view.actions.capability = 1
 
-				if (can_action_parley_levy())
-					view.actions.parley = 1
-
-				if (can_add_troops_beloved_warwick(game.command, here))
-					view.actions.levy_beloved_warwick = 1
-
-				if (can_add_troops_irishmen(game.command, here))
-					view.actions.levy_irishmen = 1
-
-				if (can_add_troops_sof(game.command, here))
-					view.actions.soldiers_of_fortune = 1
-
-				if (can_add_troops_coa(game.command, here))
-					view.actions.commission_of_array = 1
-			} else {
-
-				// Free Levy Troops
-				if (has_free_levy_troops()) {
+				if (!is_rising_wages() || can_pay_from_shared(game.command)) {
 					if (can_add_troops(here))
 						view.actions.levy_troops = 1
+					if (can_add_troops_beloved_warwick(game.command, here))
+						view.actions.levy_beloved_warwick = 1
+					if (can_add_troops_irishmen(game.command, here))
+						view.actions.levy_irishmen = 1
+					if (can_add_troops_sof(game.command, here))
+						view.actions.soldiers_of_fortune = 1
 					if (can_add_troops_coa(game.command, here))
 						view.actions.commission_of_array = 1
 				}
-
-				// Free Parley
-				if (has_free_parley_levy())
-					if (can_action_parley_levy())
-						view.actions.parley = 1
 			}
 
-			// Rising wages event
-			if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES))
-				if (!can_pay_from_shared(game.command))
-					view.actions.levy_troops = 0
-
 		} else {
-			// Can only Parley if locale is not friendly.
-			if (game.actions > 0) {
+			if (has_free_parley_levy())
 				if (can_action_parley_levy())
 					view.actions.parley = 1
+
+			if (is_friendly_locale(here)) {
+				if (has_free_levy_troops()) {
+					if (!is_rising_wages() || can_pay_from_shared(game.command)) {
+						if (can_add_troops(here))
+							view.actions.levy_troops = 1
+						if (can_add_troops_coa(game.command, here))
+							view.actions.commission_of_array = 1
+					}
+				}
 			}
 		}
 
@@ -2960,14 +2945,14 @@ states.muster_lord = {
 		push_undo()
 		push_the_kings_name()
 		add_lord_forces(game.command, MILITIA, 5)
-		goto_the_kings_name("Beloved Warwick")
+		end_levy_troops()
 	},
 
 	levy_irishmen() {
 		push_undo()
 		push_the_kings_name()
 		add_lord_forces(game.command, MILITIA, 5)
-		goto_the_kings_name("Irishmen")
+		end_levy_troops()
 	},
 
 	soldiers_of_fortune() {
@@ -3072,12 +3057,18 @@ function do_levy_troops() {
 			add_lord_forces(game.command, MILITIA, 1)
 			break
 	}
+
+	end_levy_troops()
+}
+
+function end_levy_troops() {
+
 	if (game.levy_flags.thomas_stanley === 1) {
 		++game.actions
 		game.levy_flags.thomas_stanley = 0
 	}
 
-	goto_the_commons()
+	goto_rising_wages()
 }
 
 // === 3.4.2 LEVY LORD ===
@@ -4324,9 +4315,9 @@ function fail_tax(who: Lord, where: Locale) {
 
 function has_free_parley_levy() {
 	return (
-		game.levy_flags.my_crown_is_in_my_heart ||
-		game.levy_flags.gloucester_as_heir ||
-		game.levy_flags.jack_cade
+		game.levy_flags.jack_cade > 0 ||
+		game.levy_flags.my_crown_is_in_my_heart > 0 ||
+		game.levy_flags.gloucester_as_heir > 0
 	)
 }
 
@@ -4439,12 +4430,7 @@ function search_parley_campaign(here: Locale, lord: Lord) {
 }
 
 function can_action_parley_levy(): boolean {
-	if (
-		game.actions <= 0 &&
-		!game.levy_flags.my_crown_is_in_my_heart &&
-		!game.levy_flags.gloucester_as_heir &&
-		!game.levy_flags.jack_cade
-	)
+	if (game.actions <= 0 && !has_free_parley_levy())
 		return false
 
 	let here = get_lord_locale(game.command)
@@ -4492,19 +4478,29 @@ function end_parley(success: boolean) {
 	game.where = NOWHERE
 	delete game.parley
 
-	// Free Levy Lordship action
+	// Track use of parley capabilities / events.
 	if (is_levy_phase()) {
-		if (game.levy_flags.my_crown_is_in_my_heart > 0) {
-			--game.levy_flags.my_crown_is_in_my_heart
-			++game.actions
-		}
-		if (game.levy_flags.gloucester_as_heir > 0) {
-			--game.levy_flags.gloucester_as_heir
-			++game.actions
-		}
 		if (game.levy_flags.jack_cade > 0) {
+			// Jack Cade: free action, zero influence cost, and success
 			--game.levy_flags.jack_cade
 			++game.actions
+		}
+		else {
+			// Parliament Votes / Succession: reduced cost and success
+			if (game.levy_flags.parliament_votes > 0)
+				--game.levy_flags.parliament_votes
+			else if (game.levy_flags.succession > 0)
+				--game.levy_flags.succession
+
+			// My crown / as heir: free action
+			if (game.levy_flags.my_crown_is_in_my_heart > 0) {
+				--game.levy_flags.my_crown_is_in_my_heart
+				++game.actions
+			}
+			else if (game.levy_flags.gloucester_as_heir > 0) {
+				--game.levy_flags.gloucester_as_heir
+				++game.actions
+			}
 		}
 	}
 
@@ -7871,6 +7867,9 @@ states.warden_of_the_marches = {
 	prompt() {
 		if (game.where === NOWHERE) {
 			view.prompt = "Warden of the Marches: Move any Routed Lancastrians to a Friendly Stronghold in the North."
+
+			// TODO: margaret/warwick
+
 			for (let loc of all_locales)
 				if (is_north(loc) && loc !== game.battle.where && is_friendly_locale(loc) && !has_enemy_lord(loc))
 					gen_action_locale(loc)
@@ -10073,11 +10072,6 @@ states.commission_of_array = {
 				break
 		}
 
-		if (game.levy_flags.thomas_stanley) {
-			++game.actions
-			game.levy_flags.thomas_stanley = 0
-		}
-
 		end_commission_of_array()
 	},
 	done() {
@@ -10086,7 +10080,7 @@ states.commission_of_array = {
 }
 
 function end_commission_of_array() {
-	goto_the_kings_name("Commission of Array")
+	end_levy_troops()
 }
 
 // === CAPABILITY: WE DONE DEEDS OF CHARITY ===
@@ -11460,8 +11454,15 @@ states.the_kings_name = {
 
 // === EVENT (AS LEVY EFFECT): RISING WAGES ===
 
+function is_rising_wages() {
+	return is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && game.active === YORK
+}
+
 function goto_rising_wages() {
-	game.state = "rising_wages"
+	if (is_rising_wages())
+		game.state = "rising_wages"
+	else
+		end_rising_wages()
 }
 
 states.rising_wages = {
@@ -11481,9 +11482,12 @@ states.rising_wages = {
 		add_lord_assets(lord, COIN, -1)
 		logi(`${EVENT_LANCASTER_RISING_WAGES}`)
 		log("York paid 1 Coin to Levy troops")
-
-		do_levy_troops()
+		end_rising_wages()
 	},
+}
+
+function end_rising_wages() {
+	goto_the_commons()
 }
 
 // === EVENT (AS LEVY EFFECT): THE COMMONS ===
