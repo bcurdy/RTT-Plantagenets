@@ -10146,89 +10146,71 @@ states.we_done_deeds_of_charity = {
 
 // === CAPABILITY: MERCHANTS ===
 
+function count_merchants_deplete(loc: Locale) {
+	let n = 0
+	if (has_exhausted_marker(loc) || has_depleted_marker(loc))
+		++n
+	for (let next of data.locales[loc].adjacent)
+		if (has_exhausted_marker(next) || has_depleted_marker(next))
+			++n
+	return Math.min(2, n)
+}
+
 function can_action_merchants() {
 	let loc = get_lord_locale(game.command)
 	if (game.actions <= 0)
 		return false
-
-	if (lord_has_capability(game.command, AOW_LANCASTER_MERCHANTS) && count_deplete(loc) > 0)
-		return true
-	else
-		return false
+	if (lord_has_capability(game.command, AOW_LANCASTER_MERCHANTS))
+		return count_merchants_deplete(loc) > 0
+	return false
 }
 
 function goto_merchants() {
-	game.count = count_deplete(get_lord_locale(game.command))
-	game.state = "merchants"
+	push_undo()
+	game.count = count_merchants_deplete(get_lord_locale(game.command))
+	game.state = "merchants_1"
 }
 
-states.merchants = {
+states.merchants_1 = {
 	inactive: "Merchants",
 	prompt() {
 		view.prompt = "Merchants:"
 		prompt_influence_check(game.command)
 	},
 	check(bonus) {
+		logcap(AOW_LANCASTER_MERCHANTS)
 		if (roll_influence_check(game.command, bonus))
-			game.state = "merchants_success"
+			game.state = "merchants_2"
 		else
-			end_merchants_attempt()
+			end_merchants()
 	}
 }
 
-states.merchants_success = {
-	inactive: "Merchants Success",
+states.merchants_2 = {
+	inactive: "Merchants",
 	prompt() {
 		view.prompt = `Merchants: Remove 2 depleted or exhausted markers.`
-		deplete_merchants()
-		if (game.count === 0) {
-			view.actions.done = 1
-		}
+		let here = get_lord_locale(game.command)
+		if (has_exhausted_marker(here) || has_depleted_marker(here))
+			gen_action_locale(here)
+		for (let next of data.locales[here].adjacent)
+			if (has_exhausted_marker(next) || has_depleted_marker(next))
+				gen_action_locale(next)
 	},
 	locale(loc) {
 		push_undo()
 		remove_depleted_marker(loc)
 		remove_exhausted_marker(loc)
-		--game.count
-		if (game.count === 0) {
-			end_merchants_attempt()
-		}
+		if (--game.count === 0)
+			end_merchants()
 	},
-	done(){
-		end_merchants_attempt()
-	}
 }
 
-function end_merchants_attempt() {
+function end_merchants() {
 	spend_action(1)
 	game.count = 0
 	push_undo()
 	resume_command()
-}
-
-function deplete_merchants() {
-	let here = get_lord_locale(game.command)
-	for (let next of data.locales[here].adjacent) {
-		if (has_exhausted_marker(next) || has_depleted_marker(next))
-			gen_action_locale(next)
-	}
-	if (has_exhausted_marker(here) || has_depleted_marker(here))
-		gen_action_locale(here)
-}
-
-function count_deplete(loc: Locale) {
-	let n = 0
-	for (let next of data.locales[loc].adjacent) {
-		if (has_exhausted_marker(next) || has_depleted_marker(next)) {
-			++n
-		}
-	}
-	if (has_exhausted_marker(loc) || has_depleted_marker(loc)) {
-		++n
-	}
-	if (n > 1)
-		n = 2
-	return n
 }
 
 // === CAPABILITY: BURGUNDIANS ===
@@ -10288,7 +10270,7 @@ function can_action_agitators() {
 }
 
 function goto_agitators() {
-	game.count = count_deplete(get_lord_locale(game.command))
+	push_undo()
 	game.state = "agitators"
 }
 
