@@ -3118,8 +3118,12 @@ states.levy_lord_at_seat = {
 			add_york_favour(loc)
 			remove_lancaster_favour(loc)
 		} else {
-			add_lancaster_favour(loc)
-			remove_york_favour(loc)
+			if (loc === LOC_LONDON && has_york_favour(LONDON_FOR_YORK)) {
+				logevent(EVENT_YORK_LONDON_FOR_YORK)
+			} else {
+				add_lancaster_favour(loc)
+				remove_york_favour(loc)
+			}
 		}
 
 		goto_the_kings_name("Levy Lord")
