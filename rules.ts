@@ -3960,7 +3960,7 @@ function can_action_sail() {
 
 	// at a seaport (or sea)
 	let here = get_lord_locale(game.command)
-	if (!is_seaport(here) && !is_sea(here))
+	if (!is_seaport(here) && !is_sea(here) && !is_exile_box(here))
 		return false
 
 	// with enough ships to carry all the army
