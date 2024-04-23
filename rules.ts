@@ -3,9 +3,7 @@
 // TODO: log end victory conditions at scenario start
 // TODO: check all who = NOBODY etc resets
 
-// TODO: 1.7.3 English Ships -- no more than 9 lords may have ships
 // TODO: check interaction of Naval Blockade with Great Ships when parleying across multiple seas
-
 
 // TODO: [Influence] button instead of [Pay] when paying influence (or [Pay influence])?
 
@@ -3250,9 +3248,14 @@ function can_add_troops_sof(lord: Lord, locale: Locale) {
 
 function can_add_transport_ship(who: Lord, here: Locale) {
 	if (is_seaport(here) || is_exile_box(here)) {
-		// TODO: 1.7.3 English Ships -- no more than 9 lords may have ships
-		if (get_lord_assets(who, SHIP) < 2)
-			return true
+		if (get_lord_assets(who, SHIP) < 2) {
+			let n = 0
+			for (let other of all_lords)
+				if (other !== who && get_lord_assets(other, SHIP) > 0)
+					++n
+			if (n < 9)
+				return true
+		}
 	}
 	return false
 }
