@@ -402,7 +402,6 @@ const COIN = 1 as Asset
 const CART = 2 as Asset
 const SHIP = 3 as Asset
 
-const ASSET_TYPE_NAME = [ "Provender", "Coin", "Cart", "Ship" ]
 const all_asset_types = make_list(0, 3) as Asset[]
 
 // battle array
@@ -2014,28 +2013,6 @@ function goto_setup_lords() {
 	goto_start_game()
 }
 
-states.setup_lords = {
-	inactive: "Set up Lords",
-	prompt() {
-		view.prompt = "Set up your Lords."
-		let done = true
-		if (done) {
-			view.prompt += " All done."
-			view.actions.end_setup = 1
-		}
-	},
-	end_setup() {
-		end_setup_lords()
-	},
-}
-
-function end_setup_lords() {
-	clear_lords_moved()
-	set_active_enemy()
-	if (game.active === P1)
-		goto_start_game()
-}
-
 // === 3.1 LEVY: ARTS OF WAR (FIRST TURN) ===
 
 function goto_start_game() {
@@ -2184,9 +2161,9 @@ function end_levy_arts_of_war() {
 
 // === 3.2 LEVY: PAY ===
 
-function reset_unpaid_lords() {
+function reset_unpaid_lords(here: Locale) {
 	for (let lord of all_friendly_lords()) {
-		if (is_lord_unfed(lord)) {
+		if (is_lord_unfed(lord) && get_lord_locale(lord) === here) {
 			// Note: Percy's Power only affects Pay -- so will never end up here
 			set_lord_unfed(lord, Math.ceil(count_lord_all_forces(lord) / 6))
 		}
@@ -2242,7 +2219,18 @@ states.pay_troops = {
 
 		// Pillage
 		if (done) {
-			view.prompt = "Pay Troops: You must Pillage and/or Disband."
+			view.prompt = "Pay Troops: Pillage with lords who have unpaid troops."
+			for (let lord of all_friendly_lords()) {
+				if (is_lord_unfed(lord) && can_pillage(get_lord_locale(lord))) {
+					gen_action_lord(lord)
+					done = false
+				}
+			}
+		}
+
+		// Disband
+		if (done) {
+			view.prompt = "Pay Troops: Disband lords who have unpaid troops."
 			for (let lord of all_friendly_lords()) {
 				if (is_lord_unfed(lord)) {
 					gen_action_lord(lord)
@@ -2265,12 +2253,12 @@ states.pay_troops = {
 	},
 	lord(lord) {
 		push_undo()
+		let here = get_lord_locale(lord)
 		game.who = lord
 		if (can_pay_from_shared(lord)) {
 			game.state = "pay_troops_shared"
-		} else if (can_pillage(get_lord_locale(lord))) {
-			// TODO: only reset those at pillage locale?
-			reset_unpaid_lords()
+		} else if (can_pillage(here)) {
+			reset_unpaid_lords(here)
 			game.state = "pay_troops_pillage"
 		} else {
 			game.state = "pay_troops_disband"
@@ -2311,7 +2299,8 @@ function resume_pay_troops_shared() {
 states.pay_troops_pillage = {
 	inactive: "Pay Troops",
 	prompt() {
-		view.prompt = `Pay Troops: You must Pillage with ${lord_name[game.who]}.`
+		let here = get_lord_locale(game.who)
+		view.prompt = `Pay Troops: Pillage ${locale_name[here]} with ${lord_name[game.who]}.`
 		view.actions.pillage = 1
 	},
 	pillage() {
@@ -2497,31 +2486,39 @@ function end_pay_vassals() {
 	}
 }
 
+function count_pay_vassals_influence_cost() {
+	let n = 0
+	for (let v of all_vassals)
+		if (is_vassal_mustered_with_friendly_lord(v) && get_vassal_service(v) === current_turn())
+			++n
+	return n
+}
+
 states.pay_vassals = {
 	inactive: "Pay Vassals",
 	prompt() {
 		let done = true
-		view.prompt = "You may pay or disband vassals in the next calendar box."
 		if (game.vassal === NOVASSAL) {
 			for (let v of all_vassals) {
-				if (
-					is_vassal_mustered_with_friendly_lord(v) &&
-					get_vassal_service(v) === current_turn()
-				) {
+				if (is_vassal_mustered_with_friendly_lord(v) && get_vassal_service(v) === current_turn()) {
 					gen_action_vassal(v)
 					done = false
 				}
 			}
 
 			if (done) {
+				view.prompt = "Pay Vassals: All done."
 				view.actions.done = 1
-			}
-			if (!done)
+			} else {
+				let total = count_pay_vassals_influence_cost()
+				view.prompt = `Pay Vassals: Pay influence or disband your vassals in the current turn's calendar box. Pay ${total} for all vassals.`
 				view.actions.pay_all = 1
+			}
 		} else {
+			view.prompt = `Pay Vassals: Pay 1 influence or disband ${vassal_name[game.vassal]}.`
 			view.vassal = game.vassal
-			view.actions.pay = 1
 			view.actions.disband = 1
+			view.actions.pay = 1
 		}
 	},
 	vassal(v) {
@@ -2537,11 +2534,9 @@ states.pay_vassals = {
 	pay_all() {
 		push_undo()
 		for (let v of all_vassals) {
-			if (is_vassal_mustered_with_friendly_lord(v)
-			&& get_vassal_service(v) === current_turn()) {
+			if (is_vassal_mustered_with_friendly_lord(v) && get_vassal_service(v) === current_turn()) {
 				pay_vassal(v)
 				reduce_influence(1)
-				game.vassal = NOVASSAL
 			}
 		}
 	},
@@ -2775,7 +2770,7 @@ function has_locale_to_muster(lord: Lord) {
 states.muster = {
 	inactive: "Muster",
 	prompt() {
-		view.prompt = "Muster with your Lords."
+		view.prompt = "Muster: Muster with your lords."
 
 		prompt_held_event_at_levy()
 
@@ -2786,8 +2781,11 @@ states.muster = {
 				done = false
 			}
 		}
-		if (done)
+
+		if (done) {
+			view.prompt = "Muster: All done."
 			view.actions.end_muster = 1
+		}
 	},
 	lord(lord) {
 		push_undo()
@@ -4954,7 +4952,8 @@ states.intercept_haul = {
 		view.prompt = `Intercept: Haul.`
 
 		if (prov > transport) {
-			view.prompt = `Intercept: Hindered with ${prov} Provender, and ${transport} Transport.`
+			let overflow_prov = prov - transport
+			view.prompt += ` Discard ${overflow_prov} Provender`
 			for (let lord of game.intercept) {
 				if (get_lord_assets(lord, PROV) > 0) {
 					view.prompt += " Discard Provender."
@@ -7137,9 +7136,11 @@ function finish_action_assign_hits(lord: Lord) {
 }
 
 states.spend_valour = {
-	inactive: "Spend Valour",
+	get inactive() {
+		return format_strike_step() + " \u2014 Assign " + format_hits()
+	},
 	prompt() {
-		view.prompt = `Spend Valour: Reroll Hit on ${get_force_name(game.who, game.battle.force, game.vassal)}?`
+		view.prompt = `Spend Valour: Reroll hit on ${get_force_name(game.who, game.battle.force, game.vassal)}?`
 		gen_action_valour(game.who)
 		view.actions.pass = 1
 	},
@@ -8528,12 +8529,14 @@ function end_disembark() {
 }
 
 function roll_disembark() {
-	let roll = roll_die()
-	let success = roll >= 5
-
-	log(`Disembark: (>4) ${success ? HIT[roll] : MISS[roll]}`)
-
-	return success
+	let die = roll_die()
+	if (die <= 4) {
+		log(`Shipwreck 1-4: ${HIT[die]}.`)
+		return false
+	} else {
+		log(`Shipwreck 1-4: ${MISS[die]}.`)
+		return true
+	}
 }
 
 function has_safe_ports(sea: Locale) {
@@ -8546,24 +8549,34 @@ function has_safe_ports(sea: Locale) {
 states.disembark = {
 	inactive: "Disembark",
 	prompt() {
-		view.prompt = "Disembark your lords at sea."
-		for (let lord of all_friendly_lords())
-			if (is_lord_at_sea(lord))
-				gen_action_lord(lord)
+		if (game.who === NOBODY) {
+			view.prompt = "Disembark your lords at sea."
+			for (let lord of all_friendly_lords())
+				if (is_lord_at_sea(lord))
+					gen_action_lord(lord)
+		} else {
+			view.prompt = `Disembark ${lord_name[game.who]}: Roll 1-4 for shipwreck or land.`
+			view.actions.roll = 1
+		}
 	},
 	lord(lord) {
+		push_undo()
+		game.who = lord
+	},
+	roll() {
 		if (roll_disembark()) {
-			if (has_safe_ports(get_lord_locale(lord))) {
+			if (has_safe_ports(get_lord_locale(game.who))) {
 				game.state = "disembark_to"
-				game.who = lord
 			} else {
-				disband_lord(lord)
+				disband_lord(game.who)
+				game.who = NOBODY
 				goto_disembark()
 			}
 		} else {
 			// Shipwreck!
-			disband_influence_penalty(lord)
-			disband_lord(lord, true)
+			disband_influence_penalty(game.who)
+			disband_lord(game.who, true)
+			game.who = NOBODY
 			goto_disembark()
 		}
 	},
@@ -8572,7 +8585,7 @@ states.disembark = {
 states.disembark_to = {
 	inactive: "Disembark",
 	prompt() {
-		view.prompt = "Disembark your lords at sea."
+		view.prompt = `Disembark ${lord_name[game.who]} to a port.`
 		for (let loc of find_ports(get_lord_locale(game.who), NOBODY))
 			if (!has_enemy_lord(loc))
 				gen_action_locale(loc)
@@ -9999,12 +10012,12 @@ function apply_lordship_effects(lord: Lord) {
 		game.levy_flags.jack_cade = 2
 }
 
-// === CAPABILITY: SOLDIERS OF FORTUNE ===
+// === MUSTER CAPABILITY: SOLDIERS OF FORTUNE ===
 
 states.soldiers_of_fortune = {
-	inactive: "Levy Troops",
+	inactive: "Muster",
 	prompt() {
-		view.prompt = `Soldiers of Fortune: Pay 1 Coin to add 2 Mercenaries to ${lord_name[game.command]}.`
+		view.prompt = `Soldiers of Fortune: Pay 1 coin to add 2 mercenaries to ${lord_name[game.command]}.`
 		let here = get_lord_locale(game.command)
 		for (let lord of all_friendly_lords()) {
 			if (get_lord_locale(lord) === here) {
@@ -10028,12 +10041,12 @@ states.soldiers_of_fortune = {
 	},
 }
 
-// === CAPABILITY: COMMISSION OF ARRAY ===
+// === MUSTER CAPABILITY: COMMISSION OF ARRAY ===
 
 states.commission_of_array = {
-	inactive: "Levy Troops",
+	inactive: "Muster",
 	prompt() {
-		view.prompt = `Lord troops adjacent to ${lord_name[game.command]}.`
+		view.prompt = `Commission of Array: Levy troops from an adjacent stronghold.`
 		let done = true
 		let here = get_lord_locale(game.command)
 		if (done) {
