@@ -2929,12 +2929,6 @@ states.muster_lord = {
 	levy_troops() {
 		push_undo()
 		push_the_kings_name()
-
-		if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES) && game.active === YORK) {
-			goto_rising_wages()
-			return
-		}
-
 		do_levy_troops()
 	},
 
@@ -11504,8 +11498,7 @@ states.rising_wages = {
 	coin(lord) {
 		push_undo()
 		add_lord_assets(lord, COIN, -1)
-		logi(`${EVENT_LANCASTER_RISING_WAGES}`)
-		log("York paid 1 Coin to Levy troops")
+		logevent(EVENT_LANCASTER_RISING_WAGES)
 		end_rising_wages()
 	},
 }
