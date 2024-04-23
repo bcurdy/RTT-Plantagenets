@@ -3423,6 +3423,13 @@ states.campaign_plan = {
 
 function end_campaign_plan() {
 	set_active(P1)
+
+	if (lord_has_capability(LORD_BUCKINGHAM, AOW_LANCASTER_STAFFORD_ESTATES)) {
+		// logcap(AOW_LANCASTER_STAFFORD_ESTATES)
+		add_lord_assets(LORD_BUCKINGHAM, COIN, 1)
+		add_lord_assets(LORD_BUCKINGHAM, PROV, 1)
+	}
+
 	goto_command_activation()
 }
 
@@ -8471,10 +8478,6 @@ function tides_calc() {
 }
 
 function goto_tides_of_war() {
-	if (lord_has_capability(LORD_BUCKINGHAM, AOW_LANCASTER_STAFFORD_ESTATES)) {
-		add_lord_assets(LORD_BUCKINGHAM, COIN, 1)
-		add_lord_assets(LORD_BUCKINGHAM, PROV, 1)
-	}
 	tides_calc()
 	if (eligible_charity()) {
 		goto_we_done_deeds_of_charity()
