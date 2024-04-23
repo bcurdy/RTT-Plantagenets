@@ -3635,12 +3635,12 @@ states.command = {
 
 // === 4.5 ACTION: SUPPLY (SEARCH) ===
 
-function can_supply_at(loc: Locale, ships: number) {
-	// if theoretically possible to supply (does not check carts or ships)
-	if (is_stronghold(loc) && is_friendly_locale(loc)) {
-		if (ships > 0 && (is_seaport(loc) || is_exile_box(loc)))
+function can_supply_at(source: Locale, ships: number) {
+	// if theoretically possible to supply from this source (does not check carts or ships)
+	if (is_stronghold(source) && is_friendly_locale(source)) {
+		if (ships > 0 && is_seaport(source))
 			return true
-		if (!has_exhausted_marker(loc))
+		if (!has_exhausted_marker(source))
 			return true
 	}
 	return false
