@@ -3638,7 +3638,7 @@ states.command = {
 function can_supply_at(loc: Locale, ships: number) {
 	// if theoretically possible to supply (does not check carts or ships)
 	if (is_stronghold(loc) && is_friendly_locale(loc)) {
-		if (ships > 0 && is_seaport(loc))
+		if (ships > 0 && (is_seaport(loc) || is_exile_box(loc)))
 			return true
 		if (!has_exhausted_marker(loc))
 			return true
@@ -3784,7 +3784,7 @@ function modify_supply(loc: Locale, supply: number) {
 }
 
 function get_port_supply_amount(loc: Locale) {
-	if (is_seaport(loc)) {
+	if (is_seaport(loc) || is_exile_box(loc)) {
 		let here = get_lord_locale(game.command)
 		let ships = count_shared_ships(here, true)
 		return modify_supply(loc, ships)
@@ -4208,7 +4208,7 @@ function search_tax(result, start: Locale, lord: Lord) {
 					queue.push(next)
 				}
 			}
-			if (ships > 0 && is_seaport(here)) {
+			if (ships > 0 && (is_seaport(here) || is_exile_box(here))) {
 				for (let next of find_ports(here, lord)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
@@ -10220,7 +10220,7 @@ function count_deplete(loc: Locale) {
 // === CAPABILITY: BURGUNDIANS ===
 
 function levy_burgundians(lord: Lord) {
-	if (is_seaport(get_lord_locale(lord)) && !is_exile_box(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_BURGUNDIANS) && !has_flag(FLAG_BURGUNDIANS)) {
+	if (is_seaport(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_BURGUNDIANS) && !has_flag(FLAG_BURGUNDIANS)) {
 		add_lord_forces(lord, BURGUNDIANS, 2)
 		if (lord_has_capability(lord, AOW_YORK_BURGUNDIANS[0]))
 			logcap(AOW_YORK_BURGUNDIANS[0])
@@ -10235,7 +10235,7 @@ function levy_burgundians(lord: Lord) {
 function is_naval_blockade_in_play() {
 	if (lord_has_capability(LORD_WARWICK_Y, AOW_YORK_NAVAL_BLOCKADE)) {
 		let war = get_lord_locale(LORD_WARWICK_Y)
-		if (is_seaport(war) && !is_exile_box(war))
+		if (is_seaport(war))
 			return true
 	}
 	return false
