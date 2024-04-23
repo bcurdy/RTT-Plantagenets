@@ -2850,10 +2850,9 @@ states.muster_lord = {
 
 				// Add Transport
 				// TODO: 1.7.3 English Ships -- no more than 9 lords may have ships
-				if ((is_seaport(here) || is_exile_box(here)) && get_lord_assets(game.command, SHIP) < 2)
+				if (can_add_transport_ship(game.command, here))
 					view.actions.take_ship = 1
-
-				if (can_add_transport(game.command, CART))
+				if (can_add_transport_cart(game.command))
 					view.actions.take_cart = 1
 
 				if (can_add_troops(here))
@@ -3254,8 +3253,17 @@ function can_add_troops_sof(lord: Lord, locale: Locale) {
 
 // === 3.4.5 LEVY TRANSPORT
 
-function can_add_transport(who: Lord, what: Asset) {
-	return get_lord_assets(who, what) < 15
+function can_add_transport_ship(who: Lord, here: Locale) {
+	if (is_seaport(here) || is_exile_box(here)) {
+		// TODO: 1.7.3 English Ships -- no more than 9 lords may have ships
+		if (get_lord_assets(who, SHIP) < 2)
+			return true
+	}
+	return false
+}
+
+function can_add_transport_cart(who: Lord) {
+	return get_lord_assets(who, CART) < 15
 }
 
 // === 3.4.6 LEVY CAPABILITY ===
