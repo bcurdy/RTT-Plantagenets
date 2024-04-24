@@ -390,7 +390,6 @@ const BURGUNDIANS = 5 as Force
 const MERCENARIES = 6 as Force
 
 const FORCE_TYPE_NAME = [ "Retinue", "Vassal", "Men-at-Arms", "Longbowmen", "Militia", "Burgundians", "Mercenary" ]
-const FORCE_PROTECTION = [ 4, 4, 3, 1, 1, 3, 3 ]
 
 const all_force_types = make_list(0, 6) as Force[]
 const simple_force_type = make_list(2, 6) as Force[]
@@ -5479,7 +5478,7 @@ function is_attacker() {
 	return game.active === game.battle.attacker
 }
 
-function is_archery_step() {
+function is_missiles_step() {
 	return game.battle.step === 0
 }
 
@@ -6028,24 +6027,25 @@ states.regroup_roll_protection = {
 			gen_action_routed_mercenaries(game.who)
 	},
 	routed_burgundians(lord) {
-		action_regroup_roll(lord, BURGUNDIANS)
+		action_regroup(lord, BURGUNDIANS)
 	},
 	routed_mercenaries(lord) {
-		action_regroup_roll(lord, MERCENARIES)
+		action_regroup(lord, MERCENARIES)
 	},
 	routed_longbowmen(lord) {
-		action_regroup_roll(lord, LONGBOWMEN)
+		action_regroup(lord, LONGBOWMEN)
 	},
 	routed_men_at_arms(lord) {
-		action_regroup_roll(lord, MEN_AT_ARMS)
+		action_regroup(lord, MEN_AT_ARMS)
 	},
 	routed_militia(lord) {
-		action_regroup_roll(lord, MILITIA)
+		action_regroup(lord, MILITIA)
 	},
 }
 
-function action_regroup_roll(lord: Lord, type: Force) {
-	let protection = FORCE_PROTECTION[type]
+function action_regroup(lord: Lord, type: Force) {
+	let protection = get_modified_protection(lord, type)
+
 	let die = roll_die()
 	if (die <= protection) {
 		logi(`${get_force_name(lord, type)} ${range(protection)}: ${MISS[die]}`)
@@ -6283,7 +6283,7 @@ function end_for_trust_not_him() {
 // === BATTLE EVENT: LEEWARD BATTLE LINE ===
 
 function is_leeward_battle_line_in_play(lord: Lord) {
-	if (is_archery_step()) {
+	if (is_missiles_step()) {
 		if (is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
 		&& !is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE)
 		&& is_york_lord(lord)) {
@@ -7040,45 +7040,57 @@ function spend_valour(lord: Lord) {
 	game.battle.valour[lord] = game.battle.valour[lord] - 1
 }
 
-function check_protection_capabilities(protection) {
-	if (game.battle.force === MEN_AT_ARMS || game.battle.force === MILITIA) {
-		if (lord_has_capability(game.who, AOW_LANCASTER_PIQUIERS) &&
-		(get_lord_routed_forces(game.who, MILITIA) + get_lord_routed_forces(game.who, MEN_AT_ARMS) < 3)) {
+function get_inherent_protection(force: Force) {
+	switch (force) {
+		case RETINUE: return 4
+		case VASSAL: return 4
+		case MEN_AT_ARMS: return 3
+		case LONGBOWMEN: return 1
+		case MILITIA: return 1
+		case BURGUNDIANS: return 3
+		case MERCENARIES: return 3
+	}
+	throw "INVALID FORCE TYPE"
+}
+
+function get_modified_protection(lord: Lord, force: Force) {
+	let protection = get_inherent_protection(force)
+
+	if (lord_has_capability(lord, AOW_LANCASTER_PIQUIERS))
+		if (force === MEN_AT_ARMS || force === MILITIA)
+			if (get_lord_routed_forces(lord, MILITIA) + get_lord_routed_forces(lord, MEN_AT_ARMS) < 3)
+				protection = 4
+
+	if (lord_has_capability(lord, AOW_LANCASTER_CHURCH_BLESSINGS))
+		if (force === MEN_AT_ARMS)
 			protection = 4
+
+	if (lord_has_capability(lord, AOW_LANCASTER_MONTAGU))
+		if (force === RETINUE)
+			protection = 5
+
+	if (lord_has_capability(lord, AOW_LANCASTER_BARDED_HORSE)) {
+		if (force === RETINUE || force === VASSAL) {
+			if (is_missiles_step())
+				protection = 3
+			else
+				protection = 5
 		}
 	}
 
-	if (game.battle.force === MEN_AT_ARMS) {
-		if (lord_has_capability(game.who, AOW_LANCASTER_CHURCH_BLESSINGS)) {
-			protection += 1
+	if (lord_has_capability(lord, AOW_YORK_BARRICADES) || lord_has_capability(lord, AOW_YORK_BARRICADES)) {
+		if (is_friendly_locale(game.battle.where)) {
+			if (force === MEN_AT_ARMS)
+				protection = 4
+			else if (force === LONGBOWMEN || force === MILITIA)
+				protection = 2
 		}
-	}
-	if (game.battle.force === RETINUE) {
-		if (lord_has_capability(game.who, AOW_LANCASTER_MONTAGU))
-			protection += 1
-	}
-	if ((game.battle.force === RETINUE || game.battle.force === VASSAL) && is_archery_step()) {
-		if (lord_has_capability(game.who, AOW_LANCASTER_BARDED_HORSE))
-			protection -= 1
-	}
-	if ((game.battle.force === RETINUE || game.battle.force === VASSAL) && is_melee_step()) {
-		if (lord_has_capability(game.who, AOW_LANCASTER_BARDED_HORSE))
-			protection += 1
 	}
 
-	if (game.battle.force === MEN_AT_ARMS) {
-		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_york_favour(game.battle.where))
-			protection += 1
-	}
-	if (game.battle.force === MEN_AT_ARMS) {
-		if (lord_has_capability(game.who, AOW_LANCASTER_CHEVALIERS) && is_archery_step()) {
-			protection -= 1
-		}
-	}
-	if (game.battle.force === MILITIA || game.battle.force === LONGBOWMEN) {
-		if (lord_has_capability(game.who, AOW_YORK_BARRICADES) && has_york_favour(game.battle.where))
-			protection += 1
-	}
+	if (lord_has_capability(lord, AOW_LANCASTER_CHEVALIERS))
+		if (force === MEN_AT_ARMS)
+			protection --
+
 	return protection
 }
 
@@ -7087,7 +7099,7 @@ function action_assign_hits(lord: Lord, type: Force, v=NOVASSAL) {
 		game.who = lord
 		log(`L${lord}`)
 	}
-	let protection = check_protection_capabilities(FORCE_PROTECTION[type])
+	let protection = get_modified_protection(lord, type)
 	let extra = ""
 
 	if (assign_hit_roll(get_force_name(lord, type, v), protection, extra)) {
@@ -7143,7 +7155,7 @@ states.spend_valour = {
 		finish_action_assign_hits(game.who)
 	},
 	valour(_) {
-		let protection = check_protection_capabilities(FORCE_PROTECTION[game.battle.force])
+		let protection = get_modified_protection(game.who, game.battle.force)
 
 		spend_valour(game.who)
 		log(`Reroll:`)
@@ -7358,8 +7370,9 @@ function resume_battle_losses() {
 		goto_death_check()
 }
 
-function roll_protection(lord: Lord, type: Force) {
-	let protection = FORCE_PROTECTION[type]
+function roll_losses(lord: Lord, type: Force) {
+	let protection = get_inherent_protection(type)
+
 	let die = roll_die()
 	if (die <= protection) {
 		logi(`${get_force_name(lord, type)} ${range(protection)}: ${MISS[die]}`)
@@ -7376,7 +7389,7 @@ function action_losses(lord: Lord, type: Force) {
 		log(`L${lord}`)
 		game.who = lord
 	}
-	roll_protection(lord, type)
+	roll_losses(lord, type)
 	resume_battle_losses()
 }
 
