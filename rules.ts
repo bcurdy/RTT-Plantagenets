@@ -2209,7 +2209,7 @@ states.pay_troops = {
 		if (done) {
 			view.prompt = "Pay Troops: Pay lords with shared coin."
 			for (let lord of all_friendly_lords()) {
-				if (is_lord_unfed(lord) && can_pay_from_shared(lord)) {
+				if (is_lord_unfed(lord) && can_pay_from_shared(lord, 1)) {
 					gen_action_lord(lord)
 					done = false
 				}
@@ -2254,7 +2254,7 @@ states.pay_troops = {
 		push_undo()
 		let here = get_lord_locale(lord)
 		game.who = lord
-		if (can_pay_from_shared(lord)) {
+		if (can_pay_from_shared(lord, 1)) {
 			game.state = "pay_troops_shared"
 		} else if (can_pillage(here)) {
 			reset_unpaid_lords(here)
@@ -2289,7 +2289,7 @@ states.pay_troops_shared = {
 }
 
 function resume_pay_troops_shared() {
-	if (!is_lord_unfed(game.who) || !can_pay_from_shared(game.who)) {
+	if (!is_lord_unfed(game.who) || !can_pay_from_shared(game.who, 1)) {
 		game.who = NOBODY
 		game.state = "pay_troops"
 	}
@@ -2855,17 +2855,19 @@ states.muster_lord = {
 				if (can_add_lord_capability(game.command))
 					view.actions.capability = 1
 
-				if (!is_rising_wages() || can_pay_from_shared(game.command)) {
+				if (!is_rising_wages() || can_pay_from_shared(game.command, 1)) {
 					if (can_add_troops(here))
 						view.actions.levy_troops = 1
 					if (can_add_troops_beloved_warwick(game.command, here))
 						view.actions.levy_beloved_warwick = 1
 					if (can_add_troops_irishmen(game.command, here))
 						view.actions.levy_irishmen = 1
-					if (can_add_troops_sof(game.command, here))
-						view.actions.soldiers_of_fortune = 1
 					if (can_add_troops_coa(game.command, here))
 						view.actions.commission_of_array = 1
+				}
+				if (!is_rising_wages() || can_pay_from_shared(game.command, 2)) {
+					if (can_add_troops_sof(game.command, here))
+						view.actions.soldiers_of_fortune = 1
 				}
 			}
 
@@ -2876,7 +2878,7 @@ states.muster_lord = {
 
 			if (is_friendly_locale(here)) {
 				if (has_free_levy_troops()) {
-					if (!is_rising_wages() || can_pay_from_shared(game.command)) {
+					if (!is_rising_wages() || can_pay_from_shared(game.command, 1)) {
 						if (can_add_troops(here))
 							view.actions.levy_troops = 1
 						if (can_add_troops_coa(game.command, here))
@@ -3180,13 +3182,12 @@ states.levy_vassal = {
 function has_free_levy_troops() {
 	if (game.levy_flags.thomas_stanley) {
 		let here = get_lord_locale(game.command)
-		if (is_event_in_play(EVENT_LANCASTER_RISING_WAGES))
-			if (!can_pay_from_shared(game.command))
-				return false
-		if (can_add_troops(here))
-			return true
-		if (can_add_troops_coa(game.command, here))
-			return true
+		if (!is_rising_wages() || can_pay_from_shared(game.command, 1)) {
+			if (can_add_troops(here))
+				return true
+			if (can_add_troops_coa(game.command, here))
+				return true
+		}
 	}
 	return false
 }
@@ -7997,9 +7998,9 @@ function can_feed_from_shared(lord: Lord) {
 	return get_shared_assets(loc, PROV) > 0
 }
 
-function can_pay_from_shared(lord: Lord) {
+function can_pay_from_shared(lord: Lord, amount: number) {
 	let loc = get_lord_locale(lord)
-	return get_shared_assets(loc, COIN) > 0
+	return get_shared_assets(loc, COIN) >= amount
 }
 
 function has_friendly_lord_who_must_feed() {
