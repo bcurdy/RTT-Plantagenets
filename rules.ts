@@ -2900,18 +2900,21 @@ states.muster_lord = {
 
 	lord(lord) {
 		push_undo()
+		push_the_kings_name()
 		game.who = lord
 		game.state = "levy_lord"
 	},
 
 	vassal(vassal) {
 		push_undo()
+		push_the_kings_name()
 		game.vassal = vassal
 		game.state = "levy_vassal"
 	},
 
 	take_ship() {
 		push_undo()
+		push_the_kings_name()
 		if (can_naval_blockade(get_lord_locale(game.command)))
 			game.state = "blockade_levy_ship"
 		else
@@ -11420,10 +11423,7 @@ states.earl_rivers = {
 // === EVENT (AS LEVY EFFECT): THE KINGS NAME ===
 
 function eligible_kings_name() {
-	if (
-		(!is_lord_on_calendar(LORD_GLOUCESTER_1) && is_lord_on_map(LORD_GLOUCESTER_1)) ||
-		(!is_lord_on_calendar(LORD_GLOUCESTER_2) && is_lord_on_map(LORD_GLOUCESTER_2))
-	) {
+	if (is_lord_on_map(LORD_GLOUCESTER_1) || is_lord_on_map(LORD_GLOUCESTER_2)) {
 		if (is_event_in_play(EVENT_YORK_THE_KINGS_NAME) && game.active === LANCASTER)
 			return true
 	}
@@ -11436,7 +11436,7 @@ function push_the_kings_name() {
 }
 
 function goto_the_kings_name(_action_name) {
-	if (eligible_kings_name()) {
+	if (game.event_the_kings_name !== undefined) {
 		// TODO: pause for confirmation before changing control?
 		set_active_enemy()
 		game.state = "the_kings_name"
