@@ -1961,7 +1961,7 @@ function prompt_influence_check(lord: Lord, add_cost: number = 0, add_rating: nu
 	let cost = calc_influence_check_cost(0, add_cost)
 	let rating = calc_influence_check_rating(lord, 0, add_rating)
 
-	view.prompt += ` Influence Check 1-${rating} for ${cost} IP.`
+	view.prompt += ` Influence 1-${rating} for ${cost} IP.`
 
 	/* max rating is 5, no need to pay to increase more! */
 	if (rating <= 3)
@@ -1974,14 +1974,14 @@ function prompt_influence_check(lord: Lord, add_cost: number = 0, add_rating: nu
 
 function prompt_influence_check_success(add_cost: number = 0) {
 	let cost = calc_influence_check_cost(0, add_cost)
-	view.prompt += ` Influence Check success for ${cost} IP.`
+	view.prompt += ` Influence success for ${cost} IP.`
 	view.actions.check_success = 1
 }
 
 function roll_influence_check_success(add_cost: number = 0) {
 	let cost = calc_influence_check_cost(0, add_cost)
 	reduce_influence(cost)
-	log(`Influence Check success`)
+	log(`Influence success`)
 	return true
 }
 
@@ -1993,10 +1993,10 @@ function roll_influence_check(lord: Lord, bonus: number, add_cost: number = 0, a
 
 	let die = roll_die()
 	if (die <= rating) {
-		log(`Influence Check 1-${rating}: ${HIT[die]}`)
+		log(`Influence 1-${rating}: ${HIT[die]}`)
 		return true
 	} else {
-		log(`Influence Check 1-${rating}: ${MISS[die]}`)
+		log(`Influence 1-${rating}: ${MISS[die]}`)
 		return false
 	}
 }
