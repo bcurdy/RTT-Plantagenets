@@ -1648,6 +1648,7 @@ function on_update() {
 	action_button("avoid", "Avoid Battle")
 	action_button("withdraw", "Withdraw")
 	action_button("retreat", "Retreat")
+	action_button("regroup", "Regroup")
 	action_button("remove", "Remove")
 	action_button("surrender", "Surrender")
 	action_button("roll", "Roll")

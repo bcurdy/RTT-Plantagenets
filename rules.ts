@@ -17,7 +17,6 @@
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
 
 	NAVAL BLOCKADE - for Tax and Tax Collectors
-	REGROUP - other timing windows
 
 	Scenario special rules.
 
@@ -249,6 +248,7 @@ interface State {
 	tax?(): void,
 
 	richard_iii?(): void,
+	regroup?(): void,
 	vanguard?(): void,
 	final_charge?(): void,
 	commission_of_array?(): void,
@@ -5428,12 +5428,11 @@ function format_strike_step() {
 }
 
 function format_hits() {
-	if (game.battle.ahits > 0) {
-		return `${game.battle.ahits} Hit${game.battle.ahits > 1 ? "s" : ""}`
-	} else if (game.battle.dhits > 0) {
-		return `${game.battle.dhits} Hit${game.battle.dhits > 1 ? "s" : ""}`
-	}
-	return ""
+	if (game.active !== game.battle.attacker && game.battle.ahits > 0)
+		return `Assign ${game.battle.ahits} hit${game.battle.ahits > 1 ? "s" : ""}.`
+	if (game.active === game.battle.attacker && game.battle.dhits > 0)
+		return `Assign ${game.battle.dhits} hit${game.battle.dhits > 1 ? "s" : ""}.`
+	return "All done."
 }
 
 function is_battle_over() {
@@ -5990,11 +5989,16 @@ function goto_regroup() {
 
 states.regroup = {
 	prompt() {
-		view.prompt = "Regroup: You may choose a lord to regroup."
 		for (let p of battle_strike_positions) {
 			let lord = game.battle.array[p]
 			if (is_york_lord(lord) && lord_has_routed_troops(lord) && get_lord_forces(lord, RETINUE))
 				gen_action_lord(lord)
+		}
+		if (game.battle.step >= 2) {
+			view.prompt = "Regroup: You may choose a lord to regroup."
+			view.actions.pass = 1
+		} else {
+			view.prompt = "Regroup: Choose a lord to regroup."
 		}
 	},
 	lord(lord) {
@@ -6012,6 +6016,9 @@ states.regroup = {
 			get_lord_routed_forces(lord, BURGUNDIANS),
 			get_lord_routed_forces(lord, MERCENARIES),
 		]
+	},
+	pass() {
+		goto_battle_lord_rout()
 	},
 }
 
@@ -6073,7 +6080,10 @@ function end_regroup() {
 	game.who = NOBODY
 	delete game.event_regroup
 
-	goto_battle_lord_rout()
+	if (game.battle.step < 2)
+		game.state = "assign_hits"
+	else
+		goto_battle_lord_rout()
 }
 
 // === BATTLE EVENT: CALTROPS ===
@@ -6908,10 +6918,7 @@ function no_remaining_targets() {
 
 function goto_defender_assign_hits() {
 	set_active_defender()
-	if (game.battle.ahits === 0 || no_remaining_targets())
-		end_defender_assign_hits()
-	else
-		goto_assign_hits()
+	goto_assign_hits()
 }
 
 function end_defender_assign_hits() {
@@ -6922,10 +6929,7 @@ function end_defender_assign_hits() {
 
 function goto_attacker_assign_hits() {
 	set_active_attacker()
-	if (game.battle.dhits === 0 || no_remaining_targets())
-		end_attacker_assign_hits()
-	else
-		goto_assign_hits()
+	goto_assign_hits()
 }
 
 function end_attacker_assign_hits() {
@@ -6949,43 +6953,73 @@ function goto_assign_hits() {
 }
 
 function prompt_hit_forces() {
+	let done = true
 	for (let target of game.battle.target) {
 		let lord = game.battle.array[target]
 
 		// Note: Must take hit from Final Charge on Retinue.
 		if (lord === LORD_RICHARD_III && game.battle.final_charge) {
 			gen_action_retinue(lord)
-			return
+			return false
 		}
 
-		if (get_lord_forces(lord, RETINUE) > 0)
+		if (get_lord_forces(lord, RETINUE) > 0) {
 			gen_action_retinue(lord)
-		if (get_lord_forces(lord, BURGUNDIANS) > 0)
+			done = false
+		}
+		if (get_lord_forces(lord, BURGUNDIANS) > 0) {
 			gen_action_burgundians(lord)
-		if (get_lord_forces(lord, MERCENARIES) > 0)
+			done = false
+		}
+		if (get_lord_forces(lord, MERCENARIES) > 0) {
 			gen_action_mercenaries(lord)
-		if (get_lord_forces(lord, LONGBOWMEN) > 0)
+			done = false
+		}
+		if (get_lord_forces(lord, LONGBOWMEN) > 0) {
 			gen_action_longbowmen(lord)
-		if (get_lord_forces(lord, MEN_AT_ARMS) > 0)
+			done = false
+		}
+		if (get_lord_forces(lord, MEN_AT_ARMS) > 0) {
 			gen_action_men_at_arms(lord)
-		if (get_lord_forces(lord, MILITIA) > 0)
+			done = false
+		}
+		if (get_lord_forces(lord, MILITIA) > 0) {
 			gen_action_militia(lord)
+			done = false
+		}
 
 		for_each_vassal_with_lord(lord, v => {
-			if (!set_has(game.battle.routed_vassals, v))
+			if (!set_has(game.battle.routed_vassals, v)) {
 				gen_action_vassal(v)
+				done = false
+			}
 		})
 	}
+	return done
 }
 
 states.assign_hits = {
 	get inactive() {
-		return format_strike_step() + " \u2014 Assign " + format_hits()
+		return format_strike_step()
 	},
 	prompt() {
-		view.prompt = `${format_strike_step()}: Assign ${format_hits()} to units.`
+		view.prompt = `${format_strike_step()}: ${format_hits()}`
 
-		prompt_hit_forces()
+		let hits = 0
+		if (game.active === game.battle.attacker)
+			hits = game.battle.dhits
+		else
+			hits = game.battle.ahits
+
+		let done = true
+		if (hits > 0)
+			done = prompt_hit_forces()
+		if (done) {
+			view.prompt = format_strike_step() + ": All done."
+			if (game.active === YORK && is_regroup_in_play())
+				view.actions.regroup = 1
+			view.actions.done = 1
+		}
 	},
 	retinue(lord) {
 		if ((lord === LORD_MARGARET) && (lord_has_capability(lord, AOW_LANCASTER_YEOMEN_OF_THE_CROWN)) && get_lord_forces(lord, MEN_AT_ARMS) > 0)
@@ -7012,6 +7046,16 @@ states.assign_hits = {
 	vassal(vassal) {
 		let lord = get_vassal_lord(vassal)
 		action_assign_hits(lord, VASSAL, vassal)
+	},
+	regroup() {
+		push_undo()
+		goto_regroup()
+	},
+	done() {
+		if (game.active === game.battle.attacker)
+			end_attacker_assign_hits()
+		else
+			end_defender_assign_hits()
 	},
 }
 
@@ -7146,7 +7190,7 @@ function finish_action_assign_hits(lord: Lord) {
 
 states.spend_valour = {
 	get inactive() {
-		return format_strike_step() + " \u2014 Assign " + format_hits()
+		return format_strike_step()
 	},
 	prompt() {
 		view.prompt = `Spend Valour: Reroll hit on ${get_force_name(game.who, game.battle.force, game.vassal)}?`
@@ -7199,6 +7243,8 @@ function will_any_friendly_lords_rout() {
 }
 
 function goto_battle_lord_rout() {
+	game.battle.step = 2
+
 	if (is_regroup_in_play()) {
 		goto_regroup()
 		return
@@ -7225,8 +7271,6 @@ states.battle_lord_rout = {
 	inactive: "Lord Rout",
 	prompt() {
 		view.prompt = "Lord Rout: Rout lords whose retinue or troops have routed."
-
-		// TODO: play Regroup
 
 		let done = true
 		for (let lord of game.battle.array) {
