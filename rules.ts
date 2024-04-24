@@ -5161,13 +5161,16 @@ states.choose_exile = {
 	inactive: "Choose Exile",
 	prompt() {
 		let here = get_lord_locale(game.command)
-		view.prompt = `Approach: You may choose exile with lords at ${locale_name[here]}.`
+		view.prompt = `Approach: Choose lords to go into exile from ${locale_name[here]}.`
 		for_each_friendly_lord_in_locale(here, gen_action_lord)
 		view.actions.done = 1
 	},
 	lord(lord) {
 		push_undo()
 		give_up_spoils(lord)
+
+		reduce_influence(data.lords[lord].influence + count_vassals_with_lord(lord))
+
 		exile_lord(lord)
 	},
 	done() {
