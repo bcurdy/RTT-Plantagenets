@@ -232,10 +232,16 @@ body.Lancaster #plan_actions .york { display: none }
 	display: none;
 }
 
-.mat .moved_fought, .mat .feed, .mat .fled, .mat .valour {
+.mat .moved_fought, .mat .feed, .mat .fled {
 	position: absolute;
 	z-index: 5;
 }
+
+.mat .valour { margin-bottom: -30px; }
+.valour + .valour { margin-left: 15px; }
+.valour + .valour + .valour { margin-left: 30px; }
+.valour + .valour + .valour + .valour { margin-left: 45px; }
+.valour + .valour + .valour + .valour + .valour { margin-left: 60px; }
 
 .mat .feed { right: 8px; top: 135px; }
 .mat .moved_fought.one { right: 72px; top: 12px; }
