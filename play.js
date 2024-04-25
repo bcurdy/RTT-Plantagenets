@@ -1641,6 +1641,7 @@ function on_update() {
 
 	// Misc
 	action_button("richard_iii", "Richard III")
+	action_button("exile", "Exile")
 	action_button("vanguard", "Vanguard")
 	action_button("final_charge", "Final Charge")
 	action_button("lordship", "Lordship")

@@ -248,6 +248,7 @@ interface State {
 	tax?(): void,
 
 	richard_iii?(): void,
+	exile?(): void,
 	regroup?(): void,
 	vanguard?(): void,
 	final_charge?(): void,
@@ -2710,6 +2711,17 @@ states.muster_exiles = {
 	},
 	locale(loc) {
 		muster_lord_in_exile(game.who, loc)
+
+		if (game.scenario === SCENARIO_II) {
+			if (game.who === LORD_MARGARET && loc === LOC_FRANCE) {
+				if (is_lord_in_play(LORD_CLARENCE)) {
+					game.state = "shaky_allies"
+					game.who = LORD_CLARENCE
+					return
+				}
+			}
+		}
+
 		game.who = NOBODY
 	},
 	done() {
@@ -2719,6 +2731,39 @@ states.muster_exiles = {
 
 function muster_lord_in_exile(lord: Lord, exile_box: Locale) {
 	muster_lord(lord, exile_box)
+}
+
+// === SCENARIO II: SHAKY ALLIES ===
+
+function is_move_allowed(who: Lord, to: Locale) {
+	if (game.scenario === SCENARIO_II) {
+		if (who === LORD_WARWICK_L && get_lord_locale(LORD_MARGARET) === to)
+			return false
+		if (who === LORD_MARGARET && get_lord_locale(LORD_WARWICK_L) === to)
+			return false
+	}
+	return true
+}
+
+function is_group_move_forbidden(group: Lord[], to: Locale) {
+	if (game.scenario === SCENARIO_II) {
+		for (let lord of group)
+			if (!is_move_allowed(lord, to))
+				return true
+	}
+	return false
+}
+
+states.shaky_allies = {
+	prompt() {
+		view.prompt = "Shaky Allies: Remove Clarence from play."
+		gen_action_lord(LORD_CLARENCE)
+	},
+	lord(lord) {
+		remove_lord(lord)
+		game.state = "muster_exiles"
+		game.who = NOBODY
+	},
 }
 
 // === 3.3.2 READY VASSALS ===
@@ -2788,12 +2833,14 @@ function can_lord_muster(lord: Lord) {
 function has_locale_to_muster(lord: Lord) {
 	// Can muster at own seat without enemy lord.
 	if (!has_enemy_lord(data.lords[lord].seat))
-		return true
+		if (is_move_allowed(lord, data.lords[lord].seat))
+			return true
 
 	// Else, can muster at any friendly seat (of a friendly lord who is also in play)
 	for (let other of all_friendly_lords())
 		if (is_lord_in_play(other) && is_friendly_locale(data.lords[other].seat))
-			return true
+			if (is_move_allowed(lord, data.lords[other].seat))
+				return true
 
 	// Tough luck!
 	return false
@@ -3121,7 +3168,7 @@ states.levy_lord_at_seat = {
 		view.prompt = `Levy Lord: Choose a stronghold for ${lord_name[game.who]}.`
 		let found = false
 		let seat = data.lords[game.who].seat
-		if (!has_enemy_lord(seat)) {
+		if (!has_enemy_lord(seat) && is_move_allowed(game.who, seat)) {
 			gen_action_locale(seat)
 			found = true
 		}
@@ -3129,7 +3176,8 @@ states.levy_lord_at_seat = {
 		if (!found) {
 			for (let lord of all_friendly_lords()) {
 				if ((is_lord_on_map(lord) || is_lord_on_calendar(lord)) && is_friendly_locale(data.lords[lord].seat)) {
-					gen_action_locale(data.lords[lord].seat)
+					if (is_move_allowed(game.who, data.lords[lord].seat))
+						gen_action_locale(data.lords[lord].seat)
 				}
 			}
 		}
@@ -3980,6 +4028,8 @@ function can_sail_to(to: Locale) {
 		if (!lord_has_capability(game.command, AOW_LANCASTER_HIGH_ADMIRAL))
 			return false
 	}
+	if (is_group_move_forbidden(game.group, to))
+		return false
 	return true
 }
 
@@ -4651,6 +4701,8 @@ function can_march_to(to: Locale) {
 		return false
 	if (is_truce_in_effect() && has_enemy_lord(to))
 		return false
+	if (is_group_move_forbidden(game.group, to))
+		return false
 	return true
 }
 
@@ -4854,6 +4906,17 @@ function can_intercept_to(to: Locale) {
 
 function may_be_intercepted() {
 	let here = get_lord_locale(game.command)
+
+	if (game.scenario === SCENARIO_II) {
+		if (can_intercept_to(here))
+			for (let next of data.locales[here].not_paths)
+				// Note: must check shaky allies
+				for (let lord of all_enemy_lords())
+					if (get_lord_locale(lord) === next && is_move_allowed(lord, here))
+						return true
+		return false
+	}
+
 	if (can_intercept_to(here))
 		for (let next of data.locales[here].not_paths)
 			if (has_enemy_lord(next))
@@ -4891,12 +4954,15 @@ states.intercept = {
 		if (game.who === NOBODY) {
 			let to = get_lord_locale(game.command)
 			for (let next of data.locales[to].not_paths)
-				for_each_friendly_lord_in_locale(next, gen_action_lord)
+				for_each_friendly_lord_in_locale(next, lord => {
+					if (is_move_allowed(lord, game.march.to))
+						gen_action_lord(lord)
+				})
 		} else {
 			gen_action_lord(game.who)
 			if (is_marshal(game.who) || is_lieutenant(game.who)) {
 				for_each_friendly_lord_in_locale(get_lord_locale(game.who), lord => {
-					if (!is_marshal(lord))
+					if (!is_marshal(lord) && is_move_allowed(lord, game.march.to))
 						gen_action_lord(lord)
 				})
 			}
@@ -5205,6 +5271,11 @@ states.choose_exile = {
 		reduce_influence(data.lords[lord].influence + count_vassals_with_lord(lord))
 
 		exile_lord(lord)
+
+		if (game.scenario === SCENARIO_II) {
+			if (lord === LORD_WARWICK_L)
+				foreign_haven_shift_lords()
+		}
 	},
 	done() {
 		set_active_enemy()
@@ -7631,6 +7702,11 @@ function goto_death_check() {
 		return
 	}
 
+	if (is_foreign_haven_triggered()) {
+		goto_foreign_haven()
+		return
+	}
+
 	log_h4("Death Check")
 
 	set_active_defender()
@@ -7862,6 +7938,38 @@ function check_capture_of_the_king() {
 	}
 }
 
+// === SCENARIO II: FOREIGN HAVEN ===
+
+function is_foreign_haven_triggered() {
+	if (set_has(game.battle.routed, LORD_EDWARD_IV) && !is_lord_on_map(LORD_MARGARET))
+		return true
+	return false
+}
+
+function goto_foreign_haven() {
+	set_active(YORK)
+	game.state = "foreign_haven"
+}
+
+states.foreign_haven = {
+	inactive: "Foreign Haven",
+	prompt() {
+		view.prompt = "Foreign Haven: Edward IV may go into exile instead of checking for death."
+		view.who = LORD_EDWARD_IV
+		view.actions.exile = 1
+		view.actions.pass = 1
+	},
+	exile() {
+		exile_lord(LORD_EDWARD_IV)
+		set_delete(game.battle.routed, LORD_HENRY_VI)
+		set_delete(game.battle.fled, LORD_HENRY_VI)
+		goto_death_check()
+	},
+	pass() {
+		goto_death_check()
+	},
+}
+
 // === DEATH CHECK EVENT: ESCAPE SHIP ===
 
 function can_play_escape_ship() {
@@ -7963,6 +8071,7 @@ states.talbot_to_the_rescue = {
 // === DEATH CHECK EVENT: WARDEN OF THE MARCHES ===
 
 function can_play_warden_of_the_marches() {
+	// Note: we don't exhaustively check shaky allies here so a dead end state is possible (but can be undone)
 	if (is_north(game.battle.where)) {
 		for (let loc of all_locales)
 			if (is_north(loc) && loc !== game.battle.where && is_friendly_locale(loc) && !has_enemy_lord(loc))
@@ -7981,15 +8090,13 @@ states.warden_of_the_marches = {
 	prompt() {
 		if (game.where === NOWHERE) {
 			view.prompt = "Warden of the Marches: Move routed Lancastrians to a friendly stronghold in the North."
-
-			// TODO: margaret/warwick
-
 			for (let loc of all_locales)
 				if (is_north(loc) && loc !== game.battle.where && is_friendly_locale(loc) && !has_enemy_lord(loc))
 					gen_action_locale(loc)
 		} else {
 			for (let lord of game.battle.routed)
-				gen_action_lord(lord)
+				if (is_move_allowed(lord, game.where))
+					gen_action_lord(lord)
 			view.actions.done = 1
 		}
 	},
@@ -8593,6 +8700,13 @@ function tides_calc() {
 		}
 	}
 
+	if (game.scenario === SCENARIO_II) {
+		if (get_lord_locale(LORD_MARGARET) === LOC_LONDON) {
+			doml += 3
+			log("Queen Regent: +3 Lancastrian")
+		}
+	}
+
 	log(`Total ` + domy + ` Influence for York`)
 	log(`Total ` + doml + ` Influence for Lancaster`)
 
@@ -8656,7 +8770,8 @@ function roll_disembark() {
 function has_safe_ports(sea: Locale) {
 	for (let loc of find_ports(sea, NOBODY))
 		if (!has_enemy_lord(loc))
-			return true
+			if (is_move_allowed(game.who, loc))
+				return true
 	return false
 }
 
@@ -8701,7 +8816,7 @@ states.disembark_to = {
 	prompt() {
 		view.prompt = `Disembark: Land ${lord_name[game.who]} at a port.`
 		for (let loc of find_ports(get_lord_locale(game.who), NOBODY))
-			if (!has_enemy_lord(loc))
+			if (!has_enemy_lord(loc) && is_move_allowed(game.who, loc))
 				gen_action_locale(loc)
 	},
 	locale(loc) {
@@ -9260,6 +9375,30 @@ function setup_II() {
 
 	// TODO: Add Foreign Haven rule
 	// TODO: Add Skaky Allies rules
+}
+
+function foreign_haven_shift_lords() {
+	log("Foreign Haven")
+
+	let turn = current_turn()
+
+	for (let lord of all_lancaster_lords) {
+		if (is_lord_on_calendar(lord) && get_lord_calendar(lord) > turn) {
+			let x = is_lord_in_exile(lord)
+			set_lord_calendar(lord, turn)
+			if (x)
+				set_lord_in_exile(lord)
+		}
+	}
+
+	for (let lord of all_york_lords) {
+		if (is_lord_on_calendar(lord) && get_lord_calendar(lord) > turn + 1) {
+			let x = is_lord_in_exile(lord)
+			set_lord_calendar(lord, turn + 1)
+			if (x)
+				set_lord_in_exile(lord)
+		}
+	}
 }
 
 // === SCENARIO: III ===
@@ -12020,8 +12159,20 @@ function end_rebel_supply_depot() {
 function can_play_surprise_landing() {
 	let here = get_lord_locale(game.command)
 	if (has_flag(FLAG_SAIL_TO_PORT)) {
-		if (is_seaport(here) && here !== LOC_CALAIS && here !== LOC_PEMBROKE && here !== LOC_HARLECH && here !== LOC_LANCASTER)
-			return true
+		if (
+			is_seaport(here) &&
+			here !== LOC_CALAIS &&
+			here !== LOC_PEMBROKE &&
+			here !== LOC_HARLECH &&
+			here !== LOC_LANCASTER
+		) {
+			for (let to of data.locales[here].roads)
+				if (can_march_to(to))
+					return true
+			for (let to of data.locales[here].highways)
+				if (can_march_to(to))
+					return true
+		}
 	}
 	return false
 }
@@ -12035,7 +12186,7 @@ function goto_play_surprise_landing() {
 states.surprise_landing = {
 	inactive: "Surprise Landing",
 	prompt() {
-		view.prompt = "Surprise Landing: You may free march."
+		view.prompt = "Surprise Landing: Free march."
 
 		view.group = game.group
 		let here = get_lord_locale(game.command)
