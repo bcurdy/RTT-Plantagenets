@@ -120,6 +120,7 @@ interface Game {
 	arts_of_war?: Card[],
 	this_event?: Card,
 	march?: { from: Locale, to: Locale },
+	sail_from?: Locale,
 	intercept?: Lord[],
 	battle?: Battle,
 	supply?: MyMap<Locale,number>,
@@ -4147,6 +4148,8 @@ states.blockade_sail = {
 function do_sail(to: Locale) {
 	log(`Sailed to %${to}${format_group_move()}.`)
 
+	game.sail_from = get_lord_locale(game.command)
+
 	clear_flag(FLAG_MARCH_TO_PORT)
 	if (is_seaport(to))
 		set_flag(FLAG_SAIL_TO_PORT)
@@ -4193,17 +4196,25 @@ states.confirm_approach_sail = {
 		view.actions.approach = 1
 	},
 	approach() {
-		goto_choose_exile()
+		// no intercept, but PT and blocked ford may be played
+		goto_parliaments_truce()
 	},
 }
 
 function end_sail() {
+	delete game.sail_from
+
 	// Disbanded in battle!
 	if (!is_lord_on_map(game.command)) {
 		clear_flag(FLAG_MARCH_TO_PORT)
 		clear_flag(FLAG_SAIL_TO_PORT)
 		spend_all_actions()
 	}
+
+	// Discard held events
+	set_delete(game.events, EVENT_LANCASTER_BLOCKED_FORD)
+	set_delete(game.events, EVENT_YORK_BLOCKED_FORD)
+
 	resume_command()
 }
 
@@ -4840,6 +4851,12 @@ function march_with_group_2() {
 function end_march() {
 	delete game.march
 
+	// Discard held events
+	set_delete(game.events, EVENT_LANCASTER_BLOCKED_FORD)
+	set_delete(game.events, EVENT_LANCASTER_FLANK_ATTACK)
+	set_delete(game.events, EVENT_YORK_BLOCKED_FORD)
+	set_delete(game.events, EVENT_YORK_FLANK_ATTACK)
+
 	// Disbanded in battle!
 	if (!is_lord_on_map(game.command)) {
 		clear_flag(FLAG_MARCH_TO_PORT)
@@ -5168,8 +5185,12 @@ states.parliaments_truce = {
 		end_passive_held_event()
 
 		// Cancel approach!
-		for (let lord of game.group)
-			set_lord_locale(lord, game.march.from)
+		for (let lord of game.group) {
+			if (game.march)
+				set_lord_locale(lord, game.march.from)
+			else
+				set_lord_locale(lord, game.sail_from)
+		}
 
 		set_active_enemy()
 		end_march()
@@ -5189,12 +5210,14 @@ function end_parliaments_truce() {
 	}
 
 	// And set marching flags here too.
-	let here = get_lord_locale(game.command)
-	if (is_seaport(here))
-		set_flag(FLAG_MARCH_TO_PORT)
-	else
-		clear_flag(FLAG_MARCH_TO_PORT)
-	clear_flag(FLAG_SAIL_TO_PORT)
+	if (game.march) {
+		let here = get_lord_locale(game.command)
+		if (is_seaport(here))
+			set_flag(FLAG_MARCH_TO_PORT)
+		else
+			clear_flag(FLAG_MARCH_TO_PORT)
+		clear_flag(FLAG_SAIL_TO_PORT)
+	}
 
 	goto_blocked_ford()
 }
@@ -8181,17 +8204,25 @@ states.aftermath_disband = {
 function end_battle_aftermath() {
 	set_active(game.battle.attacker)
 
-	// Discard played battle events
+	// Discard battle held events
 	set_delete(game.events, EVENT_LANCASTER_FOR_TRUST_NOT_HIM)
 	set_delete(game.events, EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
 	set_delete(game.events, EVENT_LANCASTER_RAVINE)
 	set_delete(game.events, EVENT_LANCASTER_SUSPICION)
+
 	set_delete(game.events, EVENT_YORK_CALTROPS)
 	set_delete(game.events, EVENT_YORK_LEEWARD_BATTLE_LINE)
 	set_delete(game.events, EVENT_YORK_PATRICK_DE_LA_MOTE)
 	set_delete(game.events, EVENT_YORK_REGROUP)
 	set_delete(game.events, EVENT_YORK_SUSPICION)
 	set_delete(game.events, EVENT_YORK_SWIFT_MANEUVER)
+
+	// Discard death check held events
+	set_delete(game.events, EVENT_LANCASTER_WARDEN_OF_THE_MARCHES)
+	set_delete(game.events, EVENT_LANCASTER_TALBOT_TO_THE_RESCUE)
+	set_delete(game.events, EVENT_LANCASTER_ESCAPE_SHIP)
+	set_delete(game.events, EVENT_YORK_ESCAPE_SHIP[0])
+	set_delete(game.events, EVENT_YORK_ESCAPE_SHIP[1])
 
 	// Recovery
 	spend_all_actions()

@@ -1194,8 +1194,8 @@ function add_valour(parent, lord) {
 }
 
 function update_valour(lord, parent, battle) {
-	if (!battle) return
 	parent.replaceChildren()
+	if (!battle) return
 	for (let i = 0; i < battle.valour[lord]; i++) {
 		add_valour(parent, lord)
 	}
