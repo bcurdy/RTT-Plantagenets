@@ -209,7 +209,7 @@ cards:[
 {"name":"Y9","event":"Escape Ship","roses":0,"when":"hold","capability":"Barricades","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
 {"name":"Y10","event":"Tax Collectors","roses":0,"when":"now","capability":"Agitators","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
 {"name":"Y11","event":"Blocked Ford","roses":0,"when":"hold","capability":"Yorkists Never Wait","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
-{"name":"Y12","event":"Parliament's Truce","roses":0,"when":"hold","capability":"Soldiers of fortune","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
+{"name":"Y12","event":"Parliament's Truce","roses":0,"when":"hold","capability":"Soldiers of Fortune","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
 {"name":"Y13","event":"Aspielles","roses":0,"when":"hold","capability":"Scourers","lords":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
 {"name":"Y14","event":"Richard of York","roses":1,"when":"this_levy","capability":"Burgundians","lords":[0,1]},
 {"name":"Y15","event":"London for York","roses":1,"when":"now","capability":"Naval Blockade","lords":[13]},

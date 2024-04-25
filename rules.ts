@@ -1914,7 +1914,7 @@ function get_parley_influence_cost() {
 		} else {
 			if (game.levy_flags.parliament_votes > 0)
 				cost -= 1
-			else if (game.levy_flags.succession > 0)
+			if (game.levy_flags.succession > 0)
 				cost -= 1
 		}
 	}
@@ -4581,7 +4581,7 @@ function end_parley(success: boolean) {
 			// Parliament Votes / Succession: reduced cost and success
 			if (game.levy_flags.parliament_votes > 0)
 				--game.levy_flags.parliament_votes
-			else if (game.levy_flags.succession > 0)
+			if (game.levy_flags.succession > 0)
 				--game.levy_flags.succession
 
 			// My crown / as heir: free action
@@ -10262,11 +10262,13 @@ function apply_lordship_effects(lord: Lord) {
 
 	game.levy_flags.parliament_votes = 0
 	if (is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES))
-		game.levy_flags.parliament_votes = 1
+		if (game.active === LANCASTER)
+			game.levy_flags.parliament_votes = 1
 
 	game.levy_flags.succession = 0
 	if (is_event_in_play(EVENT_YORK_SUCCESSION))
-		game.levy_flags.succession = 1
+		if (game.active === YORK)
+			game.levy_flags.succession = 1
 
 	game.levy_flags.jack_cade = 0
 	if (is_jack_cade_eligible(lord))
