@@ -2385,7 +2385,11 @@ function do_pillage(lord: Lord) {
 
 function do_pillage_disband(lord: Lord) {
 	disband_influence_penalty(lord)
-	disband_lord(game.who, is_lord_at_sea(lord)) // shipwreck if unfed at sea
+	// shipwreck if unfed at sea
+	if (is_lord_at_sea(lord))
+		remove_lord(lord)
+	else
+		disband_lord(lord)
 }
 
 // === 3.2.2 PAY LORDS ===
@@ -2580,23 +2584,7 @@ states.pay_vassals = {
 
 // === 3.2.4 DISBAND ===
 
-function disband_lord(lord: Lord, permanently = false) {
-	let turn = current_turn()
-	let extra = 6
-
-	if (permanently) {
-		log(`Removed L${lord}.`)
-		set_lord_locale(lord, NOWHERE)
-	}
-	else if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME) && !is_event_in_play(EVENT_LANCASTER_BLOCKED_FORD)) {
-		set_lord_calendar(lord, turn + (extra - data.lords[lord].influence))
-		log(`Disbanded L${lord} to turn ${current_turn() + 1}.`)
-	}
-	else	{
-		set_lord_calendar(lord, turn + (extra - data.lords[lord].influence))
-		log(`Disbanded L${lord} to turn ${get_lord_calendar(lord)}.`)
-	}
-
+function clear_lord(lord: Lord) {
 	discard_lord_capability_n(lord, 0)
 	discard_lord_capability_n(lord, 1)
 
@@ -2617,14 +2605,30 @@ function disband_lord(lord: Lord, permanently = false) {
 	check_capture_of_the_king()
 }
 
+function remove_lord(lord: Lord) {
+	log(`Removed L${lord}.`)
+	set_lord_locale(lord, NOWHERE)
+	clear_lord(lord)
+}
+
+function disband_lord(lord: Lord) {
+	let turn = current_turn()
+	set_lord_calendar(lord, turn + (6 - data.lords[lord].influence))
+	log(`Disbanded L${lord} to turn ${get_lord_calendar(lord)}.`)
+	clear_lord(lord)
+}
+
 function exile_lord(lord: Lord) {
-	log("Exiled L" + lord)
-	disband_lord(lord, false)
 	if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME) && !is_event_in_play(EVENT_LANCASTER_BLOCKED_FORD)) {
 		logcap(AOW_YORK_ENGLAND_IS_MY_HOME)
+		log(`Disbanded L${lord} to turn ${current_turn() + 1}`)
 		set_lord_calendar(lord, current_turn() + 1)
+		clear_lord(lord)
 	} else {
+		set_lord_calendar(lord, current_turn() + 6 - data.lords[lord].influence)
 		set_lord_in_exile(lord)
+		log(`Exiled L${lord} to turn ${get_lord_calendar(lord)}.`)
+		clear_lord(lord)
 	}
 }
 
@@ -7731,18 +7735,18 @@ states.death_check = {
 		if (set_has(game.battle.fled, game.who)) {
 			if (die >= 5) {
 				logi("L" + game.who + " 5-6 " + HIT[die])
-				disband_lord(game.who, true)
+				remove_lord(game.who)
 			} else {
 				logi("L" + game.who + " 5-6 " + MISS[die])
-				disband_lord(game.who, false)
+				disband_lord(game.who)
 			}
 		} else {
 			if (die >= 3) {
 				logi("L" + game.who + " 3-6 " + HIT[die])
-				disband_lord(game.who, true)
+				remove_lord(game.who)
 			} else {
 				logi("L" + game.who + " 3-6 " + MISS[die])
-				disband_lord(game.who, false)
+				disband_lord(game.who)
 			}
 		}
 
@@ -7800,7 +7804,7 @@ states.bloody_thou_art = {
 		}
 	},
 	lord(lord) {
-		disband_lord(lord, true)
+		remove_lord(lord)
 		set_delete(game.battle.routed, lord)
 	},
 	vassal(v) {
@@ -7837,7 +7841,7 @@ states.capture_of_the_king = {
 		log(`L${LORD_HENRY_VI} captured by L${lord}.`)
 		set_delete(game.battle.routed, LORD_HENRY_VI)
 		set_delete(game.battle.fled, LORD_HENRY_VI)
-		disband_lord(LORD_HENRY_VI, true)
+		clear_lord(LORD_HENRY_VI)
 		set_lord_locale(LORD_HENRY_VI, CAPTURE_OF_THE_KING + lord as Locale)
 		// Note: the other 10 influence were already gained from normal battle victory
 		goto_death_check()
@@ -7851,7 +7855,7 @@ function check_capture_of_the_king() {
 			let who = loc - CAPTURE_OF_THE_KING as Lord
 			if (!is_lord_on_map(who)) {
 				log(`L${LORD_HENRY_VI} released!`)
-				disband_lord(LORD_HENRY_VI, false)
+				disband_lord(LORD_HENRY_VI)
 				increase_lancaster_influence(10)
 			}
 		}
@@ -8685,7 +8689,7 @@ states.disembark = {
 		} else {
 			// Shipwreck!
 			disband_influence_penalty(game.who)
-			disband_lord(game.who, true)
+			remove_lord(game.who)
 			game.who = NOBODY
 			goto_disembark()
 		}
@@ -9409,7 +9413,7 @@ function setup_II_Y() {
 
 	for (let lord of all_lords) {
 		if (is_lord_in_play(lord)) {
-			disband_lord(lord, false)
+			disband_lord(lord)
 		}
 	}
 	for (let loc of all_locales) {
@@ -9447,7 +9451,7 @@ function setup_II_Y() {
 	if (main_york_heir === LORD_MARCH) {
 		muster_lord(LORD_EDWARD_IV, LOC_LONDON)
 		// Removed because he can't appear in scenario III
-		disband_lord(LORD_MARCH, true)
+		remove_lord(LORD_MARCH)
 		// TODO: Add cards Y23, Y24, Y28, Y31
 	}
 
@@ -9532,7 +9536,7 @@ function setup_II_L() {
 
 	for (let lord of all_lords) {
 		if (is_lord_in_play(lord)) {
-			disband_lord(lord, false)
+			disband_lord(lord)
 		}
 	}
 	for (let loc of all_locales) {
@@ -9575,7 +9579,7 @@ function setup_II_L() {
 		muster_lord(LORD_SOMERSET_1, LOC_LONDON)
 		if (main_lancaster_heir === LORD_SOMERSET_2) {
 			// Somerset 2 cylinder replaced by Somerset 1 cylinder
-			disband_lord(LORD_SOMERSET_2, true)
+			remove_lord(LORD_SOMERSET_2)
 		}
 	}
 
@@ -9686,7 +9690,7 @@ function setup_III_Y() {
 
 	for (let lord of all_lords) {
 		if (is_lord_in_play(lord)) {
-			disband_lord(lord, false)
+			disband_lord(lord)
 		}
 	}
 	for (let loc of all_locales) {
@@ -9705,13 +9709,13 @@ function setup_III_Y() {
 	if (has_Y28_happened()) {
 		if (is_lord_in_play(LORD_RUTLAND) && (is_lord_in_play(LORD_GLOUCESTER_1) || is_lord_in_play(LORD_GLOUCESTER_2) || is_lord_in_play(LORD_RICHARD_III))) {
 			// If Gloucester (any) and Rutland, Rutland dies
-			disband_lord(LORD_RUTLAND, true)
+			remove_lord(LORD_RUTLAND)
 		}
 	}
 
 	if (main_york_heir === LORD_RUTLAND && (!is_lord_in_play(LORD_GLOUCESTER_1) && !is_lord_in_play(LORD_GLOUCESTER_2))) {
 		// If Rutland is lone heir, Rutland dies
-		disband_lord(LORD_RUTLAND, true)
+		remove_lord(LORD_RUTLAND)
 		//Warwick becomes king
 		muster_lord(LORD_WARWICK_Y, LOC_LONDON)
 		add_york_favour(LOC_LONDON)
@@ -9748,8 +9752,8 @@ function setup_III_Y() {
 			add_york_favour(LOC_LUDLOW)
 			// Add Y20
 			// Only 2 heirs can stay
-			disband_lord(LORD_RUTLAND, true)
-			disband_lord(LORD_GLOUCESTER_1, true)
+			remove_lord(LORD_RUTLAND)
+			remove_lord(LORD_GLOUCESTER_1)
 		}
 		if (!is_lord_in_play(LORD_MARCH) && is_lord_in_play(LORD_RUTLAND)) {
 			muster_lord(LORD_RUTLAND, LOC_CANTERBURY)
@@ -9767,7 +9771,7 @@ function setup_III_Y() {
 		add_york_favour(LOC_LONDON)
 
 		// If Edward IV is on the map, remove March
-		disband_lord(LORD_MARCH, true)
+		remove_lord(LORD_MARCH)
 		// TODO: Add Y23, Y24
 		if (is_lord_in_play(LORD_RUTLAND)) {
 			muster_lord(LORD_RUTLAND, LOC_CANTERBURY)
@@ -9788,7 +9792,7 @@ function setup_III_Y() {
 		if (is_lord_in_play(LORD_GLOUCESTER_1)) {
 			muster_lord(LORD_GLOUCESTER_2, LOC_LONDON)
 			// If Rutland is King, golden gloucester 2 arrives and gloucester 1 is gone
-			disband_lord(LORD_GLOUCESTER_1, true)
+			remove_lord(LORD_GLOUCESTER_1)
 			// TODO: Add Y34
 		}
 	}
@@ -9796,8 +9800,8 @@ function setup_III_Y() {
 		muster_lord(LORD_RICHARD_III, LOC_LONDON)
 		add_york_favour(LOC_LONDON)
 		// if Richard III is here, both gloucester are gone
-		disband_lord(LORD_GLOUCESTER_1, true)
-		disband_lord(LORD_GLOUCESTER_2, true)
+		remove_lord(LORD_GLOUCESTER_1)
+		remove_lord(LORD_GLOUCESTER_2)
 		// TODO: Add Y32, Y33
 	}
 
@@ -9808,16 +9812,16 @@ function setup_III_Y() {
 		muster_lord(LORD_MARGARET, LOC_FRANCE)
 		// TODO: Add L27, L31 + L26 Edward
 		// Only one heir
-		disband_lord(LORD_HENRY_VI, true)
-		disband_lord(LORD_SOMERSET_1, true)
-		disband_lord(LORD_SOMERSET_2, true)
+		remove_lord(LORD_HENRY_VI)
+		remove_lord(LORD_SOMERSET_1)
+		remove_lord(LORD_SOMERSET_2)
 	}
 	// If Margaret not here and Edward IV not king
 	if (!is_lord_on_map(LORD_MARGARET) && main_york_heir !== LORD_EDWARD_IV) {
 		muster_lord(LORD_HENRY_TUDOR, LOC_FRANCE)
 		// TODO: Add L32, L35
-		disband_lord(LORD_SOMERSET_1, true)
-		disband_lord(LORD_SOMERSET_2, true)
+		remove_lord(LORD_SOMERSET_1)
+		remove_lord(LORD_SOMERSET_2)
 	}
 	if (!is_lord_on_map(LORD_MARGARET) && !is_lord_on_map(LORD_HENRY_TUDOR)) {
 		muster_lord(LORD_WARWICK_L, LOC_CALAIS)
@@ -9883,7 +9887,7 @@ function setup_III_L() {
 
 	for (let lord of all_lords) {
 		if (is_lord_in_play(lord)) {
-			disband_lord(lord, false)
+			disband_lord(lord)
 		}
 	}
 	for (let loc of all_locales) {
@@ -9916,7 +9920,7 @@ function setup_III_L() {
 	if (main_lancaster_heir === LORD_SOMERSET_2) {
 		muster_lord(LORD_SOMERSET_1, LOC_LONDON)
 		add_lancaster_favour(LOC_WELLS)
-		disband_lord(LORD_SOMERSET_2, true)
+		remove_lord(LORD_SOMERSET_2)
 		// TODO: Add L18, L20, L27
 	}
 	muster_lord(LORD_OXFORD, LOC_OXFORD)
@@ -9931,12 +9935,12 @@ function setup_III_L() {
 	if (has_Y28_happened()) {
 		if (is_lord_in_play(LORD_GLOUCESTER_1) || is_lord_in_play(LORD_GLOUCESTER_2) || is_lord_in_play(LORD_RICHARD_III)) {
 			// If Gloucester (any), all other yorkist heir dies
-			disband_lord(LORD_YORK, true)
-			disband_lord(LORD_RUTLAND, true)
-			disband_lord(LORD_MARCH, true)
-			disband_lord(LORD_EDWARD_IV, true)
-			disband_lord(LORD_GLOUCESTER_1, true)
-			disband_lord(LORD_RICHARD_III, true)
+			remove_lord(LORD_YORK)
+			remove_lord(LORD_RUTLAND)
+			remove_lord(LORD_MARCH)
+			remove_lord(LORD_EDWARD_IV)
+			remove_lord(LORD_GLOUCESTER_1)
+			remove_lord(LORD_RICHARD_III)
 			muster_lord(LORD_GLOUCESTER_2, LOC_BURGUNDY)
 			// TODO: Add Y35
 		}
@@ -9948,24 +9952,24 @@ function setup_III_L() {
 		// TODO: Add Y14, Y18
 		if (is_lord_in_play(LORD_MARCH)) {
 			// Only next highest heir alive
-			disband_lord(LORD_RUTLAND, true)
-			disband_lord(LORD_GLOUCESTER_1, true)
-			disband_lord(LORD_GLOUCESTER_2, true)
+			remove_lord(LORD_RUTLAND)
+			remove_lord(LORD_GLOUCESTER_1)
+			remove_lord(LORD_GLOUCESTER_2)
 			muster_lord(LORD_MARCH, LOC_BURGUNDY)
 			add_york_favour(LOC_LUDLOW)
 			//TODO: Add Y20
 		}
 		else if (!is_lord_in_play(LORD_MARCH) && is_lord_in_play(LORD_RUTLAND)) {
 			// Only next highest heir alive
-			disband_lord(LORD_GLOUCESTER_1, true)
-			disband_lord(LORD_GLOUCESTER_2, true)
+			remove_lord(LORD_GLOUCESTER_1)
+			remove_lord(LORD_GLOUCESTER_2)
 			muster_lord(LORD_RUTLAND, LOC_BURGUNDY)
 			add_york_favour(LOC_CANTERBURY)
 			//TODO: Add Y20
 		}
 		else if (!is_lord_in_play(LORD_MARCH) && !is_lord_in_play(LORD_RUTLAND) && (is_lord_in_play(LORD_GLOUCESTER_1) || is_lord_in_play(LORD_GLOUCESTER_2))) {
 			// Final Scenario, and no succession rule
-			disband_lord(LORD_GLOUCESTER_2, true)
+			remove_lord(LORD_GLOUCESTER_2)
 			muster_lord(LORD_GLOUCESTER_1, LOC_BURGUNDY)
 			add_york_favour(LOC_GLOUCESTER)
 			// TODO: Add Y4
@@ -9979,8 +9983,8 @@ function setup_III_L() {
 	}
 	if (main_york_heir === LORD_MARCH || main_york_heir === LORD_RUTLAND) {
 		// If March or Rutland is highest heir, Warwick takes the lead
-		disband_lord(LORD_MARCH, true)
-		disband_lord(LORD_RUTLAND, true)
+		remove_lord(LORD_MARCH)
+		remove_lord(LORD_RUTLAND)
 		muster_lord(LORD_WARWICK_Y, LOC_CALAIS)
 		add_york_favour(LOC_CALAIS)
 		//TODO: Add Y16
@@ -9997,7 +10001,7 @@ function setup_III_L() {
 	)
 
 	if (main_york_heir === LORD_GLOUCESTER_1) {
-		disband_lord(LORD_GLOUCESTER_1, true)
+		remove_lord(LORD_GLOUCESTER_1)
 		muster_lord(LORD_GLOUCESTER_2, LOC_BURGUNDY)
 		muster_lord(LORD_SALISBURY, LOC_BURGUNDY)
 		//TODO: Add Y17, Y22
@@ -10932,7 +10936,7 @@ function end_welsh_rebellion_remove_troops() {
 	clear_lords_moved()
 	for (let lord of all_york_lords) {
 		if (is_lord_in_wales(lord) && !lord_has_unrouted_units(lord))
-			disband_lord(lord, false)
+			disband_lord(lord)
 	}
 	game.count = 0
 	game.who = NOBODY
@@ -11453,7 +11457,7 @@ states.dubious_clarence = {
 	},
 	check(bonus) {
 		if (roll_influence_check(game.who, bonus)) {
-			disband_lord(LORD_CLARENCE, false)
+			disband_lord(LORD_CLARENCE)
 		}
 		game.who = NOBODY
 		end_immediate_event()
