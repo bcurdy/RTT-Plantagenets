@@ -5287,7 +5287,7 @@ states.choose_exile = {
 
 function add_spoils(type: Asset, n) {
 	if (!game.spoils)
-		game.spoils = [ 0, 0 ]
+		game.spoils = [ 0, 0, 0 ]
 	game.spoils[type] += n
 }
 
