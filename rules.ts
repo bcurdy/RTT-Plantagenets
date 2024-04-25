@@ -1393,6 +1393,35 @@ function get_force_name(lord: Lord, n: Force, x: Vassal = NOVASSAL) {
 	return FORCE_TYPE_NAME[n]
 }
 
+function get_inherent_valour(lord: Lord) {
+	return data.lords[lord].valour
+}
+
+function get_modified_valour(lord: Lord) {
+	let valour = get_inherent_valour(lord)
+
+	if (lord_has_capability(lord, AOW_LANCASTER_EXPERT_COUNSELLORS))
+		valour += 2
+
+	if (lord_has_capability(lord, AOW_LANCASTER_VETERAN_OF_FRENCH_WARS))
+		valour += 2
+
+	if (lord_has_capability(lord, AOW_LANCASTER_ANDREW_TROLLOPE))
+			valour += 1
+
+	if (lord_has_capability(lord, AOW_LANCASTER_MY_FATHERS_BLOOD))
+			valour += 1
+
+	if (lord_has_capability(lord, AOW_LANCASTER_EDWARD))
+			valour += 1
+
+	if (lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET))
+		if (get_lord_locale(lord) === get_lord_locale(LORD_MARGARET))
+			valour += 1
+
+	return valour
+}
+
 // === STATE: LORD (SHARED) ===
 
 function get_shared_assets(loc: Locale, what: Asset) {
@@ -4894,7 +4923,7 @@ states.intercept = {
 		end_intercept()
 	},
 	intercept() {
-		let valour = data.lords[game.who].valour
+		let valour = get_modified_valour(game.who)
 		let success = false
 		if (is_flank_attack_in_play()) {
 			end_passive_held_event()
@@ -4903,7 +4932,7 @@ states.intercept = {
 		else {
 			let roll = roll_die()
 			success = roll <= valour
-			log(`Intercept ${success ? "Succeeded." : "Failed."} (${range(valour)}): ${success ? HIT[roll] : MISS[roll]}`)
+			log(`Intercept ${range(valour)}: ${success ? HIT[roll] : MISS[roll]}`)
 		}
 		if (success) {
 			goto_intercept_march()
@@ -5617,19 +5646,7 @@ function goto_battle() {
 		if (get_lord_locale(lord) === here) {
 			set_lord_fought(lord)
 			set_add(game.battle.reserves, lord)
-			game.battle.valour[lord] = data.lords[lord].valour
-			if (
-				lord_has_capability(lord, AOW_LANCASTER_EXPERT_COUNSELLORS) ||
-				lord_has_capability(lord, AOW_LANCASTER_VETERAN_OF_FRENCH_WARS)
-			)
-				game.battle.valour[lord] += 2
-			else if (
-				lord_has_capability(lord, AOW_LANCASTER_ANDREW_TROLLOPE) ||
-				lord_has_capability(lord, AOW_LANCASTER_MY_FATHERS_BLOOD) ||
-				lord_has_capability(lord, AOW_LANCASTER_EDWARD) ||
-				(lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET) && get_lord_locale(LORD_MARGARET) === here)
-			)
-				game.battle.valour[lord] += 1
+			game.battle.valour[lord] = get_modified_valour(lord)
 		}
 	}
 
@@ -7084,7 +7101,7 @@ function get_lord_remaining_valour(lord: Lord): number {
 }
 
 function spend_valour(lord: Lord) {
-	game.battle.valour[lord] = game.battle.valour[lord] - 1
+	game.battle.valour[lord] --
 }
 
 function get_inherent_protection(force: Force) {
@@ -9255,15 +9272,23 @@ function setup_III() {
 states.my_kingdom_for_a_horse_setup = {
 	inactive: "My Kingdom for a Horse",
 	prompt() {
-		view.prompt = "My Kingdom for a Horse: You may replace Gloucester with Richard III."
-		view.actions.richard_iii = 1
-		view.actions.pass = 1
+		if (!is_lord_on_map(LORD_RICHARD_III)) {
+			view.prompt = "My Kingdom for a Horse: You may replace Gloucester with Richard III."
+			view.actions.richard_iii = 1
+			view.actions.pass = 1
+		} else {
+			view.prompt = "My Kingdom for a Horse: All done."
+			view.actions.done = 1
+		}
 	},
 	richard_iii() {
+		push_undo()
 		replace_gloucester_with_richard_iii()
-		goto_start_game()
 	},
 	pass() {
+		goto_start_game()
+	},
+	done() {
 		goto_start_game()
 	},
 }
