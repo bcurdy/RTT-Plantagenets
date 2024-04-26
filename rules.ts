@@ -8896,11 +8896,11 @@ function is_waste_turn() {
 }
 
 function goto_victory_check() {
-	if (check_scenario_end_victory())
-		return
 	if (check_campaign_victory())
 		return
 	if (check_threshold_victory())
+		return
+	if (check_scenario_end_victory())
 		return
 
 	if (is_grow_turn())
@@ -9000,21 +9000,25 @@ function end_reset() {
 // === 5.1 CAMPAIGN VICTORY ===
 
 function check_campaign_victory_york() {
+	let next_turn = current_turn() + 1
 	for (let lord of all_lancaster_lords) {
 		if (is_lord_on_map(lord))
 			return false
-		if (is_lord_in_exile(lord) && get_lord_calendar(lord) === current_turn() + 1)
-			return false
+		if (next_turn <= 15)
+			if (is_lord_in_exile(lord) && get_lord_calendar(lord) === next_turn)
+				return false
 	}
 	return true
 }
 
 function check_campaign_victory_lancaster() {
+	let next_turn = current_turn() + 1
 	for (let lord of all_york_lords) {
 		if (is_lord_on_map(lord))
 			return false
-		if (is_lord_in_exile(lord) && get_lord_calendar(lord) === current_turn() + 1)
-			return false
+		if (next_turn <= 15)
+			if (is_lord_in_exile(lord) && get_lord_calendar(lord) === next_turn)
+				return false
 	}
 	return true
 }
