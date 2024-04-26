@@ -18,13 +18,6 @@
 
 	NAVAL BLOCKADE - for Tax and Tax Collectors
 
-	Scenario special rules.
-
-		II: Foreign Haven - Warwick
-		II: Foreign Haven - Edward IV
-		II: Shaky Allies
-		II: Queen Regent
-
 	Review all undo steps.
 	Review all states for needless pauses.
 	Review all states for adding extra pauses to prevent loss of control.
@@ -5539,7 +5532,7 @@ function count_melee_hits(lord: Lord) {
 	hits += get_lord_forces(lord, BURGUNDIANS) << 1
 
 	if (lord === game.battle.caltrops) {
-		logcap(EVENT_YORK_CALTROPS)
+		logevent(EVENT_YORK_CALTROPS)
 		hits += 2 << 1
 	}
 
