@@ -5113,6 +5113,9 @@ states.kings_parley = {
 	},
 	card(_) {
 		push_undo()
+
+		logcap(AOW_LANCASTER_KINGS_PARLEY)
+
 		discard_lord_capability(LORD_HENRY_VI, AOW_LANCASTER_KINGS_PARLEY)
 
 		// Cancel approach!
