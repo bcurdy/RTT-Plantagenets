@@ -1167,6 +1167,10 @@ function is_lord_on_map(lord: Lord) {
 	return loc !== NOWHERE && loc < CALENDAR
 }
 
+function is_locale_on_map(loc: Locale) {
+	return loc !== NOWHERE && loc < CALENDAR
+}
+
 function is_lord_in_play(lord: Lord) {
 	return get_lord_locale(lord) !== NOWHERE
 }
@@ -4732,6 +4736,9 @@ function can_action_march_to(to: Locale, type: "highway" | "road" | "path") {
 
 function prompt_march() {
 	let from = get_lord_locale(game.command)
+
+	if (!is_locale_on_map(from))
+		return
 
 	for (let to of data.locales[from].highways)
 		if (can_action_march_to(to, "highway"))
