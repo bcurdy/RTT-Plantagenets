@@ -1485,10 +1485,6 @@ function count_group_provender(group: Lord[]) {
 	return n
 }
 
-function count_group_lords() {
-	return game.group.length
-}
-
 // === STATE: VASSAL ===
 
 function set_vassal_lord_and_service(vassal: Vassal, lord: Lord, service: number) {
@@ -3524,12 +3520,6 @@ function is_first_action() {
 	return has_flag(FLAG_FIRST_ACTION)
 }
 
-// If march on a highway, set the flag so the lord can go through
-// a second highway at no cost
-function is_first_march_highway() {
-	return has_flag(FLAG_FIRST_MARCH_HIGHWAY)
-}
-
 function goto_command_activation() {
 	if (game.plan_y.length === 0 && game.plan_l.length === 0) {
 		game.command = NOBODY
@@ -4717,44 +4707,50 @@ function can_march_to(to: Locale) {
 	return true
 }
 
+function can_action_march_to(to: Locale, type: "highway" | "road" | "path") {
+	if (!can_march_to(to))
+		return false
+
+	if (game.group.length === 1 && type === "road") {
+		if (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT))
+			type = "highway"
+		if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_FORCED_MARCHES))
+			type = "highway"
+	}
+
+	if (type === "highway") {
+		if (has_flag(FLAG_FIRST_MARCH_HIGHWAY))
+			return true
+		if (has_flag(FLAG_SURPRISE_LANDING))
+			return true
+		return game.actions >= 1
+	}
+	else if (type === "road") {
+		if (has_flag(FLAG_SURPRISE_LANDING))
+			return true
+		return game.actions >= 1
+	}
+	else if (type === "path") {
+		return is_first_action()
+	}
+
+	throw "IMPOSSIBLE"
+}
+
 function prompt_march() {
 	let from = get_lord_locale(game.command)
 
-	// TODO: this is a bit complicated -- can we simplify?
+	for (let to of data.locales[from].highways)
+		if (can_action_march_to(to, "highway"))
+			gen_action_locale(to)
 
-	if (is_first_action()) {
-		for (let to of data.locales[from].paths) {
-			if (can_march_to(to))
-				gen_action_locale(to)
-		}
-	}
-	if (game.actions > 0 || has_flag(FLAG_SURPRISE_LANDING)) {
-		for (let to of data.locales[from].roads) {
-			if (can_march_to(to))
-				gen_action_locale(to)
+	for (let to of data.locales[from].roads)
+		if (can_action_march_to(to, "road"))
+			gen_action_locale(to)
 
-		}
-		for (let to of data.locales[from].highways) {
-			if (can_march_to(to))
-				gen_action_locale(to)
-		}
-	} else if (game.actions === 0 && is_first_march_highway()) {
-		for (let to of data.locales[from].highways) {
-			if (can_march_to(to))
-				gen_action_locale(to)
-		}
-	}
-	if (
-		(lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT) || (is_event_in_play(EVENT_LANCASTER_FORCED_MARCHES) && game.active === LANCASTER)) &&
-		game.actions === 0 &&
-		is_first_march_highway() &&
-		count_group_lords() === 1
-	) {
-		for (let to of data.locales[from].roads) {
-			if (can_march_to(to))
-				gen_action_locale(to)
-		}
-	}
+	for (let to of data.locales[from].paths)
+		if (can_action_march_to(to, "path"))
+			gen_action_locale(to)
 }
 
 function goto_march(to: Locale) {
@@ -4809,31 +4805,35 @@ function march_with_group_2() {
 	let from = game.march.from
 	let to = game.march.to
 	let type = get_way_type(from, to)
-	let alone = count_group_lords() === 1
 
-	switch (type) {
-		case "highway":
-			if (is_first_march_highway() || has_flag(FLAG_SURPRISE_LANDING)) {
-				spend_march_action(0)
-			} else {
-				spend_march_action(1)
-				set_flag(FLAG_FIRST_MARCH_HIGHWAY)
-			}
-			break
+	if (game.group.length === 1 && type === "road") {
+		if (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT))
+			type = "highway"
+		if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_FORCED_MARCHES))
+			type = "highway"
+	}
 
-		case "road":
-			if ((alone && is_first_march_highway()) || has_flag(FLAG_SURPRISE_LANDING)) {
-				spend_march_action(0)
-			} else {
-				spend_march_action(1)
-				if (alone && (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT) || (is_event_in_play(EVENT_LANCASTER_FORCED_MARCHES) && game.active === LANCASTER)))
-					set_flag(FLAG_FIRST_MARCH_HIGHWAY)
-			}
-			break
-
-		case "path":
-			spend_all_actions()
-			break
+	if (type === "highway") {
+		if (has_flag(FLAG_FIRST_MARCH_HIGHWAY)) {
+			spend_march_action(0)
+		}
+		else if (has_flag(FLAG_SURPRISE_LANDING)) {
+			spend_march_action(0)
+			set_flag(FLAG_FIRST_MARCH_HIGHWAY)
+		}
+		else {
+			spend_march_action(1)
+			set_flag(FLAG_FIRST_MARCH_HIGHWAY)
+		}
+	}
+	else if (type === "road") {
+		if (has_flag(FLAG_SURPRISE_LANDING))
+			spend_march_action(0)
+		else
+			spend_march_action(1)
+	}
+	else if (type === "path") {
+		spend_all_actions()
 	}
 
 	log(`Marched to %${to}${format_group_move()}.`)
