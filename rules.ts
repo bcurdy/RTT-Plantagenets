@@ -8136,14 +8136,21 @@ states.warden_of_the_marches = {
 	inactive: "Warden of the Marches",
 	prompt() {
 		if (game.where === NOWHERE) {
-			view.prompt = "Warden of the Marches: Move routed Lancastrians to a friendly stronghold in the North."
+			view.prompt = "Warden of the Marches: Choose a friendly stronghold in the North."
 			for (let loc of all_locales)
 				if (is_north(loc) && loc !== game.battle.where && is_friendly_locale(loc) && !has_enemy_lord(loc))
 					gen_action_locale(loc)
 		} else {
-			for (let lord of game.battle.routed)
-				if (is_move_allowed(lord, game.where))
+			view.prompt = `Warden of the Marches: Move routed Lancastrians to ${locale_name[game.where]}.`
+			let done = true
+			for (let lord of game.battle.routed) {
+				if (is_move_allowed(lord, game.where)) {
 					gen_action_lord(lord)
+					done = false
+				}
+			}
+			if (done)
+				view.prompt = "Warden of the Marches: All done."
 			view.actions.done = 1
 		}
 	},
