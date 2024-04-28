@@ -6468,9 +6468,9 @@ function can_play_for_trust_not_him() {
 	for (let vassal of all_vassals) {
 		if (is_vassal_mustered_with_york_lord(vassal) && get_lord_locale(get_vassal_lord(vassal)) === get_lord_locale(game.command)) {
 			// Hastings & Salisbury with Alice Montagu capability are immune.
-			if ((get_vassal_lord(vassal) !== LORD_SALISBURY || !lord_has_capability(LORD_SALISBURY, AOW_YORK_ALICE_MONTAGU)) && vassal !== VASSAL_HASTINGS) {
-				return true
-			}
+			if (vassal === VASSAL_HASTINGS && get_vassal_lord(vassal) === LORD_SALISBURY && lord_has_capability(LORD_SALISBURY, AOW_YORK_ALICE_MONTAGU))
+				return false
+			return true
 		}
 	}
 	return false
