@@ -4503,6 +4503,34 @@ function fail_tax(who: Lord, where: Locale) {
 
 // === 4.6.4 ACTION: PARLEY ===
 
+function has_route_to(start: Locale, to: Locale) {
+	if (start === to)
+		return true
+
+	search_seen.fill(0)
+	search_seen[start] = 1
+
+	let queue = [ start ]
+	while (queue.length > 0) {
+		let here = queue.shift()
+
+		if (here === to)
+			return true
+
+		// exception for start locale
+		if (here === start || (is_friendly_locale(here) && !has_enemy_lord(here))) {
+			for (let next of data.locales[here].adjacent) {
+				if (!search_seen[next]) {
+					search_seen[next] = 1
+					queue.push(next)
+				}
+			}
+		}
+	}
+
+	return false
+}
+
 function can_parley_at(loc: Locale) {
 	if (loc === LOC_LONDON) {
 		if (has_york_favour(LONDON_FOR_YORK)) {
@@ -4534,7 +4562,7 @@ function search_parley_levy(result, start: Locale, lord: Lord) {
 				return true
 		}
 
-		if (is_friendly_locale(here)) {
+		if (is_friendly_locale(here) && !has_enemy_lord(here)) {
 			for (let next of data.locales[here].adjacent) {
 				if (!search_seen[next]) {
 					search_seen[next] = 1
@@ -5754,10 +5782,10 @@ function add_battle_capability_troops() {
 			logi("L" + lord)
 			add_lord_forces(lord, MILITIA, 4)
 		}
-		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
+		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && has_route_to(here, LOC_CARLISLE)) {
 			logcap(AOW_YORK_PERCYS_NORTH2)
 			logi("L" + lord)
-			add_lord_forces(lord, MILITIA, 4)
+			add_lord_forces(lord, MEN_AT_ARMS, 2)
 		}
 		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
 			logcap(AOW_YORK_KINGDOM_UNITED)
@@ -5802,10 +5830,10 @@ function remove_battle_capability_troops(lord: Lord) {
 		logi("L" + lord)
 		add_lord_forces(lord, MILITIA, -4)
 	}
-	if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && can_supply_at(LOC_CARLISLE, 0)) {
+	if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && has_route_to(here, LOC_CARLISLE)) {
 		logcap(AOW_YORK_PERCYS_NORTH2)
 		logi("L" + lord)
-		add_lord_forces(lord, MILITIA, -4)
+		add_lord_forces(lord, MEN_AT_ARMS, -2)
 	}
 	if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
 		logcap(AOW_YORK_KINGDOM_UNITED)
