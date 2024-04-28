@@ -3000,17 +3000,17 @@ states.muster_lord = {
 			if (can_action_parley_levy())
 				view.actions.parley = 1
 
+			// Levy Vassal (event overrides need for friendly stronghold)
+			for (let vassal of all_vassals)
+				if (can_levy_vassal(vassal))
+					gen_action_vassal(vassal)
+
 			if (is_friendly_locale(here)) {
 				// Levy another ready Lord
 				for (let lord of all_friendly_lords()) {
 					if (is_lord_ready(lord) && has_locale_to_muster(lord))
 						gen_action_lord(lord)
 				}
-
-				// Levy Vassal
-				for (let vassal of all_vassals)
-					if (can_levy_vassal(vassal))
-						gen_action_vassal(vassal)
 
 				// Add Transport
 				if (can_add_transport_ship(game.command, here))
@@ -3292,25 +3292,24 @@ states.levy_lord_at_seat = {
 // === 3.4.3 LEVY VASSAL ===
 
 function can_levy_vassal(vassal: Vassal) {
-	if (!is_vassal_ready(vassal)) {
+	let here = get_lord_locale(game.command)
+	let seat = get_vassal_seat(vassal)
+
+	if (!is_vassal_ready(vassal))
 		return false
-	}
-	if (
-		!is_friendly_locale(get_vassal_seat(vassal)) &&
-		(game.command !== LORD_HENRY_TUDOR || !is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))
-	) {
+
+	// Margaret Beaufort overrides all!
+	if (game.command === LORD_HENRY_TUDOR && is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))
+		return true
+
+	// Yorkist Block Parliament (except when overridden by The Earl of Richmond)
+	if (game.active === LANCASTER && is_event_in_play(EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT) && !is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND))
 		return false
-	}
-	if (!is_friendly_locale(get_vassal_seat(vassal)))
-		return false
-	if (
-		game.active === LANCASTER &&
-		is_event_in_play(EVENT_YORK_YORKISTS_BLOCK_PARLIAMENT) &&
-		!(is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT) && !is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND))
-	) {
-		return false
-	}
-	return true
+
+	if (is_friendly_locale(here) && is_friendly_locale(seat) && !has_enemy_lord(seat))
+		return true
+
+	return false
 }
 
 states.levy_vassal = {
