@@ -11239,8 +11239,10 @@ states.aragne_2 = {
 			gen_action_vassal(v)
 			done = false
 		}
-		if (done)
+		if (done) {
+			view.prompt = "L'Universelle Aragne: All done."
 			view.actions.done = 1
+		}
 	},
 	vassal(v) {
 		push_undo()
@@ -11255,16 +11257,15 @@ states.aragne_2 = {
 states.aragne_3 = {
 	inactive: "L'Universelle Aragne",
 	prompt() {
-		view.prompt = `L'Universelle Aragne: ${vassal_name[game.vassal]}.`
-		view.vassal = game.vassal
 		let lord = get_vassal_lord(game.vassal)
+		view.prompt = `L'Universelle Aragne: ${lord_name[lord]} with ${vassal_name[game.vassal]}.`
+		view.vassal = game.vassal
 		prompt_influence_check(lord, 0, vassal_influence(game.vassal))
 	},
 	check(bonus) {
 		let lord = get_vassal_lord(game.vassal)
-		if (roll_influence_check(lord, bonus, 0, vassal_influence(game.vassal))) {
+		if (!roll_influence_check(lord, bonus, 0, vassal_influence(game.vassal)))
 			disband_vassal(game.vassal)
-		}
 		set_delete(game.event_aragne, game.vassal)
 		game.vassal = NOVASSAL
 		game.state = "aragne_2"
