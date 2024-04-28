@@ -1741,12 +1741,12 @@ function has_favour_in_locale(side: Player, loc: Locale) {
 		return has_lancaster_favour(loc)
 }
 
-function is_at_or_adjacent_to_friendly_english_channel_port(loc: Locale) {
+function is_at_or_adjacent_to_lancastrian_english_channel_port(loc: Locale) {
 	if (is_stronghold(loc)) {
-		if (is_friendly_locale(loc) && is_adjacent_english_channel(loc))
+		if (has_lancaster_favour(loc) && is_adjacent_english_channel(loc))
 			return true
 		for (let next of data.locales[loc].adjacent)
-			if (is_friendly_locale(next) && is_adjacent_english_channel(next))
+			if (has_lancaster_favour(next) && is_adjacent_english_channel(next))
 				return true
 	}
 	return false
@@ -2284,7 +2284,7 @@ function goto_pay_troops() {
 	for (let lord of all_friendly_lords()) {
 		let here = get_lord_locale(lord)
 		let n = Math.ceil(count_lord_all_forces(lord) / 6)
-		if (lord_has_capability(lord, AOW_LANCASTER_MADAME_LA_GRANDE) && is_at_or_adjacent_to_friendly_english_channel_port(here)) {
+		if (lord_has_capability(lord, AOW_LANCASTER_MADAME_LA_GRANDE) && is_at_or_adjacent_to_lancastrian_english_channel_port(here)) {
 			logcap(AOW_LANCASTER_MADAME_LA_GRANDE)
 			add_lord_assets(lord, COIN, 1)
 		}
@@ -5792,7 +5792,7 @@ function add_battle_capability_troops() {
 			logi("L" + lord)
 			add_lord_forces(lord, MILITIA, 3)
 		}
-		if (lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) && is_at_or_adjacent_to_friendly_english_channel_port(here)) {
+		if (lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) && is_at_or_adjacent_to_lancastrian_english_channel_port(here)) {
 			logcap(AOW_LANCASTER_PHILIBERT_DE_CHANDEE)
 			logi("L" + lord)
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
@@ -5840,7 +5840,7 @@ function remove_battle_capability_troops(lord: Lord) {
 		logi("L" + lord)
 		add_lord_forces(lord, MILITIA, -3)
 	}
-	if (lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) && is_at_or_adjacent_to_friendly_english_channel_port(here)) {
+	if (lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) && is_at_or_adjacent_to_lancastrian_english_channel_port(here)) {
 		logcap(AOW_LANCASTER_PHILIBERT_DE_CHANDEE)
 		logi("L" + lord)
 		add_lord_forces(lord, MEN_AT_ARMS, -2)
