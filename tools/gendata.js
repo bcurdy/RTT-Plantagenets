@@ -1634,7 +1634,7 @@ arts_of_war_capability("Y26", "Fallen Brother", ["Gloucester 1", "Gloucester 2",
 arts_of_war_capability("Y27", "Percy's North", ["Northumberland Y1","Northumberland Y2"])
 arts_of_war_capability("Y28", "First Son", ["Edward IV"])
 arts_of_war_capability("Y29", "Stafford Branch", ["Devon"])
-arts_of_war_capability("Y30", "Captain", ["Devon", "Pembroke"])
+arts_of_war_capability("Y30", "Captain", ["Northumberland Y1", "Northumberland Y2", "Pembroke"])
 arts_of_war_capability("Y31", "Woodvilles", ["Edward IV", "Devon", "Gloucester 1", "Gloucester 2", "Richard III"])
 arts_of_war_capability("Y32", "Final Charge", ["Richard III"])
 arts_of_war_capability("Y33", "Bloody thou art, bloody will be thy end", ["Richard III"])

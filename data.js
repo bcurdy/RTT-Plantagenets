@@ -227,7 +227,7 @@ cards:[
 {"name":"Y27","event":"Yorkist North","roses":2,"when":"now","capability":"Percy's North","lords":[7,8]},
 {"name":"Y28","event":"Gloucester as heir","roses":2,"when":"this_levy","capability":"First Son","lords":[2]},
 {"name":"Y29","event":"Dorset","roses":2,"when":"this_campaign","capability":"Stafford Branch","lords":[6]},
-{"name":"Y30","event":"Regroup","roses":2,"when":"hold","capability":"Captain","lords":[5,6]},
+{"name":"Y30","event":"Regroup","roses":2,"when":"hold","capability":"Captain","lords":[5,7,8]},
 {"name":"Y31","event":"Earl Rivers","roses":2,"when":"now","capability":"Woodvilles","lords":[2,6,9,10,11]},
 {"name":"Y32","event":"The King's Name","roses":3,"when":"this_levy","capability":"Final Charge","lords":[11]},
 {"name":"Y33","event":"Edward V","roses":3,"when":"this_levy","capability":"Bloody thou art, bloody will be thy end","lords":[11]},
