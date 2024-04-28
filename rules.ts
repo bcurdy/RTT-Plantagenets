@@ -2957,8 +2957,14 @@ states.muster = {
 		log(`Mustered with L${lord}.`)
 		game.state = "muster_lord"
 		game.command = lord
-		game.actions = data.lords[lord].lordship
-		apply_lordship_effects(lord)
+
+		// My Kingdom for a Horse!
+		if (game.scenario === SCENARIO_III && game.command === LORD_GLOUCESTER_2 && get_lord_locale(game.command) == LOC_LONDON) {
+			game.state = "my_kingdom_for_a_horse_muster"
+			return
+		}
+
+		apply_lordship_effects()
 	},
 	end_muster() {
 		end_muster()
@@ -2989,10 +2995,6 @@ states.muster_lord = {
 			view.prompt = `Muster: ${lord_name[game.command]} has ${game.actions} actions.`
 
 		let here = get_lord_locale(game.command)
-
-		// My Kingdom for a Horse!
-		if (game.scenario === SCENARIO_III && game.command === LORD_GLOUCESTER_2 && here == LOC_LONDON)
-			view.actions.richard_iii = 1
 
 		if (game.actions > 0) {
 			if (can_action_parley_levy())
@@ -3058,11 +3060,6 @@ states.muster_lord = {
 		}
 
 		view.actions.done = 1
-	},
-
-	richard_iii() {
-		push_undo()
-		replace_gloucester_with_richard_iii()
 	},
 
 	lord(lord) {
@@ -9630,6 +9627,27 @@ states.my_kingdom_for_a_horse_setup = {
 	},
 }
 
+states.my_kingdom_for_a_horse_muster = {
+	inactive: "My Kingdom for a Horse",
+	prompt() {
+		if (!is_lord_on_map(LORD_RICHARD_III)) {
+			view.prompt = "My Kingdom for a Horse: You may replace Gloucester with Richard III for one levy action."
+			view.actions.richard_iii = 1
+			view.actions.pass = 1
+		}
+	},
+	richard_iii() {
+		push_undo()
+		replace_gloucester_with_richard_iii()
+		game.command = LORD_RICHARD_III
+		apply_lordship_effects()
+		game.actions --
+		game.state = "muster_lord"
+	},
+	pass() {
+		game.state = "muster_lord"
+	},
+}
 function replace_gloucester_with_richard_iii() {
 	log(`Replaced L${LORD_GLOUCESTER_2} with L${LORD_RICHARD_III}.`)
 
@@ -10407,7 +10425,10 @@ function capability_muster_effects_levy(_lord: Lord, c: Card) {
 
 // === LORDSHIP AND THIS LEVY EFFECTS ===
 
-function apply_lordship_effects(lord: Lord) {
+function apply_lordship_effects() {
+	let lord = game.command
+
+	game.actions = data.lords[lord].lordship
 
 	if (is_friendly_locale(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_FAIR_ARBITER))
 		game.actions += 1
