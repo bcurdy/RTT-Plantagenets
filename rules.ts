@@ -2765,8 +2765,8 @@ function can_use_exile_box(lord: Lord, loc: Locale) {
 states.muster_exiles = {
 	inactive: "Muster Exiles",
 	prompt() {
-		view.prompt = "Muster Exiles: Muster any exiled lords."
 		if (game.who === NOBODY) {
+			view.prompt = "Muster Exiles: Muster any exiled lords."
 			let done = true
 			for (let lord of all_friendly_lords()) {
 				if (can_muster_exile(lord)) {
@@ -2775,8 +2775,10 @@ states.muster_exiles = {
 				}
 			}
 			if (done)
-				view.actions.done = true
+				view.prompt = "Muster Exiles: All done."
+			view.actions.done = true
 		} else {
+			view.prompt = `Muster Exiles: Muster ${lord_name[game.who]} at an exile box.`
 			for (let loc of all_exile_boxes) {
 				if (can_use_exile_box(game.who, loc))
 					gen_action_locale(loc)
