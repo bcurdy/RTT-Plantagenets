@@ -1943,9 +1943,8 @@ function get_common_influence_bonus(lord: Lord) {
 				bonus += 2
 	} else {
 		if (lord_has_capability(lord, AOW_LANCASTER_MARRIED_TO_A_NEVILLE))
-			if (get_lord_locale(LORD_WARWICK_L) === here)
-				if (is_friendly_locale(here))
-					bonus += 2
+			if (get_lord_locale(LORD_WARWICK_L) === here && is_friendly_locale(here))
+				bonus += 2
 		if (lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET))
 			if (get_lord_locale(LORD_MARGARET) === here)
 				bonus += 1
@@ -3563,8 +3562,14 @@ function goto_command_activation() {
 }
 
 function goto_command() {
+	let here = get_lord_locale(game.command)
+
 	game.actions = data.lords[game.command].command
-	if (lord_has_capability(game.command, AOW_YORK_THOMAS_BOURCHIER) && is_city(get_lord_locale(game.command)))
+
+	if (lord_has_capability(game.command, AOW_LANCASTER_MARRIED_TO_A_NEVILLE))
+		if (get_lord_locale(LORD_WARWICK_L) === here && is_friendly_locale(here))
+			game.actions += 1
+	if (lord_has_capability(game.command, AOW_YORK_THOMAS_BOURCHIER) && is_city(here))
 		game.actions += 1
 	if (lord_has_capability(game.command, AOW_YORK_YORKS_FAVOURED_SON))
 		game.actions += 1
