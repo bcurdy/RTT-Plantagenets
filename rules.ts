@@ -2168,8 +2168,17 @@ states.levy_arts_of_war = {
 				view.actions.discard = 1
 				break
 		}
+
+		// allow playing this Held card immediately
+		if (c === EVENT_YORK_SUN_IN_SPLENDOUR) {
+			view.prompt = `Arts of War: Play or hold ${data.cards[c].event}.`
+			view.actions.hold = 1
+			view.actions.play = 1
+		}
 	},
 	play() {
+		if (game.arts_of_war[0] === EVENT_YORK_SUN_IN_SPLENDOUR)
+			push_undo()
 		let c = game.arts_of_war.shift()
 		log(`${game.active} played E${c}.`)
 		goto_immediate_event(c)
@@ -10697,6 +10706,10 @@ function goto_immediate_event(c: Card) {
 	set_add(game.events, c)
 	game.this_event = c
 	switch (c) {
+		// Held event played immediately
+		case EVENT_YORK_SUN_IN_SPLENDOUR:
+			return goto_play_sun_in_splendour_now()
+
 		// This Levy / Campaign
 		case EVENT_LANCASTER_BE_SENT_FOR:
 		case EVENT_LANCASTER_SEAMANSHIP:
@@ -12115,14 +12128,35 @@ states.sun_in_splendour = {
 				gen_action_locale(loc)
 	},
 	locale(loc) {
-		push_undo()
 		muster_lord(LORD_EDWARD_IV, loc)
+		set_lord_moved(LORD_EDWARD_IV, 1)
+
 		logi(`Mustered Edward IV at ${locale_name[loc]}`)
 
 		end_held_event()
 		game.state = "muster"
 	},
 }
+
+function goto_play_sun_in_splendour_now() {
+	game.state = "sun_in_splendour_now"
+}
+
+states.sun_in_splendour_now = {
+	inactive: "Sun in Splendour",
+	prompt() {
+		view.prompt = "Sun in Splendour: Muster Edward IV at any friendly locale with no enemy lord."
+		for (let loc of all_locales)
+			if (is_friendly_locale(loc))
+				gen_action_locale(loc)
+	},
+	locale(loc) {
+		muster_lord(LORD_EDWARD_IV, loc)
+		logi(`Mustered Edward IV at ${locale_name[loc]}`)
+		end_immediate_event()
+	},
+}
+
 
 // === HELD EVENT: ASPIELLES ===
 

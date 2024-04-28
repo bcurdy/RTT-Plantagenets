@@ -1700,8 +1700,8 @@ function on_update() {
 	action_button("decline", "Decline")
 	action_button("deploy", "Deploy")
 	action_button("discard", "Discard")
-	action_button("hold", "Hold")
 	action_button("play", "Play")
+	action_button("hold", "Hold")
 
 	action_button("approach", "Approach")
 	action_button("intercept", "Intercept")
