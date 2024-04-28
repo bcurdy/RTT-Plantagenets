@@ -7553,7 +7553,7 @@ function goto_battle_influence() {
 		reduce_influence(influence)
 		goto_battle_spoils()
 	} else {
-		goto_death_check()
+		end_battle_losses()
 	}
 }
 
@@ -7577,7 +7577,7 @@ function goto_battle_losses_victor() {
 function resume_battle_losses() {
 	game.state = "battle_losses"
 	if (!has_battle_losses())
-		goto_death_check()
+		end_battle_losses()
 }
 
 function roll_losses(lord: Lord, type: Force) {
@@ -7644,7 +7644,7 @@ states.battle_losses = {
 		action_losses(lord, MILITIA)
 	},
 	done() {
-		goto_death_check()
+		end_battle_losses()
 	},
 }
 
@@ -7741,7 +7741,7 @@ function gen_each_friendly_routed_vassal() {
 	return done
 }
 
-function goto_death_check() {
+function end_battle_losses() {
 	game.who = NOBODY
 
 	if (is_capture_of_the_king_triggered()) {
@@ -7754,6 +7754,10 @@ function goto_death_check() {
 		return
 	}
 
+	goto_death_check()
+}
+
+function goto_death_check() {
 	log_h4("Death Check")
 
 	set_active_defender()
@@ -7967,7 +7971,7 @@ states.capture_of_the_king = {
 		clear_lord(LORD_HENRY_VI)
 		set_lord_locale(LORD_HENRY_VI, CAPTURE_OF_THE_KING + lord as Locale)
 		// Note: the other 10 influence were already gained from normal battle victory
-		goto_death_check()
+		end_battle_losses()
 	},
 }
 
