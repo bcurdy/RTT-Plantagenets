@@ -1840,6 +1840,63 @@ function has_adjacent_friendly(loc: Locale) {
 	return false
 }
 
+function is_york_dominating_north() {
+	let n = 0
+	for (let loc of all_north_locales)
+		if (has_york_favour(loc))
+			n++
+	return n >= all_north_locales.length
+}
+
+function is_lancaster_dominating_north() {
+	let n = 0
+	for (let loc of all_north_locales)
+		if (has_lancaster_favour(loc))
+			n++
+	let cap_lord = find_lord_with_capability_card(AOW_LANCASTER_NORTHMEN)
+	if (is_lancaster_lord(cap_lord) && is_north(get_lord_locale(cap_lord)))
+		return n >= 3
+	return n >= all_north_locales.length
+}
+
+function is_york_dominating_south() {
+	let n = 0
+	for (let loc of all_south_locales)
+		if (has_york_favour(loc))
+			n++
+	let cap_lord = find_lord_with_capability_card(AOW_YORK_SOUTHERNERS)
+	if (is_york_lord(cap_lord) && is_south(get_lord_locale(cap_lord)))
+		return n >= 5
+	return n >= all_south_locales.length
+}
+
+function is_lancaster_dominating_south() {
+	let n = 0
+	for (let loc of all_south_locales)
+		if (has_lancaster_favour(loc))
+			n++
+	return n >= all_south_locales.length
+}
+
+function is_york_dominating_wales() {
+	let n = 0
+	for (let loc of all_wales_locales)
+		if (has_york_favour(loc))
+			n++
+	let cap_lord = find_lord_with_capability_card(AOW_YORK_WELSHMEN)
+	if (is_york_lord(cap_lord) && is_wales(get_lord_locale(cap_lord)))
+		return n >= 3
+	return n >= all_wales_locales.length
+}
+
+function is_lancaster_dominating_wales() {
+	let n = 0
+	for (let loc of all_wales_locales)
+		if (has_lancaster_favour(loc))
+			n++
+	return n >= all_wales_locales.length
+}
+
 // === 1.4 INFLUENCE ===
 
 function reduce_influence(amt: number) {
@@ -10350,8 +10407,10 @@ function apply_lordship_effects(lord: Lord) {
 			game.levy_flags.succession = 1
 
 	game.levy_flags.jack_cade = 0
-	if (is_jack_cade_eligible(lord))
+	if (is_jack_cade_eligible(lord)) {
+		logevent(EVENT_YORK_JACK_CADE)
 		game.levy_flags.jack_cade = 2
+	}
 }
 
 // === MUSTER CAPABILITY: SOLDIERS OF FORTUNE ===
@@ -11882,51 +11941,6 @@ function end_the_commons() {
 }
 
 // === EVENT (AS LEVY EFFECT): JACK CADE ===
-
-function is_york_dominating_north() {
-	let dom = 0
-	for (let loc of all_north_locales) {
-		if (has_york_favour(loc)) {
-			dom++
-		}
-	}
-	if (dom > 5)
-		return true
-	return false
-}
-
-function is_york_dominating_south() {
-	let dom = 0
-	for (let loc of all_south_locales) {
-		if (has_york_favour(loc)) {
-			dom++
-		}
-	}
-	if (dom > 9)
-		return true
-	if (dom > 4
-		&& (lord_has_capability(LORD_MARCH, AOW_YORK_SOUTHERNERS)
-		|| lord_has_capability(LORD_RUTLAND, AOW_YORK_SOUTHERNERS)
-		|| lord_has_capability(LORD_YORK, AOW_YORK_SOUTHERNERS)))
-		return true
-	return false
-}
-
-function is_york_dominating_wales() {
-	let dom = 0
-	for (let loc of all_wales_locales) {
-		if (has_york_favour(loc)) {
-			dom++
-		}
-	}
-	if (dom > 5)
-		return true
-	if (dom > 2
-		&& (lord_has_capability(LORD_MARCH, AOW_YORK_WELSHMEN)
-		|| lord_has_capability(LORD_YORK, AOW_YORK_WELSHMEN)))
-		return true
-	return false
-}
 
 function is_jack_cade_eligible(lord: Lord) {
 	if (is_york_lord(lord)) {
