@@ -6710,6 +6710,7 @@ function is_vanguard_in_battle() {
 states.vanguard = {
 	prompt() {
 		view.prompt = "Vanguard: Norfolk may choose his engagement to be the only one."
+		view.who = find_lord_with_capability_card(AOW_YORK_VANGUARD)
 		view.actions.vanguard = 1
 		view.actions.pass = 1
 	},
@@ -6724,10 +6725,10 @@ states.vanguard = {
 			return false
 		})
 
-		goto_determine_engagements()
+		goto_select_engagement()
 	},
 	pass() {
-		goto_determine_engagements()
+		goto_select_engagement()
 	},
 }
 
@@ -6998,7 +6999,7 @@ function determine_engagements() {
 function goto_determine_engagements() {
 	game.battle.engagements = determine_engagements()
 
-	if (game.battle.round === 1 && is_vanguard_in_battle()) {
+	if (game.battle.round === 1 && game.battle.engagements.length > 1 && is_vanguard_in_battle()) {
 		set_active(YORK)
 		game.state = "vanguard"
 	} else {
