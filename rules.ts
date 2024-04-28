@@ -494,6 +494,14 @@ function is_lieutenant(lord: Lord) {
 	}
 }
 
+function get_lord_seat(lord: Lord): Locale {
+	return data.lords[lord].seat
+}
+
+function get_vassal_seat(v: Vassal): Locale {
+	return data.vassals[v].seat
+}
+
 // from !node tools/gendata.js
 function is_seaport(x: Locale) { return x === 1 || (x >= 5 && x <= 6) || (x >= 14 && x <= 15) || x === 17 || (x >= 19 && x <= 22) || x === 24 || x === 26 || x === 35 || x === 37 || x === 51 || (x >= 56 && x <= 57) }
 function is_port_1(x: Locale) { return x === 1 || x === 35 || x === 37 || (x >= 56 && x <= 57) }
@@ -2826,15 +2834,18 @@ function can_lord_muster(lord: Lord) {
 
 function has_locale_to_muster(lord: Lord) {
 	// Can muster at own seat without enemy lord.
-	if (!has_enemy_lord(data.lords[lord].seat))
-		if (is_move_allowed(lord, data.lords[lord].seat))
+	let seat = get_lord_seat(lord)
+	if (!has_enemy_lord(seat))
+		if (is_move_allowed(lord, seat))
 			return true
 
 	// Else, can muster at any friendly seat (of a friendly lord who is also in play)
-	for (let other of all_friendly_lords())
-		if (is_lord_in_play(other) && is_friendly_locale(data.lords[other].seat))
-			if (is_move_allowed(lord, data.lords[other].seat))
+	for (let other of all_friendly_lords()) {
+		let other_seat = get_lord_seat(other)
+		if (is_lord_in_play(other) && is_friendly_locale(other_seat))
+			if (is_move_allowed(lord, other_seat))
 				return true
+	}
 
 	// Tough luck!
 	return false
@@ -3083,7 +3094,7 @@ function do_levy_ship() {
 function chamberlains_eligible_levy(loc: Locale) {
 	if (lord_has_capability(game.command, AOW_LANCASTER_CHAMBERLAINS)) {
 		for (let vassal of all_vassals)
-			if (is_vassal_mustered_with(vassal, game.command) && loc === data.vassals[vassal].seat)
+			if (is_vassal_mustered_with(vassal, game.command) && loc === get_vassal_seat(vassal))
 				return true
 	}
 	return false
@@ -3161,7 +3172,7 @@ states.levy_lord_at_seat = {
 	prompt() {
 		view.prompt = `Levy Lord: Choose a stronghold for ${lord_name[game.who]}.`
 		let found = false
-		let seat = data.lords[game.who].seat
+		let seat = get_lord_seat(game.who)
 		if (!has_enemy_lord(seat) && is_move_allowed(game.who, seat)) {
 			gen_action_locale(seat)
 			found = true
@@ -3169,9 +3180,10 @@ states.levy_lord_at_seat = {
 
 		if (!found) {
 			for (let lord of all_friendly_lords()) {
-				if ((is_lord_on_map(lord) || is_lord_on_calendar(lord)) && is_friendly_locale(data.lords[lord].seat)) {
-					if (is_move_allowed(game.who, data.lords[lord].seat))
-						gen_action_locale(data.lords[lord].seat)
+				let seat = get_lord_seat(lord)
+				if ((is_lord_on_map(lord) || is_lord_on_calendar(lord)) && is_friendly_locale(seat)) {
+					if (is_move_allowed(game.who, seat))
+						gen_action_locale(seat)
 				}
 			}
 		}
@@ -3206,12 +3218,12 @@ function can_levy_vassal(vassal: Vassal) {
 		return false
 	}
 	if (
-		!is_friendly_locale(data.vassals[vassal].seat) &&
+		!is_friendly_locale(get_vassal_seat(vassal)) &&
 		(game.command !== LORD_HENRY_TUDOR || !is_event_in_play(EVENT_LANCASTER_MARGARET_BEAUFORT))
 	) {
 		return false
 	}
-	if (!is_friendly_locale(data.vassals[vassal].seat))
+	if (!is_friendly_locale(get_vassal_seat(vassal)))
 		return false
 	if (
 		game.active === LANCASTER &&
@@ -3799,7 +3811,7 @@ function command_has_harbingers() {
 function chamberlains_eligible_supply(source: Locale) {
 	if (lord_has_capability(game.command, AOW_LANCASTER_CHAMBERLAINS)) {
 		for (let vassal of all_vassals)
-			if (is_vassal_mustered_with(vassal, game.command) && source === data.vassals[vassal].seat)
+			if (is_vassal_mustered_with(vassal, game.command) && source === get_vassal_seat(vassal))
 				return true
 	}
 	return false
@@ -3808,7 +3820,7 @@ function chamberlains_eligible_supply(source: Locale) {
 function quartermasters_eligible_supply(source: Locale) {
 	if (lord_has_capability(game.command, AOW_LANCASTER_QUARTERMASTERS)) {
 		for (let vassal of all_vassals)
-			if (is_vassal_mustered_with(vassal, game.command) && source === data.vassals[vassal].seat)
+			if (is_vassal_mustered_with(vassal, game.command) && source === get_vassal_seat(vassal))
 				return true
 	}
 	return false
@@ -4260,13 +4272,13 @@ function can_tax_at(here: Locale, lord: Lord) {
 			return true
 
 		// Own seat
-		if (here === data.lords[lord].seat)
+		if (here === get_lord_seat(lord))
 			return true
 
 		// vassal seats
 		for (let vassal of all_vassals)
 			if (is_vassal_mustered_with(vassal, lord))
-				if (here === data.vassals[vassal].seat)
+				if (here === get_vassal_seat(vassal))
 					return true
 	}
 	return false
@@ -4367,7 +4379,7 @@ states.tax = {
 	locale(loc) {
 		game.where = loc
 		// TODO: naval blockade if only reachable by sea
-		if (loc === data.lords[game.command].seat) {
+		if (loc === get_lord_seat(game.command)) {
 			do_tax(game.command, game.where, 1)
 			end_tax()
 		}
@@ -11453,7 +11465,7 @@ states.tax_collectors_lord = {
 	locale(loc) {
 		game.where = loc
 		// TODO: naval blockade if only reachable by sea
-		if (loc === data.lords[game.who].seat) {
+		if (loc === get_lord_seat(game.who)) {
 			do_tax(game.who, game.where, 2)
 			end_tax_collectors_lord()
 		}
