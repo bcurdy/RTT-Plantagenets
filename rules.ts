@@ -1250,10 +1250,12 @@ function add_lord_assets(lord: Lord, n: Asset, x: number) {
 }
 
 function drop_prov(lord: Lord) {
+	push_undo()
 	add_lord_assets(lord, PROV, -1)
 }
 
 function drop_cart(lord: Lord) {
+	push_undo()
 	add_lord_assets(lord, CART, -1)
 }
 
@@ -4203,6 +4205,7 @@ states.sail = {
 	prov: drop_prov,
 	cart: drop_cart,
 	locale(to) {
+		push_undo()
 		let from = get_lord_locale(game.command)
 		if (can_naval_blockade(from) || can_naval_blockade(to)) {
 			game.where = to
