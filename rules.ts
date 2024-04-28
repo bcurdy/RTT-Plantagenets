@@ -1883,7 +1883,17 @@ function get_levy_vassal_influence_cost() {
 	return 0
 }
 
-function is_automatic_parley_success(lord: Lord) {
+function has_free_parley_levy() {
+	if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
+		return true
+	return (
+		game.levy_flags.jack_cade > 0 ||
+		game.levy_flags.my_crown_is_in_my_heart > 0 ||
+		game.levy_flags.gloucester_as_heir > 0
+	)
+}
+
+function is_automatic_parley_success() {
 	if (game.active === LANCASTER) {
 		if (is_levy_phase()) {
 			if (game.levy_flags.parliament_votes > 0)
@@ -1896,7 +1906,7 @@ function is_automatic_parley_success(lord: Lord) {
 			if (game.levy_flags.jack_cade > 0)
 				return true
 		} else {
-			if (lord === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
+			if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
 				return true
 		}
 	}
@@ -1911,7 +1921,9 @@ function get_parley_influence_cost() {
 		}
 	}
 	if (is_levy_phase()) {
-		if (game.levy_flags.jack_cade > 0) {
+		if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
+			cost = 0
+		else if (game.levy_flags.jack_cade > 0) {
 			cost = 0
 		} else {
 			if (game.levy_flags.parliament_votes > 0)
@@ -1952,14 +1964,14 @@ function get_common_influence_bonus(lord: Lord) {
 	return bonus
 }
 
-function get_parley_influence_bonus(lord: Lord) {
+function get_parley_influence_bonus() {
 	// Only applies to Parley influence checks.
 	let bonus = 0
 	if (game.active === YORK) {
 		if (is_event_in_play(EVENT_YORK_RICHARD_OF_YORK))
 			bonus += 1
 	} else {
-		if (lord_has_capability(lord, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
+		if (lord_has_capability(game.command, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
 			bonus += 1
 	}
 	return bonus
@@ -4420,14 +4432,6 @@ function fail_tax(who: Lord, where: Locale) {
 
 // === 4.6.4 ACTION: PARLEY ===
 
-function has_free_parley_levy() {
-	return (
-		game.levy_flags.jack_cade > 0 ||
-		game.levy_flags.my_crown_is_in_my_heart > 0 ||
-		game.levy_flags.gloucester_as_heir > 0
-	)
-}
-
 function can_parley_at(loc: Locale) {
 	if (loc === LOC_LONDON) {
 		if (has_york_favour(LONDON_FOR_YORK)) {
@@ -4587,7 +4591,9 @@ function end_parley(success: boolean) {
 
 	// Track use of parley capabilities / events.
 	if (is_levy_phase()) {
-		if (game.levy_flags.jack_cade > 0) {
+		if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
+			++game.actions
+		else if (game.levy_flags.jack_cade > 0) {
 			// Jack Cade: free action, zero influence cost, and success
 			--game.levy_flags.jack_cade
 			++game.actions
@@ -4633,12 +4639,11 @@ states.parley = {
 			for (let i = 0; i < game.parley.length; i += 2)
 				gen_action_locale(game.parley[i] as Locale)
 		} else {
-			let lord = game.command
 			view.prompt = `Parley: ${locale_name[game.where]}.`
-			if (is_automatic_parley_success(lord))
+			if (is_automatic_parley_success())
 				prompt_influence_check_success(get_parley_influence_cost())
 			else
-				prompt_influence_check(lord, get_parley_influence_cost(), get_parley_influence_bonus(lord))
+				prompt_influence_check(game.command, get_parley_influence_cost(), get_parley_influence_bonus())
 		}
 	},
 	locale(loc) {
@@ -4652,8 +4657,7 @@ states.parley = {
 		}
 	},
 	check(bonus) {
-		let lord = game.command
-		if (roll_influence_check(lord, bonus, get_parley_influence_cost(), get_parley_influence_bonus(lord))) {
+		if (roll_influence_check(game.command, bonus, get_parley_influence_cost(), get_parley_influence_bonus())) {
 			shift_favour_toward(game.where)
 			end_parley(true)
 		} else {
