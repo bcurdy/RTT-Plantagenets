@@ -7325,6 +7325,15 @@ function rout_unit(lord: Lord, type: Force, v: Vassal = NOVASSAL) {
 		add_lord_forces(lord, type, -1)
 		add_lord_routed_forces(lord, type, 1)
 	}
+
+	// Swift Maneuver event
+	if (is_swift_maneuver_in_play() && type === RETINUE) {
+		set_active_enemy()
+		game.state = "swift_maneuver"
+		return
+	}
+
+	finish_action_assign_hits(lord)
 }
 
 function assign_hit_roll(what, prot, extra) {
@@ -7416,15 +7425,6 @@ function action_assign_hits(lord: Lord, type: Force, v=NOVASSAL) {
 				game.vassal = v
 		} else {
 			rout_unit(lord, type, v)
-
-			// Swift Maneuver event
-			if (is_swift_maneuver_in_play() && type === RETINUE) {
-				set_active_enemy()
-				game.state = "swift_maneuver"
-				return
-			}
-
-			finish_action_assign_hits(lord)
 		}
 	} else {
 		finish_action_assign_hits(lord)
@@ -7458,7 +7458,6 @@ states.spend_valour = {
 	},
 	pass() {
 		rout_unit(game.who, game.battle.force, game.vassal)
-		finish_action_assign_hits(game.who)
 	},
 	valour(_) {
 		let protection = get_modified_protection(game.who, game.battle.force)
@@ -7467,7 +7466,6 @@ states.spend_valour = {
 		log(`Reroll:`)
 		if (assign_hit_roll(get_force_name(game.who, game.battle.force, game.vassal), protection, "")) {
 			rout_unit(game.who, game.battle.force, game.vassal)
-			finish_action_assign_hits(game.who)
 		} else {
 			finish_action_assign_hits(game.who)
 		}
