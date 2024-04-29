@@ -7264,9 +7264,11 @@ states.assign_hits = {
 	},
 	regroup() {
 		push_undo()
+		game.who = NOBODY
 		goto_regroup()
 	},
 	done() {
+		game.who = NOBODY
 		if (game.active === game.battle.attacker)
 			end_attacker_assign_hits()
 		else
