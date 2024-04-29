@@ -175,7 +175,6 @@ interface State {
 	coin?(lord: Lord): void,
 	cart?(lord: Lord): void,
 	ship?(lord: Lord): void,
-	valour?(lord: Lord): void,
 
 	burgundians?(lord: Lord): void,
 	retinue?(lord: Lord): void,
@@ -193,6 +192,7 @@ interface State {
 
 	vassal?(vassal: Vassal): void,
 
+	valour?(): void,
 	add_men_at_arms?(): void,
 	add_militia2?(): void,
 	add_militia?(): void,
@@ -370,9 +370,6 @@ const SEASONS = [
 const INFLUENCE_TURNS = [ 1, 4, 6, 9, 11, 14 ]
 const GROW_TURNS = [ 4, 9, 14 ]
 const WASTE_TURNS = [ 5, 10 ]
-
-const HIT = [ "0", "\u2776", "\u2777", "\u2778", "\u2779", "\u277A", "\u277B" ]
-const MISS = [ "0", "\u2460", "\u2461", "\u2462", "\u2463", "\u2464", "\u2465" ]
 
 // unit types
 const RETINUE = 0 as Force
@@ -2091,10 +2088,10 @@ function roll_influence_check(lord: Lord, spend: number, calc=common_ic) {
 
 		let die = roll_die()
 		if (die <= rating) {
-			log(`Influence 1-${rating}: ${HIT[die]}`)
+			log(`Influence 1-${rating}: B${die}`)
 			return true
 		} else {
-			log(`Influence 1-${rating}: ${MISS[die]}`)
+			log(`Influence 1-${rating}: W${die}`)
 			return false
 		}
 	}
@@ -4302,19 +4299,19 @@ function goto_forage() {
 		let die = roll_die()
 		if (die <= 4) {
 			add_lord_assets(game.command, PROV, 1)
-			log(`${HIT[die]}, Foraged at %${here}`)
+			log(`B${die}, Foraged at %${here}`)
 			deplete_locale(here)
 		} else {
-			log(`${MISS[die]}, Forage Failure`)
+			log(`W${die}, Forage Failure`)
 		}
 	} else if (has_adjacent_enemy(here) || is_enemy_locale(here)) {
 		let die = roll_die()
 		if (die <= 3) {
 			add_lord_assets(game.command, PROV, 1)
-			log(`${HIT[die]}, Foraged at %${here}`)
+			log(`B${die}, Foraged at %${here}`)
 			deplete_locale(here)
 		} else {
-			log(`${MISS[die]}, Forage Failure`)
+			log(`W${die}, Forage Failure`)
 		}
 	} else {
 		add_lord_assets(game.command, PROV, 1)
@@ -5122,7 +5119,10 @@ states.intercept = {
 		else {
 			let roll = roll_die()
 			success = roll <= valour
-			log(`Intercept ${range(valour)}: ${success ? HIT[roll] : MISS[roll]}`)
+			if (success)
+				log(`Intercept ${range(valour)}: B${roll}`)
+			else
+				log(`Intercept ${range(valour)}: W${roll}`)
 		}
 		if (success) {
 			goto_intercept_march()
@@ -6303,11 +6303,11 @@ function action_regroup(lord: Lord, type: Force) {
 
 	let die = roll_die()
 	if (die <= protection) {
-		logi(`${get_force_name(lord, type)} ${range(protection)}: ${MISS[die]}`)
+		logi(`${get_force_name(lord, type)} ${range(protection)}: W${die}`)
 		add_lord_routed_forces(lord, type, -1)
 		add_lord_forces(lord, type, 1)
 	} else {
-		logi(`${get_force_name(lord, type)} ${range(protection)}: ${HIT[die]}`)
+		logi(`${get_force_name(lord, type)} ${range(protection)}: B${die}`)
 	}
 
 	game.event_regroup[type]--
@@ -7309,10 +7309,10 @@ function rout_unit(lord: Lord, type: Force, v: Vassal = NOVASSAL) {
 function assign_hit_roll(what, prot, extra) {
 	let die = roll_die()
 	if (die <= prot) {
-		logi(`${what} ${range(prot)}: ${MISS[die]}${extra}`)
+		logi(`${what} ${range(prot)}: W${die}${extra}`)
 		return false
 	} else {
-		logi(`${what} ${range(prot)}: ${HIT[die]}${extra}`)
+		logi(`${what} ${range(prot)}: B${die}${extra}`)
 		return true
 	}
 }
@@ -7423,13 +7423,13 @@ states.spend_valour = {
 	},
 	prompt() {
 		view.prompt = `Spend Valour: Reroll hit on ${get_force_name(game.who, game.battle.force, game.vassal)}?`
-		gen_action_valour(game.who)
+		view.actions.valour = 1
 		view.actions.pass = 1
 	},
 	pass() {
 		rout_unit(game.who, game.battle.force, game.vassal)
 	},
-	valour(_) {
+	valour() {
 		let protection = get_modified_protection(game.who, game.battle.force)
 
 		spend_valour(game.who)
@@ -7649,11 +7649,11 @@ function roll_losses(lord: Lord, type: Force) {
 
 	let die = roll_die()
 	if (die <= protection) {
-		logi(`${get_force_name(lord, type)} ${range(protection)}: ${MISS[die]}`)
+		logi(`${get_force_name(lord, type)} ${range(protection)}: W${die}`)
 		add_lord_routed_forces(lord, type, -1)
 		add_lord_forces(lord, type, 1)
 	} else {
-		logi(`${get_force_name(lord, type)} ${range(protection)}: ${HIT[die]}`)
+		logi(`${get_force_name(lord, type)} ${range(protection)}: B${die}`)
 		add_lord_routed_forces(lord, type, -1)
 	}
 }
@@ -7925,18 +7925,18 @@ states.death_check = {
 		let die = roll_die()
 		if (set_has(game.battle.fled, game.who)) {
 			if (die >= 5) {
-				logi("L" + game.who + " 5-6 " + HIT[die])
+				logi("L" + game.who + " 5-6 B" + die)
 				remove_lord(game.who)
 			} else {
-				logi("L" + game.who + " 5-6 " + MISS[die])
+				logi("L" + game.who + " 5-6 W" + die)
 				disband_lord(game.who)
 			}
 		} else {
 			if (die >= 3) {
-				logi("L" + game.who + " 3-6 " + HIT[die])
+				logi("L" + game.who + " 3-6 B" + die)
 				remove_lord(game.who)
 			} else {
-				logi("L" + game.who + " 3-6 " + MISS[die])
+				logi("L" + game.who + " 3-6 W" + die)
 				disband_lord(game.who)
 			}
 		}
@@ -8889,10 +8889,10 @@ function end_disembark() {
 function roll_disembark() {
 	let die = roll_die()
 	if (die <= 4) {
-		log(`Shipwreck 1-4: ${HIT[die]}.`)
+		log(`Shipwreck 1-4: B${die}.`)
 		return false
 	} else {
-		log(`Shipwreck 1-4: ${MISS[die]}.`)
+		log(`Shipwreck 1-4: W${die}.`)
 		return true
 	}
 }
@@ -10666,10 +10666,10 @@ function can_naval_blockade(here: Locale) {
 function roll_blockade() {
 	let roll = roll_die()
 	if (roll <= 2) {
-		log("Naval Blockade " + HIT[roll])
+		log("Naval Blockade B" + roll)
 		return true
 	} else {
-		log("Naval Blockade " + MISS[roll])
+		log("Naval Blockade W" + roll)
 		return false
 	}
 }
@@ -12493,6 +12493,8 @@ exports.view = function (state, current) {
 				if (lord !== NOBODY)
 					view.reveal |= 1 << lord
 		}
+		for (let lord of game.battle.routed)
+			view.reveal |= 1 << lord
 		for (let lord of game.battle.reserves)
 			view.reveal |= 1 << lord
 	}

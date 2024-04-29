@@ -1,5 +1,4 @@
 main { background-color: dimgray; }
-#roles { background-color: gray; }
 header { background-color: silver; }
 body.York header.your_turn { background-color: hsl(217, 73%, 78%); }
 body.Lancaster header.your_turn { background-color: hsl(355, 83%, 72%); }
@@ -7,7 +6,13 @@ body.Lancaster header.your_turn { background-color: hsl(355, 83%, 72%); }
 #role_Lancaster { background-color: hsl(355, 63%, 82%); }
 #turn_info { background-color: gray; }
 
-#log { background-color: whitesmoke; }
+/* LOG */
+
+#log {
+	font-variant-numeric: tabular-nums;
+	background-color: whitesmoke;
+}
+
 #log .h1 { font-weight: bold; padding-top:2px; padding-bottom:2px; text-align: center; }
 #log .h2 { padding-top:2px; padding-bottom:2px; text-align: center; }
 #log .h3 { text-align: center; }
@@ -20,7 +25,6 @@ body.Lancaster header.your_turn { background-color: hsl(355, 83%, 72%); }
 
 #log div { padding-left: 20px; text-indent: -12px; }
 #log div.i { padding-left: 32px; text-indent: -12px; }
-#log div.ii { padding-left: 44px; text-indent: -12px; }
 
 #log .card_tip { font-style: italic; }
 #log .card_tip:hover { text-decoration: underline; }
@@ -28,8 +32,85 @@ body.Lancaster header.your_turn { background-color: hsl(355, 83%, 72%); }
 #log .vassal_tip:hover { cursor: pointer; text-decoration: underline; }
 #log .locale_tip:hover { cursor: pointer; text-decoration: underline; }
 
-#log {
-	font-variant-numeric: tabular-nums;
+/*
+#log span.black, #log span.white {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	line-height: 12px;
+	text-align: center;
+	padding: 0;
+	text-indent: 0;
+	background-color: #999;
+	border: 1px solid black;
+	font-weight: bold;
+	border-radius: 50%;
+}
+
+#log span.black {
+	background-color: #666;
+	color: white;
+	border: 1px solid #222;
+}
+
+#log span.white {
+	background-color: #eee;
+	border: 1px solid #666;
+}
+*/
+
+#log .white, #log .black {
+	display: inline-block;
+	vertical-align: -2px;
+	width: 12px;
+	height: 12px;
+	border-radius: 0px;
+	box-shadow: none;
+	border: none;
+	background-size: 600% 100%;
+	background-repeat: no-repeat;
+}
+
+#log .white {
+	background-image: url(images/die_black_pips.svg);
+	background-color: #fff;
+	border: 1px solid #444;
+}
+
+#log .black {
+	background-image: url(images/die_white_pips.svg);
+	background-color: #666;
+	border: 1px solid #222;
+}
+
+.d0 { background-position: -100% 0 }
+.d1 { background-position: 0% 0; }
+.d2 { background-position: 20% 0; }
+.d3 { background-position: 40% 0; }
+.d4 { background-position: 60% 0; }
+.d5 { background-position: 80% 0; }
+.d6 { background-position: 100% 0; }
+
+
+/* MAP */
+
+#mapwrap {
+	width: 1275px;
+	height: 1650px;
+	box-shadow: 1px 2px 4px #0004;
+}
+
+#map {
+	background-repeat: no-repeat;
+	background-size: cover;
+	width: 1275px;
+	height: 1650px;
+	overflow: clip;
+}
+
+#map { background-image: url(map75.jpg) }
+@media (min-resolution: 97dpi) {
+	#map { background-image: url(map150.jpg) }
 }
 
 /* PANELS */
@@ -37,8 +118,9 @@ body.Lancaster header.your_turn { background-color: hsl(355, 83%, 72%); }
 .panel {
 	min-width: 1275px;
 	max-width: 1275px;
-	margin: 12px auto 36px auto;
 	background-color: #555;
+	box-shadow: 1px 2px 4px #0004;
+	margin: 12px auto;
 }
 
 .panel_header {
@@ -47,15 +129,15 @@ body.Lancaster header.your_turn { background-color: hsl(355, 83%, 72%); }
 	user-select: none;
 	font-weight: bold;
 	text-align: center;
-	padding: 3px 1em;
 }
 
 .panel_body {
 	display: flex;
 	justify-content: center;
 	flex-wrap: wrap;
-	padding: 18px;
-	gap: 18px;
+	padding: 12px;
+	gap: 12px;
+	min-height: 260px;
 }
 
 .court_panel {
@@ -67,365 +149,7 @@ body.Lancaster header.your_turn { background-color: hsl(355, 83%, 72%); }
 	min-height: 524px;
 }
 
-/* ARTS OF WAR */
-
-#arts_of_war_list {
-	min-height: 260px;
-}
-
-/* PLAN */
-
-#plan {
-	min-height: 260px;
-}
-
-#plan_actions {
-	background-color: #444;
-	min-height: 130px;
-}
-
-#plan_actions.hide {
-	display: none
-}
-
-#plan_actions .card {
-	width: 93px;
-	height: 130px;
-	background-size: 93px 130px;
-}
-
-body.York #plan_actions .lancaster { display: none }
-body.Lancaster #plan_actions .york { display: none }
-
-/* BATTLE GRID WITH LORD MATS */
-
-#battle_grid {
-	display: grid;
-	grid-template-columns: auto auto auto;
-	margin: 0 auto;
-	justify-content: center;
-	padding: 18px;
-}
-
-#battle_grid .grid_array {
-	width: 375px;
-	height: 506px;
-	padding: 36px 12px 12px 12px;
-}
-
-.grid_array { background-repeat: no-repeat }
-
-.grid_array.action {
-	background-image: url(images/battle_array_action.svg);
-	background-position: top center;
-}
-
-#battle_grid {
-	background-repeat: no-repeat;
-}
-
-#battle_header { grid-row: 1; grid-column: 1 / 4; }
-
-.defender .att,
-.attacker .def,
-.defender .att .unit,
-.attacker .def .unit,
-.defender .att .asset,
-.attacker .def .asset,
-.defender .att .moved_fought,
-.attacker .def .moved_fought,
-.defender .att .feed,
-.attacker .def .feed
-{
-	transform: rotate(180deg)
-}
-
-.defender .att .background,
-.attacker .def .background
-{
-	border-color: #b1a05f #f2e19d #f2e19d #b1a05f;
-	box-shadow: 0 0 0 1px #584800, -1px -2px 4px #0008;
-}
-
-.defender #grid_a1 { grid-row: 1; grid-column: 1; }
-.defender #grid_a2 { grid-row: 1; grid-column: 2; }
-.defender #grid_a3 { grid-row: 1; grid-column: 3; }
-.defender #grid_d1 { grid-row: 2; grid-column: 1; }
-.defender #grid_d2 { grid-row: 2; grid-column: 2; }
-.defender #grid_d3 { grid-row: 2; grid-column: 3; }
-
-.attacker #grid_a1 { grid-row: 2; grid-column: 3; }
-.attacker #grid_a2 { grid-row: 2; grid-column: 2; }
-.attacker #grid_a3 { grid-row: 2; grid-column: 1; }
-.attacker #grid_d1 { grid-row: 1; grid-column: 3; }
-.attacker #grid_d2 { grid-row: 1; grid-column: 2; }
-.attacker #grid_d3 { grid-row: 1; grid-column: 1; }
-
-/* MATS */
-
-.mat {
-	position: relative;
-	width: 379px;
-	height: 506px;
-	z-index: 1;
-}
-
-.mat .background {
-	position: absolute;
-	width: 375px;
-	height: 375px;
-	border-radius: 12px;
-	border-width: 2px;
-	border-style: solid;
-	background-image: url(images/lord_mat_75.png);
-	background-color: #d1c07e;
-	background-size: 375px 375px;
-	background-repeat: no-repeat;
-	z-index: 4;
-}
-
-.court_body .mat.hidden .background {
-	filter: grayscale(100%)
-}
-
-.mat.command .background {
-	box-shadow: 0 0 0 1px #584800, 0 0 0 3px gold;
-}
-
-.mat.selected .background {
-	box-shadow: 0 0 0 1px #584800, 0 0 0 4px yellow;
-}
-
-.mat .capabilities {
-	position: absolute;
-	width: 372px;
-	height: 260px;
-	z-index: 2;
-	top: 246px;
-	left: 2px;
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: 0px;
-}
-
-.mat .events {
-	position: absolute;
-	z-index: 3;
-	width: 372px;
-	height: 260px;
-	left: 2px;
-	top: -36px;
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: 0px;
-	transition-property: top;
-	transition-duration: 100ms;
-}
-
-.mat .events:hover {
-	top: -130px;
-}
-
-.mat .events:empty {
-	display: none;
-}
-
-.mat .moved_fought, .mat .feed, .mat .fled {
-	position: absolute;
-	z-index: 5;
-}
-
-.mat .valour { margin-bottom: -30px; }
-.valour + .valour { margin-left: 15px; }
-.valour + .valour + .valour { margin-left: 30px; }
-.valour + .valour + .valour + .valour { margin-left: 45px; }
-.valour + .valour + .valour + .valour + .valour { margin-left: 60px; }
-
-.mat .feed { right: 8px; top: 135px; }
-.mat .moved_fought.one { right: 72px; top: 12px; }
-.mat .moved_fought.two { right: 66px; top: 6px; }
-.mat .fled { right: 20px; top: 5px; }
-
-.mat .valour_area {left: 100px; top: 250px; width: 80px; height: 80px; }
-
-body.shift .capabilities,
-body.shift .events,
-body.shift #capabilities1,
-body.shift #capabilities2 {
-	z-index: 200;
-}
-body.shift .favour,
-body.shift .depleted,
-body.shift .exhausted  {
-	display:none;
-}
-
-.mat .forces, .mat .routed, .mat .assets, .mat .valour_area {
-	position: absolute;
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	justify-items: center;
-	align-content: center;
-	align-items: center;
-	gap: 4px 6px;
-	z-index: 5;
-}
-
-.mat .lord.card {
-	position: absolute;
-}
-
-.mat .forces {
-	justify-content: center;
-}
-
-.mat .forces, .mat .routed {
-	gap: 2px;
-}
-
-.mat .mustered_vassals {
-	position: absolute;
-	z-index: 5;
-}
-
-.mat .mustered_vassals .vassal {
-	transition: margin 100ms;
-	margin-top: -24px;
-}
-
-.mat .mustered_vassals:hover .vassal {
-	margin-top: 1px;
-}
-
-.mat .mustered_vassals .vassal {
-	margin-top: -38px;
-}
-
-.mat .lord.card { top: 96px; left: 16px; }
-.mat .forces { top: 5px; left: 5px; width: 365px; height: 100px; }
-.mat .routed { top: 110px; right: 5px; width: 160px; height: 120px; }
-.mat .assets { top: 235px; right: 15px; width: 140px; height: 125px; }
-
-/* ASSETS */
-
-.asset {
-	width: 46px;
-	height: 46px;
-	background-size: cover;
-	border: 2px solid transparent;
-	border-radius: 8px;
-	box-shadow: 0 0 0 1px #444, 0 1px 4px #0008;
-}
-
-.asset.action {
-	box-shadow: 0 0 0 1px #444, 0 0 0 4px white !important;
-}
-
-.asset.selected {
-	box-shadow: 0 0 0 1px #444, 0 0 0 4px cyan !important;
-}
-
-.vassal.selected {
-	box-shadow: 0 0 0 1px #444, 0 0 0 4px cyan !important;
-}
-
-.marker {
-	border: 2px solid transparent;
-	border-radius: 8px;
-	background-size: cover;
-	background-position: center;
-	background-repeat: no-repeat;
-}
-
-.marker.square {
-	width: 46px;
-	height: 46px;
-}
-
-.marker.small {
-	width: 35px;
-	height: 35px;
-}
-
-.marker.circle {
-	width: 50px;
-	height: 50px;
-	background-size: 50px 50px;
-	border-radius: 50%;
-}
-
-/* UNITS */
-
-.unit {
-	background-size: contain;
-	background-repeat: no-repeat;
-}
-
-.unit.shape {
-	width: 43px;
-	height: 35px;
-	filter: drop-shadow(0px 2px 2px #0004);
-}
-
-.unit.retinue {
-	border: 2px solid gray;
-	width: 46px;
-	height: 46px;
-	border-radius: 8px;
-	margin: 0 2px;
-}
-
-.unit.vassal {
-	border: 2px solid #d1cfa1;
-	width: 46px;
-	height: 46px;
-	border-radius: 8px;
-	margin: 0 2px;
-}
-
-.unit.retinue.action {
-	box-shadow: 0 0 0 1px black, 0 0 0 4px white !important;
-}
-
-.unit.vassal.action {
-	box-shadow: 0 0 0 1px black, 0 0 0 4px white !important;
-}
-
-.unit.shape.action {
-	filter:
-		drop-shadow(2px 0px 0px white)
-		drop-shadow(0px 2px 0px white)
-		drop-shadow(0px -2px 0px white)
-		drop-shadow(-2px 0px 0px white);
-}
-
-/* CARDS */
-
-.card.york { background-color: hsl(204,79%,96%); }
-.card.lancaster { background-color: hsl(40,96%,91%); }
-
-.hand {
-	margin: 24px auto;
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	align-items: center;
-	min-height: 260px;
-	max-width: 1275px;
-	gap: 16px;
-}
-
-.card {
-	background-size: 186px 260px;
-	width: 186px;
-	height: 260px;
-	border-radius: 6px;
-	transition: 100ms;
-	box-shadow: 0 0 0 1px #333, 1px 1px 4px #0008;
-}
+/* CURRENT CARD */
 
 #turn_info {
 	border-bottom: 1px solid black;
@@ -448,33 +172,58 @@ body.shift .exhausted  {
 	}
 }
 
-.card.disabled {
-	filter: brightness(80%);
+/* PLAN */
+
+#plan_actions {
+	background-color: #444;
+	min-height: 130px;
 }
 
+#plan_actions.hide {
+	display: none
+}
+
+#plan_actions .card {
+	width: 93px;
+	height: 130px;
+	background-size: 93px 130px;
+	border-radius: 3px;
+}
+
+body.York #plan_actions .lancaster { display: none }
+body.Lancaster #plan_actions .york { display: none }
+
+/* CARDS */
+
+.card.disabled { filter: brightness(80%); }
 .card.action { box-shadow: 0 0 0 1px #333, 0 0 0 4px white; }
 .card.selected { box-shadow: 0 0 0 1px #333, 0 0 0 4px yellow; }
 
-/* MAP */
+/* MARKERS */
 
-#mapwrap {
-	width: 1275px;
-	height: 1650px;
-	box-shadow: 0px 1px 10px #0008;
-	z-index: 3;
-}
-
-#map {
-	background-repeat: no-repeat;
+.marker {
+	border: 2px solid transparent;
 	background-size: cover;
-	width: 1275px;
-	height: 1650px;
-	overflow: clip;
+	background-position: center;
+	background-repeat: no-repeat;
 }
 
-#map { background-image: url(map75.jpg) }
-@media (min-resolution: 97dpi) {
-	#map { background-image: url(map150.jpg) }
+.marker.square {
+	border-radius: 8px;
+	width: 46px;
+	height: 46px;
+}
+
+.marker.small {
+	width: 35px;
+	height: 35px;
+}
+
+.marker.circle {
+	width: 50px;
+	height: 50px;
+	background-size: 50px 50px;
+	border-radius: 50%;
 }
 
 .box {
@@ -590,28 +339,300 @@ body.shift .exhausted  {
 	transform: rotate(45deg);
 }
 
-/* BACKGROUND COLORS AND BORDERS */
-
-/* ULTRA-WIDE SCREEN LAYOUTS */
-
-@media (min-width: 2800px) {
-	main { display: grid; gap: 0 12px; }
-	main { grid-template-columns: 0 1275px auto 0; }
-	#sec_map { grid-row: 1; grid-column: 2 }
-	#sec_battle { grid-row: 2; grid-column: 2 }
-	#sec_lords { grid-row: 1 / 3; grid-column: 3 }
+.marker.seat {
+	border-radius: 8px;
 }
 
-@media (min-width: 3200px) {
-	main { grid-template-columns: 36px 1275px auto 0; }
+
+/* ASSETS */
+
+.asset {
+	width: 46px;
+	height: 46px;
+	background-size: cover;
+	border: 2px solid transparent;
+	border-radius: 8px;
+	box-shadow: 0 0 0 1px #444, 0 1px 4px #0008;
 }
 
-@media (min-width: 4100px) {
-	main { grid-template-columns: 0 1275px 1fr 1275px 0; }
-	#sec_map { grid-row: 1; grid-column: 2 }
-	#sec_lords { grid-row: 1; grid-column: 3 }
-	#sec_battle { grid-row: 1; grid-column: 4 }
+.asset.action {
+	box-shadow: 0 0 0 1px #444, 0 0 0 4px white !important;
 }
+
+/* UNITS */
+
+.unit {
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+
+.unit.shape {
+	width: 43px;
+	height: 35px;
+	filter: drop-shadow(0px 2px 2px #0004);
+}
+
+.unit.retinue {
+	border: 2px solid gray;
+	width: 46px;
+	height: 46px;
+	border-radius: 8px;
+}
+
+.unit.vassal {
+	border: 2px solid #d1cfa1;
+	width: 46px;
+	height: 46px;
+	border-radius: 8px;
+}
+
+.unit.retinue.action {
+	box-shadow: 0 0 0 1px black, 0 0 0 4px white !important;
+}
+
+.unit.vassal.action {
+	box-shadow: 0 0 0 1px black, 0 0 0 4px white !important;
+}
+
+.unit.vassal.selected {
+	box-shadow: 0 0 0 1px black, 0 0 0 4px yellow !important;
+}
+
+.unit.shape.action {
+	filter:
+		drop-shadow(2px 0px 0px white)
+		drop-shadow(0px 2px 0px white)
+		drop-shadow(0px -2px 0px white)
+		drop-shadow(-2px 0px 0px white);
+}
+
+
+/* LORD MAT */
+
+.mat {
+	position: relative;
+	width: 379px;
+	height: 506px;
+	z-index: 1;
+}
+
+.mat .board {
+	position: absolute;
+	width: 375px;
+	height: 375px;
+	border-radius: 12px;
+	border-width: 2px;
+	border-style: solid;
+	background-image: url(images/lord_mat_75.png);
+	background-size: 375px 375px;
+	background-repeat: no-repeat;
+	z-index: 4;
+}
+
+.mat.command .board { box-shadow: 0 0 0 1px #584800, 0 0 0 4px gold; }
+.mat.selected .board { box-shadow: 0 0 0 1px #584800, 0 0 0 4px yellow; }
+
+#court1 .mat.hidden .board,
+#court2 .mat.hidden .board {
+	filter: grayscale(100%)
+}
+
+.mat .capabilities {
+	position: absolute;
+	width: 372px;
+	height: 260px;
+	z-index: 2;
+	top: 246px;
+	left: 3px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0px;
+}
+
+body.shift .mat .capabilities {
+	z-index: 200;
+}
+
+.mat .board .card {
+	position: absolute;
+	top: 96px;
+	left: 16px;
+}
+
+.mat .board .mask {
+	pointer-events: none;
+	position: absolute;
+	top: calc(96px + 135px);
+	left: 21px;
+	width: 176px;
+	height: 120px;
+}
+
+#court1 .mat .mask {
+	display: none;
+}
+
+#court2 .mat .mask {
+	display: none;
+}
+
+.mat .board .mask.york {
+	background-color: #eef7fc;
+}
+
+.mat .board .mask.lancaster {
+	background-color: #fef0d3;
+}
+
+.mat .board .retinue_vassals {
+	position: absolute;
+	top: 38px;
+	left: 24px;
+	width: 170px;
+	height: 50px;
+	display: flex;
+	align-content: center;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.mat .board .routed_retinue_vassals {
+	position: absolute;
+	top: 130px;
+	left: 24px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.mat .board .troops {
+	position: absolute;
+	top: 36px;
+	right: 0px;
+	width: 172px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0px;
+}
+
+.mat .board .routed_troops {
+	position: absolute;
+	bottom: 144px;
+	right: 0px;
+	width: 172px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0px;
+}
+
+.mat .board .marker_area {
+	pointer-events: none;
+	position: absolute;
+	top: 240px;
+	left: 24px;
+	width: 172px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.mat .board .valour_area {
+	pointer-events: none;
+	position: absolute;
+	top: 305px;
+	left: 24px;
+	width: 172px;
+	display: flex;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.mat .board .assets {
+	position: absolute;
+	top: 236px;
+
+	//left: 210px;
+	//width: 162px;
+	left: 222px;
+	width: 140px;
+	height: 122px;
+
+	display: flex;
+	justify-content: center;
+	align-content: center;
+	flex-direction: column;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+/* BATTLE GRID WITH LORD MATS */
+
+#battle_grid {
+	display: grid;
+	grid-template-columns: auto auto auto;
+	margin: 0 auto;
+	justify-content: center;
+	padding: 18px;
+}
+
+#battle_grid .grid_array {
+	width: 375px;
+	height: 506px;
+	padding: 36px 12px 12px 12px;
+}
+
+.grid_array { background-repeat: no-repeat }
+
+.grid_array.action {
+	background-image: url(images/battle_array_action.svg);
+	background-position: top center;
+}
+
+#battle_grid {
+	background-repeat: no-repeat;
+}
+
+#battle_header { grid-row: 1; grid-column: 1 / 4; }
+
+.defender .att,
+.attacker .def,
+.defender .att .unit,
+.attacker .def .unit,
+.defender .att .asset,
+.attacker .def .asset,
+.defender .att .moved_fought,
+.attacker .def .moved_fought,
+.defender .att .feed,
+.attacker .def .feed
+{
+	transform: rotate(180deg)
+}
+
+.defender .att .background,
+.attacker .def .background
+{
+	border-color: #b1a05f #f2e19d #f2e19d #b1a05f;
+	box-shadow: 0 0 0 1px #584800, -1px -2px 4px #0008;
+}
+
+.defender #grid_a1 { grid-row: 1; grid-column: 1; }
+.defender #grid_a2 { grid-row: 1; grid-column: 2; }
+.defender #grid_a3 { grid-row: 1; grid-column: 3; }
+.defender #grid_d1 { grid-row: 2; grid-column: 1; }
+.defender #grid_d2 { grid-row: 2; grid-column: 2; }
+.defender #grid_d3 { grid-row: 2; grid-column: 3; }
+
+.attacker #grid_a1 { grid-row: 2; grid-column: 3; }
+.attacker #grid_a2 { grid-row: 2; grid-column: 2; }
+.attacker #grid_a3 { grid-row: 2; grid-column: 1; }
+.attacker #grid_d1 { grid-row: 1; grid-column: 3; }
+.attacker #grid_d2 { grid-row: 1; grid-column: 2; }
+.attacker #grid_d3 { grid-row: 1; grid-column: 1; }
+
 
 /* IMAGES */
 
@@ -767,79 +788,9 @@ body.shift .exhausted  {
 .vassal.back.vassal_thomas_stanley { background-image: url(images/vassal_thomas_stanley_b.png) }
 .vassal.back.vassal_trollope { background-image: url(images/vassal_trollope_b.png) }
 
-.card.lord.york.back { background-image: url(cards.1x/lord_york_back.jpg) }
-.card.lord.lord_devon { background-image: url(cards.1x/lord_york_devon.jpg) }
-.card.lord.lord_edward_iv { background-image: url(cards.1x/lord_york_edward_iv.jpg) }
-.card.lord.lord_gloucester_1 { background-image: url(cards.1x/lord_york_gloucester_1.jpg) }
-.card.lord.lord_gloucester_2 { background-image: url(cards.1x/lord_york_gloucester_2.jpg) }
-.card.lord.lord_march { background-image: url(cards.1x/lord_york_march.jpg) }
-.card.lord.lord_norfolk { background-image: url(cards.1x/lord_york_norfolk.jpg) }
-.card.lord.lord_northumberland_y1 { background-image: url(cards.1x/lord_york_northumberland_y1.jpg) }
-.card.lord.lord_northumberland_y2 { background-image: url(cards.1x/lord_york_northumberland_y2.jpg) }
-.card.lord.lord_pembroke { background-image: url(cards.1x/lord_york_pembroke.jpg) }
-.card.lord.lord_richard_iii { background-image: url(cards.1x/lord_york_richard_iii.jpg) }
-.card.lord.lord_rutland { background-image: url(cards.1x/lord_york_rutland.jpg) }
-.card.lord.lord_salisbury { background-image: url(cards.1x/lord_york_salisbury.jpg) }
-.card.lord.lord_warwick_y { background-image: url(cards.1x/lord_york_warwick_y.jpg) }
-.card.lord.lord_york { background-image: url(cards.1x/lord_york_york.jpg) }
+/* COLORS */
 
-.card.lord.lancaster.back { background-image: url(cards.1x/lord_lancaster_back.jpg) }
-.card.lord.lord_buckingham { background-image: url(cards.1x/lord_lancaster_buckingham.jpg) }
-.card.lord.lord_clarence { background-image: url(cards.1x/lord_lancaster_clarence.jpg) }
-.card.lord.lord_exeter_1 { background-image: url(cards.1x/lord_lancaster_exeter_1.jpg) }
-.card.lord.lord_exeter_2 { background-image: url(cards.1x/lord_lancaster_exeter_2.jpg) }
-.card.lord.lord_henry_tudor { background-image: url(cards.1x/lord_lancaster_henry_tudor.jpg) }
-.card.lord.lord_henry_vi { background-image: url(cards.1x/lord_lancaster_henry_vi.jpg) }
-.card.lord.lord_jasper_tudor_1 { background-image: url(cards.1x/lord_lancaster_jasper_tudor_1.jpg) }
-.card.lord.lord_jasper_tudor_2 { background-image: url(cards.1x/lord_lancaster_jasper_tudor_2.jpg) }
-.card.lord.lord_margaret { background-image: url(cards.1x/lord_lancaster_margaret.jpg) }
-.card.lord.lord_northumberland_l { background-image: url(cards.1x/lord_lancaster_northumberland_l.jpg) }
-.card.lord.lord_oxford { background-image: url(cards.1x/lord_lancaster_oxford.jpg) }
-.card.lord.lord_somerset_1 { background-image: url(cards.1x/lord_lancaster_somerset_1.jpg) }
-.card.lord.lord_somerset_2 { background-image: url(cards.1x/lord_lancaster_somerset_2.jpg) }
-.card.lord.lord_warwick_l { background-image: url(cards.1x/lord_lancaster_warwick_l.jpg) }
-
-.card.cc.york.back { background-image: url(cards.1x/cc_york_back.jpg) }
-.card.cc.york.pass { background-image: url(cards.1x/cc_york_pass.jpg) }
-.card.cc.lord_devon { background-image: url(cards.1x/cc_york_devon.jpg) }
-.card.cc.lord_edward_iv { background-image: url(cards.1x/cc_york_edward_iv.jpg) }
-.card.cc.lord_gloucester_1 { background-image: url(cards.1x/cc_york_gloucester.jpg) }
-.card.cc.lord_gloucester_2 { background-image: url(cards.1x/cc_york_gloucester.jpg) }
-.card.cc.lord_march { background-image: url(cards.1x/cc_york_march.jpg) }
-.card.cc.lord_norfolk { background-image: url(cards.1x/cc_york_norfolk.jpg) }
-.card.cc.lord_northumberland_y1 { background-image: url(cards.1x/cc_york_northumberland.jpg) }
-.card.cc.lord_northumberland_y2 { background-image: url(cards.1x/cc_york_northumberland.jpg) }
-.card.cc.lord_pembroke { background-image: url(cards.1x/cc_york_pembroke.jpg) }
-.card.cc.lord_richard_iii { background-image: url(cards.1x/cc_york_richard_iii.jpg) }
-.card.cc.lord_rutland { background-image: url(cards.1x/cc_york_rutland.jpg) }
-.card.cc.lord_salisbury { background-image: url(cards.1x/cc_york_salisbury.jpg) }
-.card.cc.lord_warwick_y { background-image: url(cards.1x/cc_york_warwick.jpg) }
-.card.cc.lord_york { background-image: url(cards.1x/cc_york_york.jpg) }
-
-.card.cc.lancaster.back { background-image: url(cards.1x/cc_lancaster_back.jpg) }
-.card.cc.lancaster.pass { background-image: url(cards.1x/cc_lancaster_pass.jpg) }
-.card.cc.lord_buckingham { background-image: url(cards.1x/cc_lancaster_buckingham.jpg) }
-.card.cc.lord_clarence { background-image: url(cards.1x/cc_lancaster_clarence.jpg) }
-.card.cc.lord_exeter_1 { background-image: url(cards.1x/cc_lancaster_exeter.jpg) }
-.card.cc.lord_exeter_2 { background-image: url(cards.1x/cc_lancaster_exeter.jpg) }
-.card.cc.lord_henry_tudor { background-image: url(cards.1x/cc_lancaster_henry_tudor.jpg) }
-.card.cc.lord_henry_vi { background-image: url(cards.1x/cc_lancaster_henry_vi.jpg) }
-.card.cc.lord_jasper_tudor_1 { background-image: url(cards.1x/cc_lancaster_jasper_tudor.jpg) }
-.card.cc.lord_jasper_tudor_2 { background-image: url(cards.1x/cc_lancaster_jasper_tudor.jpg) }
-.card.cc.lord_margaret { background-image: url(cards.1x/cc_lancaster_margaret.jpg) }
-.card.cc.lord_northumberland_l { background-image: url(cards.1x/cc_lancaster_northumberland.jpg) }
-.card.cc.lord_oxford { background-image: url(cards.1x/cc_lancaster_oxford.jpg) }
-.card.cc.lord_somerset_1 { background-image: url(cards.1x/cc_lancaster_somerset.jpg) }
-.card.cc.lord_somerset_2 { background-image: url(cards.1x/cc_lancaster_somerset.jpg) }
-.card.cc.lord_warwick_l { background-image: url(cards.1x/cc_lancaster_warwick.jpg) }
-
-.card.aow.york.back { background-image: url(cards.1x/aow_york_back.jpg) }
-
-.card.aow.lancaster.back { background-image: url(cards.1x/aow_lancaster_back.jpg) }
-
-/* BACKGROUND AND BORDER COLORS */
-
-.mat .background { background-color: hsl(37,28%,56%); border-color: hsl(37,28%,66%) hsl(37,28%,46%) hsl(37,28%,46%) hsl(37,28%,66%); box-shadow: 0 0 0 1px hsl(37,28%,19%), 0px 1px 4px #0008; }
+.mat .board { background-color: hsl(37,28%,56%); border-color: hsl(37,28%,66%) hsl(37,28%,46%) hsl(37,28%,46%) hsl(37,28%,66%); box-shadow: 0 0 0 1px hsl(37,28%,19%), 0px 1px 4px #0008; }
 .marker.battle { background-color: hsl(34,16%,49%); border-color: hsl(34,16%,59%) hsl(34,16%,39%) hsl(34,16%,39%) hsl(34,16%,59%); box-shadow: 0 0 0 1px hsl(34,16%,16%), 0px 1px 4px #0008; }
 .marker.campaign { background-color: hsl(198,33%,38%); border-color: hsl(198,33%,48%) hsl(198,33%,28%) hsl(198,33%,28%) hsl(198,33%,48%); box-shadow: 0 0 0 1px hsl(198,33%,12%), 0px 1px 4px #0008; }
 .marker.levy { background-color: hsl(33,35%,44%); border-color: hsl(33,35%,54%) hsl(33,35%,34%) hsl(33,35%,34%) hsl(33,35%,54%); box-shadow: 0 0 0 1px hsl(33,35%,14%), 0px 1px 4px #0008; }
@@ -903,3 +854,24 @@ body.shift .exhausted  {
 .unit.vassal.vassal_montagu { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
 .unit.vassal.vassal_thomas_stanley { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
 .unit.vassal.vassal_trollope { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
+
+/* ULTRA-WIDE SCREEN LAYOUTS */
+
+@media (min-width: 2800px) {
+	main { display: grid; gap: 0 12px; }
+	main { grid-template-columns: 0 1275px auto 0; }
+	#sec_map { grid-row: 1; grid-column: 2 }
+	#sec_battle { grid-row: 2; grid-column: 2 }
+	#sec_lords { grid-row: 1 / 3; grid-column: 3 }
+}
+
+@media (min-width: 3200px) {
+	main { grid-template-columns: 36px 1275px auto 0; }
+}
+
+@media (min-width: 4100px) {
+	main { grid-template-columns: 0 1275px 1fr 1275px 0; }
+	#sec_map { grid-row: 1; grid-column: 2 }
+	#sec_lords { grid-row: 1; grid-column: 3 }
+	#sec_battle { grid-row: 1; grid-column: 4 }
+}

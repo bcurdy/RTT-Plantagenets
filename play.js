@@ -6,105 +6,13 @@ function toggle_pieces() {
 	document.getElementById("pieces").classList.toggle("hide")
 }
 
-// === COMMON LIBRARY ===
-
-function map_get(map, key, missing) {
-	let a = 0
-	let b = (map.length >> 1) - 1
-	while (a <= b) {
-		let m = (a + b) >> 1
-		let x = map[m << 1]
-		if (key < x)
-			b = m - 1
-		else if (key > x)
-			a = m + 1
-		else
-			return map[(m << 1) + 1]
-	}
-	return missing
-}
-
-function map_get_pack4(map, lord, k) {
-	return pack4_get(map_get(map, lord, 0), k)
-}
-
-function map2_get(map, x, y, v) {
-	return map_get(map, (x << 1) + y, v)
-}
-
-function set_has(set, item) {
-	if (!set)
-		return false
-	let a = 0
-	let b = set.length - 1
-	while (a <= b) {
-		let m = (a + b) >> 1
-		let x = set[m]
-		if (item < x)
-			b = m - 1
-		else if (item > x)
-			a = m + 1
-		else
-			return true
-	}
-	return false
-}
-
-function pack1_get(word, n) {
-	return (word >>> n) & 1
-}
-
-function pack2_get(word, n) {
-	n = n << 1
-	return (word >>> n) & 3
-}
-
-function pack4_get(word, n) {
-	n = n << 2
-	return (word >>> n) & 15
-}
-
 // === CONSTANTS (matching those in rules.js) ===
 
 function find_lord(name) { return data.lords.findIndex((x) => x.name === name) }
 function find_card(name) { return data.cards.findIndex((x) => x.name === name) }
 function find_locale(name) { return data.locales.findIndex(x => x.name === name) }
 
-const LORD_YORK = find_lord("York")
-const LORD_MARCH = find_lord("March")
-const LORD_EDWARD_IV = find_lord("Edward IV")
-const LORD_SALISBURY = find_lord("Salisbury")
-const LORD_RUTLAND = find_lord("Rutland")
-const LORD_PEMBROKE = find_lord("Pembroke")
-const LORD_DEVON = find_lord("Devon")
-const LORD_NORTHUMBERLAND_Y1 = find_lord("Northumberland Y1")
-const LORD_NORTHUMBERLAND_Y2 = find_lord("Northumberland Y2")
-
-const LORD_GLOUCESTER_1 = find_lord("Gloucester 1")
-const LORD_GLOUCESTER_2 = find_lord("Gloucester 2")
-const LORD_RICHARD_III = find_lord("Richard III")
-const LORD_NORFOLK = find_lord("Norfolk")
-const LORD_WARWICK_Y = find_lord("Warwick Y")
-
 const LORD_HENRY_VI = find_lord("Henry VI")
-const LORD_MARGARET = find_lord("Margaret")
-const LORD_SOMERSET_1 = find_lord("Somerset 1")
-const LORD_SOMERSET_2 = find_lord("Somerset 2")
-
-const LORD_EXETER_1 = find_lord("Exeter 1")
-const LORD_EXETER_2 = find_lord("Exeter 2")
-
-const LORD_BUCKINGHAM = find_lord("Buckingham")
-const LORD_CLARENCE = find_lord("Clarence")
-const LORD_NORTHUMBERLAND_L = find_lord("Northumberland L")
-
-const LORD_JASPER_TUDOR_1 = find_lord("Jasper Tudor 1")
-const LORD_JASPER_TUDOR_2 = find_lord("Jasper Tudor 2")
-
-const LORD_HENRY_TUDOR = find_lord("Henry Tudor")
-const LORD_OXFORD = find_lord("Oxford")
-const LORD_WARWICK_L = find_lord("Warwick L")
-
 const LOC_LONDON = find_locale("London")
 
 const first_york_lord = 0
@@ -123,84 +31,6 @@ const last_locale = data.locales.length - 1
 
 const first_vassal = 0
 const last_vassal = data.vassals.length - 1
-
-const Y1 = find_card("Y1")
-const Y2 = find_card("Y2")
-const Y3 = find_card("Y3")
-const Y4 = find_card("Y4")
-const Y5 = find_card("Y5")
-const Y6 = find_card("Y6")
-const Y7 = find_card("Y7")
-const Y8 = find_card("Y8")
-const Y9 = find_card("Y9")
-const Y10 = find_card("Y10")
-const Y11 = find_card("Y11")
-const Y12 = find_card("Y12")
-const Y13 = find_card("Y13")
-const Y14 = find_card("Y14")
-const Y15 = find_card("Y15")
-const Y16 = find_card("Y16")
-const Y17 = find_card("Y17")
-const Y18 = find_card("Y18")
-const Y19 = find_card("Y19")
-const Y20 = find_card("Y20")
-const Y21 = find_card("Y21")
-const Y22 = find_card("Y22")
-const Y23 = find_card("Y23")
-const Y24 = find_card("Y24")
-const Y25 = find_card("Y25")
-const Y26 = find_card("Y26")
-const Y27 = find_card("Y27")
-const Y28 = find_card("Y28")
-const Y29 = find_card("Y29")
-const Y30 = find_card("Y30")
-const Y31 = find_card("Y31")
-const Y32 = find_card("Y32")
-const Y33 = find_card("Y33")
-const Y34 = find_card("Y34")
-const Y35 = find_card("Y35")
-const Y36 = find_card("Y36")
-const Y37 = find_card("Y37")
-
-const L1 = find_card("L1")
-const L2 = find_card("L2")
-const L3 = find_card("L3")
-const L4 = find_card("L4")
-const L5 = find_card("L5")
-const L6 = find_card("L6")
-const L7 = find_card("L7")
-const L8 = find_card("L8")
-const L9 = find_card("L9")
-const L10 = find_card("L10")
-const L11 = find_card("L11")
-const L12 = find_card("L12")
-const L13 = find_card("L13")
-const L14 = find_card("L14")
-const L15 = find_card("L15")
-const L16 = find_card("L16")
-const L17 = find_card("L17")
-const L18 = find_card("L18")
-const L19 = find_card("L19")
-const L20 = find_card("L20")
-const L21 = find_card("L21")
-const L22 = find_card("L22")
-const L23 = find_card("L23")
-const L24 = find_card("L24")
-const L25 = find_card("L25")
-const L26 = find_card("L26")
-const L27 = find_card("L27")
-const L28 = find_card("L28")
-const L29 = find_card("L29")
-const L30 = find_card("L30")
-const L31 = find_card("L31")
-const L32 = find_card("L32")
-const L33 = find_card("L33")
-const L34 = find_card("L34")
-const L35 = find_card("L35")
-const L36 = find_card("L36")
-const L37 = find_card("L37")
-
-const A1 = 0, A2 = 1, A3 = 2, D1 = 3, D2 = 4, D3 = 5
 
 const RETINUE = 0
 const VASSAL = 1
@@ -352,14 +182,6 @@ function is_york_lord(lord) {
 
 function is_lancaster_lord(lord) {
 	return lord >= first_lancaster_lord && lord <= last_lancaster_lord
-}
-
-function is_lord_on_left_or_right(lord) {
-	if (view.battle.array[A1] === lord) return true
-	if (view.battle.array[A3] === lord) return true
-	if (view.battle.array[D1] === lord) return true
-	if (view.battle.array[D3] === lord) return true
-	return false
 }
 
 function get_lord_locale(lord) {
@@ -583,21 +405,26 @@ const ui = {
 	locale_markers: [],
 	locale_markers_rose: [],
 	lord_cylinder: [],
-	lord_mat: [],
+	mat: [],
+	mat_card: [],
+	mat_caps: [],
+	retinue: [],
+	routed_retinue: [],
+	troops: [],
+	routed_troops: [],
+	assets: [],
+
 	lord_exile: [],
-	lord_buttons: [],
 	vassal_cal: [], // token on calendar
 	vassal_map: [], // token on map
-	forces: [],
-	routed: [],
-	assets: [],
-	lord_capabilities: [],
-	lord_events: [],
+	valour_area: [],
+	marker_area: [],
+
 	lord_moved1: [],
 	lord_moved2: [],
 	lord_fled: [],
-	lord_valour: [],
 	lord_feed: [],
+
 	cards: [],
 	cards2: [],
 	calendar: [],
@@ -672,20 +499,25 @@ function build_div(parent, className) {
 
 function build_lord_mat(lord, ix, side, name) {
 	let mat = build_div(null, `mat ${side} ${name}`)
-	let bg = build_div(mat, "background")
-	ui.forces[ix] = build_div(bg, "forces")
-	ui.routed[ix] = build_div(bg, "routed")
-	ui.assets[ix] = build_div(bg, "assets")
-	ui.lord_buttons[ix] = build_div(bg, "card lord " + side + " " + name)
-	ui.lord_capabilities[ix] = build_div(mat, "capabilities")
-	ui.lord_events[ix] = build_div(mat, "events")
-	ui.lord_moved1[ix] = build_div(mat, "marker square moved_fought one hide")
-	ui.lord_moved2[ix] = build_div(mat, "marker square moved_fought two hide")
-	ui.lord_fled[ix] = build_div(mat, "marker square fled hide")
-	ui.lord_valour[ix] = build_div(mat, "valour_area")
-	ui.lord_feed[ix] = build_div(mat, "marker small feed x2")
-	ui.lord_mat[ix] = mat
-	register_action(ui.lord_buttons[ix], "lord", ix)
+	let board = build_div(mat, "board")
+	ui.mat_card[ix] = build_div(board, "card lord " + side + " " + name)
+	build_div(board, "mask " + side)
+	ui.retinue[ix] = build_div(board, "retinue_vassals")
+	ui.routed_retinue[ix] = build_div(board, "routed_retinue_vassals")
+	ui.troops[ix] = build_div(board, "troops")
+	ui.routed_troops[ix] = build_div(board, "routed_troops")
+	ui.assets[ix] = build_div(board, "assets")
+	ui.mat_caps[ix] = build_div(mat, "capabilities")
+	ui.valour_area[ix] = build_div(board, "valour_area")
+	ui.marker_area[ix] = build_div(board, "marker_area")
+
+	ui.lord_fled[ix] = build_div(ui.marker_area[ix], "marker square fled hide")
+	ui.lord_feed[ix] = build_div(ui.marker_area[ix], "marker small feed x2")
+	ui.lord_moved1[ix] = build_div(ui.marker_area[ix], "marker square moved_fought one hide")
+	ui.lord_moved2[ix] = build_div(ui.marker_area[ix], "marker square moved_fought two hide")
+
+	ui.mat[ix] = mat
+	register_action(ui.mat_card[ix], "lord", ix)
 }
 
 function build_card(side, c, id) {
@@ -1137,9 +969,9 @@ function add_asset(parent, type, n, lord) {
 	parent.appendChild(elt)
 }
 
-function update_forces(parent, forces, lord_ix, routed) {
+function update_forces(parent, a, b, forces, lord_ix, routed) {
 	parent.replaceChildren()
-	for (let i = 0; i < force_type_count; ++i) {
+	for (let i = a; i <= b; ++i) {
 		if (i === VASSAL) {
 			for_each_vassal_with_lord(lord_ix, v => {
 				if (view.battle) {
@@ -1204,19 +1036,23 @@ function update_valour(lord, parent, battle) {
 
 function update_lord_mat(ix) {
 	if (view.reveal & (1 << ix)) {
-		ui.lord_mat[ix].classList.remove("hidden")
+		ui.mat[ix].classList.remove("hidden")
 		update_assets(ui.assets[ix], view.pieces.assets, ix)
-		update_forces(ui.forces[ix], view.pieces.forces, ix, false)
-		update_forces(ui.routed[ix], view.pieces.routed, ix, true)
+		update_forces(ui.retinue[ix], 0, 1, view.pieces.forces, ix, false)
+		update_forces(ui.routed_retinue[ix], 0, 1, view.pieces.routed, ix, true)
+		update_forces(ui.troops[ix], 2, 6, view.pieces.forces, ix, false)
+		update_forces(ui.routed_troops[ix], 2, 6, view.pieces.routed, ix, true)
 		ui.lord_feed[ix].classList.toggle("hide", count_lord_all_forces(ix) <= 6)
 
 		if (get_lord_locale(LORD_HENRY_VI) === CAPTURE_OF_THE_KING + ix)
 			ui.assets[ix].appendChild(ui.captured_king)
 	} else {
-		ui.lord_mat[ix].classList.add("hidden")
+		ui.mat[ix].classList.add("hidden")
 		ui.assets[ix].replaceChildren()
-		ui.forces[ix].replaceChildren()
-		ui.routed[ix].replaceChildren()
+		ui.retinue[ix].replaceChildren()
+		ui.routed_retinue[ix].replaceChildren()
+		ui.troops[ix].replaceChildren()
+		ui.routed_troops[ix].replaceChildren()
 		ui.lord_moved1[ix].classList.add("hide")
 		ui.lord_moved2[ix].classList.add("hide")
 		ui.lord_feed[ix].classList.add("hide")
@@ -1225,14 +1061,14 @@ function update_lord_mat(ix) {
 	ui.lord_moved1[ix].classList.toggle("hide", is_levy_phase() || (m !== 1 && m !== 2))
 	ui.lord_moved2[ix].classList.toggle("hide", is_levy_phase() || (m !== 2))
 	ui.lord_fled[ix].classList.toggle("hide", view.battle === undefined || !set_has(view.battle.fled, ix))
-	update_valour(ix, ui.lord_valour[ix], view.battle)
+	update_valour(ix, ui.valour_area[ix], view.battle)
 }
 
 function update_lord(ix) {
 	let locale = get_lord_locale(ix)
 	if (locale < 0 || locale > CALENDAR_EXILE + 16) {
 		ui.lord_cylinder[ix].classList.add("hide")
-		ui.lord_mat[ix].classList.remove("action")
+		ui.mat[ix].classList.remove("action")
 		return
 	}
 	if (locale < CALENDAR) {
@@ -1246,14 +1082,14 @@ function update_lord(ix) {
 		ui.lord_cylinder[ix].classList.remove("hide")
 		ui.lord_exile[ix].classList.toggle("hide", !is_lord_in_exile(ix))
 	}
-	ui.lord_buttons[ix].classList.toggle("action", is_action("lord", ix))
+	ui.mat_card[ix].classList.toggle("action", is_action("lord", ix))
 	ui.lord_cylinder[ix].classList.toggle("action", is_action("lord", ix))
 
 	ui.lord_cylinder[ix].classList.toggle("selected", is_lord_selected(ix))
-	ui.lord_mat[ix].classList.toggle("selected", is_lord_selected(ix))
+	ui.mat[ix].classList.toggle("selected", is_lord_selected(ix))
 
 	ui.lord_cylinder[ix].classList.toggle("command", is_lord_command(ix))
-	ui.lord_mat[ix].classList.toggle("command", is_lord_command(ix))
+	ui.mat[ix].classList.toggle("command", is_lord_command(ix))
 
 	ui.seat[ix].classList.toggle("hide", !is_lord_in_game(ix))
 }
@@ -1434,21 +1270,14 @@ function update_cards() {
 	}
 
 	for (let ix = 0; ix < data.lords.length; ++ix) {
-		ui.lord_capabilities[ix].replaceChildren()
-		ui.lord_events[ix].replaceChildren()
+		ui.mat_caps[ix].replaceChildren()
 		if (view.reveal & (1 << ix)) {
 			let c = get_lord_capability(ix, 0)
 			if (c >= 0)
-				ui.lord_capabilities[ix].appendChild(ui.cards[c])
+				ui.mat_caps[ix].appendChild(ui.cards[c])
 			c = get_lord_capability(ix, 1)
 			if (c >= 0)
-				ui.lord_capabilities[ix].appendChild(ui.cards[c])
-			if (view.battle && view.battle.field_organ === ix)
-				ui.lord_events[ix].appendChild(ui.cards[EVENT_TEUTONIC_FIELD_ORGAN])
-			if (view.battle && view.battle.bridge && view.battle.bridge.lord1 === ix)
-				ui.lord_events[ix].appendChild(ui.cards[EVENT_RUSSIAN_BRIDGE])
-			if (view.battle && view.battle.bridge && view.battle.bridge.lord2 === ix)
-				ui.lord_events[ix].appendChild(ui.cards[EVENT_TEUTONIC_BRIDGE])
+				ui.mat_caps[ix].appendChild(ui.cards[c])
 		}
 	}
 }
@@ -1460,17 +1289,17 @@ function update_battle() {
 		let lord = array[i]
 		ui.battle_grid_array[i].replaceChildren()
 		if (lord >= 0)
-			ui.battle_grid_array[i].appendChild(ui.lord_mat[lord])
+			ui.battle_grid_array[i].appendChild(ui.mat[lord])
 		ui.battle_grid_array[i].classList.toggle("action", is_action("array", i))
 	}
 
 	ui.reserves.replaceChildren()
 	for (let lord of view.battle.reserves)
-		ui.reserves.appendChild(ui.lord_mat[lord])
+		ui.reserves.appendChild(ui.mat[lord])
 
 	ui.routed.replaceChildren()
 	for (let lord of view.battle.routed)
-		ui.routed.appendChild(ui.lord_mat[lord])
+		ui.routed.appendChild(ui.mat[lord])
 }
 
 function update_court() {
@@ -1484,10 +1313,10 @@ function update_court() {
 	lcourt.replaceChildren()
 	for (let lord = first_york_lord; lord <= last_york_lord; ++lord)
 		if (!is_lord_in_battle(lord) && is_lord_on_map(lord))
-			ycourt.appendChild(ui.lord_mat[lord])
+			ycourt.appendChild(ui.mat[lord])
 	for (let lord = first_lancaster_lord; lord <= last_lancaster_lord; ++lord)
 		if (!is_lord_in_battle(lord) && is_lord_on_map(lord))
-			lcourt.appendChild(ui.lord_mat[lord])
+			lcourt.appendChild(ui.mat[lord])
 }
 
 function update_vassals() {
@@ -1620,7 +1449,7 @@ function on_update() {
 
 	if (view.battle) {
 		ui.reserves_panel.classList.toggle("hide", view.battle.reserves.length === 0)
-		ui.routed_panel.classList.remove("hide")
+		ui.routed_panel.classList.toggle("hide", view.battle.routed.length === 0)
 		ui.battle_panel.classList.remove("hide")
 		ui.battle_header.textContent = "Battle at " + data.locales[view.battle.where].name
 		if (view.battle.attacker === player) {
@@ -1740,6 +1569,7 @@ function on_update() {
 	// REMOVE INFLUENCE
 	action_button("influence", "Influence")
 	action_button("favour", "Favour")
+	action_button("valour", "Valour")
 
 	action_button("pass", "Pass")
 	action_button("done", "Done")
@@ -1783,7 +1613,7 @@ function on_click_locale_tip(loc) {
 }
 
 function on_click_lord_tip(lord) {
-	ui.lord_mat[lord].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" })
+	ui.mat[lord].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" })
 }
 
 function sub_locale_name(match, p1) {
@@ -1801,6 +1631,61 @@ function sub_lord_name(match, p1) {
 function sub_vassal_name(match, x) {
 	let n = data.vassals[x].name
 	return `<span class="vassal_tip" >${n}</span>`
+}
+
+const ICONS_SVG = {
+	B0: '<span class="black d0"></span>',
+	B1: '<span class="black d1"></span>',
+	B2: '<span class="black d2"></span>',
+	B3: '<span class="black d3"></span>',
+	B4: '<span class="black d4"></span>',
+	B5: '<span class="black d5"></span>',
+	B6: '<span class="black d6"></span>',
+	W0: '<span class="white d0"></span>',
+	W1: '<span class="white d1"></span>',
+	W2: '<span class="white d2"></span>',
+	W3: '<span class="white d3"></span>',
+	W4: '<span class="white d4"></span>',
+	W5: '<span class="white d5"></span>',
+	W6: '<span class="white d6"></span>',
+}
+
+const ICONS_HTM = {
+	B0: '<span class="black d0">0</span>',
+	B1: '<span class="black d1">1</span>',
+	B2: '<span class="black d2">2</span>',
+	B3: '<span class="black d3">3</span>',
+	B4: '<span class="black d4">4</span>',
+	B5: '<span class="black d5">5</span>',
+	B6: '<span class="black d6">6</span>',
+	W0: '<span class="white d0">0</span>',
+	W1: '<span class="white d1">1</span>',
+	W2: '<span class="white d2">2</span>',
+	W3: '<span class="white d3">3</span>',
+	W4: '<span class="white d4">4</span>',
+	W5: '<span class="white d5">5</span>',
+	W6: '<span class="white d6">6</span>',
+}
+
+const ICONS_TXT = {
+	B0: "\u25cf",
+	B1: "\u2776",
+	B2: "\u2777",
+	B3: "\u2778",
+	B4: "\u2779",
+	B5: "\u277A",
+	B6: "\u277B",
+	W0: "\u25cb",
+	W1: "\u2460",
+	W2: "\u2461",
+	W3: "\u2462",
+	W4: "\u2463",
+	W5: "\u2464",
+	W6: "\u2465",
+}
+
+function sub_icon(match) {
+	return ICONS_TXT[match]
 }
 
 function on_log(text) {
@@ -1825,6 +1710,8 @@ function on_log(text) {
 	text = text.replace(/L(\d+)/g, sub_lord_name)
 	text = text.replace(/%(\d+)/g, sub_locale_name)
 	text = text.replace(/V(\d+)/g, sub_vassal_name)
+
+	text = text.replace(/\b[BW]\d\b/g, sub_icon)
 
 	if (text.match(/^\.h1/)) {
 		text = text.substring(4)
@@ -1861,3 +1748,61 @@ function on_log(text) {
 
 build_map()
 scroll_with_middle_mouse("main")
+// === COMMON LIBRARY ===
+
+function map_get(map, key, missing) {
+	let a = 0
+	let b = (map.length >> 1) - 1
+	while (a <= b) {
+		let m = (a + b) >> 1
+		let x = map[m << 1]
+		if (key < x)
+			b = m - 1
+		else if (key > x)
+			a = m + 1
+		else
+			return map[(m << 1) + 1]
+	}
+	return missing
+}
+
+function map_get_pack4(map, lord, k) {
+	return pack4_get(map_get(map, lord, 0), k)
+}
+
+function map2_get(map, x, y, v) {
+	return map_get(map, (x << 1) + y, v)
+}
+
+function set_has(set, item) {
+	if (!set)
+		return false
+	let a = 0
+	let b = set.length - 1
+	while (a <= b) {
+		let m = (a + b) >> 1
+		let x = set[m]
+		if (item < x)
+			b = m - 1
+		else if (item > x)
+			a = m + 1
+		else
+			return true
+	}
+	return false
+}
+
+function pack1_get(word, n) {
+	return (word >>> n) & 1
+}
+
+function pack2_get(word, n) {
+	n = n << 1
+	return (word >>> n) & 3
+}
+
+function pack4_get(word, n) {
+	n = n << 2
+	return (word >>> n) & 15
+}
+
