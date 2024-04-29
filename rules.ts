@@ -9594,9 +9594,11 @@ states.my_kingdom_for_a_horse_muster = {
 		game.state = "muster_lord"
 	},
 	pass() {
+		apply_lordship_effects()
 		game.state = "muster_lord"
 	},
 }
+
 function replace_gloucester_with_richard_iii() {
 	log(`Replaced L${LORD_GLOUCESTER_2} with L${LORD_RICHARD_III}.`)
 
