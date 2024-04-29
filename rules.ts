@@ -3651,6 +3651,16 @@ function spend_march_action(cost) {
 	game.actions -= cost
 }
 
+function spend_sail_action() {
+	clear_flag(FLAG_SURPRISE_LANDING)
+	clear_flag(FLAG_FIRST_ACTION)
+	clear_flag(FLAG_FIRST_MARCH_HIGHWAY)
+	if (is_seamanship_in_play())
+		game.actions -= 1
+	else
+		game.actions = 0
+}
+
 function spend_all_actions() {
 	/* No more actions (including free ones)! */
 	clear_flag(FLAG_SURPRISE_LANDING)
@@ -4212,10 +4222,7 @@ function do_sail(to: Locale) {
 		levy_burgundians(lord)
 	}
 
-	if (is_seamanship_in_play())
-		spend_action(1)
-	else
-		spend_all_actions()
+	spend_sail_action()
 
 	// you can go to enemy lord with norfolk capability
 	if (is_seaport(to) && has_enemy_lord(to))
@@ -4225,10 +4232,7 @@ function do_sail(to: Locale) {
 }
 
 function fail_sail() {
-	if (is_seamanship_in_play())
-		spend_action(1)
-	else
-		spend_all_actions()
+	spend_sail_action()
 	end_sail()
 }
 
