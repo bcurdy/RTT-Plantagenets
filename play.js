@@ -511,10 +511,10 @@ function build_lord_mat(lord, ix, side, name) {
 	ui.valour_area[ix] = build_div(board, "valour_area")
 	ui.marker_area[ix] = build_div(board, "marker_area")
 
-	ui.lord_fled[ix] = build_div(ui.marker_area[ix], "marker square fled hide")
-	ui.lord_feed[ix] = build_div(ui.marker_area[ix], "marker small feed x2")
 	ui.lord_moved1[ix] = build_div(ui.marker_area[ix], "marker square moved_fought one hide")
 	ui.lord_moved2[ix] = build_div(ui.marker_area[ix], "marker square moved_fought two hide")
+	ui.lord_fled[ix] = build_div(ui.marker_area[ix], "marker square fled hide")
+	ui.lord_feed[ix] = build_div(ui.marker_area[ix], "marker small feed x2")
 
 	ui.mat[ix] = mat
 	register_action(ui.mat_card[ix], "lord", ix)
@@ -944,15 +944,15 @@ function add_vassal(parent, vassal, lord, routed) {
 	parent.appendChild(elt)
 }
 
-function add_force(parent, type, lord, routed) {
+function add_force(parent, type, lord, routed, first) {
 	let elt
 	if (routed) {
-		if (is_action(routed_force_action_name[type], lord))
+		if (first && is_action(routed_force_action_name[type], lord))
 			elt = get_cached_element("action unit " + force_class_name[type], routed_force_action_name[type], lord)
 		else
 			elt = get_cached_element("unit " + force_class_name[type], routed_force_action_name[type], lord)
 	} else {
-		if (is_action(force_action_name[type], lord))
+		if (first && is_action(force_action_name[type], lord))
 			elt = get_cached_element("action unit " + force_class_name[type], force_action_name[type], lord)
 		else
 			elt = get_cached_element("unit " + force_class_name[type], force_action_name[type], lord)
@@ -960,9 +960,9 @@ function add_force(parent, type, lord, routed) {
 	parent.appendChild(elt)
 }
 
-function add_asset(parent, type, n, lord) {
+function add_asset(parent, type, n, lord, first) {
 	let elt
-	if (is_action(asset_action_name[type], lord))
+	if (first && is_action(asset_action_name[type], lord))
 		elt = get_cached_element("action asset " + asset_action_name[type] + " x" + n, asset_action_name[type], lord)
 	else
 		elt = get_cached_element("asset " + asset_action_name[type] + " x" + n)
@@ -985,8 +985,10 @@ function update_forces(parent, a, b, forces, lord_ix, routed) {
 		} else {
 			let n = map_get_pack4(forces, lord_ix, i, 0)
 			for (let k = 0; k < n; ++k) {
-				add_force(parent, i, lord_ix, routed)
+				add_force(parent, i, lord_ix, routed, k === n-1)
 			}
+			if (i > 1)
+				parent.appendChild(get_cached_element("break"))
 		}
 	}
 }
@@ -997,22 +999,24 @@ function update_assets(parent, assets, lord_ix) {
 		let n = map_get_pack4(assets, lord_ix, i, 0)
 		if (asset_type_x34[i]) {
 			while (n >= 4) {
-				add_asset(parent, i, 4, lord_ix)
 				n -= 4
+				add_asset(parent, i, 4, lord_ix, n === 0)
 			}
 			while (n >= 3) {
-				add_asset(parent, i, 3, lord_ix)
 				n -= 3
+				add_asset(parent, i, 3, lord_ix, n === 0)
 			}
 		}
 		while (n >= 2) {
-			add_asset(parent, i, 2, lord_ix)
 			n -= 2
+			add_asset(parent, i, 2, lord_ix, n === 0)
 		}
 		while (n >= 1) {
-			add_asset(parent, i, 1, lord_ix)
 			n -= 1
+			add_asset(parent, i, 1, lord_ix, n === 0)
 		}
+		if (i < 2)
+			parent.appendChild(get_cached_element("break"))
 	}
 }
 
@@ -1499,9 +1503,9 @@ function on_update() {
 
 	// Muster & Spoils
 	action_button("take_prov", "Provender")
-	action_button("take_coin", "Coin")
 	action_button("take_ship", "Ship")
 	action_button("take_cart", "Cart")
+	action_button("take_all", "Take all")
 	action_button("levy_troops", "Levy Troops")
 	action_button("levy_beloved_warwick", "Beloved Warwick")
 	action_button("levy_irishmen", "Irishmen")

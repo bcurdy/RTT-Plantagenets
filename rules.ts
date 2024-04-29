@@ -235,6 +235,7 @@ interface State {
 	sail?(): void,
 	stronghold?(): void,
 	supply?(): void,
+	take_all?(): void,
 	take_cart?(): void,
 	take_prov?(): void,
 	take_ship?(): void,
@@ -5485,6 +5486,8 @@ function prompt_spoils() {
 		view.actions.take_prov = 1
 	if (game.spoils[CART] > 0)
 		view.actions.take_cart = 1
+	if (game.spoils[PROV] > 0 || game.spoils[CART] > 0)
+		view.actions.take_all = 1
 }
 
 function take_spoils(type: Asset) {
@@ -5492,6 +5495,13 @@ function take_spoils(type: Asset) {
 	add_spoils(type, -1)
 	if (!has_any_spoils())
 		game.who = NOBODY
+}
+
+function take_all_spoils() {
+	add_lord_assets(game.who, PROV, game.spoils[PROV])
+	add_lord_assets(game.who, CART, game.spoils[CART])
+	game.spoils = [ 0, 0, 0 ]
+	game.who = NOBODY
 }
 
 function goto_exile_spoils() {
@@ -5547,6 +5557,11 @@ states.exile_spoils = {
 	take_cart() {
 		push_undo_without_who()
 		take_spoils(CART)
+	},
+
+	take_all() {
+		push_undo_without_who()
+		take_all_spoils()
 	},
 
 	end_spoils() {
@@ -7787,6 +7802,11 @@ states.battle_spoils = {
 	take_cart() {
 		push_undo_without_who()
 		take_spoils(CART)
+	},
+
+	take_all() {
+		push_undo_without_who()
+		take_all_spoils()
 	},
 
 	end_spoils() {
@@ -12293,6 +12313,10 @@ states.rebel_supply_depot = {
 	take_prov() {
 		push_undo_without_who()
 		take_spoils(PROV)
+	},
+	take_all() {
+		push_undo_without_who()
+		take_all_spoils()
 	},
 	end_spoils() {
 		push_undo_without_who()

@@ -353,11 +353,16 @@ body.Lancaster #plan_actions .york { display: none }
 	border: 2px solid transparent;
 	border-radius: 8px;
 	box-shadow: 0 0 0 1px #444, 0 1px 4px #0008;
+	margin: 3px;
 }
 
 .asset.action {
 	box-shadow: 0 0 0 1px #444, 0 0 0 4px white !important;
 }
+
+.prov + .prov { margin-bottom: -30px; }
+.coin + .coin { margin-bottom: -30px; }
+.cart + .cart { margin-bottom: -30px; }
 
 /* UNITS */
 
@@ -369,8 +374,14 @@ body.Lancaster #plan_actions .york { display: none }
 .unit.shape {
 	width: 43px;
 	height: 35px;
-	filter: drop-shadow(0px 2px 2px #0004);
+	margin: -26px 0 0px 0px;
 }
+
+.unit.men_at_arms { background-image: url(images/unit_men_at_arms.svg) }
+.unit.longbowmen { background-image: url(images/unit_longbowmen.svg) }
+.unit.militia { background-image: url(images/unit_militia.svg) }
+.unit.mercenaries { background-image: url(images/unit_mercenaries.svg) }
+.unit.burgundians { background-image: url(images/unit_handgunners.svg) }
 
 .unit.retinue {
 	border: 2px solid gray;
@@ -499,41 +510,73 @@ body.shift .mat .capabilities {
 
 .mat .board .routed_retinue_vassals {
 	position: absolute;
-	top: 130px;
+	top: 240px;
 	left: 24px;
+	width: 170px;
+	height: 0px;
 	display: flex;
+	align-content: center;
 	flex-wrap: wrap;
 	gap: 5px;
 }
 
+.break {
+	flex-basis: 100%;
+	width: 0;
+	height: 0;
+}
+
 .mat .board .troops {
 	position: absolute;
-	top: 36px;
+	top: 80px;
 	right: 0px;
-	width: 172px;
+	width: 170px;
+	height: 60px;
 	display: flex;
 	flex-wrap: wrap;
+	flex-direction: column-reverse;
+	justify-content: end;
+	align-content: center;
 	gap: 0px;
 }
 
 .mat .board .routed_troops {
 	position: absolute;
-	bottom: 144px;
+	top: 170px;
 	right: 0px;
-	width: 172px;
+	width: 170px;
+	height: 60px;
 	display: flex;
 	flex-wrap: wrap;
+	flex-direction: column-reverse;
+	justify-content: end;
+	align-content: center;
 	gap: 0px;
+}
+
+.defender .att .troops,
+.attacker .def .troops,
+.defender .att .routed_troops,
+.attacker .def .routed_troops
+{
+	flex-direction: column;
+	justify-content: start;
+}
+
+.defender .att .troops .shape,
+.attacker .def .troops .shape,
+.defender .att .routed_troops .shape,
+.attacker .def .routed_troops .shape {
+	margin: 0 0 -26px 0;
 }
 
 .mat .board .marker_area {
 	pointer-events: none;
 	position: absolute;
-	top: 240px;
-	left: 24px;
-	width: 172px;
+	top: -18px;
+	right: 18px;
+	height: 50px;
 	display: flex;
-	justify-content: center;
 	align-items: center;
 	flex-wrap: wrap;
 	gap: 5px;
@@ -544,29 +587,31 @@ body.shift .mat .capabilities {
 	position: absolute;
 	top: 305px;
 	left: 24px;
-	width: 172px;
+	width: 170px;
+	height: 40px;
 	display: flex;
 	justify-content: center;
 	flex-wrap: wrap;
-	gap: 5px;
+	gap: 4px;
 }
 
 .mat .board .assets {
 	position: absolute;
-	top: 236px;
-
-	//left: 210px;
-	//width: 162px;
-	left: 222px;
-	width: 140px;
-	height: 122px;
-
+	bottom: 22px;
+	right: 0px;
+	width: 170px;
+	height: 150px;
 	display: flex;
-	justify-content: center;
+	justify-content: end;
 	align-content: center;
-	flex-direction: column;
+	flex-direction: column-reverse;
 	flex-wrap: wrap;
-	gap: 5px;
+}
+
+.defender .att .assets,
+.attacker .def .assets
+{
+	justify-content: start;
 }
 
 /* BATTLE GRID WITH LORD MATS */
@@ -602,8 +647,12 @@ body.shift .mat .capabilities {
 .attacker .def,
 .defender .att .unit,
 .attacker .def .unit,
-.defender .att .asset,
-.attacker .def .asset,
+.defender .att .assets,
+.attacker .def .assets,
+.defender .att .valour,
+.attacker .def .valour,
+.defender .att .fled,
+.attacker .def .fled,
 .defender .att .moved_fought,
 .attacker .def .moved_fought,
 .defender .att .feed,
