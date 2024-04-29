@@ -2033,9 +2033,9 @@ function vassal_ic_rating(lord: Lord, spend: number) {
 
 	// Note: use of game.vassal
 	if (game.active === LANCASTER)
-		rating += data.vassals[game.vassal].influence
-	else
 		rating -= data.vassals[game.vassal].influence
+	else
+		rating += data.vassals[game.vassal].influence
 
 	return rating
 }
@@ -2666,6 +2666,8 @@ states.pay_vassals = {
 // === 3.2.4 DISBAND ===
 
 function clear_lord(lord: Lord) {
+	for_each_vassal_with_lord(lord, disband_vassal)
+
 	discard_lord_capability_n(lord, 0)
 	discard_lord_capability_n(lord, 1)
 
@@ -2678,10 +2680,6 @@ function clear_lord(lord: Lord) {
 	}
 
 	set_lord_moved(lord, 0)
-
-	for_each_vassal_with_lord(lord, v => {
-		disband_vassal(v)
-	})
 
 	check_capture_of_the_king()
 }

@@ -1335,6 +1335,7 @@ function update_vassals() {
 			if (ui.vassal_map[v]) {
 				ui.vassal_map[v].classList.remove("hide")
 				ui.vassal_map[v].classList.toggle("action", is_action("vassal", v))
+				ui.vassal_map[v].classList.toggle("selected", v === view.vassal)
 			}
 		} else {
 			// on calendar (+ maybe on lord mat)
