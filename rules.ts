@@ -1962,9 +1962,7 @@ function parley_ic_cost(lord: Lord, spend: number) {
 	}
 
 	if (is_levy_phase()) {
-		if (lord === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
-			cost = 0
-		else if (game.levy_flags.jack_cade > 0) {
+		if (game.levy_flags.jack_cade > 0) {
 			cost = 0
 		} else {
 			if (game.levy_flags.parliament_votes > 0)
@@ -1972,6 +1970,9 @@ function parley_ic_cost(lord: Lord, spend: number) {
 			if (game.levy_flags.succession > 0)
 				cost -= 1
 		}
+	} else {
+		if (lord === LORD_DEVON && get_lord_locale(lord) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
+			cost = 0
 	}
 
 	return cost
@@ -1991,22 +1992,19 @@ function vassal_ic_success(lord: Lord) {
 	return false
 }
 
-function parley_ic_success() {
-	if (game.active === LANCASTER) {
-		if (is_levy_phase()) {
+function parley_ic_success(lord: Lord) {
+	if (is_levy_phase()) {
+		if (game.levy_flags.jack_cade > 0) {
+			return true
+		} else {
 			if (game.levy_flags.parliament_votes > 0)
+				return true
+			if (game.levy_flags.succession > 0)
 				return true
 		}
 	} else {
-		if (is_levy_phase()) {
-			if (game.levy_flags.succession > 0)
-				return true
-			if (game.levy_flags.jack_cade > 0)
-				return true
-		} else {
-			if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
-				return true
-		}
+		if (lord === LORD_DEVON && get_lord_locale(lord) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
+			return true
 	}
 	return false
 }
