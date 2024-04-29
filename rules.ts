@@ -2898,19 +2898,7 @@ function end_muster() {
 }
 
 function can_lord_muster(lord: Lord) {
-	if (get_lord_moved(lord))
-		return false
-
-	// must be on map
-	if (is_lord_on_map(lord)) {
-		// can use lordship
-		if (is_lord_at_friendly_locale(lord))
-			return true
-		// can only parley
-		if (can_parley_at(get_lord_locale(lord)))
-			return true
-	}
-	return false
+	return is_lord_on_map(lord) && !get_lord_moved(lord)
 }
 
 function has_locale_to_muster(lord: Lord) {
