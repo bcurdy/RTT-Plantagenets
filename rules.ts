@@ -764,14 +764,15 @@ const VASSAL_FAUCONBERG = find_vassal("Fauconberg")
 const VASSAL_NORFOLK = find_vassal("Norfolk")
 const VASSAL_OXFORD = find_vassal("Oxford")
 const VASSAL_SHREWSBURY = find_vassal("Shrewsbury")
-const VASSAL_STANLEY = find_vassal("Stanley")
 const VASSAL_SUFFOLK = find_vassal("Suffolk")
 const VASSAL_WESTMORLAND = find_vassal("Westmoreland")
 const VASSAL_WORCESTER = find_vassal("Worcester")
+
 const VASSAL_CLIFFORD = find_vassal("Clifford")
 const VASSAL_EDWARD = find_vassal("Edward")
 const VASSAL_HASTINGS = find_vassal("Hastings")
 const VASSAL_MONTAGU = find_vassal("Montagu")
+const VASSAL_STANLEY = find_vassal("Stanley")
 const VASSAL_THOMAS_STANLEY = find_vassal("Thomas Stanley")
 const VASSAL_TROLLOPE = find_vassal("Trollope")
 
@@ -1565,10 +1566,21 @@ function muster_vassal(vassal: Vassal, lord: Lord) {
 }
 
 function disband_vassal(vassal: Vassal) {
-	if (vassal === VASSAL_HASTINGS) {
-		let lord = get_vassal_lord(VASSAL_HASTINGS)
+	let lord = get_vassal_lord(VASSAL_HASTINGS)
+
+	if (vassal === VASSAL_HASTINGS)
 		discard_lord_capability(lord, AOW_YORK_HASTINGS)
-	}
+	if (vassal === VASSAL_TROLLOPE)
+		discard_lord_capability(lord, AOW_LANCASTER_ANDREW_TROLLOPE)
+	if (vassal === VASSAL_CLIFFORD)
+		discard_lord_capability(lord, AOW_LANCASTER_MY_FATHERS_BLOOD)
+	if (vassal === VASSAL_MONTAGU)
+		discard_lord_capability(lord, AOW_LANCASTER_MONTAGU)
+	if (vassal === VASSAL_EDWARD)
+		discard_lord_capability(lord, AOW_LANCASTER_EDWARD)
+	if (vassal === VASSAL_STANLEY)
+		discard_lord_capability(lord, AOW_LANCASTER_THOMAS_STANLEY)
+
 	if (data.vassals[vassal].service > 0) {
 		let new_turn = current_turn() + (6 - data.vassals[vassal].service)
 		set_vassal_lord_and_service(vassal, VASSAL_CALENDAR, new_turn)
