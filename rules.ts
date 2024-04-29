@@ -498,6 +498,17 @@ function get_vassal_seat(v: Vassal): Locale {
 	return data.vassals[v].seat
 }
 
+function get_vassal_locale(v: Vassal) {
+	let lord = get_vassal_lord(v)
+	if (lord !== NOBODY)
+		return get_lord_locale(lord)
+	return NOWHERE
+}
+
+function is_special_vassal(v: Vassal) {
+	return v >= VASSAL_TROLLOPE && v <= VASSAL_HASTINGS
+}
+
 // from !node tools/gendata.js
 function is_seaport(x: Locale) { return x === 1 || (x >= 5 && x <= 6) || (x >= 14 && x <= 15) || x === 17 || (x >= 19 && x <= 22) || x === 24 || x === 26 || x === 35 || x === 37 || x === 51 || (x >= 56 && x <= 57) }
 function is_port_1(x: Locale) { return x === 1 || x === 35 || x === 37 || (x >= 56 && x <= 57) }
@@ -6449,15 +6460,21 @@ states.suspicion_3 = {
 
 // === BATTLE EVENT: FOR TRUST NOT HIM ===
 
+function can_target_for_trust_not_him(v: Vassal) {
+	// Special vassals cannot be targeted
+	if (is_special_vassal(v))
+		return false
+	// Alice Montagu confers immunity
+	if (lord_has_capability(get_vassal_lord(v), AOW_YORK_ALICE_MONTAGU))
+		return false
+	return true
+}
+
 function can_play_for_trust_not_him() {
-	for (let vassal of all_vassals) {
-		if (is_vassal_mustered_with_york_lord(vassal) && get_lord_locale(get_vassal_lord(vassal)) === get_lord_locale(game.command)) {
-			// Hastings & Salisbury with Alice Montagu capability are immune.
-			if (vassal === VASSAL_HASTINGS && get_vassal_lord(vassal) === LORD_SALISBURY && lord_has_capability(LORD_SALISBURY, AOW_YORK_ALICE_MONTAGU))
-				return false
-			return true
-		}
-	}
+	for (let v of all_vassals)
+		if (is_vassal_mustered_with_york_lord(v) && get_vassal_locale(v) === game.battle.where)
+			if (can_target_for_trust_not_him(v))
+				return true
 	return false
 }
 
@@ -6487,14 +6504,10 @@ states.for_trust_not_him_vassal = {
 	inactive: "For trust not him",
 	prompt() {
 		view.prompt = "For trust not him: Choose an enemy vassal."
-		for (let vassal of all_vassals) {
-			if (is_vassal_mustered_with_york_lord(vassal) && get_lord_locale(get_vassal_lord(vassal)) === get_lord_locale(game.command)) {
-				// Hastings & Salisbury with Alice Montagu capability are immune.
-				if ((get_vassal_lord(vassal) !== LORD_SALISBURY || !lord_has_capability(LORD_SALISBURY, AOW_YORK_ALICE_MONTAGU)) && vassal !== VASSAL_HASTINGS) {
-					gen_action_vassal(vassal)
-				}
-			}
-		}
+		for (let v of all_vassals)
+			if (is_vassal_mustered_with_york_lord(v) && get_vassal_locale(v) === game.battle.where)
+				if (can_target_for_trust_not_him(v))
+					gen_action_vassal(v)
 	},
 	vassal(v) {
 		push_undo()
@@ -10953,7 +10966,7 @@ function goto_lancaster_event_henry_pressures_parliament() {
 
 function goto_lancaster_event_henrys_proclamation() {
 	for (let vassal of all_vassals) {
-		if (is_vassal_mustered_with_york_lord(vassal)) {
+		if (is_vassal_mustered_with_york_lord(vassal) && !is_special_vassal(vassal)) {
 			set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), current_turn())
 			logi(`Vassal ${vassal_name[vassal]} moved to current turn`)
 
