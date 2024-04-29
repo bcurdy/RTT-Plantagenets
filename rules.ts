@@ -1565,6 +1565,10 @@ function muster_vassal(vassal: Vassal, lord: Lord) {
 }
 
 function disband_vassal(vassal: Vassal) {
+	if (vassal === VASSAL_HASTINGS) {
+		let lord = get_vassal_lord(VASSAL_HASTINGS)
+		discard_lord_capability(lord, AOW_YORK_HASTINGS)
+	}
 	if (data.vassals[vassal].service > 0) {
 		let new_turn = current_turn() + (6 - data.vassals[vassal].service)
 		set_vassal_lord_and_service(vassal, VASSAL_CALENDAR, new_turn)
@@ -1573,10 +1577,6 @@ function disband_vassal(vassal: Vassal) {
 		// TODO: special vassals with no service marker!?
 		set_vassal_lord_and_service(vassal, VASSAL_OUT_OF_PLAY, 0)
 		log(`Disbanded V${vassal}.`)
-	}
-	if (vassal === VASSAL_HASTINGS) {
-		discard_card_capability(AOW_YORK_HASTINGS)
-		logi(`Hastings Discarded`)
 	}
 }
 
