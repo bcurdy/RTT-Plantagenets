@@ -164,7 +164,6 @@ interface State {
 	plan?(lord: Lord, current: Side): void,
 	end_plan?(_:any, current: Side): void,
 	check?(bonus:number): void,
-	check_success?(): void,
 
 	card?(card: Card): void,
 	locale?(locale: Locale): void,
@@ -1589,14 +1588,6 @@ function rout_vassal(_lord: Lord, vassal: Vassal) {
 	set_add(game.battle.routed_vassals, vassal)
 }
 
-function vassal_influence(vassal) {
-	// Influence Rating (positive for active side)
-	let rating =  data.vassals[vassal].influence
-	if (game.active === LANCASTER)
-		return -rating
-	return rating
-}
-
 // === STATE: LOCALE ===
 
 function is_friendly_locale(loc: Locale) {
@@ -1753,10 +1744,6 @@ function is_at_or_adjacent_to_lancastrian_english_channel_port(loc: Locale) {
 }
 
 // === STATE: LORD & LOCALE ===
-
-function is_lord_at_friendly_locale(lord: Lord) {
-	return is_friendly_locale(get_lord_locale(lord))
-}
 
 function is_lord_in_wales(lord: Lord) {
 	return is_wales(get_lord_locale(lord))
@@ -1924,7 +1911,57 @@ function increase_lancaster_influence(amt: number) {
 	game.influence = Math.max(-45, Math.min(45, game.influence + amt))
 }
 
-function is_automatic_levy_vassal_success(lord: Lord) {
+function common_ic_cost(_lord: Lord, spend: number) {
+	let cost = 1
+	if (spend === 1)
+		cost += 1
+	if (spend === 2)
+		cost += 3
+	return cost
+}
+
+function vassal_ic_cost(lord: Lord, spend: number) {
+	let cost = common_ic_cost(lord, spend)
+	if (game.active === YORK) {
+		if (is_event_in_play(EVENT_LANCASTER_BUCKINGHAMS_PLOT))
+			cost += 2
+	}
+	return cost
+}
+
+function parley_ic_cost(lord: Lord, spend: number) {
+	let cost = common_ic_cost(lord, spend)
+
+	// Note: use of game.where
+	cost += map_get(game.parley, game.where, 0)
+
+	if (game.active === LANCASTER) {
+		if (is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
+			cost += 1
+		}
+	}
+
+	if (is_levy_phase()) {
+		if (lord === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
+			cost = 0
+		else if (game.levy_flags.jack_cade > 0) {
+			cost = 0
+		} else {
+			if (game.levy_flags.parliament_votes > 0)
+				cost -= 1
+			if (game.levy_flags.succession > 0)
+				cost -= 1
+		}
+	}
+
+	return cost
+}
+
+function common_ic_success(_lord: Lord) {
+	return false
+}
+
+function vassal_ic_success(lord: Lord) {
 	if (game.active === LANCASTER) {
 		if (is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND))
 			return true
@@ -1934,25 +1971,7 @@ function is_automatic_levy_vassal_success(lord: Lord) {
 	return false
 }
 
-function get_levy_vassal_influence_cost() {
-	if (game.active === YORK) {
-		if (is_event_in_play(EVENT_LANCASTER_BUCKINGHAMS_PLOT))
-			return 2
-	}
-	return 0
-}
-
-function has_free_parley_levy() {
-	if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
-		return true
-	return (
-		game.levy_flags.jack_cade > 0 ||
-		game.levy_flags.my_crown_is_in_my_heart > 0 ||
-		game.levy_flags.gloucester_as_heir > 0
-	)
-}
-
-function is_automatic_parley_success() {
+function parley_ic_success() {
 	if (game.active === LANCASTER) {
 		if (is_levy_phase()) {
 			if (game.levy_flags.parliament_votes > 0)
@@ -1972,135 +1991,106 @@ function is_automatic_parley_success() {
 	return false
 }
 
-function get_parley_influence_cost() {
-	let cost = map_get(game.parley, game.where, 0)
-	if (game.active === LANCASTER) {
-		if (is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
-			cost += 1
-		}
-	}
-	if (is_levy_phase()) {
-		if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
-			cost = 0
-		else if (game.levy_flags.jack_cade > 0) {
-			cost = 0
-		} else {
-			if (game.levy_flags.parliament_votes > 0)
-				cost -= 1
-			if (game.levy_flags.succession > 0)
-				cost -= 1
-		}
-	}
-	return cost
-}
-
-function get_common_influence_bonus(lord: Lord) {
-	// Applies to ALL influence checks.
-	// Automatically added to checks.
-	let bonus = 0
+function common_ic_rating(lord: Lord, spend: number) {
 	let here = get_lord_locale(lord)
+	let rating = data.lords[lord].influence
+	rating += spend
 	if (game.active === YORK) {
 		if (is_event_in_play(EVENT_YORK_YORKIST_PARADE))
-			bonus += 2
+			rating += 2
 		if (is_event_in_play(EVENT_YORK_PRIVY_COUNCIL))
-			bonus += 1
+			rating += 1
 		if (lord_has_capability(lord, AOW_YORK_YORKS_FAVOURED_SON))
-			bonus += 1
+			rating += 1
 		if (lord_has_capability(lord, AOW_YORK_FAIR_ARBITER))
 			if (is_friendly_locale(here))
-				bonus += 1
+				rating += 1
 		if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER))
 			if (!is_lord_in_play(LORD_CLARENCE))
-				bonus += 2
+				rating += 2
 	} else {
 		if (lord_has_capability(lord, AOW_LANCASTER_MARRIED_TO_A_NEVILLE))
 			if (get_lord_locale(LORD_WARWICK_L) === here && is_friendly_locale(here))
-				bonus += 2
+				rating += 2
 		if (lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET))
 			if (get_lord_locale(LORD_MARGARET) === here)
-				bonus += 1
+				rating += 1
 	}
-	return bonus
-}
-
-function get_parley_influence_bonus() {
-	// Only applies to Parley influence checks.
-	let bonus = 0
-	if (game.active === YORK) {
-		if (is_event_in_play(EVENT_YORK_RICHARD_OF_YORK))
-			bonus += 1
-	} else {
-		if (lord_has_capability(game.command, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
-			bonus += 1
-	}
-	return bonus
-}
-
-function calc_influence_check_cost(bonus, add_cost) {
-	let cost = 1
-	if (bonus === 1)
-		cost += 1
-	if (bonus === 2)
-		cost += 3
-	cost += add_cost
-	return cost
-}
-
-function calc_influence_check_rating(lord, spend, add_rating) {
-	let rating = data.lords[lord].influence
-	rating += spend
-	rating += add_rating
-	rating += get_common_influence_bonus(lord)
-	if (rating < 1)
-		rating = 1
-	if (rating > 5)
-		rating = 5
 	return rating
 }
 
-function prompt_influence_check(lord: Lord, add_cost: number = 0, add_rating: number = 0) {
-	let cost = calc_influence_check_cost(0, add_cost)
-	let rating = calc_influence_check_rating(lord, 0, add_rating)
+function vassal_ic_rating(lord: Lord, spend: number) {
+	let rating = common_ic_rating(lord, spend)
 
-	view.prompt += ` Influence 1-${rating} for ${cost} IP.`
-
-	/* max rating is 5, no need to pay to increase more! */
-	if (rating <= 3)
-		view.actions.check = [ 0, 1, 2 ]
-	else if (rating <= 4)
-		view.actions.check = [ 0, 1 ]
+	// Note: use of game.vassal
+	if (game.active === LANCASTER)
+		rating += data.vassals[game.vassal].influence
 	else
-		view.actions.check = [ 0 ]
+		rating -= data.vassals[game.vassal].influence
+
+	return rating
 }
 
-function prompt_influence_check_success(add_cost: number = 0) {
-	let cost = calc_influence_check_cost(0, add_cost)
-	view.prompt += ` Influence success for ${cost} IP.`
-	view.actions.check_success = 1
-}
+function parley_ic_rating(lord: Lord, spend: number) {
+	let rating = common_ic_rating(lord, spend)
 
-function roll_influence_check_success(add_cost: number = 0) {
-	let cost = calc_influence_check_cost(0, add_cost)
-	reduce_influence(cost)
-	log(`Influence success`)
-	return true
-}
-
-function roll_influence_check(lord: Lord, bonus: number, add_cost: number = 0, add_rating: number = 0) {
-	let cost = calc_influence_check_cost(bonus, add_cost)
-	let rating = calc_influence_check_rating(lord, bonus, add_rating)
-
-	reduce_influence(cost)
-
-	let die = roll_die()
-	if (die <= rating) {
-		log(`Influence 1-${rating}: ${HIT[die]}`)
-		return true
+	if (game.active === YORK) {
+		if (is_event_in_play(EVENT_YORK_RICHARD_OF_YORK))
+			rating += 1
 	} else {
-		log(`Influence 1-${rating}: ${MISS[die]}`)
-		return false
+		if (lord_has_capability(lord, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
+			rating += 1
+	}
+
+	return rating
+}
+
+function prompt_influence_check(lord: Lord, calc=common_ic) {
+	let cost = calc.cost(lord, 0)
+	if (calc.success(lord)) {
+		view.prompt += ` Influence success for ${cost} IP.`
+		view.actions.check = [ 0 ]
+	} else {
+		let rating = Math.max(1, Math.min(5, calc.rating(lord, 0)))
+
+		view.prompt += ` Influence 1-${rating} for ${cost} IP.`
+
+		/* max rating is 5, no need to pay to increase more! */
+		if (rating <= 3)
+			view.actions.check = [ 0, 1, 2 ]
+		else if (rating <= 4)
+			view.actions.check = [ 0, 1 ]
+		else
+			view.actions.check = [ 0 ]
 	}
 }
+
+function roll_influence_check(lord: Lord, spend: number, calc=common_ic) {
+	let cost = calc.cost(lord, spend)
+
+	reduce_influence(cost)
+
+	if (calc.success(lord)) {
+		log(`Influence success`)
+		return true
+	} else {
+		let rating = Math.max(1, Math.min(5, calc.rating(lord, 0)))
+
+
+		let die = roll_die()
+		if (die <= rating) {
+			log(`Influence 1-${rating}: ${HIT[die]}`)
+			return true
+		} else {
+			log(`Influence 1-${rating}: ${MISS[die]}`)
+			return false
+		}
+	}
+}
+
+const common_ic = { cost: common_ic_cost, rating: common_ic_rating, success: common_ic_success }
+const vassal_ic = { cost: vassal_ic_cost, rating: vassal_ic_rating, success: vassal_ic_success }
+const parley_ic = { cost: parley_ic_cost, rating: parley_ic_rating, success: parley_ic_success }
 
 // === 2.0 SETUP ===
 
@@ -3224,8 +3214,8 @@ states.levy_lord = {
 		view.prompt = `Levy Lord: ${lord_name[game.who]}.`
 		prompt_influence_check(game.command)
 	},
-	check(bonus) {
-		if (roll_influence_check(game.command, bonus)) {
+	check(spend) {
+		if (roll_influence_check(game.command, spend)) {
 			game.state = "levy_lord_at_seat"
 		} else {
 			resume_muster_lord()
@@ -3305,27 +3295,16 @@ states.levy_vassal = {
 	prompt() {
 		view.prompt = `Levy Vassal: ${vassal_name[game.vassal]}.`
 		view.vassal = game.vassal
-		let cost = get_levy_vassal_influence_cost()
-		if (is_automatic_levy_vassal_success(game.command))
-			prompt_influence_check_success(cost)
-		else
-			prompt_influence_check(game.command, cost, vassal_influence(game.vassal))
+		prompt_influence_check(game.command, vassal_ic)
 	},
-	check(bonus) {
-		let cost = get_levy_vassal_influence_cost()
-		if (roll_influence_check(game.command, bonus, cost, vassal_influence(game.vassal))) {
+	check(spend) {
+		if (roll_influence_check(game.command, spend, vassal_ic)) {
 			muster_vassal(game.vassal, game.command)
 			goto_the_kings_name("Levy Vassal")
 		} else {
 			resume_muster_lord()
 		}
 	},
-	check_success() {
-		let cost = get_levy_vassal_influence_cost()
-		roll_influence_check_success(cost)
-		muster_vassal(game.vassal, game.command)
-		goto_the_kings_name("Levy Vassal")
-	}
 }
 
 // === 3.4.4 LEVY TROOPS ===
@@ -4456,8 +4435,8 @@ states.tax = {
 			end_tax()
 		}
 	},
-	check(bonus) {
-		if (roll_influence_check(game.command, bonus))
+	check(spend) {
+		if (roll_influence_check(game.command, spend))
 			do_tax(game.command, game.where, 1)
 		else
 			fail_tax(game.command, game.where)
@@ -4486,6 +4465,18 @@ function fail_tax(who: Lord, where: Locale) {
 }
 
 // === 4.6.4 ACTION: PARLEY ===
+
+function has_free_parley_levy() {
+	if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
+		return true
+	if (game.levy_flags.jack_cade > 0)
+		return true
+	if (game.levy_flags.my_crown_is_in_my_heart > 0)
+		return true
+	if (game.levy_flags.gloucester_as_heir > 0)
+		return true
+	return false
+}
 
 function has_route_to(start: Locale, to: Locale) {
 	if (start === to)
@@ -4723,10 +4714,7 @@ states.parley = {
 				gen_action_locale(game.parley[i] as Locale)
 		} else {
 			view.prompt = `Parley: ${locale_name[game.where]}.`
-			if (is_automatic_parley_success())
-				prompt_influence_check_success(get_parley_influence_cost())
-			else
-				prompt_influence_check(game.command, get_parley_influence_cost(), get_parley_influence_bonus())
+			prompt_influence_check(game.command, parley_ic)
 		}
 	},
 	locale(loc) {
@@ -4739,18 +4727,13 @@ states.parley = {
 				game.state = "blockade_parley"
 		}
 	},
-	check(bonus) {
-		if (roll_influence_check(game.command, bonus, get_parley_influence_cost(), get_parley_influence_bonus())) {
+	check(spend) {
+		if (roll_influence_check(game.command, spend, parley_ic)) {
 			shift_favour_toward(game.where)
 			end_parley(true)
 		} else {
 			end_parley(false)
 		}
-	},
-	check_success() {
-		roll_influence_check_success(get_parley_influence_cost())
-		shift_favour_toward(game.where)
-		end_parley(true)
 	},
 }
 
@@ -6415,8 +6398,8 @@ states.suspicion_2 = {
 		view.prompt = `Suspicion: ${lord_name[game.who]}.`
 		prompt_influence_check(game.who)
 	},
-	check(bonus) {
-		if (roll_influence_check(game.who, bonus)) {
+	check(spend) {
+		if (roll_influence_check(game.who, spend)) {
 			game.state = "suspicion_3"
 		} else {
 			game.who = NOBODY
@@ -6515,20 +6498,11 @@ states.for_trust_not_him_bribe = {
 	prompt() {
 		view.prompt = `For trust not him: Bribe ${vassal_name[game.vassal]}.`
 		view.vassal = game.vassal
-		if (is_automatic_levy_vassal_success(game.who))
-			prompt_influence_check_success()
-		else
-			prompt_influence_check(game.who, 0, vassal_influence(game.vassal))
+		prompt_influence_check(game.who, vassal_ic)
 	},
-	check(bonus) {
-		if (roll_influence_check(game.who, bonus)) {
+	check(spend) {
+		if (roll_influence_check(game.who, spend, vassal_ic))
 			muster_vassal(game.vassal, game.who)
-		}
-		end_for_trust_not_him()
-	},
-	check_success() {
-		roll_influence_check_success()
-		muster_vassal(game.vassal, game.who)
 		end_for_trust_not_him()
 	},
 }
@@ -7152,16 +7126,6 @@ function log_hits(total, name) {
 }
 
 // === 4.4.2 BATTLE ROUNDS: ROLL BY HIT (PROTECTION ROLL, VALOUR RE-ROLL, FORCES ROUT) ===
-
-function no_remaining_targets() {
-	for (let pos of game.battle.engagements[0]) {
-		let lord = game.battle.array[pos]
-		if (is_friendly_lord(lord))
-			if (lord_has_unrouted_units(lord))
-				return false
-	}
-	return true
-}
 
 function goto_defender_assign_hits() {
 	set_active_defender()
@@ -10613,9 +10577,9 @@ states.merchants_1 = {
 		view.prompt = "Merchants:"
 		prompt_influence_check(game.command)
 	},
-	check(bonus) {
+	check(spend) {
 		logcap(AOW_LANCASTER_MERCHANTS)
-		if (roll_influence_check(game.command, bonus))
+		if (roll_influence_check(game.command, spend))
 			game.state = "merchants_2"
 		else
 			end_merchants()
@@ -10786,10 +10750,9 @@ states.heralds_attempt = {
 		view.prompt = `Helards: Shift ${lord_name[game.who]} to next turn.`
 		prompt_influence_check(game.command)
 	},
-	check(bonus) {
-		if (roll_influence_check(game.command, bonus)) {
+	check(spend) {
+		if (roll_influence_check(game.command, spend))
 			set_lord_calendar(game.who, current_turn() + 1)
-		}
 		end_heralds_attempt()
 	},
 }
@@ -11376,11 +11339,11 @@ states.aragne_3 = {
 		let lord = get_vassal_lord(game.vassal)
 		view.prompt = `L'Universelle Aragne: ${lord_name[lord]} with ${vassal_name[game.vassal]}.`
 		view.vassal = game.vassal
-		prompt_influence_check(lord, 0, vassal_influence(game.vassal))
+		prompt_influence_check(lord, vassal_ic)
 	},
-	check(bonus) {
+	check(spend) {
 		let lord = get_vassal_lord(game.vassal)
-		if (!roll_influence_check(lord, bonus, 0, vassal_influence(game.vassal)))
+		if (!roll_influence_check(lord, spend, vassal_ic))
 			disband_vassal(game.vassal)
 		set_delete(game.event_aragne, game.vassal)
 		game.vassal = NOVASSAL
@@ -11603,8 +11566,8 @@ states.tax_collectors_lord = {
 			end_tax_collectors_lord()
 		}
 	},
-	check(bonus) {
-		if (roll_influence_check(game.who, bonus))
+	check(spend) {
+		if (roll_influence_check(game.who, spend))
 			do_tax(game.who, game.where, 2)
 		else
 			fail_tax(game.who, game.where)
@@ -11779,10 +11742,9 @@ states.dubious_clarence = {
 		prompt_influence_check(game.who)
 		view.actions.pass = 1
 	},
-	check(bonus) {
-		if (roll_influence_check(game.who, bonus)) {
+	check(spend) {
+		if (roll_influence_check(game.who, spend))
 			disband_lord(LORD_CLARENCE)
-		}
 		game.who = NOBODY
 		end_immediate_event()
 	},
