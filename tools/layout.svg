@@ -37,16 +37,16 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     showgrid="true"
-     inkscape:zoom="1.3210766"
-     inkscape:cx="575.39574"
-     inkscape:cy="874.26408"
+     showgrid="false"
+     inkscape:zoom="0.73946615"
+     inkscape:cx="765.1019"
+     inkscape:cy="825.23435"
      inkscape:window-width="1920"
      inkscape:window-height="991"
      inkscape:window-x="-9"
      inkscape:window-y="-9"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g8"
+     inkscape:current-layer="svg2"
      inkscape:document-rotation="0"
      inkscape:snap-object-midpoints="false"
      inkscape:snap-bbox="true"
@@ -55,2315 +55,923 @@
      inkscape:snap-to-guides="false"
      inkscape:bbox-paths="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:bbox-nodes="true">
+     inkscape:bbox-nodes="true"
+     inkscape:snap-grids="false"
+     inkscape:snap-global="false">
     <inkscape:grid
        type="xygrid"
        id="grid131" />
   </sodipodi:namedview>
-  <g
-     inkscape:groupmode="layer"
-     inkscape:label="Image"
-     id="g8">
-    <image
-       sodipodi:absref="/home/tor/src/rally/public/plantagenet/map75.png"
-       xlink:href="../map75.png"
-       width="1275"
-       height="1650"
-       preserveAspectRatio="none"
-       id="image10"
-       sodipodi:insensitive="true"
-       style="image-rendering:pixelated"
-       inkscape:svg-dpi="1" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect785"
-       width="111.13593"
-       height="117.59732"
-       x="450.05042"
-       y="277.74664"
-       inkscape:label="Scotland" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect819"
-       width="109.18066"
-       height="114.18895"
-       x="889.53479"
-       y="1430.4298"
-       inkscape:label="France" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect821"
-       width="67.111046"
-       height="79.130936"
-       x="1133.9392"
-       y="1418.4099"
-       inkscape:label="Calais" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect823"
-       width="110.18232"
-       height="121.20055"
-       x="50.145851"
-       y="948.63257"
-       inkscape:label="Ireland" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect825"
-       width="110.18232"
-       height="121.20055"
-       x="995.71039"
-       y="688.20166"
-       inkscape:label="Burgundy" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect867"
-       width="60.21656"
-       height="45.074585"
-       x="637"
-       y="299.55856"
-       inkscape:label="Bamburgh" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect869"
-       width="81.134254"
-       height="63.10442"
-       x="435.78397"
-       y="421.76077"
-       inkscape:label="Carlisle" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect871"
-       width="52.735039"
-       height="47.451607"
-       x="561.18634"
-       y="395.34396"
-       inkscape:label="Hexham" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect873"
-       width="57.094475"
-       height="52.086185"
-       x="545.96631"
-       y="464.83203"
-       inkscape:label="Appleby" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect875"
-       width="70.11602"
-       height="76.813652"
-       x="656.14862"
-       y="419.06976"
-       inkscape:label="Newcastle" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect877"
-       width="78.12928"
-       height="57.094475"
-       x="791.37238"
-       y="531.94305"
-       inkscape:label="Scarborough" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect879"
-       width="76.125954"
-       height="65.10775"
-       x="691.2066"
-       y="623.09393"
-       inkscape:label="York" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect881"
-       width="69.615219"
-       height="51.08453"
-       x="476.35107"
-       y="595.04749"
-       inkscape:label="Lancaster" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect883"
-       width="72.171318"
-       height="45.074585"
-       x="835.39331"
-       y="721.25635"
-       inkscape:label="Ravenspur" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect885"
-       width="78.129303"
-       height="64.179016"
-       x="767.33258"
-       y="760.32098"
-       ry="6.0099487"
-       inkscape:label="Lincoln" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect887"
-       width="78.379684"
-       height="64.106079"
-       x="432.77899"
-       y="797.38232"
-       ry="6.0099487"
-       inkscape:label="Chester" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect889"
-       width="62.102749"
-       height="49.081215"
-       x="656.14862"
-       y="845.46185"
-       ry="0"
-       inkscape:label="Derby" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect891"
-       width="73.121033"
-       height="40.066307"
-       x="718.25134"
-       y="845.46185"
-       inkscape:label="Nottingham" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect893"
-       width="74.122658"
-       height="61.101105"
-       x="613.07733"
-       y="905.56134"
-       inkscape:label="Lichfield" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect899"
-       width="47.077847"
-       height="46.076233"
-       x="1203.0536"
-       y="630.10553"
-       inkscape:label="45" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect901"
-       width="51.084526"
-       height="48.079556"
-       x="1203.0536"
-       y="676.18176"
-       inkscape:label="44" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect903"
-       width="51.084526"
-       height="50.082893"
-       x="1203.0536"
-       y="724.26129"
-       inkscape:label="43" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect905"
-       width="51.084526"
-       height="45.074593"
-       x="1203.0536"
-       y="774.34418"
-       inkscape:label="42" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect907"
-       width="47.077847"
-       height="46.076244"
-       x="1203.0536"
-       y="819.41876"
-       inkscape:label="41" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect909"
-       width="47.077847"
-       height="48.079575"
-       x="1203.0536"
-       y="865.495"
-       inkscape:label="40" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect911"
-       width="47.077847"
-       height="46.076225"
-       x="1203.0536"
-       y="913.57458"
-       inkscape:label="39" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect913"
-       width="48.785469"
-       height="50.238827"
-       x="1203.0536"
-       y="959.65082"
-       inkscape:label="38"
-       ry="0" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect918"
-       width="48.785469"
-       height="47.420734"
-       x="1203.0536"
-       y="1009.8896"
-       inkscape:label="37" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect922"
-       width="48.785469"
-       height="46.308434"
-       x="1203.0536"
-       y="1057.3104"
-       inkscape:label="36" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect924"
-       width="48.785469"
-       height="46.965294"
-       x="1203.0536"
-       y="1103.6189"
-       inkscape:label="35" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect926"
-       width="48.785469"
-       height="47.293724"
-       x="1203.0536"
-       y="1150.5842"
-       inkscape:label="34" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect928"
-       width="48.785469"
-       height="46.308495"
-       x="1203.0536"
-       y="1197.8779"
-       inkscape:label="33" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect930"
-       width="48.785469"
-       height="47.554058"
-       x="1203.0536"
-       y="1244.1864"
-       inkscape:label="32" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect932"
-       width="48.785469"
-       height="48.465721"
-       x="1203.0536"
-       y="1291.7405"
-       inkscape:label="31" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect934"
-       width="48.785469"
-       height="47.852276"
-       x="1203.0536"
-       y="1340.2062"
-       inkscape:label="30" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect936"
-       width="48.785469"
-       height="46.318504"
-       x="1203.0536"
-       y="1388.0585"
-       inkscape:label="29" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect938"
-       width="48.785469"
-       height="47.238785"
-       x="1203.0536"
-       y="1434.377"
-       inkscape:label="28" />
-    <path
-       id="rect940"
-       style="fill:#000000;fill-opacity:0.378049"
-       inkscape:label="27"
-       d="M 1203.0527,1481.6152 V 1530 h 48.7871 v -48.3848 z" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect944"
-       width="48.787067"
-       height="46.678383"
-       x="1203.0527"
-       y="1530"
-       inkscape:label="26" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect948"
-       width="48.787067"
-       height="47.376148"
-       x="1203.0527"
-       y="1576.6783"
-       inkscape:label="25" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect950"
-       width="45.688774"
-       height="49.497417"
-       x="1157.364"
-       y="1574.557"
-       inkscape:label="24" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect952"
-       width="48.436813"
-       height="49.497417"
-       x="1108.9272"
-       y="1574.557"
-       inkscape:label="23" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect954"
-       width="46.845928"
-       height="49.497437"
-       x="1062.0813"
-       y="1574.557"
-       inkscape:label="22" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect965"
-       width="47.729626"
-       height="49.497437"
-       x="1014.3517"
-       y="1574.557"
-       inkscape:label="21" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect967"
-       width="46.138733"
-       height="49.497437"
-       x="968.21301"
-       y="1574.557"
-       inkscape:label="20" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect969"
-       width="48.436874"
-       height="48.260048"
-       x="919.77612"
-       y="1574.557"
-       inkscape:label="19" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect971"
-       width="46.315475"
-       height="48.260132"
-       x="873.46063"
-       y="1574.557"
-       inkscape:label="18" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect973"
-       width="47.729698"
-       height="48.260132"
-       x="825.73096"
-       y="1574.557"
-       inkscape:label="17" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect975"
-       width="46.845848"
-       height="48.260132"
-       x="778.88513"
-       y="1574.557"
-       inkscape:label="16" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect977"
-       width="47.906506"
-       height="48.260132"
-       x="730.97864"
-       y="1574.557"
-       inkscape:label="15" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect979"
-       width="46.138718"
-       height="47.729801"
-       x="684.8399"
-       y="1575.0873"
-       inkscape:label="14" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect981"
-       width="47.839905"
-       height="48.967213"
-       x="637"
-       y="1575.0873"
-       inkscape:label="13" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect983"
-       width="47.265953"
-       height="48.967213"
-       x="589.73407"
-       y="1575.0873"
-       inkscape:label="12" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect985"
-       width="46.669071"
-       height="48.967213"
-       x="543.065"
-       y="1575.0873"
-       inkscape:label="11" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect987"
-       width="48.613594"
-       height="48.967213"
-       x="494.45142"
-       y="1575.0873"
-       inkscape:label="10" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect991"
-       width="47.022594"
-       height="47.552818"
-       x="447.42883"
-       y="1575.4408"
-       inkscape:label="9" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect993"
-       width="46.492298"
-       height="47.552818"
-       x="400.93652"
-       y="1575.4408"
-       inkscape:label="8" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect995"
-       width="47.376144"
-       height="47.552818"
-       x="353.56039"
-       y="1575.4408"
-       inkscape:label="7" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect997"
-       width="47.729721"
-       height="47.552818"
-       x="305.83066"
-       y="1575.4408"
-       inkscape:label="6" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1001"
-       width="46.989098"
-       height="47.552856"
-       x="258.84158"
-       y="1575.4408"
-       inkscape:label="5" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1003"
-       width="48.140617"
-       height="47.552856"
-       x="210.70097"
-       y="1575.4408"
-       inkscape:label="4" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1005"
-       width="45.952896"
-       height="47.552856"
-       x="164.74809"
-       y="1575.4408"
-       inkscape:label="3" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1007"
-       width="46.457851"
-       height="47.552856"
-       x="118.29025"
-       y="1575.4408"
-       inkscape:label="2" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1009"
-       width="47.4678"
-       height="47.552856"
-       x="70.822456"
-       y="1575.4408"
-       inkscape:label="1" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1011"
-       width="48.477757"
-       height="47.552856"
-       x="22.3447"
-       y="1575.4408"
-       inkscape:label="0" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1015"
-       width="56.304886"
-       height="52.517563"
-       x="141.51918"
-       y="1445.1162"
-       inkscape:label="Truro" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1017"
-       width="67.666862"
-       height="60.092213"
-       x="200.85393"
-       y="1353.7155"
-       inkscape:label="Launceston" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1019"
-       width="63.627048"
-       height="66.151924"
-       x="342.00543"
-       y="1376.4604"
-       inkscape:label="Exeter" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1021"
-       width="58.072308"
-       height="48.982727"
-       x="524.03894"
-       y="1368.3597"
-       inkscape:label="Dorchester" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1023"
-       width="60.092213"
-       height="48.477753"
-       x="677.04681"
-       y="1371.3896"
-       inkscape:label="Southampton" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1025"
-       width="55.899376"
-       height="47.972775"
-       x="793.69641"
-       y="1334.0214"
-       inkscape:label="Arundel" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1027"
-       width="55.153851"
-       height="46.457809"
-       x="983.06262"
-       y="1321.902"
-       inkscape:label="Hastings" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1029"
-       width="53.022541"
-       height="41.408081"
-       x="1041.135"
-       y="1286.5536"
-       inkscape:label="Dover" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1031"
-       width="65.646957"
-       height="65.23597"
-       x="1059.3141"
-       y="1202.7274"
-       inkscape:label="Canterbury" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1033"
-       width="64.637032"
-       height="68.171837"
-       x="983.06262"
-       y="1184.5483"
-       inkscape:label="Rochester" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1035"
-       width="93.925644"
-       height="71.501137"
-       x="874.49268"
-       y="1163.8442"
-       inkscape:label="London" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1037"
-       width="74.23156"
-       height="58.577301"
-       x="840.65924"
-       y="1248.6803"
-       inkscape:label="Guildford" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1039"
-       width="71.201683"
-       height="60.092258"
-       x="722.49475"
-       y="1261.8097"
-       inkscape:label="Winchester" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1041"
-       width="72.716629"
-       height="66.057976"
-       x="610.38995"
-       y="1267.9634"
-       inkscape:label="Salisbury" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1043"
-       width="67.666862"
-       height="66.151978"
-       x="503.83984"
-       y="1261.8097"
-       inkscape:label="Wells" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1045"
-       width="63.122074"
-       height="57.567295"
-       x="498.28516"
-       y="1184.5483"
-       inkscape:label="Bristol" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1047"
-       width="66.151932"
-       height="44.437939"
-       x="664.92743"
-       y="1194.1428"
-       inkscape:label="Newbury" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1049"
-       width="70.44426"
-       height="62.617069"
-       x="707.0929"
-       y="1101.2272"
-       inkscape:label="Oxford" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1051"
-       width="53.527519"
-       height="40.398117"
-       x="900.75146"
-       y="1092.1376"
-       inkscape:label="St Albans" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1053"
-       width="53.527519"
-       height="45.447891"
-       x="900.75146"
-       y="1021.4409"
-       inkscape:label="Cambridge" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1055"
-       width="64.637001"
-       height="47.97271"
-       x="836.11444"
-       y="1044.1649"
-       inkscape:label="Bedford" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1057"
-       width="63.627048"
-       height="54.032543"
-       x="747.74353"
-       y="1012.8563"
-       inkscape:label="Northampton" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1059"
-       width="67.666862"
-       height="62.112083"
-       x="564.43707"
-       y="1092.1376"
-       inkscape:label="Gloucester" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1061"
-       width="71.201698"
-       height="64.889412"
-       x="476.06616"
-       y="1039.8726"
-       inkscape:label="Hereford" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1063"
-       width="65.141975"
-       height="65.141998"
-       x="392.24005"
-       y="1163.8442"
-       inkscape:label="Cardiff" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1065"
-       width="57.567329"
-       height="36.863266"
-       x="184.69467"
-       y="1126.981"
-       inkscape:label="Pembroke" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1067"
-       width="58.072308"
-       height="42.796772"
-       x="1100.2172"
-       y="1029.5205"
-       inkscape:label="Ipswich" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1069"
-       width="54.032494"
-       height="44.69051"
-       x="997.20203"
-       y="995.18213"
-       inkscape:label="Bury St Edmunds" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1071"
-       width="66.656906"
-       height="62.219318"
-       x="1058.8091"
-       y="889.53479"
-       inkscape:label="Norwich" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1075"
-       width="47.4678"
-       height="37.516945"
-       x="962.35858"
-       y="894.54309"
-       inkscape:label="Lynn" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1077"
-       width="64.636986"
-       height="65.773277"
-       x="921.45551"
-       y="951.75409"
-       inkscape:label="Ely" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1079"
-       width="65.646957"
-       height="62.112118"
-       x="827.52985"
-       y="929.53516"
-       inkscape:label="Peterborough" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1081"
-       width="48.554138"
-       height="46.192749"
-       x="757.84308"
-       y="905.56134"
-       inkscape:label="Leicester" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1083"
-       width="67.288094"
-       height="62.858063"
-       x="675.02692"
-       y="966.66248"
-       inkscape:label="Coventry" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1085"
-       width="72.211655"
-       height="64.132004"
-       x="556.35742"
-       y="991.64722"
-       inkscape:label="Worcester" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1087"
-       width="53.780029"
-       height="33.833431"
-       x="476.06616"
-       y="976.49792"
-       inkscape:label="Ludlow" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1089"
-       width="77.766396"
-       height="68.584915"
-       x="499.80005"
-       y="865.495"
-       inkscape:label="Shrewsbury" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1091"
-       width="67.161888"
-       height="60.597191"
-       x="277.61035"
-       y="912.36591"
-       inkscape:label="Harlech" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1093"
-       width="58.072308"
-       height="50.497696"
-       x="252.86652"
-       y="1417.3425"
-       inkscape:label="Plymouth" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1095"
-       width="159.5726"
-       height="93.37368"
-       x="232.66745"
-       y="666.94733"
-       inkscape:label="Irish Sea" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1097"
-       width="173.20694"
-       height="69.229507"
-       x="563.93207"
-       y="1460.7705"
-       inkscape:label="English Channel" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect1099"
-       width="97.160767"
-       height="116.69305"
-       x="1105.8928"
-       y="748.80194"
-       inkscape:label="North Sea" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:1.26755"
-       id="rect1101"
-       width="310"
-       height="52"
-       x="938"
-       y="423"
-       inkscape:label="box16" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:0.983431"
-       id="rect347"
-       width="100"
-       height="162"
-       x="204"
-       y="38"
-       inkscape:label="box1"
-       ry="0" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:0.983428"
-       id="rect349"
-       width="100"
-       height="162"
-       x="306"
-       y="38"
-       inkscape:label="box2"
-       ry="0" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:1.00197"
-       id="rect351"
-       width="100"
-       height="162"
-       x="408"
-       y="38"
-       inkscape:label="box3" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:0.98469"
-       id="rect353"
-       width="100"
-       height="162"
-       x="510"
-       y="38"
-       inkscape:label="box4" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:0.978644"
-       id="rect355"
-       width="100"
-       height="162"
-       x="612"
-       y="38"
-       inkscape:label="box5" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:0.988282"
-       id="rect357"
-       width="100"
-       height="162"
-       x="734"
-       y="38"
-       inkscape:label="box6" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:0.988285"
-       id="rect359"
-       width="100"
-       height="162"
-       x="836"
-       y="38"
-       inkscape:label="box7" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:0.988283"
-       id="rect361"
-       width="100"
-       height="162"
-       x="938"
-       y="38"
-       inkscape:label="box8" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:1.00331"
-       id="rect363"
-       width="100"
-       height="162"
-       x="1040"
-       y="38"
-       inkscape:label="box9" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:0.988286"
-       id="rect365"
-       width="100"
-       height="162"
-       x="1142"
-       y="38"
-       inkscape:label="box10" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:0.986867"
-       id="rect367"
-       width="100"
-       height="162"
-       x="734"
-       y="260"
-       inkscape:label="box11" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:1.03699"
-       id="rect372"
-       width="100"
-       height="162"
-       x="836"
-       y="260"
-       inkscape:label="box12" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:1.011"
-       id="rect374"
-       width="100"
-       height="162"
-       x="938"
-       y="260"
-       inkscape:label="box13" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049;stroke-width:0.956998"
-       id="rect376"
-       width="100"
-       height="162"
-       x="1040"
-       y="260"
-       inkscape:label="box14" />
-    <rect
-       style="display:inline;fill:#000000;fill-opacity:0.378049;stroke-width:1.05907"
-       id="rect380"
-       width="100"
-       height="162"
-       x="1142"
-       y="260"
-       inkscape:label="box15" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect352"
-       width="58.072308"
-       height="50.497696"
-       x="252.86652"
-       y="1417.3425"
-       inkscape:label="Plymouth favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect354"
-       width="67.161888"
-       height="60.597191"
-       x="277.61035"
-       y="912.36591"
-       inkscape:label="Harlech favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect356"
-       width="77.766396"
-       height="68.584915"
-       x="499.80005"
-       y="865.495"
-       inkscape:label="Shrewsbury favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect358"
-       width="53.780029"
-       height="33.833431"
-       x="476.06616"
-       y="976.49792"
-       inkscape:label="Ludlow favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect360"
-       width="72.211655"
-       height="64.132004"
-       x="556.35742"
-       y="991.64722"
-       inkscape:label="Worcester favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect362"
-       width="67.288094"
-       height="62.858063"
-       x="675.02692"
-       y="966.66248"
-       inkscape:label="Coventry favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect364"
-       width="48.554138"
-       height="46.192749"
-       x="757.84308"
-       y="905.56134"
-       inkscape:label="Leicester favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect366"
-       width="65.646957"
-       height="62.112118"
-       x="827.52985"
-       y="929.53516"
-       inkscape:label="Peterborough favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect368"
-       width="64.636986"
-       height="65.773277"
-       x="921.45551"
-       y="951.75409"
-       inkscape:label="Ely favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect370"
-       width="47.4678"
-       height="37.516945"
-       x="962.35858"
-       y="894.54309"
-       inkscape:label="Lynn favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect373"
-       width="66.656906"
-       height="62.219318"
-       x="1058.8091"
-       y="889.53479"
-       inkscape:label="Norwich favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect375"
-       width="54.032494"
-       height="44.69051"
-       x="997.20203"
-       y="995.18213"
-       inkscape:label="Bury St Edmunds favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect377"
-       width="58.072308"
-       height="42.796772"
-       x="1100.2172"
-       y="1029.5205"
-       inkscape:label="Ipswich favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect379"
-       width="57.567329"
-       height="36.863266"
-       x="184.69467"
-       y="1126.981"
-       inkscape:label="Pembroke favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect381"
-       width="65.141975"
-       height="65.141998"
-       x="392.24005"
-       y="1163.8442"
-       inkscape:label="Cardiff favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect383"
-       width="71.201698"
-       height="64.889412"
-       x="476.06616"
-       y="1039.8726"
-       inkscape:label="Hereford favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect385"
-       width="67.666862"
-       height="62.112083"
-       x="564.43707"
-       y="1092.1376"
-       inkscape:label="Gloucester favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect387"
-       width="63.627048"
-       height="54.032543"
-       x="747.74353"
-       y="1012.8563"
-       inkscape:label="Northampton favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect389"
-       width="64.637001"
-       height="47.97271"
-       x="836.11444"
-       y="1044.1649"
-       inkscape:label="Bedford favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect391"
-       width="53.527519"
-       height="45.447891"
-       x="900.75146"
-       y="1021.4409"
-       inkscape:label="Cambridge favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect393"
-       width="53.527519"
-       height="40.398117"
-       x="900.75146"
-       y="1092.1376"
-       inkscape:label="St Albans favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect395"
-       width="70.44426"
-       height="62.617069"
-       x="707.0929"
-       y="1101.2272"
-       inkscape:label="Oxford favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect397"
-       width="66.151932"
-       height="44.437939"
-       x="664.92743"
-       y="1194.1428"
-       inkscape:label="Newbury favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect399"
-       width="63.122074"
-       height="57.567295"
-       x="498.28516"
-       y="1184.5483"
-       inkscape:label="Bristol favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect401"
-       width="72.716629"
-       height="66.057976"
-       x="610.38995"
-       y="1267.9634"
-       inkscape:label="Salisbury favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect403"
-       width="67.666862"
-       height="66.151978"
-       x="503.83984"
-       y="1261.8097"
-       inkscape:label="Wells favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect405"
-       width="71.201683"
-       height="60.092258"
-       x="722.49475"
-       y="1261.8097"
-       inkscape:label="Winchester favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect407"
-       width="74.23156"
-       height="58.577301"
-       x="840.65924"
-       y="1248.6803"
-       inkscape:label="Guildford favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect409"
-       width="93.925644"
-       height="71.501137"
-       x="874.49268"
-       y="1163.8442"
-       inkscape:label="London favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect411"
-       width="64.637032"
-       height="68.171837"
-       x="983.06262"
-       y="1184.5483"
-       inkscape:label="Rochester favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect413"
-       width="65.646957"
-       height="65.23597"
-       x="1059.3141"
-       y="1202.7274"
-       inkscape:label="Canterbury favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect415"
-       width="53.022541"
-       height="41.408081"
-       x="1041.135"
-       y="1286.5536"
-       inkscape:label="Dover favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect417"
-       width="55.153851"
-       height="46.457809"
-       x="983.06262"
-       y="1321.902"
-       inkscape:label="Hastings favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect419"
-       width="55.899376"
-       height="47.972775"
-       x="793.69641"
-       y="1334.0214"
-       inkscape:label="Arundel favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect421"
-       width="60.092213"
-       height="48.477753"
-       x="677.04681"
-       y="1371.3896"
-       inkscape:label="Southampton favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect423"
-       width="58.072308"
-       height="48.982727"
-       x="524.03894"
-       y="1368.3597"
-       inkscape:label="Dorchester favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect425"
-       width="63.627048"
-       height="66.151924"
-       x="342.00543"
-       y="1376.4604"
-       inkscape:label="Exeter favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect427"
-       width="67.666862"
-       height="60.092213"
-       x="200.85393"
-       y="1353.7155"
-       inkscape:label="Launceston favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect429"
-       width="56.304886"
-       height="52.517563"
-       x="141.51918"
-       y="1445.1162"
-       inkscape:label="Truro favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect431"
-       width="74.122658"
-       height="61.101105"
-       x="613.07733"
-       y="905.56134"
-       inkscape:label="Lichfield favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect433"
-       width="73.121033"
-       height="40.066307"
-       x="718.25134"
-       y="845.46185"
-       inkscape:label="Nottingham favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect435"
-       width="62.102749"
-       height="49.081215"
-       x="656.14862"
-       y="845.46185"
-       ry="0"
-       inkscape:label="Derby favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect437"
-       width="78.379684"
-       height="64.106079"
-       x="432.77899"
-       y="797.38232"
-       ry="6.0099487"
-       inkscape:label="Chester favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect439"
-       width="78.129303"
-       height="64.179016"
-       x="767.33258"
-       y="760.32098"
-       ry="6.0099487"
-       inkscape:label="Lincoln favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect441"
-       width="72.171318"
-       height="45.074585"
-       x="835.39331"
-       y="721.25635"
-       inkscape:label="Ravenspur favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect443"
-       width="69.615219"
-       height="51.08453"
-       x="476.35107"
-       y="595.04749"
-       inkscape:label="Lancaster favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect445"
-       width="76.125954"
-       height="65.10775"
-       x="691.2066"
-       y="623.09393"
-       inkscape:label="York favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect447"
-       width="78.12928"
-       height="57.094475"
-       x="791.37238"
-       y="531.94305"
-       inkscape:label="Scarborough favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect449"
-       width="70.11602"
-       height="76.813652"
-       x="656.14862"
-       y="419.06976"
-       inkscape:label="Newcastle favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect451"
-       width="57.094475"
-       height="52.086185"
-       x="545.96631"
-       y="464.83203"
-       inkscape:label="Appleby favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect453"
-       width="52.735039"
-       height="47.451607"
-       x="561.18634"
-       y="395.34396"
-       inkscape:label="Hexham favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect455"
-       width="81.134254"
-       height="63.10442"
-       x="435.78397"
-       y="421.76077"
-       inkscape:label="Carlisle favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect457"
-       width="60.21656"
-       height="45.074585"
-       x="637"
-       y="299.55856"
-       inkscape:label="Bamburgh favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect459"
-       width="110.18232"
-       height="121.20055"
-       x="995.71039"
-       y="688.20166"
-       inkscape:label="Burgundy favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect461"
-       width="110.18232"
-       height="121.20055"
-       x="50.145851"
-       y="938.63257"
-       inkscape:label="Ireland deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect463"
-       width="67.111046"
-       height="79.130936"
-       x="1133.9392"
-       y="1418.4099"
-       inkscape:label="Calais favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect465"
-       width="109.18066"
-       height="114.18895"
-       x="889.53479"
-       y="1430.4298"
-       inkscape:label="France favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect467"
-       width="111.13593"
-       height="117.59732"
-       x="450.05042"
-       y="277.74664"
-       inkscape:label="Scotland favour" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect471"
-       width="67.111046"
-       height="79.130936"
-       x="1144.8597"
-       y="1408.4099"
-       inkscape:label="Calais deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect473"
-       width="111.13593"
-       height="117.59732"
-       x="450.05042"
-       y="267.74664"
-       inkscape:label="Scotland deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect475"
-       width="109.18066"
-       height="114.18895"
-       x="889.53479"
-       y="1420.4298"
-       inkscape:label="France deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect477"
-       width="110.18232"
-       height="121.20055"
-       x="995.71039"
-       y="678.20166"
-       inkscape:label="Burgundy deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect479"
-       width="60.21656"
-       height="45.074585"
-       x="647"
-       y="289.55856"
-       inkscape:label="Bamburgh deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect481"
-       width="81.134254"
-       height="63.10442"
-       x="445.78397"
-       y="411.76077"
-       inkscape:label="Carlisle deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect483"
-       width="52.735039"
-       height="47.451607"
-       x="571.18634"
-       y="385.34396"
-       inkscape:label="Hexham deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect485"
-       width="57.094475"
-       height="52.086185"
-       x="555.96631"
-       y="454.83203"
-       inkscape:label="Appleby deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect487"
-       width="70.11602"
-       height="76.813652"
-       x="668.14862"
-       y="409.06976"
-       inkscape:label="Newcastle deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect489"
-       width="78.12928"
-       height="57.094475"
-       x="801.37238"
-       y="521.94305"
-       inkscape:label="Scarborough deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect491"
-       width="76.125954"
-       height="65.10775"
-       x="701.2066"
-       y="613.09393"
-       inkscape:label="York deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect493"
-       width="69.615219"
-       height="51.08453"
-       x="486.35107"
-       y="585.04749"
-       inkscape:label="Lancaster deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect495"
-       width="72.171318"
-       height="45.074585"
-       x="845.39331"
-       y="711.25635"
-       inkscape:label="Ravenspur deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect497"
-       width="78.129303"
-       height="64.179016"
-       x="777.33258"
-       y="750.32098"
-       ry="6.0099487"
-       inkscape:label="Lincoln deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect499"
-       width="78.379684"
-       height="64.106079"
-       x="442.77899"
-       y="787.38232"
-       ry="6.0099487"
-       inkscape:label="Chester deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect501"
-       width="62.102749"
-       height="49.081215"
-       x="656.14862"
-       y="835.46185"
-       ry="0"
-       inkscape:label="Derby deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect503"
-       width="73.121033"
-       height="40.066307"
-       x="728.25134"
-       y="835.46185"
-       inkscape:label="Nottingham deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect505"
-       width="74.122658"
-       height="61.101105"
-       x="603.07733"
-       y="895.56134"
-       inkscape:label="Lichfield deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect507"
-       width="56.304886"
-       height="52.517563"
-       x="131.51918"
-       y="1435.1162"
-       inkscape:label="Truro deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect509"
-       width="67.666862"
-       height="60.092213"
-       x="210.85393"
-       y="1343.7155"
-       inkscape:label="Launceston deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect511"
-       width="63.627048"
-       height="66.151924"
-       x="352.00543"
-       y="1366.4604"
-       inkscape:label="Exeter deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect513"
-       width="58.072308"
-       height="48.982727"
-       x="514.03894"
-       y="1358.3597"
-       inkscape:label="Dorchester deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect515"
-       width="60.092213"
-       height="48.477753"
-       x="667.04681"
-       y="1361.3896"
-       inkscape:label="Southampton deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect517"
-       width="55.899376"
-       height="47.972775"
-       x="783.69641"
-       y="1324.0214"
-       inkscape:label="Arundel deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect519"
-       width="55.153851"
-       height="46.457809"
-       x="973.06262"
-       y="1311.902"
-       inkscape:label="Hastings deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect521"
-       width="53.022541"
-       height="41.408081"
-       x="1031.135"
-       y="1276.5536"
-       inkscape:label="Dover deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect523"
-       width="65.646957"
-       height="65.23597"
-       x="1069.3141"
-       y="1192.7274"
-       inkscape:label="Canterbury deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect525"
-       width="64.637032"
-       height="68.171837"
-       x="993.06262"
-       y="1174.5483"
-       inkscape:label="Rochester deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect527"
-       width="93.925644"
-       height="71.501137"
-       x="864.49268"
-       y="1153.8442"
-       inkscape:label="London deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect529"
-       width="74.23156"
-       height="58.577301"
-       x="850.65924"
-       y="1258.6803"
-       inkscape:label="Guildford deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect531"
-       width="71.201683"
-       height="60.092258"
-       x="732.49475"
-       y="1251.8097"
-       inkscape:label="Winchester deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect533"
-       width="67.666862"
-       height="66.151978"
-       x="513.83984"
-       y="1251.8097"
-       inkscape:label="Wells deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect535"
-       width="72.716629"
-       height="66.057976"
-       x="620.38995"
-       y="1257.9634"
-       inkscape:label="Salisbury deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect537"
-       width="63.122074"
-       height="57.567295"
-       x="508.28516"
-       y="1174.5483"
-       inkscape:label="Bristol deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect539"
-       width="66.151932"
-       height="44.437939"
-       x="654.92743"
-       y="1184.1428"
-       inkscape:label="Newbury deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect541"
-       width="70.44426"
-       height="62.617069"
-       x="697.0929"
-       y="1091.2272"
-       inkscape:label="Oxford deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect543"
-       width="53.527519"
-       height="40.398117"
-       x="890.75146"
-       y="1102.1376"
-       inkscape:label="St Albans deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect545"
-       width="53.527519"
-       height="45.447891"
-       x="910.75146"
-       y="1031.4409"
-       inkscape:label="Cambridge deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect547"
-       width="64.637001"
-       height="47.97271"
-       x="826.11444"
-       y="1034.1649"
-       inkscape:label="Bedford deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect549"
-       width="63.627048"
-       height="54.032543"
-       x="757.74353"
-       y="1002.8563"
-       inkscape:label="Northampton deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect551"
-       width="67.666862"
-       height="62.112083"
-       x="574.43707"
-       y="1082.1376"
-       inkscape:label="Gloucester deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect553"
-       width="71.201698"
-       height="64.889412"
-       x="466.06616"
-       y="1029.8726"
-       inkscape:label="Hereford deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect555"
-       width="65.141975"
-       height="65.141998"
-       x="382.24005"
-       y="1153.8442"
-       inkscape:label="Cardiff deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect557"
-       width="57.567329"
-       height="36.863266"
-       x="194.69467"
-       y="1116.981"
-       inkscape:label="Pembroke deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect559"
-       width="58.072308"
-       height="42.796772"
-       x="1110.2172"
-       y="1019.5205"
-       inkscape:label="Ipswich deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect561"
-       width="54.032494"
-       height="44.69051"
-       x="1007.202"
-       y="985.18213"
-       inkscape:label="Bury St Edmunds deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect563"
-       width="66.656906"
-       height="62.219318"
-       x="1068.8091"
-       y="879.53479"
-       inkscape:label="Norwich deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect565"
-       width="47.4678"
-       height="37.516945"
-       x="972.35858"
-       y="884.54309"
-       inkscape:label="Lynn deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect567"
-       width="64.636986"
-       height="65.773277"
-       x="931.45551"
-       y="941.75409"
-       inkscape:label="Ely deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect569"
-       width="65.646957"
-       height="62.112118"
-       x="837.52985"
-       y="919.53516"
-       inkscape:label="Peterborough deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect571"
-       width="48.554138"
-       height="46.192749"
-       x="767.84308"
-       y="895.56134"
-       inkscape:label="Leicester deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect573"
-       width="67.288094"
-       height="62.858063"
-       x="685.02692"
-       y="956.66248"
-       inkscape:label="Coventry deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect575"
-       width="72.211655"
-       height="64.132004"
-       x="546.35742"
-       y="981.64722"
-       inkscape:label="Worcester deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect577"
-       width="53.780029"
-       height="33.833431"
-       x="486.06616"
-       y="966.49792"
-       inkscape:label="Ludlow deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect579"
-       width="77.766396"
-       height="68.584915"
-       x="509.80005"
-       y="855.495"
-       inkscape:label="Shrewsbury deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect581"
-       width="67.161888"
-       height="60.597191"
-       x="287.61035"
-       y="902.36591"
-       inkscape:label="Harlech deplete" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect583"
-       width="58.072308"
-       height="50.497696"
-       x="262.86652"
-       y="1407.3425"
-       inkscape:label="Plymouth deplete" />
-    <rect
-       style="fill:#000000"
-       id="rect1016"
-       width="53.546478"
-       height="55.672852"
-       x="600.03796"
-       y="469.797"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_westmorld" />
-    <rect
-       style="fill:#000000"
-       id="rect1020"
-       width="53.546478"
-       height="55.672852"
-       x="608.79962"
-       y="839.85706"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_stanley" />
-    <rect
-       style="fill:#000000"
-       id="rect1022"
-       width="53.546478"
-       height="55.672852"
-       x="704.21875"
-       y="898.45428"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_dudley" />
-    <rect
-       style="fill:#000000"
-       id="rect1024"
-       width="53.546478"
-       height="55.672852"
-       x="454.9093"
-       y="878.96387"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_shrewsbury" />
-    <rect
-       style="fill:#000000"
-       id="rect1026"
-       width="53.546478"
-       height="55.672852"
-       x="615.84619"
-       y="998.79395"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_worcester" />
-    <rect
-       style="fill:#000000"
-       id="rect1028"
-       width="53.546478"
-       height="55.672852"
-       x="776.02142"
-       y="1109.2596"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_oxford" />
-    <rect
-       style="fill:#000000"
-       id="rect1030"
-       width="53.546478"
-       height="55.672852"
-       x="954.6076"
-       y="1081.6432"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_essex" />
-    <rect
-       style="fill:#000000"
-       id="rect1032"
-       width="53.546478"
-       height="55.672852"
-       x="1156.2075"
-       y="1023.9665"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_suffolk" />
-    <rect
-       style="fill:#000000"
-       id="rect1034"
-       width="53.546478"
-       height="55.672852"
-       x="1093.6104"
-       y="1278.6403"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_fauconberg" />
-    <rect
-       style="fill:#000000"
-       id="rect1036"
-       width="53.546478"
-       height="55.672852"
-       x="849.66528"
-       y="1330.1909"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_norfolk" />
-    <rect
-       style="fill:#000000"
-       id="rect1038"
-       width="53.546478"
-       height="55.672852"
-       x="405.96146"
-       y="1380.821"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_devon" />
-    <rect
-       style="fill:#000000"
-       id="rect1040"
-       width="53.546478"
-       height="55.672852"
-       x="155.48006"
-       y="1356.1241"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_bonville" />
-    <rect
-       style="fill:#000000"
-       id="rect1042"
-       width="53.546478"
-       height="55.672852"
-       x="943.56116"
-       y="1144.2404"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_henry_vi" />
-    <rect
-       style="fill:#000000"
-       id="rect1044"
-       width="53.546478"
-       height="55.672852"
-       x="943.56116"
-       y="1144.2404"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_margaret" />
-    <rect
-       style="fill:#000000"
-       id="rect1046"
-       width="53.546478"
-       height="55.672852"
-       x="943.56116"
-       y="1144.2404"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_henry_tudor" />
-    <rect
-       style="fill:#000000"
-       id="rect1048"
-       width="53.546478"
-       height="55.672852"
-       x="943.56116"
-       y="1169.0951"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_edward_iii" />
-    <rect
-       style="fill:#000000"
-       id="rect1050"
-       width="53.546478"
-       height="55.672852"
-       x="943.56116"
-       y="1169.0951"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_gloucester_2" />
-    <rect
-       style="fill:#000000"
-       id="rect1052"
-       width="53.546478"
-       height="55.672852"
-       x="620.44904"
-       y="1061.391"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_gloucester_1" />
-    <rect
-       style="fill:#000000"
-       id="rect1054"
-       width="53.546478"
-       height="55.672852"
-       x="652.66821"
-       y="616.7666"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_salisbury" />
-    <rect
-       style="fill:#000000"
-       id="rect1056"
-       width="53.546478"
-       height="55.672852"
-       x="653.58875"
-       y="592.8324"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_clarence" />
-    <rect
-       style="fill:#000000"
-       id="rect1058"
-       width="53.546478"
-       height="55.672852"
-       x="396.75601"
-       y="405.04074"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_northumberland_l" />
-    <rect
-       style="fill:#000000"
-       id="rect1060"
-       width="53.546478"
-       height="55.672852"
-       x="730.31189"
-       y="765.13379"
-       rx="0"
-       ry="0"
-       inkscape:label="vassal vassal_beaumont" />
-    <rect
-       style="display:none;fill:#000000"
-       id="rect1062"
-       width="53.546478"
-       height="55.672852"
-       x="715.26538"
-       y="958.28973"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_buckingham" />
-    <rect
-       style="fill:#000000"
-       id="rect1064"
-       width="53.546478"
-       height="55.672852"
-       x="431.73682"
-       y="947.24316"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_march" />
-    <rect
-       style="fill:#000000"
-       id="rect1066"
-       width="53.546478"
-       height="55.672852"
-       x="233.22676"
-       y="890"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_jasper_tudor_2" />
-    <rect
-       style="fill:#000000"
-       id="rect1068"
-       width="53.546478"
-       height="55.672852"
-       x="153.22676"
-       y="1064.3271"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_jasper_tudor_1" />
-    <rect
-       style="fill:#000000"
-       id="rect1070"
-       width="53.546478"
-       height="55.672852"
-       x="771.41882"
-       y="1091.7692"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_oxford" />
-    <rect
-       style="fill:#000000"
-       id="rect1072"
-       width="53.546478"
-       height="55.672852"
-       x="1112.9419"
-       y="1181.0623"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_rutland" />
-    <rect
-       style="fill:#000000"
-       id="rect1074"
-       width="53.546478"
-       height="55.672852"
-       x="1117.5447"
-       y="1384.5032"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_warwick_l" />
-    <rect
-       style="fill:#000000"
-       id="rect1076"
-       width="53.546478"
-       height="55.672852"
-       x="405.04102"
-       y="1390.947"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_exeter_1" />
-    <rect
-       style="fill:#000000"
-       id="rect1078"
-       width="53.546478"
-       height="55.672852"
-       x="313.22675"
-       y="1340"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_devon" />
-    <rect
-       style="fill:#000000"
-       id="rect1080"
-       width="53.546478"
-       height="55.672852"
-       x="145.44666"
-       y="1108.339"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_pembroke" />
-    <rect
-       style="fill:#000000"
-       id="rect1082"
-       width="53.546478"
-       height="55.672852"
-       x="453.33432"
-       y="1248.288"
-       rx="0"
-       ry="0"
-       inkscape:label="seat lancaster lord_somerset_1" />
-    <rect
-       style="fill:#000000"
-       id="rect1084"
-       width="53.546478"
-       height="55.672852"
-       x="849.66528"
-       y="1330.1909"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_norfolk" />
-    <rect
-       style="fill:#000000"
-       id="rect440"
-       width="53.546478"
-       height="55.672852"
-       x="396.75601"
-       y="405.04074"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_northumberland_y1" />
-    <rect
-       style="fill:#000000"
-       id="rect442"
-       width="53.546478"
-       height="55.672852"
-       x="1117.5447"
-       y="1384.5032"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_warwick_y" />
-    <rect
-       style="fill:#000000;fill-opacity:0.378049"
-       id="rect444"
-       width="110.18232"
-       height="121.20055"
-       x="50.145851"
-       y="946.63257"
-       inkscape:label="Ireland favour" />
-    <rect
-       style="fill:#000000"
-       id="rect446"
-       width="53.546478"
-       height="55.672852"
-       x="904.30859"
-       y="930.31909"
-       rx="0"
-       ry="0"
-       inkscape:label="seat york lord_york" />
-  </g>
+  <image
+     sodipodi:absref="/home/tor/src/rally/public/plantagenet/map75.png"
+     xlink:href="../map75.png"
+     y="0"
+     x="0"
+     width="1275"
+     height="1650"
+     preserveAspectRatio="none"
+     id="image10"
+     sodipodi:insensitive="true"
+     style="display:inline;image-rendering:pixelated"
+     inkscape:svg-dpi="1" />
+  <rect
+     style="fill:#ff00ff;fill-opacity:0.378049;stroke-width:1.5703"
+     id="rect1091"
+     width="56.707272"
+     height="52.180344"
+     x="282.21927"
+     y="918.70312"
+     inkscape:label="Harlech"
+     clip-path="none" />
+  <rect
+     style="display:inline;fill:#ff00ff;fill-opacity:0.378049;stroke-width:0.984413"
+     id="rect1035"
+     width="89.240852"
+     height="72.926941"
+     x="877.95532"
+     y="1158.9558"
+     inkscape:label="London" />
+  <rect
+     style="display:inline;fill:#ff00ff;fill-opacity:0.378049;stroke-width:0.812881"
+     id="rect821"
+     width="63.279858"
+     height="57.551521"
+     x="1136.5317"
+     y="1411.4965"
+     inkscape:label="Calais" />
+  <rect
+     style="fill:#000000;fill-opacity:0.378049"
+     id="rect785"
+     width="113"
+     height="132"
+     x="448.42093"
+     y="277.33926"
+     inkscape:label="Scotland" />
+  <rect
+     style="fill:#000000;fill-opacity:0.378049"
+     id="rect819"
+     width="113"
+     height="132"
+     x="887.7016"
+     y="1427.5782"
+     inkscape:label="France" />
+  <rect
+     style="fill:#000000;fill-opacity:0.378049;stroke-width:1.05917"
+     id="rect823"
+     width="113"
+     height="132"
+     x="48.417511"
+     y="950.07288"
+     inkscape:label="Ireland" />
+  <rect
+     style="fill:#000000;fill-opacity:0.378049"
+     id="rect825"
+     width="113"
+     height="132"
+     x="992.85876"
+     y="683.92419"
+     inkscape:label="Burgundy" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect869"
+     width="58"
+     height="64"
+     x="447.21762"
+     y="419.52023"
+     inkscape:label="Carlisle" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect875"
+     width="58"
+     height="64"
+     x="664.70172"
+     y="426.62317"
+     inkscape:label="Newcastle" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect879"
+     width="58"
+     height="64"
+     x="705.23279"
+     y="624.88617"
+     inkscape:label="York" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect885"
+     width="58"
+     height="64"
+     x="780.49457"
+     y="757.21625"
+     inkscape:label="Lincoln" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect887"
+     width="58"
+     height="64"
+     x="444.39584"
+     y="799.55646"
+     inkscape:label="Chester" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect893"
+     width="58"
+     height="64"
+     x="612.93329"
+     y="899.36633"
+     inkscape:label="Lichfield" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1017"
+     width="58"
+     height="64"
+     x="202.33939"
+     y="1351.3906"
+     inkscape:label="Launceston" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049;stroke-width:0.942548"
+     id="rect1019"
+     width="58"
+     height="64"
+     x="343.89828"
+     y="1376.478"
+     inkscape:label="Exeter" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1031"
+     width="58"
+     height="64"
+     x="1061.818"
+     y="1202.4395"
+     inkscape:label="Canterbury" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1033"
+     width="58"
+     height="64"
+     x="986.99231"
+     y="1185.0751"
+     inkscape:label="Rochester" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1037"
+     width="58"
+     height="64"
+     x="849.27374"
+     y="1246.1517"
+     inkscape:label="Guildford" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1039"
+     width="58"
+     height="64"
+     x="730.29449"
+     y="1261.7253"
+     inkscape:label="Winchester" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1041"
+     width="58"
+     height="64"
+     x="620.22656"
+     y="1267.2679"
+     inkscape:label="Salisbury" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1043"
+     width="58"
+     height="64"
+     x="508.17694"
+     y="1261.9291"
+     inkscape:label="Wells" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1045"
+     width="58"
+     height="64"
+     x="499.56696"
+     y="1179.5756"
+     inkscape:label="Bristol" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1049"
+     width="58"
+     height="64"
+     x="711.03711"
+     y="1102.8754"
+     inkscape:label="Oxford" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1059"
+     width="58"
+     height="64"
+     x="568.38129"
+     y="1090.6172"
+     inkscape:label="Gloucester" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1061"
+     width="58"
+     height="64"
+     x="486.3476"
+     y="1040.0806"
+     inkscape:label="Hereford" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1063"
+     width="58"
+     height="64"
+     x="395.55872"
+     y="1166.0005"
+     inkscape:label="Cardiff" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1071"
+     width="58"
+     height="64"
+     x="1063.3499"
+     y="889.2467"
+     inkscape:label="Norwich" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1077"
+     width="58"
+     height="64"
+     x="927.01471"
+     y="956.15082"
+     inkscape:label="Ely" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1079"
+     width="58"
+     height="64"
+     x="832.27429"
+     y="927.41388"
+     inkscape:label="Peterborough" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1083"
+     width="58"
+     height="64"
+     x="677.7345"
+     y="966.17072"
+     inkscape:label="Coventry" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1085"
+     width="58"
+     height="64"
+     x="560.69452"
+     y="988.71124"
+     inkscape:label="Worcester" />
+  <rect
+     style="fill:#ffff00;fill-opacity:0.378049"
+     id="rect1089"
+     width="58"
+     height="64"
+     x="505.56293"
+     y="869.07697"
+     inkscape:label="Shrewsbury" />
+  <rect
+     style="fill:#0000ff;fill-opacity:0.378049"
+     id="rect867"
+     width="40"
+     height="30"
+     x="645.98938"
+     y="310.80002"
+     inkscape:label="Bamburgh" />
+  <rect
+     style="fill:#0000ff;fill-opacity:0.378049"
+     id="rect883"
+     width="40"
+     height="30"
+     x="857.54572"
+     y="733.50012"
+     inkscape:label="Ravenspur" />
+  <rect
+     style="fill:#0000ff;fill-opacity:0.378049;stroke-width:0.737594"
+     id="rect1065"
+     width="40"
+     height="30"
+     x="192.6487"
+     y="1130.4785"
+     inkscape:label="Pembroke" />
+  <rect
+     style="fill:#0000ff;fill-opacity:0.378049"
+     id="rect1075"
+     width="40"
+     height="30"
+     x="967.91052"
+     y="898.44806"
+     inkscape:label="Lynn" />
+  <rect
+     style="fill:#0000ff;fill-opacity:0.378049"
+     id="rect1087"
+     width="40"
+     height="30"
+     x="487.0123"
+     y="979.37848"
+     inkscape:label="Ludlow" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect871"
+     width="50"
+     height="40"
+     x="559.96423"
+     y="402.67667"
+     inkscape:label="Hexham" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049;stroke-width:0.914905"
+     id="rect873"
+     width="50"
+     height="40"
+     x="545.5589"
+     y="471.75735"
+     inkscape:label="Appleby" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect877"
+     width="50"
+     height="40"
+     x="808.77783"
+     y="545.99902"
+     inkscape:label="Scarborough" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect881"
+     width="50"
+     height="40"
+     x="485.40735"
+     y="605.59174"
+     inkscape:label="Lancaster" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect889"
+     width="50"
+     height="40"
+     x="661.03711"
+     y="849.53558"
+     ry="0"
+     inkscape:label="Derby" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect891"
+     width="50"
+     height="40"
+     x="733.32416"
+     y="843.01758"
+     inkscape:label="Nottingham" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1015"
+     width="50"
+     height="40"
+     x="144.69919"
+     y="1455.9991"
+     inkscape:label="Truro" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1021"
+     width="50"
+     height="40"
+     x="530.96429"
+     y="1376.5072"
+     inkscape:label="Dorchester" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1023"
+     width="50"
+     height="40"
+     x="681.9353"
+     y="1378.7224"
+     inkscape:label="Southampton" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1025"
+     width="50"
+     height="40"
+     x="796.14062"
+     y="1337.2804"
+     inkscape:label="Arundel" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1027"
+     width="50"
+     height="40"
+     x="989.09814"
+     y="1327.6052"
+     inkscape:label="Hastings" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1029"
+     width="50"
+     height="40"
+     x="1040.7277"
+     y="1286.9611"
+     inkscape:label="Dover" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1047"
+     width="50"
+     height="40"
+     x="675.5191"
+     y="1194.9576"
+     inkscape:label="Newbury" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1051"
+     width="50"
+     height="40"
+     x="906.07574"
+     y="1091.4977"
+     inkscape:label="St Albans" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1053"
+     width="50"
+     height="40"
+     x="902.38092"
+     y="1025.5146"
+     inkscape:label="Cambridge" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1055"
+     width="50"
+     height="40"
+     x="844.66931"
+     y="1051.905"
+     inkscape:label="Bedford" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1057"
+     width="50"
+     height="40"
+     x="751.0025"
+     y="1024.6702"
+     inkscape:label="Northampton" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1067"
+     width="50"
+     height="40"
+     x="1108.3646"
+     y="1031.15"
+     inkscape:label="Ipswich" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1069"
+     width="50"
+     height="40"
+     x="1000.461"
+     y="995.99689"
+     inkscape:label="Bury St Edmunds" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1081"
+     width="50"
+     height="40"
+     x="755.80621"
+     y="912.48669"
+     inkscape:label="Leicester" />
+  <rect
+     style="fill:#008000;fill-opacity:0.378049"
+     id="rect1093"
+     width="50"
+     height="40"
+     x="256.94025"
+     y="1428.3417"
+     inkscape:label="Plymouth" />
+  <rect
+     style="fill:#000000;fill-opacity:0.378049;stroke-width:0.716228"
+     id="rect1095"
+     width="135.37585"
+     height="56.460304"
+     x="224.24649"
+     y="663.53967"
+     inkscape:label="Irish Sea" />
+  <rect
+     style="fill:#000000;fill-opacity:0.378049;stroke-width:1.29793"
+     id="rect1097"
+     width="245.67915"
+     height="82.222496"
+     x="550"
+     y="1450"
+     inkscape:label="English Channel" />
+  <rect
+     style="fill:#000000;fill-opacity:0.378049;stroke-width:0.926262"
+     id="rect1099"
+     width="150"
+     height="64.85054"
+     x="1019.4239"
+     y="824.39618"
+     inkscape:label="North Sea" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1016"
+     width="27"
+     height="30"
+     x="597.97174"
+     y="488.37436"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_westmoreland" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1020"
+     width="27"
+     height="30"
+     x="631"
+     y="862.26422"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_stanley" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1022"
+     width="27"
+     height="30"
+     x="726.8512"
+     y="921.29358"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_dudley" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1024"
+     width="27"
+     height="30"
+     x="479.84622"
+     y="900.07477"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_shrewsbury" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1026"
+     width="27"
+     height="30"
+     x="620.6192"
+     y="1014.2877"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_worcester" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1028"
+     width="27"
+     height="30"
+     x="772.00867"
+     y="1132.0989"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_oxford" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1030"
+     width="27"
+     height="30"
+     x="959.38062"
+     y="1102.8982"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_essex" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1032"
+     width="27"
+     height="30"
+     x="1161.4125"
+     y="1042.7729"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_suffolk" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1034"
+     width="27"
+     height="30"
+     x="1094.6385"
+     y="1297.1587"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_fauconberg" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1036"
+     width="27"
+     height="30"
+     x="847.5249"
+     y="1353.3182"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_norfolk" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1038"
+     width="27"
+     height="30"
+     x="405.52472"
+     y="1400.2131"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_devon" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect1040"
+     width="27"
+     height="30"
+     x="174.49539"
+     y="1377.0439"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_bonville" />
+  <rect
+     style="opacity:0.5;fill:#00ff00;stroke:none;stroke-width:0"
+     id="rect967"
+     width="27"
+     height="30"
+     x="753.24878"
+     y="786.93823"
+     rx="0"
+     ry="0"
+     inkscape:label="vassal vassal_beaumont" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect1042"
+     width="50"
+     height="50"
+     x="839.82922"
+     y="1167.6871"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_henry_vi" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect1044"
+     width="50"
+     height="50"
+     x="846.57922"
+     y="1153.4371"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_margaret" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect1046"
+     width="50"
+     height="50"
+     x="830.82922"
+     y="1186.1871"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_henry_tudor" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect1056"
+     width="50"
+     height="50"
+     x="655.61737"
+     y="612.94305"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_clarence" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect1058"
+     width="50"
+     height="50"
+     x="392.328"
+     y="422.1658"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_northumberland_l" />
+  <rect
+     style="display:none;opacity:0.5;fill:#ff0000"
+     id="rect1062"
+     width="50"
+     height="50"
+     x="714.28345"
+     y="974.73645"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_buckingham" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect1066"
+     width="50"
+     height="50"
+     x="339.72382"
+     y="925.52167"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_jasper_tudor_2" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect1068"
+     width="50"
+     height="50"
+     x="192.24489"
+     y="1076.7739"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_jasper_tudor_1" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect1070"
+     width="50"
+     height="50"
+     x="691.93689"
+     y="1085.2159"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_oxford" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect1074"
+     width="50"
+     height="50"
+     x="1149.5627"
+     y="1350.4498"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_warwick_l" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect1076"
+     width="50"
+     height="50"
+     x="344.55917"
+     y="1329.3937"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_exeter_1" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect1082"
+     width="50"
+     height="50"
+     x="457.35245"
+     y="1274.7346"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_somerset_1" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect1048"
+     width="50"
+     height="50"
+     x="898.57922"
+     y="1149.0419"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_edward_iv" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect1050"
+     width="50"
+     height="50"
+     x="933.07922"
+     y="1157.7919"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_gloucester_2" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect1052"
+     width="50"
+     height="50"
+     x="603.96716"
+     y="1074.3378"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_gloucester_1" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect1054"
+     width="50"
+     height="50"
+     x="653.27295"
+     y="642.50726"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_salisbury" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect1064"
+     width="50"
+     height="50"
+     x="434.75497"
+     y="954.68988"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_march" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect1072"
+     width="50"
+     height="50"
+     x="1095.96"
+     y="1188.509"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_rutland" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect1078"
+     width="50"
+     height="50"
+     x="315.2449"
+     y="1353.4467"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_devon" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect1080"
+     width="50"
+     height="50"
+     x="138.9648"
+     y="1105.7858"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_pembroke" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect1084"
+     width="50"
+     height="50"
+     x="794.68335"
+     y="1398.1376"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_norfolk" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect440"
+     width="50"
+     height="50"
+     x="391.49115"
+     y="423.03864"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_northumberland_y1" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect442"
+     width="50"
+     height="50"
+     x="1150.0627"
+     y="1349.4498"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_warwick_y" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect446"
+     width="50"
+     height="50"
+     x="907.82666"
+     y="937.26581"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_york" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect106"
+     width="50"
+     height="50"
+     x="391.49115"
+     y="423.03864"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_northumberland_y2" />
+  <rect
+     style="opacity:0.5;fill:#f9f9f9"
+     id="rect108"
+     width="50"
+     height="50"
+     x="933.07922"
+     y="1157.7919"
+     rx="0"
+     ry="0"
+     inkscape:label="seat york lord_richard_iii" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect110"
+     width="50"
+     height="50"
+     x="457.35245"
+     y="1274.7346"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_somerset_2" />
+  <rect
+     style="opacity:0.5;fill:#ff0000"
+     id="rect112"
+     width="50"
+     height="50"
+     x="344.55917"
+     y="1329.3937"
+     rx="0"
+     ry="0"
+     inkscape:label="seat lancaster lord_exeter_2" />
 </svg>

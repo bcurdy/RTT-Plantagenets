@@ -39,288 +39,109 @@ function map_set(map, key, value) {
 
 // :r !node tools/genboxes.js
 const boxes = {
-	"0": [22,1575,48,48],
-	"1": [71,1575,47,48],
-	"2": [118,1575,46,48],
-	"3": [165,1575,46,48],
-	"4": [211,1575,48,48],
-	"5": [259,1575,47,48],
-	"6": [306,1575,48,48],
-	"7": [354,1575,47,48],
-	"8": [401,1575,46,48],
-	"9": [447,1575,47,48],
-	"10": [494,1575,49,49],
-	"11": [543,1575,47,49],
-	"12": [590,1575,47,49],
-	"13": [637,1575,48,49],
-	"14": [685,1575,46,48],
-	"15": [731,1575,48,48],
-	"16": [779,1575,47,48],
-	"17": [826,1575,48,48],
-	"18": [873,1575,46,48],
-	"19": [920,1575,48,48],
-	"20": [968,1575,46,49],
-	"21": [1014,1575,48,49],
-	"22": [1062,1575,47,49],
-	"23": [1109,1575,48,49],
-	"24": [1157,1575,46,49],
-	"25": [1203,1577,49,47],
-	"26": [1203,1530,49,47],
-	"27": [1203,1434,49,47],
-	"29": [1203,1388,49,46],
-	"30": [1203,1340,49,48],
-	"31": [1203,1292,49,48],
-	"32": [1203,1244,49,48],
-	"33": [1203,1198,49,46],
-	"34": [1203,1151,49,47],
-	"35": [1203,1104,49,47],
-	"36": [1203,1057,49,46],
-	"37": [1203,1010,49,47],
-	"38": [1203,960,49,50],
-	"39": [1203,914,47,46],
-	"40": [1203,865,47,48],
-	"41": [1203,819,47,46],
-	"42": [1203,774,51,45],
-	"43": [1203,724,51,50],
-	"44": [1203,676,51,48],
-	"45": [1203,630,47,46],
-	"Scotland": [450,278,111,118],
-	"France": [890,1430,109,114],
-	"Calais": [1134,1418,67,79],
-	"Ireland": [50,949,110,121],
-	"Burgundy": [996,688,110,121],
-	"Bamburgh": [637,300,60,45],
-	"Carlisle": [436,422,81,63],
-	"Hexham": [561,395,53,47],
-	"Appleby": [546,465,57,52],
-	"Newcastle": [656,419,70,77],
-	"Scarborough": [791,532,78,57],
-	"York": [691,623,76,65],
-	"Lancaster": [476,595,70,51],
-	"Ravenspur": [835,721,72,45],
-	"Lincoln": [767,760,78,64],
-	"Chester": [433,797,78,64],
-	"Derby": [656,845,62,49],
-	"Nottingham": [718,845,73,40],
-	"Lichfield": [613,906,74,61],
-	"Truro": [142,1445,56,53],
-	"Launceston": [201,1354,68,60],
-	"Exeter": [342,1376,64,66],
-	"Dorchester": [524,1368,58,49],
-	"Southampton": [677,1371,60,48],
-	"Arundel": [794,1334,56,48],
-	"Hastings": [983,1322,55,46],
-	"Dover": [1041,1287,53,41],
-	"Canterbury": [1059,1203,66,65],
-	"Rochester": [983,1185,65,68],
-	"London": [874,1164,94,72],
-	"Guildford": [841,1249,74,59],
-	"Winchester": [722,1262,71,60],
-	"Salisbury": [610,1268,73,66],
-	"Wells": [504,1262,68,66],
-	"Bristol": [498,1185,63,58],
-	"Newbury": [665,1194,66,44],
-	"Oxford": [707,1101,70,63],
-	"St Albans": [901,1092,54,40],
-	"Cambridge": [901,1021,54,45],
-	"Bedford": [836,1044,65,48],
-	"Northampton": [748,1013,64,54],
-	"Gloucester": [564,1092,68,62],
-	"Hereford": [476,1040,71,65],
-	"Cardiff": [392,1164,65,65],
-	"Pembroke": [185,1127,58,37],
-	"Ipswich": [1100,1030,58,43],
-	"Bury St Edmunds": [997,995,54,45],
-	"Norwich": [1059,890,67,62],
-	"Lynn": [962,895,47,38],
-	"Ely": [921,952,65,66],
-	"Peterborough": [828,930,66,62],
-	"Leicester": [758,906,49,46],
-	"Coventry": [675,967,67,63],
-	"Worcester": [556,992,72,64],
-	"Ludlow": [476,976,54,34],
-	"Shrewsbury": [500,865,78,69],
-	"Harlech": [278,912,67,61],
-	"Plymouth": [253,1417,58,50],
-	"Irish Sea": [233,667,160,93],
-	"English Channel": [564,1461,173,69],
-	"North Sea": [1106,749,97,117],
-	"box16": [938,423,310,52],
-	"box1": [204,38,100,162],
-	"box2": [306,38,100,162],
-	"box3": [408,38,100,162],
-	"box4": [510,38,100,162],
-	"box5": [612,38,100,162],
-	"box6": [734,38,100,162],
-	"box7": [836,38,100,162],
-	"box8": [938,38,100,162],
-	"box9": [1040,38,100,162],
-	"box10": [1142,38,100,162],
-	"box11": [734,260,100,162],
-	"box12": [836,260,100,162],
-	"box13": [938,260,100,162],
-	"box14": [1040,260,100,162],
-	"box15": [1142,260,100,162],
-	"Plymouth favour": [253,1417,58,50],
-	"Harlech favour": [278,912,67,61],
-	"Shrewsbury favour": [500,865,78,69],
-	"Ludlow favour": [476,976,54,34],
-	"Worcester favour": [556,992,72,64],
-	"Coventry favour": [675,967,67,63],
-	"Leicester favour": [758,906,49,46],
-	"Peterborough favour": [828,930,66,62],
-	"Ely favour": [921,952,65,66],
-	"Lynn favour": [962,895,47,38],
-	"Norwich favour": [1059,890,67,62],
-	"Bury St Edmunds favour": [997,995,54,45],
-	"Ipswich favour": [1100,1030,58,43],
-	"Pembroke favour": [185,1127,58,37],
-	"Cardiff favour": [392,1164,65,65],
-	"Hereford favour": [476,1040,71,65],
-	"Gloucester favour": [564,1092,68,62],
-	"Northampton favour": [748,1013,64,54],
-	"Bedford favour": [836,1044,65,48],
-	"Cambridge favour": [901,1021,54,45],
-	"St Albans favour": [901,1092,54,40],
-	"Oxford favour": [707,1101,70,63],
-	"Newbury favour": [665,1194,66,44],
-	"Bristol favour": [498,1185,63,58],
-	"Salisbury favour": [610,1268,73,66],
-	"Wells favour": [504,1262,68,66],
-	"Winchester favour": [722,1262,71,60],
-	"Guildford favour": [841,1249,74,59],
-	"London favour": [874,1164,94,72],
-	"Rochester favour": [983,1185,65,68],
-	"Canterbury favour": [1059,1203,66,65],
-	"Dover favour": [1041,1287,53,41],
-	"Hastings favour": [983,1322,55,46],
-	"Arundel favour": [794,1334,56,48],
-	"Southampton favour": [677,1371,60,48],
-	"Dorchester favour": [524,1368,58,49],
-	"Exeter favour": [342,1376,64,66],
-	"Launceston favour": [201,1354,68,60],
-	"Truro favour": [142,1445,56,53],
-	"Lichfield favour": [613,906,74,61],
-	"Nottingham favour": [718,845,73,40],
-	"Derby favour": [656,845,62,49],
-	"Chester favour": [433,797,78,64],
-	"Lincoln favour": [767,760,78,64],
-	"Ravenspur favour": [835,721,72,45],
-	"Lancaster favour": [476,595,70,51],
-	"York favour": [691,623,76,65],
-	"Scarborough favour": [791,532,78,57],
-	"Newcastle favour": [656,419,70,77],
-	"Appleby favour": [546,465,57,52],
-	"Hexham favour": [561,395,53,47],
-	"Carlisle favour": [436,422,81,63],
-	"Bamburgh favour": [637,300,60,45],
-	"Burgundy favour": [996,688,110,121],
-	"Ireland deplete": [50,939,110,121],
-	"Calais favour": [1134,1418,67,79],
-	"France favour": [890,1430,109,114],
-	"Scotland favour": [450,278,111,118],
-	"Calais deplete": [1145,1408,67,79],
-	"Scotland deplete": [450,268,111,118],
-	"France deplete": [890,1420,109,114],
-	"Burgundy deplete": [996,678,110,121],
-	"Bamburgh deplete": [647,290,60,45],
-	"Carlisle deplete": [446,412,81,63],
-	"Hexham deplete": [571,385,53,47],
-	"Appleby deplete": [556,455,57,52],
-	"Newcastle deplete": [668,409,70,77],
-	"Scarborough deplete": [801,522,78,57],
-	"York deplete": [701,613,76,65],
-	"Lancaster deplete": [486,585,70,51],
-	"Ravenspur deplete": [845,711,72,45],
-	"Lincoln deplete": [777,750,78,64],
-	"Chester deplete": [443,787,78,64],
-	"Derby deplete": [656,835,62,49],
-	"Nottingham deplete": [728,835,73,40],
-	"Lichfield deplete": [603,896,74,61],
-	"Truro deplete": [132,1435,56,53],
-	"Launceston deplete": [211,1344,68,60],
-	"Exeter deplete": [352,1366,64,66],
-	"Dorchester deplete": [514,1358,58,49],
-	"Southampton deplete": [667,1361,60,48],
-	"Arundel deplete": [784,1324,56,48],
-	"Hastings deplete": [973,1312,55,46],
-	"Dover deplete": [1031,1277,53,41],
-	"Canterbury deplete": [1069,1193,66,65],
-	"Rochester deplete": [993,1175,65,68],
-	"London deplete": [864,1154,94,72],
-	"Guildford deplete": [851,1259,74,59],
-	"Winchester deplete": [732,1252,71,60],
-	"Wells deplete": [514,1252,68,66],
-	"Salisbury deplete": [620,1258,73,66],
-	"Bristol deplete": [508,1175,63,58],
-	"Newbury deplete": [655,1184,66,44],
-	"Oxford deplete": [697,1091,70,63],
-	"St Albans deplete": [891,1102,54,40],
-	"Cambridge deplete": [911,1031,54,45],
-	"Bedford deplete": [826,1034,65,48],
-	"Northampton deplete": [758,1003,64,54],
-	"Gloucester deplete": [574,1082,68,62],
-	"Hereford deplete": [466,1030,71,65],
-	"Cardiff deplete": [382,1154,65,65],
-	"Pembroke deplete": [195,1117,58,37],
-	"Ipswich deplete": [1110,1020,58,43],
-	"Bury St Edmunds deplete": [1007,985,54,45],
-	"Norwich deplete": [1069,880,67,62],
-	"Lynn deplete": [972,885,47,38],
-	"Ely deplete": [931,942,65,66],
-	"Peterborough deplete": [838,920,66,62],
-	"Leicester deplete": [768,896,49,46],
-	"Coventry deplete": [685,957,67,63],
-	"Worcester deplete": [546,982,72,64],
-	"Ludlow deplete": [486,966,54,34],
-	"Shrewsbury deplete": [510,855,78,69],
-	"Harlech deplete": [288,902,67,61],
-	"Plymouth deplete": [263,1407,58,50],
-	"vassal vassal_westmoreland": [600,470,54,56],
-	"vassal vassal_stanley": [609,840,54,56],
-	"vassal vassal_dudley": [704,898,54,56],
-	"vassal vassal_shrewsbury": [455,879,54,56],
-	"vassal vassal_worcester": [616,999,54,56],
-	"vassal vassal_oxford": [776,1109,54,56],
-	"vassal vassal_essex": [955,1082,54,56],
-	"vassal vassal_suffolk": [1156,1024,54,56],
-	"vassal vassal_fauconberg": [1094,1279,54,56],
-	"vassal vassal_norfolk": [850,1330,54,56],
-	"vassal vassal_devon": [406,1381,54,56],
-	"vassal vassal_bonville": [155,1356,54,56],
-	"seat lancaster lord_henry_vi": [944,1144,54,56],
-	"seat lancaster lord_margaret": [944,1144,54,56],
-	"seat lancaster lord_henry_tudor": [944,1144,54,56],
-	"seat york lord_richard_iii": [944,1169,54,56],
-	"seat york lord_edward_iv": [944,1169,54,56],
-	"seat york lord_gloucester_2": [944,1169,54,56],
-	"seat york lord_gloucester_1": [620,1061,54,56],
-	"seat york lord_salisbury": [653,617,54,56],
-	"seat lancaster lord_clarence": [654,593,54,56],
-	"seat lancaster lord_northumberland_l": [397,405,54,56],
-	"vassal vassal_beaumont": [730,765,54,56],
-	"seat lancaster lord_buckingham": [715,958,54,56],
-	"seat york lord_march": [432,947,54,56],
-	"seat lancaster lord_jasper_tudor_2": [233,890,54,56],
-	"seat lancaster lord_jasper_tudor_1": [153,1064,54,56],
-	"seat lancaster lord_oxford": [771,1092,54,56],
-	"seat york lord_rutland": [1113,1181,54,56],
-	"seat lancaster lord_warwick_l": [1118,1385,54,56],
-	"seat lancaster lord_exeter_1": [405,1391,54,56],
-	"seat lancaster lord_exeter_2": [405,1391,54,56],
-	"seat york lord_devon": [313,1340,54,56],
-	"seat york lord_pembroke": [145,1108,54,56],
-	"seat lancaster lord_somerset_1": [453,1248,54,56],
-	"seat lancaster lord_somerset_2": [453,1248,54,56],
-	"seat york lord_norfolk": [850,1330,54,56],
-	"seat york lord_northumberland_y1": [397,405,54,56],
-	"seat york lord_northumberland_y2": [397,405,54,56],
-	"seat york lord_warwick_y": [1118,1385,54,56],
-	"Ireland favour": [50,947,110,121],
-	"seat york lord_york": [904,930,54,56],
+	"Harlech": [282,919,57,52],
+	"London": [878,1159,89,73],
+	"Calais": [1137,1411,63,58],
+	"Scotland": [448,277,113,132],
+	"France": [888,1428,113,132],
+	"Ireland": [48,950,113,132],
+	"Burgundy": [993,684,113,132],
+	"Carlisle": [447,420,58,64],
+	"Newcastle": [665,427,58,64],
+	"York": [705,625,58,64],
+	"Lincoln": [780,757,58,64],
+	"Chester": [444,800,58,64],
+	"Lichfield": [613,899,58,64],
+	"Launceston": [202,1351,58,64],
+	"Exeter": [344,1376,58,64],
+	"Canterbury": [1062,1202,58,64],
+	"Rochester": [987,1185,58,64],
+	"Guildford": [849,1246,58,64],
+	"Winchester": [730,1262,58,64],
+	"Salisbury": [620,1267,58,64],
+	"Wells": [508,1262,58,64],
+	"Bristol": [500,1180,58,64],
+	"Oxford": [711,1103,58,64],
+	"Gloucester": [568,1091,58,64],
+	"Hereford": [486,1040,58,64],
+	"Cardiff": [396,1166,58,64],
+	"Norwich": [1063,889,58,64],
+	"Ely": [927,956,58,64],
+	"Peterborough": [832,927,58,64],
+	"Coventry": [678,966,58,64],
+	"Worcester": [561,989,58,64],
+	"Shrewsbury": [506,869,58,64],
+	"Bamburgh": [646,311,40,30],
+	"Ravenspur": [858,734,40,30],
+	"Pembroke": [193,1130,40,30],
+	"Lynn": [968,898,40,30],
+	"Ludlow": [487,979,40,30],
+	"Hexham": [560,403,50,40],
+	"Appleby": [546,472,50,40],
+	"Scarborough": [809,546,50,40],
+	"Lancaster": [485,606,50,40],
+	"Derby": [661,850,50,40],
+	"Nottingham": [733,843,50,40],
+	"Truro": [145,1456,50,40],
+	"Dorchester": [531,1377,50,40],
+	"Southampton": [682,1379,50,40],
+	"Arundel": [796,1337,50,40],
+	"Hastings": [989,1328,50,40],
+	"Dover": [1041,1287,50,40],
+	"Newbury": [676,1195,50,40],
+	"St Albans": [906,1091,50,40],
+	"Cambridge": [902,1026,50,40],
+	"Bedford": [845,1052,50,40],
+	"Northampton": [751,1025,50,40],
+	"Ipswich": [1108,1031,50,40],
+	"Bury St Edmunds": [1000,996,50,40],
+	"Leicester": [756,912,50,40],
+	"Plymouth": [257,1428,50,40],
+	"Irish Sea": [224,664,135,56],
+	"English Channel": [550,1450,246,82],
+	"North Sea": [1019,824,150,65],
+	"vassal vassal_westmoreland": [598,488,27,30],
+	"vassal vassal_stanley": [631,862,27,30],
+	"vassal vassal_dudley": [727,921,27,30],
+	"vassal vassal_shrewsbury": [480,900,27,30],
+	"vassal vassal_worcester": [621,1014,27,30],
+	"vassal vassal_oxford": [772,1132,27,30],
+	"vassal vassal_essex": [959,1103,27,30],
+	"vassal vassal_suffolk": [1161,1043,27,30],
+	"vassal vassal_fauconberg": [1095,1297,27,30],
+	"vassal vassal_norfolk": [848,1353,27,30],
+	"vassal vassal_devon": [406,1400,27,30],
+	"vassal vassal_bonville": [174,1377,27,30],
+	"vassal vassal_beaumont": [753,787,27,30],
+	"seat lancaster lord_henry_vi": [840,1168,50,50],
+	"seat lancaster lord_margaret": [847,1153,50,50],
+	"seat lancaster lord_henry_tudor": [831,1186,50,50],
+	"seat lancaster lord_clarence": [656,613,50,50],
+	"seat lancaster lord_northumberland_l": [392,422,50,50],
+	"seat lancaster lord_buckingham": [714,975,50,50],
+	"seat lancaster lord_jasper_tudor_2": [340,926,50,50],
+	"seat lancaster lord_jasper_tudor_1": [192,1077,50,50],
+	"seat lancaster lord_oxford": [692,1085,50,50],
+	"seat lancaster lord_warwick_l": [1150,1350,50,50],
+	"seat lancaster lord_exeter_1": [345,1329,50,50],
+	"seat lancaster lord_somerset_1": [457,1275,50,50],
+	"seat york lord_edward_iv": [899,1149,50,50],
+	"seat york lord_gloucester_2": [933,1158,50,50],
+	"seat york lord_gloucester_1": [604,1074,50,50],
+	"seat york lord_salisbury": [653,643,50,50],
+	"seat york lord_march": [435,955,50,50],
+	"seat york lord_rutland": [1096,1189,50,50],
+	"seat york lord_devon": [315,1353,50,50],
+	"seat york lord_pembroke": [139,1106,50,50],
+	"seat york lord_norfolk": [795,1398,50,50],
+	"seat york lord_northumberland_y1": [391,423,50,50],
+	"seat york lord_warwick_y": [1150,1349,50,50],
+	"seat york lord_york": [908,937,50,50],
+	"seat york lord_northumberland_y2": [391,423,50,50],
+	"seat york lord_richard_iii": [933,1158,50,50],
+	"seat lancaster lord_somerset_2": [457,1275,50,50],
+	"seat lancaster lord_exeter_2": [345,1329,50,50],
 }
-
-
 
 let data = []
 function print(str) {
@@ -332,8 +153,6 @@ var locmap = {}
 // 0=offmap, 1-N=map locales, 100-M=calendar boxes
 var locales = []
 var ways = []
-var deplete = []
-var favour = []
 var seat = []
 var vassalbox = []
 const scale = 1
@@ -357,26 +176,6 @@ function defloc(region, type, name) {
 		is.stronghold.push(id)
 	}
 	ways.push([])
-}
-
-function defdepleted(name) {
-	let [x, y, w, h] = boxes[name]
-	x = Math.floor(x)
-	y = Math.floor(y)
-	w = Math.ceil(w)
-	h = Math.ceil(h)
-	locmap[name] = locales.length
-	deplete.push({ name, box: { x, y, w, h } })
-}
-
-function deffavour(name) {
-	let [x, y, w, h] = boxes[name]
-	x = Math.floor(x)
-	y = Math.floor(y)
-	w = Math.ceil(w)
-	h = Math.ceil(h)
-	locmap[name] = locales.length
-	favour.push({ name, box: { x, y, w, h } })
 }
 
 function defseat(name) {
@@ -509,132 +308,6 @@ defloc("England", "fortress", "Ravenspur")
 defloc(null, "sea", "English Channel")
 defloc(null, "sea", "Irish Sea")
 defloc(null, "sea", "North Sea")
-
-// LOCALE DEPLETION
-
-defdepleted("Bamburgh deplete")
-defdepleted("Newcastle deplete")
-defdepleted("Appleby deplete")
-defdepleted("Hexham deplete")
-defdepleted("Carlisle deplete")
-
-
-defdepleted("Harlech deplete")
-defdepleted("Pembroke deplete")
-defdepleted("Cardiff deplete")
-defdepleted("Hereford deplete")
-defdepleted("Ludlow deplete")
-defdepleted("Shrewsbury deplete")
-
-defdepleted("Salisbury deplete")
-defdepleted("Winchester deplete")
-defdepleted("Guildford deplete")
-defdepleted("Arundel deplete")
-defdepleted("Southampton deplete")
-defdepleted("Rochester deplete")
-defdepleted("Dover deplete")
-defdepleted("Canterbury deplete")
-defdepleted("Hastings deplete")
-
-defdepleted("Dorchester deplete")
-defdepleted("Exeter deplete")
-defdepleted("Plymouth deplete")
-defdepleted("Launceston deplete")
-defdepleted("Truro deplete")
-defdepleted("Wells deplete")
-defdepleted("Bristol deplete")
-defdepleted("Gloucester deplete")
-defdepleted("Oxford deplete")
-defdepleted("Newbury deplete")
-defdepleted("London deplete")
-defdepleted("St Albans deplete")
-defdepleted("Bedford deplete")
-defdepleted("Cambridge deplete")
-defdepleted("Bury St Edmunds deplete")
-defdepleted("Ipswich deplete")
-defdepleted("Norwich deplete")
-defdepleted("Lynn deplete")
-defdepleted("Ely deplete")
-defdepleted("Peterborough deplete")
-defdepleted("Northampton deplete")
-defdepleted("Coventry deplete")
-defdepleted("Leicester deplete")
-defdepleted("Lichfield deplete")
-defdepleted("Derby deplete")
-defdepleted("Nottingham deplete")
-defdepleted("Worcester deplete")
-defdepleted("Chester deplete")
-defdepleted("Lancaster deplete")
-defdepleted("Lincoln deplete")
-defdepleted("York deplete")
-defdepleted("Calais deplete")
-defdepleted("France deplete")
-defdepleted("Scotland deplete")
-defdepleted("Ireland deplete")
-defdepleted("Burgundy deplete")
-defdepleted("Scarborough deplete")
-defdepleted("Ravenspur deplete")
-
-// LOCALE FAVOUR
-
-deffavour("Bamburgh favour")
-deffavour("Newcastle favour")
-deffavour("Appleby favour")
-deffavour("Hexham favour")
-deffavour("Carlisle favour")
-deffavour("Harlech favour")
-deffavour("Pembroke favour")
-deffavour("Cardiff favour")
-deffavour("Hereford favour")
-deffavour("Ludlow favour")
-deffavour("Shrewsbury favour")
-deffavour("Salisbury favour")
-deffavour("Winchester favour")
-deffavour("Guildford favour")
-deffavour("Arundel favour")
-deffavour("Southampton favour")
-deffavour("Rochester favour")
-deffavour("Dover favour")
-deffavour("Canterbury favour")
-deffavour("Hastings favour")
-deffavour("Dorchester favour")
-deffavour("Exeter favour")
-deffavour("Plymouth favour")
-deffavour("Launceston favour")
-deffavour("Truro favour")
-deffavour("Wells favour")
-deffavour("Bristol favour")
-deffavour("Gloucester favour")
-deffavour("Oxford favour")
-deffavour("Newbury favour")
-deffavour("London favour")
-deffavour("St Albans favour")
-deffavour("Bedford favour")
-deffavour("Cambridge favour")
-deffavour("Bury St Edmunds favour")
-deffavour("Ipswich favour")
-deffavour("Norwich favour")
-deffavour("Lynn favour")
-deffavour("Ely favour")
-deffavour("Peterborough favour")
-deffavour("Northampton favour")
-deffavour("Coventry favour")
-deffavour("Leicester favour")
-deffavour("Lichfield favour")
-deffavour("Derby favour")
-deffavour("Nottingham favour")
-deffavour("Worcester favour")
-deffavour("Chester favour")
-deffavour("Lancaster favour")
-deffavour("Lincoln favour")
-deffavour("York favour")
-deffavour("Calais favour")
-deffavour("France favour")
-deffavour("Scotland favour")
-deffavour("Ireland favour")
-deffavour("Burgundy favour")
-deffavour("Scarborough favour")
-deffavour("Ravenspur favour")
 
 //LOCALE SEAT
 defseat("seat york lord_york")
@@ -1795,8 +1468,6 @@ dumplist("vassals", vassals)
 dumplist("cards", cards)
 
 // layout client only
-dumplist("favour", favour)
-dumplist("deplete",deplete)
 dumplist("seat", seat)
 dumplist("vassalbox", vassalbox)
 

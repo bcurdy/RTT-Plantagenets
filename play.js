@@ -647,6 +647,7 @@ function build_map() {
 		let w = calendar_boxes[name][2]
 		let h = calendar_boxes[name][3]
 		calendar_xy[i] = [ x, y ]
+
 		let e = ui.calendar[i] = document.createElement("div")
 		e.className = "calendar box " + name
 		e.style.left = x + "px"
@@ -655,9 +656,6 @@ function build_map() {
 		e.style.height = h + "px"
 		document.getElementById("boxes").appendChild(e)
 	}
-
-	for (let i = 1; i <= 16; ++i)
-		register_action(ui.calendar[i], "calendar", i)
 
 	for (let i = 0; i <= 45; ++i) {
 		let name = "track" + i
