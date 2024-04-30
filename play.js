@@ -341,7 +341,7 @@ const ui = {
 	favicon: document.getElementById("favicon"),
 	locale: [],
 	locale_name: [],
-	locale_markers: [],
+	depleted: [],
 	locale_markers_rose: [],
 	lord_cylinder: [],
 	mat: [],
@@ -548,30 +548,40 @@ function build_map() {
 		register_tooltip(e, get_locale_tip(ix))
 		document.getElementById("locales").appendChild(e)
 
+		// London for York
+		if (ix === LOC_LONDON) {
+			e = ui.london_for_york = document.createElement("div")
+			e.className = "hide"
+			e.style.top = yc - 20 - 13 + "px"
+			//e.style.top = y + h - 43 - 13 + "px"
+			e.style.left = xc - 20 - 13 + "px"
+			e.style.pointerEvents = "none"
+			document.getElementById("pieces").appendChild(e)
+		}
+
 		// Favour
 		if (locale.type === "exile_box") {
 			e = ui.locale_markers_rose[ix] = document.createElement("div")
-			e.className = "marker circle exile_rose "
-			//e.style.top = (y - 8) + "px"
-			//e.style.left = (x + w - 54 + 8) + "px"
+			e.className = "hide"
 			e.style.top = (y + h - 50) + "px"
 			e.style.left = (xc - 27) + "px"
 			e.style.pointerEvents = "none"
 			document.getElementById("pieces").appendChild(e)
 		} else {
 			e = ui.locale_markers_rose[ix] = document.createElement("div")
-			e.className = "marker small rose"
-			//e.style.top = y + h - 41 + "px"
+			e.className = "hide"
 			e.style.top = yc - 20 + "px"
+			//e.style.top = y + h - 43 + "px"
 			e.style.left = xc - 20 + "px"
 			e.style.pointerEvents = "none"
 			document.getElementById("pieces").appendChild(e)
 		}
 
 		// Depleted/Exhausted
-		e = ui.locale_markers[ix] = document.createElement("div")
-		e.className = "marker small depexh " + locale.name
+		e = ui.depleted[ix] = document.createElement("div")
+		e.className = "hide marker small depexh " + locale.name
 		e.style.top = yc - 20 - 13 + "px"
+		//e.style.top = y + h - 43 - 13 + "px"
 		e.style.left = xc - 20 + 13 + "px"
 		e.style.pointerEvents = "none"
 		document.getElementById("pieces").appendChild(e)
@@ -1044,67 +1054,42 @@ function update_locale(loc) {
 		ui.locale_name[loc].classList.toggle("action", is_action("locale", loc) || is_action("laden_march", loc))
 	}
 
-	ui.locale_markers[loc].replaceChildren()
-
+/*	TODO: BATTLE marker
 	if (view.battle && view.battle.where === loc)
 		if (view.battle.storm)
 			ui.locale_markers[loc].appendChild(get_cached_element("marker circle storm"))
 		else
 			ui.locale_markers[loc].appendChild(get_cached_element("marker circle battle"))
+*/
 
-	//DEPLETED/EXHAUSTED
-	if (!set_has(view.pieces.depleted, loc) && !set_has(view.pieces.exhausted, loc)) {
-		let cn
-		cn = "depleted"
-		ui.locale_markers[loc].classList.remove(cn)
-		cn = "exhausted"
-		ui.locale_markers[loc].classList.remove(cn)
-	}
+	if (set_has(view.pieces.exhausted, loc))
+		ui.depleted[loc].className = "marker small exhausted"
+	else if (set_has(view.pieces.depleted, loc))
+		ui.depleted[loc].className = "marker small depleted"
+	else
+		ui.depleted[loc].className = "hide"
 
-	if (set_has(view.pieces.depleted, loc)) {
-		let cn
-		cn = "depleted"
-		ui.locale_markers[loc].classList.add(cn)
-		cn = "exhausted"
-		ui.locale_markers[loc].classList.remove(cn)
-	}
-	if (set_has(view.pieces.exhausted, loc)) {
-		let cn
-		cn = "exhausted"
-		ui.locale_markers[loc].classList.add(cn)
-		cn = "depleted"
-		ui.locale_markers[loc].classList.remove(cn)
-	}
-
-	// FAVOUR MARKERS
-	if (!set_has(view.pieces.favourl, loc) && !set_has(view.pieces.favoury, loc)) {
-		let cn
-		cn = "lancaster"
-		ui.locale_markers_rose[loc].classList.remove(cn)
-		cn = "york"
-		ui.locale_markers_rose[loc].classList.remove(cn)
-	}
-
-	if (set_has(view.pieces.favourl, loc)) {
-		let cn
-		cn = "lancaster"
-		ui.locale_markers_rose[loc].classList.add(cn)
-		cn = "york"
-		ui.locale_markers_rose[loc].classList.remove(cn)
-	}
-
-	if (set_has(view.pieces.favoury, loc)) {
-		let cn
-		cn = "york"
-		ui.locale_markers_rose[loc].classList.add(cn)
-		cn = "lancaster"
-		ui.locale_markers_rose[loc].classList.remove(cn)
+	if (data.locales[loc].type === "exile_box") {
+		if (set_has(view.pieces.favourl, loc))
+			ui.locale_markers_rose[loc].className = "marker circle exile_rose lancaster"
+		else if (set_has(view.pieces.favoury, loc))
+			ui.locale_markers_rose[loc].className = "marker circle exile_rose york"
+		else
+			ui.locale_markers_rose[loc].className = "hide"
+	} else {
+		if (set_has(view.pieces.favourl, loc))
+			ui.locale_markers_rose[loc].className = "marker small rose lancaster"
+		else if (set_has(view.pieces.favoury, loc))
+			ui.locale_markers_rose[loc].className = "marker small rose york"
+		else
+			ui.locale_markers_rose[loc].className = "hide"
 	}
 
 	if (loc === LOC_LONDON) {
-		if (set_has(view.pieces.favoury, LONDON_FOR_YORK)) {
-			// TODO: extra rose marker
-		}
+		if (set_has(view.pieces.favoury, LONDON_FOR_YORK))
+			ui.london_for_york.className = "marker small rose york"
+		else
+			ui.london_for_york.className = "hide"
 	}
 }
 
