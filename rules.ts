@@ -995,7 +995,6 @@ function is_active_command() {
 		return game.active === LANCASTER
 }
 
-
 // === STATE: TURN ===
 
 function current_turn() {
@@ -2093,8 +2092,7 @@ function roll_influence_check(lord: Lord, spend: number, calc=common_ic) {
 		log(`Influence success`)
 		return true
 	} else {
-		let rating = Math.max(1, Math.min(5, calc.rating(lord, 0)))
-
+		let rating = Math.max(1, Math.min(5, calc.rating(lord, spend)))
 
 		let die = roll_die()
 		if (die <= rating) {
@@ -9344,7 +9342,6 @@ exports.setup = function (seed, scenario, options) {
 			favoury: [],
 		},
 
-
 		actions: 0,
 		command: NOBODY,
 		who: NOBODY,
@@ -12221,7 +12218,6 @@ states.sun_in_splendour_now = {
 		end_immediate_event()
 	},
 }
-
 
 // === HELD EVENT: ASPIELLES ===
 
