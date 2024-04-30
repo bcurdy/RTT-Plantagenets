@@ -944,7 +944,7 @@ function add_vassal(parent, vassal, lord, routed) {
 	parent.appendChild(elt)
 }
 
-function add_force(parent, type, lord, routed, first) {
+function add_force(parent, type, lord, routed, first, z) {
 	let elt
 	if (routed) {
 		if (first && is_action(routed_force_action_name[type], lord))
@@ -957,20 +957,23 @@ function add_force(parent, type, lord, routed, first) {
 		else
 			elt = get_cached_element("unit " + force_class_name[type], force_action_name[type], lord)
 	}
+	elt.style.zIndex = z
 	parent.appendChild(elt)
 }
 
-function add_asset(parent, type, n, lord, first) {
+function add_asset(parent, type, n, lord, first, z) {
 	let elt
 	if (first && is_action(asset_action_name[type], lord))
 		elt = get_cached_element("action asset " + asset_action_name[type] + " x" + n, asset_action_name[type], lord)
 	else
 		elt = get_cached_element("asset " + asset_action_name[type] + " x" + n)
+	elt.style.zIndex = z
 	parent.appendChild(elt)
 }
 
 function update_forces(parent, a, b, forces, lord_ix, routed) {
 	parent.replaceChildren()
+	let z = 5
 	for (let i = a; i <= b; ++i) {
 		if (i === VASSAL) {
 			for_each_vassal_with_lord(lord_ix, v => {
@@ -985,38 +988,43 @@ function update_forces(parent, a, b, forces, lord_ix, routed) {
 		} else {
 			let n = map_get_pack4(forces, lord_ix, i, 0)
 			for (let k = 0; k < n; ++k) {
-				add_force(parent, i, lord_ix, routed, k === n-1)
+				add_force(parent, i, lord_ix, routed, k === n-1, z++)
 			}
-			if (i > 1)
+			if (i > 1) {
+				z = 5
 				parent.appendChild(get_cached_element("break"))
+			}
 		}
 	}
 }
 
 function update_assets(parent, assets, lord_ix) {
 	parent.replaceChildren()
+	let z = 5
 	for (let i = 0; i < asset_type_count; ++i) {
 		let n = map_get_pack4(assets, lord_ix, i, 0)
 		if (asset_type_x34[i]) {
 			while (n >= 4) {
 				n -= 4
-				add_asset(parent, i, 4, lord_ix, n === 0)
+				add_asset(parent, i, 4, lord_ix, n === 0, z++)
 			}
 			while (n >= 3) {
 				n -= 3
-				add_asset(parent, i, 3, lord_ix, n === 0)
+				add_asset(parent, i, 3, lord_ix, n === 0, z++)
 			}
 		}
 		while (n >= 2) {
 			n -= 2
-			add_asset(parent, i, 2, lord_ix, n === 0)
+			add_asset(parent, i, 2, lord_ix, n === 0, z++)
 		}
 		while (n >= 1) {
 			n -= 1
-			add_asset(parent, i, 1, lord_ix, n === 0)
+			add_asset(parent, i, 1, lord_ix, n === 0, z++)
 		}
-		if (i < 2)
+		if (i < 2) {
+			z = 5
 			parent.appendChild(get_cached_element("break"))
+		}
 	}
 }
 

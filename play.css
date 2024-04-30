@@ -597,7 +597,7 @@ body.shift .mat .capabilities {
 
 .mat .board .assets {
 	position: absolute;
-	bottom: 22px;
+	bottom: 20px;
 	right: 0px;
 	width: 170px;
 	height: 150px;
