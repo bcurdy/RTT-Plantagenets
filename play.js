@@ -593,7 +593,7 @@ function build_map() {
 		e.style.backgroundSize = small + "px"
 		//e.style.transform = "rotate(315deg)"
 		e.style.zIndex = "-50"
-		register_tooltip(e, data.seat[ix].name)
+		register_tooltip(e, data.lords[ix].short_name)
 		document.getElementById("pieces").appendChild(e)
 	})
 
@@ -635,14 +635,14 @@ function build_map() {
 		}
 
 		e = ui.vassal_cal[ix] = document.createElement("div")
-		e.className = "hide unit vassal + vassal_" + vassal.name.toLowerCase()
+		e.className = "hide unit vassal vassal_" + vassal.name.toLowerCase()
 		e.style.position = "absolute"
 		register_action(e, "vassal", ix)
 		register_tooltip(e, data.vassals[ix].name)
 		document.getElementById("pieces").appendChild(e)
 
 		e = ui.vassal_mat[ix] = document.createElement("div")
-		e.className = "unit vassal + vassal_" + vassal.name.toLowerCase()
+		e.className = "unit vassal vassal_" + vassal.name.toLowerCase()
 		register_action(e, "vassal", ix)
 		register_tooltip(e, data.vassals[ix].name)
 	})
@@ -851,6 +851,7 @@ function layout_calendar() {
 function add_vassal(parent, vassal, lord, routed) {
 	let elt = ui.vassal_mat[vassal]
 	elt.classList.toggle("selected", view.vassal === vassal || set_has(view.vassal, vassal))
+	elt.classList.toggle("action", is_action("vassal", vassal))
 	parent.appendChild(elt)
 }
 
