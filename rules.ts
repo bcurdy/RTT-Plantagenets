@@ -5743,13 +5743,6 @@ function is_melee_step() {
 	return game.battle.step === 1
 }
 
-function has_strike(pos: number) {
-	let lord = game.battle.array[pos]
-	if (lord !== NOBODY)
-		return count_lord_hits(lord) > 0
-	return false
-}
-
 // Capabilities adding troops at start of the battle
 function add_battle_capability_troops() {
 	let here = game.battle.where
@@ -7023,6 +7016,7 @@ function determine_engagements() {
 }
 
 function goto_determine_engagements() {
+	game.battle.step = 0
 	game.battle.engagements = determine_engagements()
 
 	if (game.battle.round === 1 && game.battle.engagements.length > 1 && is_vanguard_in_battle()) {
@@ -7050,11 +7044,9 @@ states.select_engagement = {
 	prompt() {
 		view.prompt = `Battle: Choose the next engagement.`
 		for (let pos of battle_strike_positions) {
-			if (has_strike(pos)) {
-				let lord = game.battle.array[pos]
-				if (is_friendly_lord(lord))
-					gen_action_lord(lord)
-			}
+			let lord = game.battle.array[pos]
+			if (is_friendly_lord(lord))
+				gen_action_lord(lord)
 		}
 	},
 	lord(lord) {
