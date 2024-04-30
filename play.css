@@ -320,7 +320,7 @@ body.Lancaster #plan_actions .york { display: none }
 	gap: 4px;
 }
 
-.marker.turn, .marker.end, .marker.ip, .marker.towns, .marker.cities, .marker.fortresses, .marker.victory_check {
+#pieces .marker {
 	position: absolute;
 }
 

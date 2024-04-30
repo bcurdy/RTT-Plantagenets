@@ -403,6 +403,7 @@ const ui = {
 	towns: document.getElementById("towns"),
 	cities: document.getElementById("cities"),
 	influence: document.getElementById("ip"),
+	battle: document.getElementById("battle"),
 
 	court1_header: document.getElementById("court1_header"),
 	court2_header: document.getElementById("court2_header"),
@@ -1054,14 +1055,6 @@ function update_locale(loc) {
 		ui.locale_name[loc].classList.toggle("action", is_action("locale", loc) || is_action("laden_march", loc))
 	}
 
-/*	TODO: BATTLE marker
-	if (view.battle && view.battle.where === loc)
-		if (view.battle.storm)
-			ui.locale_markers[loc].appendChild(get_cached_element("marker circle storm"))
-		else
-			ui.locale_markers[loc].appendChild(get_cached_element("marker circle battle"))
-*/
-
 	if (set_has(view.pieces.exhausted, loc))
 		ui.depleted[loc].className = "marker small exhausted"
 	else if (set_has(view.pieces.depleted, loc))
@@ -1343,6 +1336,15 @@ function on_update() {
 
 	for (let loc = 0; loc < data.locales.length; ++loc)
 		update_locale(loc)
+
+	if (view.battle) {
+		let { x, y, w, h } = data.locales[view.battle.where].box
+		ui.battle.className = "marker circle battle"
+		ui.battle.style.left = ((x+w/2)|0) - 27 + "px"
+		ui.battle.style.top = y + h - 27 + "px"
+	} else {
+		ui.battle.className = "hide"
+	}
 
 	update_current_card_display()
 
