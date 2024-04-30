@@ -839,6 +839,11 @@ body.shift .mat .capabilities {
 
 /* COLORS */
 
+.defender .att .mat .board,
+.attacker .def .mat .board {
+	border-color: hsl(37,28%,46%) hsl(37,28%,66%) hsl(37,28%,66%) hsl(37,28%,46%);
+}
+
 .mat .board { background-color: hsl(37,28%,56%); border-color: hsl(37,28%,66%) hsl(37,28%,46%) hsl(37,28%,46%) hsl(37,28%,66%); box-shadow: 0 0 0 1px hsl(37,28%,19%), 0px 1px 4px #0008; }
 .marker.battle { background-color: hsl(34,16%,49%); border-color: hsl(34,16%,59%) hsl(34,16%,39%) hsl(34,16%,39%) hsl(34,16%,59%); box-shadow: 0 0 0 1px hsl(34,16%,16%), 0px 1px 4px #0008; }
 .marker.campaign { background-color: hsl(198,33%,38%); border-color: hsl(198,33%,48%) hsl(198,33%,28%) hsl(198,33%,28%) hsl(198,33%,48%); box-shadow: 0 0 0 1px hsl(198,33%,12%), 0px 1px 4px #0008; }

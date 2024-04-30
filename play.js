@@ -342,55 +342,6 @@ const calendar_boxes = {
 	"box16": [938,423,310,52],
 }
 
-const track_boxes = {
-	"track0": [22,1575,48,48],
-	"track1": [71,1575,47,48],
-	"track2": [118,1575,46,48],
-	"track3": [165,1575,46,48],
-	"track4": [211,1575,48,48],
-	"track5": [259,1575,47,48],
-	"track6": [306,1575,48,48],
-	"track7": [354,1575,47,48],
-	"track8": [401,1575,46,48],
-	"track9": [447,1575,47,48],
-	"track10": [494,1575,49,49],
-	"track11": [543,1575,47,49],
-	"track12": [590,1575,47,49],
-	"track13": [637,1575,48,49],
-	"track14": [685,1575,46,48],
-	"track15": [731,1575,48,48],
-	"track16": [779,1575,47,48],
-	"track17": [826,1575,48,48],
-	"track18": [873,1575,46,48],
-	"track19": [920,1575,48,48],
-	"track20": [968,1575,46,49],
-	"track21": [1014,1575,48,49],
-	"track22": [1062,1575,47,49],
-	"track23": [1109,1575,48,49],
-	"track24": [1157,1575,46,49],
-	"track25": [1203,1577,49,47],
-	"track26": [1203,1530,49,47],
-	"track27": [1203,1488,49,46],
-	"track28": [1203,1434,49,47],
-	"track29": [1203,1388,49,46],
-	"track30": [1203,1340,49,48],
-	"track31": [1203,1292,49,48],
-	"track32": [1203,1244,49,48],
-	"track33": [1203,1198,49,46],
-	"track34": [1203,1151,49,47],
-	"track35": [1203,1104,49,47],
-	"track36": [1203,1057,49,46],
-	"track37": [1203,1010,49,47],
-	"track38": [1203,960,49,50],
-	"track39": [1203,914,47,46],
-	"track40": [1203,865,47,48],
-	"track41": [1203,819,47,46],
-	"track42": [1203,774,51,45],
-	"track43": [1203,724,51,50],
-	"track44": [1203,676,51,48],
-	"track45": [1203,630,47,46],
-}
-
 const track_xy = []
 const calendar_xy = []
 const locale_xy = []
@@ -428,7 +379,6 @@ const ui = {
 	cards: [],
 	cards2: [],
 	calendar: [],
-	track: [],
 	seat: [],
 
 	plan_panel: document.getElementById("plan_panel"),
@@ -459,8 +409,8 @@ const ui = {
 	turn: document.getElementById("turn"),
 	end: document.getElementById("end"),
 	victory_check: document.getElementById("victory_check"),
-	fortress: document.getElementById("fortresses"),
-	town: document.getElementById("towns"),
+	fortresses: document.getElementById("fortresses"),
+	towns: document.getElementById("towns"),
 	cities: document.getElementById("cities"),
 	influence: document.getElementById("ip"),
 
@@ -711,22 +661,16 @@ function build_map() {
 
 	for (let i = 0; i <= 45; ++i) {
 		let name = "track" + i
-		let x = track_boxes[name][0]
-		let y = track_boxes[name][1]
-		let w = track_boxes[name][2]
-		let h = track_boxes[name][3]
+		let x = 0, y = 0
+		if (i <= 25) {
+			x = 24 + i * 47.25 + 22
+			y = 1577 + 22
+		} else {
+			x = 1205 + 22
+			y = 1577 - (i-25) * 47.25 + 22
+		}
 		track_xy[i] = [ x, y ]
-		let e = ui.track[i] = document.createElement("div")
-		e.className = "track box " + name
-		e.style.left = x + "px"
-		e.style.top = y + "px"
-		e.style.width = w + "px"
-		e.style.height = h + "px"
-		document.getElementById("boxes").appendChild(e)
 	}
-
-	for (let i = 0; i <= 45; ++i)
-		register_action(ui.track[i], "track", i)
 
 	build_plan()
 
@@ -885,27 +829,6 @@ function layout_calendar() {
 	}
 }
 
-function layout_track() {
-	for (let loc = 0; loc <= 45; ++loc) {
-		let [cx, cy] = track_xy[loc]
-		let list = track_layout[loc]
-		for (let i = 0; i < list.length; ++i) {
-			let e = list[i]
-			let x = cx, y = cy, z = 60 - i
-			let d = 46 - 24
-			if (loc === expand_track) {
-				d = 46
-				z += 100
-			}
-			x += 10
-			y += i * d
-			e.style.top = y + "px"
-			e.style.left = x + "px"
-			e.style.zIndex = z
-		}
-	}
-}
-
 function add_vassal(parent, vassal, lord, routed) {
 	let elt
 	if (routed) {
@@ -1057,7 +980,7 @@ function update_lord_mat(ix) {
 		ui.lord_feed[ix].classList.toggle("hide", count_lord_all_forces(ix) <= 6)
 
 		if (get_lord_locale(LORD_HENRY_VI) === CAPTURE_OF_THE_KING + ix)
-			ui.assets[ix].appendChild(ui.captured_king)
+			ui.marker_area[ix].appendChild(ui.captured_king)
 	} else {
 		ui.mat[ix].classList.add("hidden")
 		ui.assets[ix].replaceChildren()
@@ -1068,6 +991,9 @@ function update_lord_mat(ix) {
 		ui.lord_moved1[ix].classList.add("hide")
 		ui.lord_moved2[ix].classList.add("hide")
 		ui.lord_feed[ix].classList.add("hide")
+
+		if (get_lord_locale(LORD_HENRY_VI) === CAPTURE_OF_THE_KING + ix)
+			ui.marker_area[ix].appendChild(ui.captured_king)
 	}
 	let m = get_lord_moved(ix)
 	ui.lord_moved1[ix].classList.toggle("hide", is_levy_phase() || (m !== 1 && m !== 2))
@@ -1366,6 +1292,28 @@ function update_vassals() {
 	}
 }
 
+var track_offset = new Array(45).fill(0)
+
+function show_track_marker(elt, pos) {
+	let n = track_offset[pos]++
+	let x = track_xy[pos][0] - 25
+	let y = track_xy[pos][1] - 25
+
+	if (pos <= 10) {
+		y -= 51 * n
+	} else if (pos < 24) {
+		y -= 24 * n
+	} else if (pos > 26) {
+		x -= 51 * n
+	} else {
+		x -= 24 * n
+		y -= 24 * n
+	}
+
+	elt.style.left = x + "px"
+	elt.style.top = y + "px"
+}
+
 function on_update() {
 	restart_cache()
 
@@ -1389,6 +1337,8 @@ function on_update() {
 	for (let i = 0; i < data.locales.length; ++i)
 		locale_layout[i].length = 0
 
+	track_offset.fill(0)
+
 	for (let ix = 0; ix < data.lords.length; ++ix) {
 		if (get_lord_locale(ix) < 0) {
 			ui.lord_cylinder[ix].classList.add("hide")
@@ -1400,7 +1350,6 @@ function on_update() {
 
 	update_vassals()
 	layout_calendar()
-	//layout_track()
 
 	for (let loc = 0; loc < data.locales.length; ++loc)
 		update_locale(loc)
@@ -1428,34 +1377,29 @@ function on_update() {
 
 	if (view.victory_check <= 45) {
 		ui.victory_check.style.display = null
-		ui.victory_check.style.top = (track_xy[view.victory_check][1]) + "px"
-		ui.victory_check.style.left = (track_xy[view.victory_check][0]) + "px"
+		show_track_marker(ui.victory_check, view.victory_check)
 	} else {
 		ui.victory_check.style.display = "none"
 	}
 
-	let town = count_favour(TOWN)
-	ui.town.style.top = (track_xy[Math.abs(town)][1]) + "px"
-	ui.town.style.left = (track_xy[Math.abs(town)][0]) + "px"
-	ui.town.classList.toggle("york", town < 0)
-	ui.town.classList.toggle("lancaster", town >= 0)
+	let towns = count_favour(TOWN)
+	ui.towns.classList.toggle("york", towns < 0)
+	ui.towns.classList.toggle("lancaster", towns >= 0)
+	show_track_marker(ui.towns, Math.abs(towns))
 
 	let cities = count_favour(CITY)
-	ui.cities.style.top = (track_xy[Math.abs(cities)][1]) + "px"
-	ui.cities.style.left = (track_xy[Math.abs(cities)][0]) + "px"
 	ui.cities.classList.toggle("york", cities < 0)
 	ui.cities.classList.toggle("lancaster", cities >= 0)
+	show_track_marker(ui.cities, Math.abs(cities))
 
-	let fortress = count_favour(FORTRESS)
-	ui.fortress.style.top = (track_xy[Math.abs(fortress)][1]) + "px"
-	ui.fortress.style.left = (track_xy[Math.abs(fortress)][0]) + "px"
-	ui.fortress.classList.toggle("york", fortress < 0)
-	ui.fortress.classList.toggle("lancaster", fortress >= 0)
+	let fortresses = count_favour(FORTRESS)
+	ui.fortresses.classList.toggle("york", fortresses < 0)
+	ui.fortresses.classList.toggle("lancaster", fortresses >= 0)
+	show_track_marker(ui.fortresses, Math.abs(fortresses))
 
-	ui.influence.style.top = (track_xy[Math.min(45,Math.abs(view.influence))][1] - 20) + "px"
-	ui.influence.style.left = (track_xy[Math.min(45,Math.abs(view.influence))][0]) + "px"
 	ui.influence.classList.toggle("york", view.influence < 0)
 	ui.influence.classList.toggle("lancaster", view.influence >= 0)
+	show_track_marker(ui.influence, Math.abs(view.influence))
 
 	update_plan()
 	update_cards()
