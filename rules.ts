@@ -7955,7 +7955,7 @@ states.death_check = {
 		if (set_has(game.battle.fled, game.who)) {
 			if (die >= 5) {
 				logi("L" + game.who + " 5-6 B" + die)
-				remove_lord(game.who)
+				kill_lord(game.who)
 			} else {
 				logi("L" + game.who + " 5-6 W" + die)
 				disband_lord(game.who)
@@ -7963,7 +7963,7 @@ states.death_check = {
 		} else {
 			if (die >= 3) {
 				logi("L" + game.who + " 3-6 B" + die)
-				remove_lord(game.who)
+				kill_lord(game.who)
 			} else {
 				logi("L" + game.who + " 3-6 W" + die)
 				disband_lord(game.who)
@@ -7982,6 +7982,14 @@ states.death_check = {
 		end_death_check()
 	},
 	card: action_held_event_at_death_check,
+}
+
+function kill_lord(lord: Lord) {
+	if (game.scenario === SCENARIO_II) {
+		if (lord === LORD_WARWICK_L && game.battle.attacker === YORK)
+			foreign_haven_shift_lords()
+	}
+	remove_lord(lord)
 }
 
 // === DEATH CHECK CAPABILITY: BLOODY THOU ART ===
