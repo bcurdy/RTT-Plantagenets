@@ -3419,7 +3419,7 @@ function can_add_lord_capability(lord: Lord) {
 function forbidden_levy_capabilities(c: Card) {
 	// Some capabilities override the forbidden levy vassals
 	if (lord_has_capability(game.command, AOW_LANCASTER_TWO_ROSES)) {
-		if (c === AOW_LANCASTER_THOMAS_STANLEY || AOW_LANCASTER_MY_FATHERS_BLOOD) {
+		if (c === AOW_LANCASTER_THOMAS_STANLEY || c === AOW_LANCASTER_MY_FATHERS_BLOOD) {
 			return true
 		}
 	}
