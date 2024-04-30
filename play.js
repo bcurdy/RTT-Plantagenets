@@ -803,7 +803,7 @@ function layout_calendar() {
 		list = calendar_layout_lanc[loc]
 		for (let i = 0; i < list.length; ++i) {
 			let e = ui.lord_cylinder[list[i]]
-			let x = cx, y = cy, z = 30
+			let x = cx, y = cy, z = 30 + i
 			x += 5
 			y += i * 30 - 2
 			e.style.top = y + "px"
@@ -813,9 +813,9 @@ function layout_calendar() {
 			// cylinder is 44x48, exile marker is 39
 			if (is_lord_in_exile(list[i])) {
 				e = ui.lord_exile[list[i]]
-				e.style.top = y + 5 + "px"
+				e.style.top = y + 7 + "px"
 				e.style.left = x + 3 - 20 + "px"
-				e.style.zIndex = z - 1
+				e.style.zIndex = z + 1
 			}
 		}
 
@@ -823,7 +823,7 @@ function layout_calendar() {
 		for (let i = 0; i < list.length; ++i) {
 			// ui.lord_exile[ix].classList.toggle("hide", !is_lord_in_exile(ix))
 			let e = ui.lord_cylinder[list[i]]
-			let x = cx, y = cy, z = 30
+			let x = cx, y = cy, z = 30 + i
 			x += 50
 			y += i * 30 - 2
 			e.style.top = y + "px"
@@ -833,7 +833,7 @@ function layout_calendar() {
 			// cylinder is 44, exile marker is 39
 			if (is_lord_in_exile(list[i])) {
 				e = ui.lord_exile[list[i]]
-				e.style.top = y + "px"
+				e.style.top = y + 7 + "px"
 				e.style.left = x + 3 + 20 + "px"
 				e.style.zIndex = z - 1
 			}
