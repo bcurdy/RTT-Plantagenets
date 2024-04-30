@@ -337,7 +337,6 @@ body.Lancaster #plan_actions .york { display: none }
 	width: 44px;
 	height: 48px;
 	background-size: 44px 48px;
-	filter: drop-shadow(0px 2px 4px #0004);
 }
 
 .cylinder.action {
@@ -478,10 +477,14 @@ body.Lancaster #plan_actions .york { display: none }
 	border-radius: 12px;
 	border-width: 2px;
 	border-style: solid;
-	background-image: url(images/lord_mat_75.png);
 	background-size: 375px 375px;
 	background-repeat: no-repeat;
 	z-index: 4;
+}
+
+.mat .board { background-image: url(images/lord_mat_75.jpg); }
+@media (min-resolution: 97dpi) {
+	.mat .board { background-image: url(images/lord_mat_150.jpg); }
 }
 
 .mat.command .board { box-shadow: 0 0 0 1px #584800, 0 0 0 4px gold; }

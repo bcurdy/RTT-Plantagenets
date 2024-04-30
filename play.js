@@ -1,5 +1,6 @@
 "use strict"
 
+// TODO: tooltip lord card when mouseover cylinder
 
 function toggle_pieces() {
 	document.getElementById("pieces").classList.toggle("hide")
@@ -834,10 +835,10 @@ function layout_calendar() {
 			let len_lanc = calendar_layout_lanc[loc].length
 			let len_york = calendar_layout_york[loc].length
 			if (len_lanc <= len_york) {
-				y += len_lanc * 30 + 48-30 + 3 + i * 20
+				y += len_lanc * 30 + 48-30 + 3 + i * 32
 				x += 7
 			} else {
-				y += len_york * 30 + 48-30 + 3 + i * 20
+				y += len_york * 30 + 48-30 + 3 + i * 32
 				x += 42
 			}
 			e.style.top = y + "px"
