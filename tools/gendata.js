@@ -42,7 +42,7 @@ const boxes = {
 	"Harlech": [282,919,57,52],
 	"London": [878,1159,89,73],
 	"Calais": [1137,1411,63,58],
-	"Scotland": [448,277,113,132],
+	"Scotland": [449,277,113,132],
 	"France": [888,1428,113,132],
 	"Ireland": [48,950,113,132],
 	"Burgundy": [993,684,113,132],
@@ -113,34 +113,34 @@ const boxes = {
 	"vassal vassal_devon": [406,1400,27,30],
 	"vassal vassal_bonville": [174,1377,27,30],
 	"vassal vassal_beaumont": [753,787,27,30],
-	"seat lancaster lord_henry_vi": [840,1168,50,50],
-	"seat lancaster lord_margaret": [847,1153,50,50],
-	"seat lancaster lord_henry_tudor": [831,1186,50,50],
-	"seat lancaster lord_clarence": [656,613,50,50],
-	"seat lancaster lord_northumberland_l": [392,422,50,50],
+	"seat lancaster lord_henry_vi": [865,1166,50,50],
+	"seat lancaster lord_margaret": [864,1166,50,50],
+	"seat lancaster lord_henry_tudor": [864,1166,50,50],
+	"seat lancaster lord_clarence": [650,637,50,50],
+	"seat lancaster lord_northumberland_l": [392,430,50,50],
 	"seat lancaster lord_buckingham": [714,975,50,50],
-	"seat lancaster lord_jasper_tudor_2": [340,926,50,50],
-	"seat lancaster lord_jasper_tudor_1": [192,1077,50,50],
-	"seat lancaster lord_oxford": [692,1085,50,50],
+	"seat lancaster lord_jasper_tudor_2": [346,921,50,50],
+	"seat lancaster lord_jasper_tudor_1": [190,1066,50,50],
+	"seat lancaster lord_oxford": [678,1078,50,50],
 	"seat lancaster lord_warwick_l": [1150,1350,50,50],
-	"seat lancaster lord_exeter_1": [345,1329,50,50],
-	"seat lancaster lord_somerset_1": [457,1275,50,50],
-	"seat york lord_edward_iv": [899,1149,50,50],
-	"seat york lord_gloucester_2": [933,1158,50,50],
-	"seat york lord_gloucester_1": [604,1074,50,50],
-	"seat york lord_salisbury": [653,643,50,50],
-	"seat york lord_march": [435,955,50,50],
-	"seat york lord_rutland": [1096,1189,50,50],
-	"seat york lord_devon": [315,1353,50,50],
-	"seat york lord_pembroke": [139,1106,50,50],
+	"seat lancaster lord_exeter_1": [300,1333,50,50],
+	"seat lancaster lord_somerset_1": [453,1277,50,50],
+	"seat york lord_edward_iv": [929,1164,50,50],
+	"seat york lord_gloucester_2": [930,1165,50,50],
+	"seat york lord_gloucester_1": [609,1074,50,50],
+	"seat york lord_salisbury": [770,636,50,50],
+	"seat york lord_march": [427,969,50,50],
+	"seat york lord_rutland": [1125,1214,50,50],
+	"seat york lord_devon": [359,1318,50,50],
+	"seat york lord_pembroke": [132,1095,50,50],
 	"seat york lord_norfolk": [795,1398,50,50],
-	"seat york lord_northumberland_y1": [391,423,50,50],
+	"seat york lord_northumberland_y1": [391,431,50,50],
 	"seat york lord_warwick_y": [1150,1349,50,50],
-	"seat york lord_york": [908,937,50,50],
-	"seat york lord_northumberland_y2": [391,423,50,50],
-	"seat york lord_richard_iii": [933,1158,50,50],
-	"seat lancaster lord_somerset_2": [457,1275,50,50],
-	"seat lancaster lord_exeter_2": [345,1329,50,50],
+	"seat york lord_york": [906,937,50,50],
+	"seat york lord_northumberland_y2": [391,431,50,50],
+	"seat york lord_richard_iii": [930,1165,50,50],
+	"seat lancaster lord_somerset_2": [452,1276,50,50],
+	"seat lancaster lord_exeter_2": [300,1333,50,50],
 }
 
 let data = []
@@ -154,7 +154,6 @@ var locmap = {}
 var locales = []
 var ways = []
 var seat = []
-var vassalbox = []
 const scale = 1
 
 var is = { stronghold: [] }
@@ -189,13 +188,6 @@ function defseat(name) {
 }
 
 function defvassal(name) {
-	let [x, y, w, h] = boxes[name]
-	x = Math.floor(x)
-	y = Math.floor(y)
-	w = Math.ceil(w)
-	h = Math.ceil(h)
-	locmap[name] = locales.length
-	vassalbox.push({ name, box: { x, y, w, h } })
 }
 
 
@@ -339,22 +331,21 @@ defseat("seat lancaster lord_henry_tudor")
 defseat("seat lancaster lord_oxford")
 defseat("seat lancaster lord_warwick_l")
 
-
 // VASSAL SEAT
 
-defvassal("vassal vassal_westmoreland")
-defvassal("vassal vassal_stanley")
-defvassal("vassal vassal_dudley")
-defvassal("vassal vassal_shrewsbury")
-defvassal("vassal vassal_worcester")
-defvassal("vassal vassal_oxford")
-defvassal("vassal vassal_essex")
-defvassal("vassal vassal_suffolk")
-defvassal("vassal vassal_fauconberg")
-defvassal("vassal vassal_norfolk")
-defvassal("vassal vassal_devon")
-defvassal("vassal vassal_bonville")
-defvassal("vassal vassal_beaumont")
+defvassal("Westmoreland")
+defvassal("Stanley")
+defvassal("Dudley")
+defvassal("Shrewsbury")
+defvassal("Worcester")
+defvassal("Oxford")
+defvassal("Essex")
+defvassal("Suffolk")
+defvassal("Fauconberg")
+defvassal("Norfolk")
+defvassal("Devon")
+defvassal("Bonville")
+defvassal("Beaumont")
 
 //WAYS BETWEEN LOCALES
 
@@ -1402,7 +1393,17 @@ arts_of_war_roses(3, "L", 32, 37)
 
 let vassals = []
 function vassal(service, name, seat, influence, capability) {
-	vassals.push({service, name, seat, influence, capability })
+	let boxname = "vassal vassal_" + name.toLowerCase()
+	let box = null
+	if (boxname in boxes) {
+		let [x, y, w, h] = boxes[boxname]
+		x = Math.floor(x)
+		y = Math.floor(y)
+		w = Math.ceil(w)
+		h = Math.ceil(h)
+		box = { x, y, w, h }
+	}
+	vassals.push({service, name, seat, influence, capability, box })
 }
 
 lords.forEach(lord => {
@@ -1469,7 +1470,6 @@ dumplist("cards", cards)
 
 // layout client only
 dumplist("seat", seat)
-dumplist("vassalbox", vassalbox)
 
 print("}")
 

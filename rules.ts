@@ -5069,6 +5069,8 @@ states.intercept = {
 	prompt() {
 		view.prompt = `Intercept: Choose lords to intercept at ${locale_name[game.march.to]}.`
 
+		view.where = game.march.to
+
 		if (game.active === YORK)
 			gen_action_card_if_held(EVENT_YORK_FLANK_ATTACK)
 		else

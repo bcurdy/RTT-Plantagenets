@@ -247,6 +247,11 @@ body.Lancaster #plan_actions .york { display: none }
 	position: absolute;
 }
 
+.marker.exile_rose {
+	border-radius: 50%;
+	position: absolute;
+}
+
 .marker.depexh { position: absolute; border-radius: 0px; }
 .marker.depleted { position: absolute; border-radius: 0px; }
 .marker.exhausted { position: absolute; border-radius: 0px; }
@@ -255,22 +260,49 @@ body.Lancaster #plan_actions .york { display: none }
 	box-sizing: border-box;
 	position: absolute;
 	border: 3px solid transparent;
+	border-radius: 50% 50% 0 0;
 }
 
-.locale.town { border-radius: 50% }
-.locale.city { border-radius: 50% }
-.locale.fortress { border-radius: 0 0 0 0 }
-.locale.calais { border-radius: 0 0 0 0 }
+.locale.fortress { border-radius: 0% 0% 0 0 }
 .locale.sea { border-radius: 50% }
-.locale.exile { border-radius: 0 0 50% 50% }
+.locale.exile_box { border-radius: 0 0 50% 50% }
+
+/*
+.locale.action.south { background-color: steelblue }
+.locale.action.north { background-color: darkgoldenrod }
+.locale.action.wales { background-color: olivedrab }
+.locale.action.england { background-color: gray }
+*/
+
+.locale.action.south { background-color: #4682b480 }
+.locale.action.north { background-color: #b8860b80 }
+.locale.action.wales { background-color: #6b8e2380 }
+.locale.action.england { background-color: #80808080 }
+.locale.action.sea { background-color: #b0c4de80 }
+
+.locale.selected.south { background-color: #4682b480 }
+.locale.selected.north { background-color: #b8860b80 }
+.locale.selected.wales { background-color: #6b8e2380 }
+.locale.selected.england { background-color: #80808080 }
+.locale.selected.sea { background-color: #b0c4de80 }
+
+.locale.action.south { border-color: powderblue }
+.locale.action.north { border-color: navajowhite }
+.locale.action.wales { border-color: palegreen }
+.locale.action.england { border-color: whitesmoke }
+.locale.action.sea { border-color: lightblue }
+
+.locale.action.exile_box.scotland { border-color: lemonchiffon }
+.locale.action.exile_box.burgundy { border-color: wheat }
+.locale.action.exile_box.france { border-color: lightblue }
+.locale.action.exile_box.ireland { border-color: lightgreen }
 
 .locale.action {
 	border-color: white;
-	z-index: 100;
 }
 
 .locale.selected {
-	border-color: cyan;
+	border-color: yellow;
 }
 
 .locale.tip {
@@ -332,11 +364,9 @@ body.Lancaster #plan_actions .york { display: none }
 		drop-shadow(-2px 0px 0px gold);
 }
 
-.cylinder > .exile {
+.marker.exile {
 	position: absolute;
-	top: 6px;
-	left: 20px;
-	transform: rotate(45deg);
+	/* transform: rotate(45deg); */
 }
 
 .marker.seat {
@@ -374,7 +404,7 @@ body.Lancaster #plan_actions .york { display: none }
 .unit.shape {
 	width: 43px;
 	height: 35px;
-	margin: -26px 0 0px 0px;
+	margin: -20px 0 0px 0px;
 }
 
 .unit.men_at_arms { background-image: url(images/unit_men_at_arms.svg) }
@@ -382,6 +412,19 @@ body.Lancaster #plan_actions .york { display: none }
 .unit.militia { background-image: url(images/unit_militia.svg) }
 .unit.mercenaries { background-image: url(images/unit_mercenaries.svg) }
 .unit.burgundians { background-image: url(images/unit_handgunners.svg) }
+
+/*
+.men_at_arms + .longbowmen { margin-right: 0; }
+.men_at_arms + .militia { margin-right: 0; }
+.men_at_arms + .mercenaries { margin-right: 0; }
+.men_at_arms + .burgundians { margin-right: 0; }
+.longbowmen + .militia { margin-right: 0; }
+.longbowmen + .mercenaries { margin-right: 0; }
+.longbowmen + .burgundians { margin-right: 0; }
+.militia + .mercenaries { margin-right: 0; }
+.militia + .burgundians { margin-right: 0; }
+.mercenaries + .burgundians { margin-right: 0; }
+*/
 
 .unit.retinue {
 	border: 2px solid gray;
@@ -528,10 +571,10 @@ body.shift .mat .capabilities {
 
 .mat .board .troops {
 	position: absolute;
-	top: 80px;
+	top: 50px;
 	right: 0px;
 	width: 170px;
-	height: 60px;
+	height: 90px;
 	display: flex;
 	flex-wrap: wrap;
 	flex-direction: column-reverse;
@@ -542,10 +585,10 @@ body.shift .mat .capabilities {
 
 .mat .board .routed_troops {
 	position: absolute;
-	top: 170px;
+	top: 145px;
 	right: 0px;
 	width: 170px;
-	height: 60px;
+	height: 90px;
 	display: flex;
 	flex-wrap: wrap;
 	flex-direction: column-reverse;
@@ -701,8 +744,8 @@ body.shift .mat .capabilities {
 .marker.feed.x3 { background-image: url(images/feed_x3.png) }
 .marker.fled { background-image: url(images/fled.png) }
 .marker.exile { background-image: url(images/exile.png) }
-.marker.exile_lancaster { background-image: url(images/exile_lancaster.png) }
-.marker.exile_york { background-image: url(images/exile_york.png) }
+.marker.exile_rose.lancaster { background-image: url(images/exile_lancaster.png) }
+.marker.exile_rose.york { background-image: url(images/exile_york.png) }
 .marker.exhausted { background-image: url(images/exhausted.png) }
 .marker.end { background-image: url(images/end.png) }
 .marker.depleted { background-image: url(images/depleted.png) }
@@ -844,70 +887,71 @@ body.shift .mat .capabilities {
 	border-color: hsl(37,28%,46%) hsl(37,28%,66%) hsl(37,28%,66%) hsl(37,28%,46%);
 }
 
-.mat .board { background-color: hsl(37,28%,56%); border-color: hsl(37,28%,66%) hsl(37,28%,46%) hsl(37,28%,46%) hsl(37,28%,66%); box-shadow: 0 0 0 1px hsl(37,28%,19%), 0px 1px 4px #0008; }
-.marker.battle { background-color: hsl(34,16%,49%); border-color: hsl(34,16%,59%) hsl(34,16%,39%) hsl(34,16%,39%) hsl(34,16%,59%); box-shadow: 0 0 0 1px hsl(34,16%,16%), 0px 1px 4px #0008; }
-.marker.campaign { background-color: hsl(198,33%,38%); border-color: hsl(198,33%,48%) hsl(198,33%,28%) hsl(198,33%,28%) hsl(198,33%,48%); box-shadow: 0 0 0 1px hsl(198,33%,12%), 0px 1px 4px #0008; }
-.marker.levy { background-color: hsl(33,35%,44%); border-color: hsl(33,35%,54%) hsl(33,35%,34%) hsl(33,35%,34%) hsl(33,35%,54%); box-shadow: 0 0 0 1px hsl(33,35%,14%), 0px 1px 4px #0008; }
-.asset.cart.x1 { background-color: hsl(36,52%,70%); border-color: hsl(36,52%,80%) hsl(36,52%,60%) hsl(36,52%,60%) hsl(36,52%,80%); box-shadow: 0 0 0 1px hsl(36,52%,23%), 0px 1px 4px #0008; }
-.asset.cart.x2 { background-color: hsl(34,51%,64%); border-color: hsl(34,51%,74%) hsl(34,51%,54%) hsl(34,51%,54%) hsl(34,51%,74%); box-shadow: 0 0 0 1px hsl(34,51%,21%), 0px 1px 4px #0008; }
-.asset.cart.x3 { background-color: hsl(34,47%,56%); border-color: hsl(34,47%,66%) hsl(34,47%,46%) hsl(34,47%,46%) hsl(34,47%,66%); box-shadow: 0 0 0 1px hsl(34,47%,19%), 0px 1px 4px #0008; }
-.asset.cart.x4 { background-color: hsl(26,32%,50%); border-color: hsl(26,32%,60%) hsl(26,32%,40%) hsl(26,32%,40%) hsl(26,32%,60%); box-shadow: 0 0 0 1px hsl(26,32%,16%), 0px 1px 4px #0008; }
-.asset.coin.x1 { background-color: hsl(160,3%,83%); border-color: hsl(160,3%,93%) hsl(160,3%,73%) hsl(160,3%,73%) hsl(160,3%,93%); box-shadow: 0 0 0 1px hsl(160,3%,27%), 0px 1px 4px #0008; }
-.asset.coin.x2 { background-color: hsl(120,1%,74%); border-color: hsl(120,1%,84%) hsl(120,1%,64%) hsl(120,1%,64%) hsl(120,1%,84%); box-shadow: 0 0 0 1px hsl(120,1%,24%), 0px 1px 4px #0008; }
-.asset.coin.x3 { background-color: hsl(300,1%,65%); border-color: hsl(300,1%,75%) hsl(300,1%,55%) hsl(300,1%,55%) hsl(300,1%,75%); box-shadow: 0 0 0 1px hsl(300,1%,21%), 0px 1px 4px #0008; }
-.asset.coin.x4 { background-color: hsl(0,0%,56%); border-color: hsl(0,0%,66%) hsl(0,0%,46%) hsl(0,0%,46%) hsl(0,0%,66%); box-shadow: 0 0 0 1px hsl(0,0%,19%), 0px 1px 4px #0008; }
-.asset.prov.x1 { background-color: hsl(44,100%,79%); border-color: hsl(44,100%,89%) hsl(44,100%,69%) hsl(44,100%,69%) hsl(44,100%,89%); box-shadow: 0 0 0 1px hsl(44,100%,26%), 0px 1px 4px #0008; }
-.asset.prov.x2 { background-color: hsl(42,100%,75%); border-color: hsl(42,100%,85%) hsl(42,100%,65%) hsl(42,100%,65%) hsl(42,100%,85%); box-shadow: 0 0 0 1px hsl(42,100%,25%), 0px 1px 4px #0008; }
-.asset.prov.x3 { background-color: hsl(40,100%,70%); border-color: hsl(40,100%,80%) hsl(40,100%,60%) hsl(40,100%,60%) hsl(40,100%,80%); box-shadow: 0 0 0 1px hsl(40,100%,23%), 0px 1px 4px #0008; }
-.asset.prov.x4 { background-color: hsl(39,82%,63%); border-color: hsl(39,82%,73%) hsl(39,82%,53%) hsl(39,82%,53%) hsl(39,82%,73%); box-shadow: 0 0 0 1px hsl(39,82%,21%), 0px 1px 4px #0008; }
-.asset.ship.x1 { background-color: hsl(209,61%,74%); border-color: hsl(209,61%,84%) hsl(209,61%,64%) hsl(209,61%,64%) hsl(209,61%,84%); box-shadow: 0 0 0 1px hsl(209,61%,24%), 0px 1px 4px #0008; }
-.asset.ship.x2 { background-color: hsl(205,52%,60%); border-color: hsl(205,52%,70%) hsl(205,52%,50%) hsl(205,52%,50%) hsl(205,52%,70%); box-shadow: 0 0 0 1px hsl(205,52%,20%), 0px 1px 4px #0008; }
-.unit.retinue { background-color: hsl(0,0%,67%); border-color: hsl(0,0%,77%) hsl(0,0%,57%) hsl(0,0%,57%) hsl(0,0%,77%); box-shadow: 0 0 0 1px hsl(0,0%,22%), 0px 1px 4px #0008; }
-.marker.cities.york { background-color: hsl(0,0%,96%); border-color: hsl(0,0%,100%) hsl(0,0%,86%) hsl(0,0%,86%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,32%), 0px 1px 4px #0008; }
-.marker.fortresses.york { background-color: hsl(0,0%,96%); border-color: hsl(0,0%,100%) hsl(0,0%,86%) hsl(0,0%,86%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,32%), 0px 1px 4px #0008; }
-.marker.ip.york { background-color: hsl(0,0%,96%); border-color: hsl(0,0%,100%) hsl(0,0%,86%) hsl(0,0%,86%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,32%), 0px 1px 4px #0008; }
-.marker.towns.york { background-color: hsl(0,0%,96%); border-color: hsl(0,0%,100%) hsl(0,0%,86%) hsl(0,0%,86%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,32%), 0px 1px 4px #0008; }
-.marker.cities.lancaster { background-color: hsl(359,85%,53%); border-color: hsl(359,85%,63%) hsl(359,85%,43%) hsl(359,85%,43%) hsl(359,85%,63%); box-shadow: 0 0 0 1px hsl(359,85%,17%), 0px 1px 4px #0008; }
-.marker.fortresses.lancaster { background-color: hsl(359,85%,53%); border-color: hsl(359,85%,63%) hsl(359,85%,43%) hsl(359,85%,43%) hsl(359,85%,63%); box-shadow: 0 0 0 1px hsl(359,85%,17%), 0px 1px 4px #0008; }
-.marker.ip.lancaster { background-color: hsl(359,85%,53%); border-color: hsl(359,85%,63%) hsl(359,85%,43%) hsl(359,85%,43%) hsl(359,85%,63%); box-shadow: 0 0 0 1px hsl(359,85%,17%), 0px 1px 4px #0008; }
-.marker.towns.lancaster { background-color: hsl(359,85%,53%); border-color: hsl(359,85%,63%) hsl(359,85%,43%) hsl(359,85%,43%) hsl(359,85%,63%); box-shadow: 0 0 0 1px hsl(359,85%,17%), 0px 1px 4px #0008; }
-.marker.depleted { background-color: hsl(204,6%,85%); border-color: hsl(204,6%,95%) hsl(204,6%,75%) hsl(204,6%,75%) hsl(204,6%,95%); box-shadow: 0 0 0 1px hsl(204,6%,28%), 0px 1px 4px #0008; }
-.marker.end { background-color: hsl(33,35%,44%); border-color: hsl(33,35%,54%) hsl(33,35%,34%) hsl(33,35%,34%) hsl(33,35%,54%); box-shadow: 0 0 0 1px hsl(33,35%,14%), 0px 1px 4px #0008; }
-.marker.exhausted { background-color: hsl(283,4%,31%); border-color: hsl(283,4%,41%) hsl(283,4%,21%) hsl(283,4%,21%) hsl(283,4%,41%); box-shadow: 0 0 0 1px hsl(283,4%,10%), 0px 1px 4px #0008; }
-.marker.exile { background-color: hsl(86,41%,39%); border-color: hsl(86,41%,49%) hsl(86,41%,29%) hsl(86,41%,29%) hsl(86,41%,49%); box-shadow: 0 0 0 1px hsl(86,41%,13%), 0px 1px 4px #0008; }
-.marker.exile.lancaster { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.marker.exile.york { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%), 0px 1px 4px #0008; }
-.marker.feed.x2 { background-color: hsl(204,100%,37%); border-color: hsl(204,100%,47%) hsl(204,100%,27%) hsl(204,100%,27%) hsl(204,100%,47%); box-shadow: 0 0 0 1px hsl(204,100%,12%), 0px 1px 4px #0008; }
-.marker.feed.x3 { background-color: hsl(200,100%,29%); border-color: hsl(200,100%,39%) hsl(200,100%,19%) hsl(200,100%,19%) hsl(200,100%,39%); box-shadow: 0 0 0 1px hsl(200,100%,9%), 0px 1px 4px #0008; }
-.marker.fled { background-color: hsl(347,47%,4%); border-color: hsl(347,47%,14%) hsl(347,47%,0%) hsl(347,47%,0%) hsl(347,47%,14%); box-shadow: 0 0 0 1px hsl(347,47%,1%), 0px 1px 4px #0008; }
-.marker.hits.lancaster { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.marker.hits.york { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%), 0px 1px 4px #0008; }
-.marker.rose.lancaster { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.marker.rose.york { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%), 0px 1px 4px #0008; }
-.marker.source { background-color: hsl(41,30%,71%); border-color: hsl(41,30%,81%) hsl(41,30%,61%) hsl(41,30%,61%) hsl(41,30%,81%); box-shadow: 0 0 0 1px hsl(41,30%,23%), 0px 1px 4px #0008; }
-.marker.valour { background-color: hsl(288,29%,51%); border-color: hsl(288,29%,61%) hsl(288,29%,41%) hsl(288,29%,41%) hsl(288,29%,61%); box-shadow: 0 0 0 1px hsl(288,29%,17%), 0px 1px 4px #0008; }
-.marker.victory_check { background-color: hsl(51,97%,53%); border-color: hsl(51,97%,63%) hsl(51,97%,43%) hsl(51,97%,43%) hsl(51,97%,63%); box-shadow: 0 0 0 1px hsl(51,97%,18%), 0px 1px 4px #0008; }
-.marker.moved_fought { background-color: hsl(204,100%,37%); border-color: hsl(204,100%,47%) hsl(204,100%,27%) hsl(204,100%,27%) hsl(204,100%,47%); box-shadow: 0 0 0 1px hsl(204,100%,12%), 0px 1px 4px #0008; }
-.marker.number.lancaster { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.marker.number.york { background-color: hsl(0,0%,100%); border-color: hsl(0,0%,100%) hsl(0,0%,90%) hsl(0,0%,90%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,33%), 0px 1px 4px #0008; }
-.marker.seat.lancaster { background-color: hsl(358,76%,50%); border-color: hsl(358,76%,60%) hsl(358,76%,40%) hsl(358,76%,40%) hsl(358,76%,60%); box-shadow: 0 0 0 1px hsl(358,76%,17%), 0px 1px 4px #0008; }
-.marker.seat.york { background-color: hsl(0,0%,96%); border-color: hsl(0,0%,100%) hsl(0,0%,86%) hsl(0,0%,86%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,32%), 0px 1px 4px #0008; }
-.marker.vassal { background-color: hsl(58,34%,73%); border-color: hsl(58,34%,83%) hsl(58,34%,63%) hsl(58,34%,63%) hsl(58,34%,83%); box-shadow: 0 0 0 1px hsl(58,34%,24%), 0px 1px 4px #0008; }
-.marker.vassal.back { background-color: hsl(57,48%,75%); border-color: hsl(57,48%,85%) hsl(57,48%,65%) hsl(57,48%,65%) hsl(57,48%,85%); box-shadow: 0 0 0 1px hsl(57,48%,25%), 0px 1px 4px #0008; }
-.marker.vassal.vassal_hastings { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%), 0px 1px 4px #0008; }
-.marker.vassal.vassal_clifford { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.marker.vassal.vassal_edward { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.marker.vassal.vassal_montagu { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.marker.vassal.vassal_thomas_stanley { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.marker.vassal.vassal_trollope { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.unit.vassal { background-color: hsl(58,34%,73%); border-color: hsl(58,34%,83%) hsl(58,34%,63%) hsl(58,34%,63%) hsl(58,34%,83%); box-shadow: 0 0 0 1px hsl(58,34%,24%), 0px 1px 4px #0008; }
-.unit.vassal.back { background-color: hsl(57,48%,75%); border-color: hsl(57,48%,85%) hsl(57,48%,65%) hsl(57,48%,65%) hsl(57,48%,85%); box-shadow: 0 0 0 1px hsl(57,48%,25%), 0px 1px 4px #0008; }
-.unit.vassal.vassal_hastings { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%), 0px 1px 4px #0008; }
-.unit.vassal.vassal_clifford { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.unit.vassal.vassal_edward { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.unit.vassal.vassal_montagu { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.unit.vassal.vassal_thomas_stanley { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
-.unit.vassal.vassal_trollope { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%), 0px 1px 4px #0008; }
+.mat .board { background-color: hsl(37,28%,56%); border-color: hsl(37,28%,66%) hsl(37,28%,46%) hsl(37,28%,46%) hsl(37,28%,66%); box-shadow: 0 0 0 1px hsl(37,28%,19%), 0px 0px 4px #0008; }
+
+.marker.battle { background-color: hsl(34,16%,49%); border-color: hsl(34,16%,59%) hsl(34,16%,39%) hsl(34,16%,39%) hsl(34,16%,59%); box-shadow: 0 0 0 1px hsl(34,16%,16%); }
+.marker.campaign { background-color: hsl(198,33%,38%); border-color: hsl(198,33%,48%) hsl(198,33%,28%) hsl(198,33%,28%) hsl(198,33%,48%); box-shadow: 0 0 0 1px hsl(198,33%,12%); }
+.marker.levy { background-color: hsl(33,35%,44%); border-color: hsl(33,35%,54%) hsl(33,35%,34%) hsl(33,35%,34%) hsl(33,35%,54%); box-shadow: 0 0 0 1px hsl(33,35%,14%); }
+.asset.cart.x1 { background-color: hsl(36,52%,70%); border-color: hsl(36,52%,80%) hsl(36,52%,60%) hsl(36,52%,60%) hsl(36,52%,80%); box-shadow: 0 0 0 1px hsl(36,52%,23%); }
+.asset.cart.x2 { background-color: hsl(34,51%,64%); border-color: hsl(34,51%,74%) hsl(34,51%,54%) hsl(34,51%,54%) hsl(34,51%,74%); box-shadow: 0 0 0 1px hsl(34,51%,21%); }
+.asset.cart.x3 { background-color: hsl(34,47%,56%); border-color: hsl(34,47%,66%) hsl(34,47%,46%) hsl(34,47%,46%) hsl(34,47%,66%); box-shadow: 0 0 0 1px hsl(34,47%,19%); }
+.asset.cart.x4 { background-color: hsl(26,32%,50%); border-color: hsl(26,32%,60%) hsl(26,32%,40%) hsl(26,32%,40%) hsl(26,32%,60%); box-shadow: 0 0 0 1px hsl(26,32%,16%); }
+.asset.coin.x1 { background-color: hsl(160,3%,83%); border-color: hsl(160,3%,93%) hsl(160,3%,73%) hsl(160,3%,73%) hsl(160,3%,93%); box-shadow: 0 0 0 1px hsl(160,3%,27%); }
+.asset.coin.x2 { background-color: hsl(120,1%,74%); border-color: hsl(120,1%,84%) hsl(120,1%,64%) hsl(120,1%,64%) hsl(120,1%,84%); box-shadow: 0 0 0 1px hsl(120,1%,24%); }
+.asset.coin.x3 { background-color: hsl(300,1%,65%); border-color: hsl(300,1%,75%) hsl(300,1%,55%) hsl(300,1%,55%) hsl(300,1%,75%); box-shadow: 0 0 0 1px hsl(300,1%,21%); }
+.asset.coin.x4 { background-color: hsl(0,0%,56%); border-color: hsl(0,0%,66%) hsl(0,0%,46%) hsl(0,0%,46%) hsl(0,0%,66%); box-shadow: 0 0 0 1px hsl(0,0%,19%); }
+.asset.prov.x1 { background-color: hsl(44,100%,79%); border-color: hsl(44,100%,89%) hsl(44,100%,69%) hsl(44,100%,69%) hsl(44,100%,89%); box-shadow: 0 0 0 1px hsl(44,100%,26%); }
+.asset.prov.x2 { background-color: hsl(42,100%,75%); border-color: hsl(42,100%,85%) hsl(42,100%,65%) hsl(42,100%,65%) hsl(42,100%,85%); box-shadow: 0 0 0 1px hsl(42,100%,25%); }
+.asset.prov.x3 { background-color: hsl(40,100%,70%); border-color: hsl(40,100%,80%) hsl(40,100%,60%) hsl(40,100%,60%) hsl(40,100%,80%); box-shadow: 0 0 0 1px hsl(40,100%,23%); }
+.asset.prov.x4 { background-color: hsl(39,82%,63%); border-color: hsl(39,82%,73%) hsl(39,82%,53%) hsl(39,82%,53%) hsl(39,82%,73%); box-shadow: 0 0 0 1px hsl(39,82%,21%); }
+.asset.ship.x1 { background-color: hsl(209,61%,74%); border-color: hsl(209,61%,84%) hsl(209,61%,64%) hsl(209,61%,64%) hsl(209,61%,84%); box-shadow: 0 0 0 1px hsl(209,61%,24%); }
+.asset.ship.x2 { background-color: hsl(205,52%,60%); border-color: hsl(205,52%,70%) hsl(205,52%,50%) hsl(205,52%,50%) hsl(205,52%,70%); box-shadow: 0 0 0 1px hsl(205,52%,20%); }
+.unit.retinue { background-color: hsl(0,0%,67%); border-color: hsl(0,0%,77%) hsl(0,0%,57%) hsl(0,0%,57%) hsl(0,0%,77%); box-shadow: 0 0 0 1px hsl(0,0%,22%); }
+.marker.cities.york { background-color: hsl(0,0%,96%); border-color: hsl(0,0%,100%) hsl(0,0%,86%) hsl(0,0%,86%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,32%); }
+.marker.fortresses.york { background-color: hsl(0,0%,96%); border-color: hsl(0,0%,100%) hsl(0,0%,86%) hsl(0,0%,86%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,32%); }
+.marker.ip.york { background-color: hsl(0,0%,96%); border-color: hsl(0,0%,100%) hsl(0,0%,86%) hsl(0,0%,86%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,32%); }
+.marker.towns.york { background-color: hsl(0,0%,96%); border-color: hsl(0,0%,100%) hsl(0,0%,86%) hsl(0,0%,86%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,32%); }
+.marker.cities.lancaster { background-color: hsl(359,85%,53%); border-color: hsl(359,85%,63%) hsl(359,85%,43%) hsl(359,85%,43%) hsl(359,85%,63%); box-shadow: 0 0 0 1px hsl(359,85%,17%); }
+.marker.fortresses.lancaster { background-color: hsl(359,85%,53%); border-color: hsl(359,85%,63%) hsl(359,85%,43%) hsl(359,85%,43%) hsl(359,85%,63%); box-shadow: 0 0 0 1px hsl(359,85%,17%); }
+.marker.ip.lancaster { background-color: hsl(359,85%,53%); border-color: hsl(359,85%,63%) hsl(359,85%,43%) hsl(359,85%,43%) hsl(359,85%,63%); box-shadow: 0 0 0 1px hsl(359,85%,17%); }
+.marker.towns.lancaster { background-color: hsl(359,85%,53%); border-color: hsl(359,85%,63%) hsl(359,85%,43%) hsl(359,85%,43%) hsl(359,85%,63%); box-shadow: 0 0 0 1px hsl(359,85%,17%); }
+.marker.depleted { background-color: hsl(204,6%,85%); border-color: hsl(204,6%,95%) hsl(204,6%,75%) hsl(204,6%,75%) hsl(204,6%,95%); box-shadow: 0 0 0 1px hsl(204,6%,28%); }
+.marker.end { background-color: hsl(33,35%,44%); border-color: hsl(33,35%,54%) hsl(33,35%,34%) hsl(33,35%,34%) hsl(33,35%,54%); box-shadow: 0 0 0 1px hsl(33,35%,14%); }
+.marker.exhausted { background-color: hsl(283,4%,31%); border-color: hsl(283,4%,41%) hsl(283,4%,21%) hsl(283,4%,21%) hsl(283,4%,41%); box-shadow: 0 0 0 1px hsl(283,4%,10%); }
+.marker.exile { background-color: hsl(86,41%,39%); border-color: hsl(86,41%,49%) hsl(86,41%,29%) hsl(86,41%,29%) hsl(86,41%,49%); box-shadow: 0 0 0 1px hsl(86,41%,13%); }
+.marker.exile_rose.lancaster { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.marker.exile_rose.york { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%); }
+.marker.feed.x2 { background-color: hsl(204,100%,37%); border-color: hsl(204,100%,47%) hsl(204,100%,27%) hsl(204,100%,27%) hsl(204,100%,47%); box-shadow: 0 0 0 1px hsl(204,100%,12%); }
+.marker.feed.x3 { background-color: hsl(200,100%,29%); border-color: hsl(200,100%,39%) hsl(200,100%,19%) hsl(200,100%,19%) hsl(200,100%,39%); box-shadow: 0 0 0 1px hsl(200,100%,9%); }
+.marker.fled { background-color: hsl(347,47%,4%); border-color: hsl(347,47%,14%) hsl(347,47%,0%) hsl(347,47%,0%) hsl(347,47%,14%); box-shadow: 0 0 0 1px hsl(347,47%,1%); }
+.marker.hits.lancaster { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.marker.hits.york { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%); }
+.marker.rose.lancaster { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.marker.rose.york { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%); }
+.marker.source { background-color: hsl(41,30%,71%); border-color: hsl(41,30%,81%) hsl(41,30%,61%) hsl(41,30%,61%) hsl(41,30%,81%); box-shadow: 0 0 0 1px hsl(41,30%,23%); }
+.marker.valour { background-color: hsl(288,29%,51%); border-color: hsl(288,29%,61%) hsl(288,29%,41%) hsl(288,29%,41%) hsl(288,29%,61%); box-shadow: 0 0 0 1px hsl(288,29%,17%); }
+.marker.victory_check { background-color: hsl(51,97%,53%); border-color: hsl(51,97%,63%) hsl(51,97%,43%) hsl(51,97%,43%) hsl(51,97%,63%); box-shadow: 0 0 0 1px hsl(51,97%,18%); }
+.marker.moved_fought { background-color: hsl(204,100%,37%); border-color: hsl(204,100%,47%) hsl(204,100%,27%) hsl(204,100%,27%) hsl(204,100%,47%); box-shadow: 0 0 0 1px hsl(204,100%,12%); }
+.marker.number.lancaster { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.marker.number.york { background-color: hsl(0,0%,100%); border-color: hsl(0,0%,100%) hsl(0,0%,90%) hsl(0,0%,90%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,33%); }
+.marker.seat.lancaster { background-color: hsl(358,76%,50%); border-color: hsl(358,76%,60%) hsl(358,76%,40%) hsl(358,76%,40%) hsl(358,76%,60%); box-shadow: 0 0 0 1px hsl(358,76%,17%); }
+.marker.seat.york { background-color: hsl(0,0%,96%); border-color: hsl(0,0%,100%) hsl(0,0%,86%) hsl(0,0%,86%) hsl(0,0%,100%); box-shadow: 0 0 0 1px hsl(0,0%,32%); }
+.marker.vassal { background-color: hsl(58,34%,73%); border-color: hsl(58,34%,83%) hsl(58,34%,63%) hsl(58,34%,63%) hsl(58,34%,83%); box-shadow: 0 0 0 1px hsl(58,34%,24%); }
+.marker.vassal.back { background-color: hsl(57,48%,75%); border-color: hsl(57,48%,85%) hsl(57,48%,65%) hsl(57,48%,65%) hsl(57,48%,85%); box-shadow: 0 0 0 1px hsl(57,48%,25%); }
+.marker.vassal.vassal_hastings { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%); }
+.marker.vassal.vassal_clifford { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.marker.vassal.vassal_edward { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.marker.vassal.vassal_montagu { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.marker.vassal.vassal_thomas_stanley { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.marker.vassal.vassal_trollope { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.unit.vassal { background-color: hsl(58,34%,73%); border-color: hsl(58,34%,83%) hsl(58,34%,63%) hsl(58,34%,63%) hsl(58,34%,83%); box-shadow: 0 0 0 1px hsl(58,34%,24%); }
+.unit.vassal.back { background-color: hsl(57,48%,75%); border-color: hsl(57,48%,85%) hsl(57,48%,65%) hsl(57,48%,65%) hsl(57,48%,85%); box-shadow: 0 0 0 1px hsl(57,48%,25%); }
+.unit.vassal.vassal_hastings { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); box-shadow: 0 0 0 1px hsl(217,53%,29%); }
+.unit.vassal.vassal_clifford { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.unit.vassal.vassal_edward { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.unit.vassal.vassal_montagu { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.unit.vassal.vassal_thomas_stanley { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
+.unit.vassal.vassal_trollope { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); box-shadow: 0 0 0 1px hsl(358,83%,30%); }
 
 /* ULTRA-WIDE SCREEN LAYOUTS */
 

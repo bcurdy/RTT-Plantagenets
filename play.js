@@ -139,18 +139,7 @@ function on_blur() {
 }
 
 function get_locale_tip(id) {
-	let loc = data.locales[id]
-	let tip = loc.name
-	if (set_has(data.seaports, id))
-		tip += " - Port"
-	let list = []
-	for (let lord = 0; lord < data.lords.length; ++lord) {
-		if (data.lords[lord].seat === id)
-			list.push(data.lords[lord].short_name)
-	}
-	if (list.length > 0)
-		tip += " - " + list.join(", ")
-	return tip
+	return data.locales[id].name
 }
 
 function on_focus_cylinder(evt) {
@@ -346,9 +335,6 @@ const track_xy = []
 const calendar_xy = []
 const locale_xy = []
 
-let expand_calendar = -1
-let expand_track = -1
-
 const ui = {
 	favicon: document.getElementById("favicon"),
 	locale: [],
@@ -368,6 +354,7 @@ const ui = {
 	lord_exile: [],
 	vassal_cal: [], // token on calendar
 	vassal_map: [], // token on map
+	vassal_mat: [], // token on mat
 	valour_area: [],
 	marker_area: [],
 
@@ -431,9 +418,11 @@ const ui = {
 	],
 }
 
-let locale_layout = []
+let locale_layout_york = []
+let locale_layout_lanc = []
 let calendar_layout_vassal = []
-let calendar_layout_cylinder = []
+let calendar_layout_york = []
+let calendar_layout_lanc = []
 
 function clean_name(name) {
 	return name.toLowerCase().replaceAll("&", "and").replaceAll(" ", "_")
@@ -506,66 +495,83 @@ function build_plan() {
 	ui.plan_actions.appendChild(elt)
 }
 
-const locale_size = {
-	town: [ 100, 100 ],
-	city: [ 100, 100 ],
-	fortress: [ 100, 100 ],
-	harlech: [ 100, 100 ],
-	calais: [ 100, 100 ],
-	london: [ 150, 150 ],
-	exile: [ 150, 200 ],
-	sea: [ 100, 100 ],
-}
-
 function build_map() {
-	for (let i = 0; i < data.locales.length; ++i)
-		locale_layout[i] = []
+	for (let i = 0; i <= 16; ++i) {
+		calendar_layout_york[i] = []
+		calendar_layout_lanc[i] = []
+		calendar_layout_vassal[i] = []
+	}
+
+	for (let i = 0; i < data.locales.length; ++i) {
+		locale_layout_york[i] = []
+		locale_layout_lanc[i] = []
+	}
 
 	data.locales.forEach((locale, ix) => {
 		let region = locale.region ? clean_name(locale.region) : ""
 		let { x, y, w, h } = locale.box
+		let ax, ay, aw, ah
 		let xc = Math.round(x + w / 2)
 		let yc = Math.round(y + h / 2)
 		let e
-		let small = 40
-		let offsetdeplete = 10
 
 		locale_xy[ix] = [ xc, yc ]
 
+		if (locale.type === "exile_box") {
+			locale_xy[ix] = [ xc, y + 45 ]
+			ax = x + 6
+			ay = y + 6
+			aw = w - 13
+			ah = h - 21
+		} else {
+			ax = x - 6
+			ay = y - 6
+			aw = w + 12
+			ah = h + 8
+		}
+
 		// Main Area
 		e = ui.locale[ix] = document.createElement("div")
-		e.className = "locale " + locale.type + " " + region
-		e.style.left = x + "px"
-		e.style.top = y + "px"
-		e.style.width = w + "px"
-		e.style.height = h + "px"
+		if (locale.type === "exile_box")
+			e.className = "locale " + locale.type + " " + locale.name.toLowerCase()
+		else
+			e.className = "locale " + locale.type + " " + region.toLowerCase()
+		e.style.left = ax + "px"
+		e.style.top = ay + "px"
+		e.style.width = aw + "px"
+		e.style.height = ah + "px"
 		register_action(e, "locale", ix, "laden_march")
 		register_tooltip(e, get_locale_tip(ix))
 		document.getElementById("locales").appendChild(e)
 
-		// Locale Markers
-		e = ui.locale_markers_rose[ix] = document.createElement("div")
-		e.className = "marker rose favour " + locale.name // York/Lancaster to add favour
-		e.style.top = y + h - small + "px"
-		e.style.left = x + (w - small) / 2 + "px"
-		e.style.width = small + "px"
-		e.style.height = small + "px"
-		e.style.zIndex = "-20"
-		// e.style.border = "2px solid aqua" // to be changed depending on the favour marker
-		e.style.backgroundSize = small + "px"
+		// Favour
+		if (locale.type === "exile_box") {
+			e = ui.locale_markers_rose[ix] = document.createElement("div")
+			e.className = "marker circle exile_rose "
+			//e.style.top = (y - 8) + "px"
+			//e.style.left = (x + w - 54 + 8) + "px"
+			e.style.top = (y + h - 50) + "px"
+			e.style.left = (xc - 27) + "px"
+			e.style.pointerEvents = "none"
+			document.getElementById("pieces").appendChild(e)
+		} else {
+			e = ui.locale_markers_rose[ix] = document.createElement("div")
+			e.className = "marker small rose"
+			//e.style.top = y + h - 41 + "px"
+			e.style.top = yc - 20 + "px"
+			e.style.left = xc - 20 + "px"
+			e.style.pointerEvents = "none"
+			document.getElementById("pieces").appendChild(e)
+		}
+
+		// Depleted/Exhausted
+		e = ui.locale_markers[ix] = document.createElement("div")
+		e.className = "marker small depexh " + locale.name
+		e.style.top = yc - 20 - 13 + "px"
+		e.style.left = xc - 20 + 13 + "px"
+		e.style.pointerEvents = "none"
 		document.getElementById("pieces").appendChild(e)
 
-		// Depleted markers
-		e = ui.locale_markers[ix] = document.createElement("div")
-		e.className = "depexh marker " + locale.name // depleted or exhausted to add markers
-		e.style.top = y + h - small - offsetdeplete + "px"
-		e.style.left = offsetdeplete + x + (w - small) / 2 + "px"
-		e.style.width = small + "px"
-		e.style.height = small + "px"
-		e.style.zIndex = "-15"
-		// e.style.border = "2px solid aqua"
-		e.style.backgroundSize = small + "px"
-		document.getElementById("pieces").appendChild(e)
 	})
 
 	// Lord seats
@@ -582,7 +588,7 @@ function build_map() {
 		e.style.width = 46 + "px"
 		e.style.height = 46 + "px"
 		e.style.backgroundSize = small + "px"
-		e.style.transform = "rotate(315deg)"
+		//e.style.transform = "rotate(315deg)"
 		e.style.zIndex = "-50"
 		register_tooltip(e, data.seat[ix].name)
 		document.getElementById("pieces").appendChild(e)
@@ -596,10 +602,10 @@ function build_map() {
 		register_tooltip(e, on_focus_cylinder)
 		document.getElementById("pieces").appendChild(e)
 
-		// TODO: remove this when not in exile
 		let exile = ui.lord_exile[ix] = document.createElement("div")
 		exile.className = "marker small exile hide"
-		e.appendChild(exile)
+		exile.style.zIndex=1
+		document.getElementById("pieces").appendChild(exile)
 
 		build_lord_mat(lord, ix, side, lord.id)
 	})
@@ -608,36 +614,34 @@ function build_map() {
 	ui.captured_king.className = "cylinder lancaster " + data.lords[LORD_HENRY_VI].id
 	ui.captured_king.style.position = "static"
 
-	data.vassalbox.forEach((vassal, ix) => {
-		let e = ui.vassal_map[ix] = document.createElement("div")
-		let { x, y, w, h } = vassal.box
-		let xc = Math.round(x + w / 2)
-		let yc = Math.round(y + h / 2)
-		let small = 46
-		e.className = "hide unit " + vassal.name
-		e.style.position = "absolute"
-		e.style.top = y + "px"
-		e.style.left = x + "px"
-		e.style.width = 46 + "px"
-		e.style.height = 46 + "px"
-		e.style.backgroundSize = small + "px"
-		register_action(e, "vassal", ix)
-		register_tooltip(e, data.vassals[ix].name)
-		document.getElementById("pieces").appendChild(e)
-	})
-
 	data.vassals.forEach((vassal, ix) => {
-		let e = ui.vassal_cal[ix] = document.createElement("div")
-		e.className = "hide marker square back vassal vassal_" + clean_name(vassal.name)
-		e.style.position = "absolute"
-		e.style.width = 46 + "px"
-		e.style.height = 46 + "px"
-		e.style.backgroundSize = 46 + "px"
+		let e
 
+		if (vassal.box) {
+			let { x, y, w, h } = vassal.box
+			e = ui.vassal_map[ix] = document.createElement("div")
+			let xc = Math.round(x + w / 2)
+			let yc = Math.round(y + h / 2)
+			e.className = "hide unit vassal vassal_" + vassal.name.toLowerCase()
+			e.style.position = "absolute"
+			e.style.top = yc - 27 + "px"
+			e.style.left = xc - 27 + "px"
+			register_action(e, "vassal", ix)
+			register_tooltip(e, data.vassals[ix].name)
+			document.getElementById("pieces").appendChild(e)
+		}
+
+		e = ui.vassal_cal[ix] = document.createElement("div")
+		e.className = "hide unit vassal + vassal_" + vassal.name.toLowerCase()
+		e.style.position = "absolute"
 		register_action(e, "vassal", ix)
 		register_tooltip(e, data.vassals[ix].name)
-
 		document.getElementById("pieces").appendChild(e)
+
+		e = ui.vassal_mat[ix] = document.createElement("div")
+		e.className = "unit vassal + vassal_" + vassal.name.toLowerCase()
+		register_action(e, "vassal", ix)
+		register_tooltip(e, data.vassals[ix].name)
 	})
 
 	for (let i = 1; i <= 16; ++i) {
@@ -646,7 +650,7 @@ function build_map() {
 		let y = calendar_boxes[name][1]
 		let w = calendar_boxes[name][2]
 		let h = calendar_boxes[name][3]
-		calendar_xy[i] = [ x, y ]
+		calendar_xy[i] = [ x, y, w, h ]
 
 		let e = ui.calendar[i] = document.createElement("div")
 		e.className = "calendar box " + name
@@ -746,122 +750,104 @@ function update_current_card_display() {
 	}
 }
 
-function layout_locale_item(loc, e, is_upper) {
-	locale_layout[loc].push([e, is_upper])
-}
-
-function layout_locale_cylinders(loc) {
+function layout_locale_cylinders(loc, list, dx) {
 	let [xc, yc] = locale_xy[loc]
-
-	let n = 0
-	for (let [e,is_upper] of locale_layout[loc])
-		if (!is_upper)
-			++n
-
-	let wrap = 2
-	switch (data.locales[loc].type) {
-		case "london":
-			wrap = 3
-			break
-	}
-
-	let m = Math.floor((n-1) / wrap)
-	let i = 0
-	let k = 0
-	for (let [e,is_upper] of locale_layout[loc]) {
-		let nn = n
-		if (nn > wrap)
-			nn = wrap
-		let x = xc + (i - (nn-1)/2) * 44 + k * 22
-		let y = yc + (k * 32) - m * 32
-		let z = 1
-		if (is_upper) {
-			y -= 18
-			z = 2
-		}
-		if (e === ui.legate) {
-			y -= 16
-			z = 3
-		}
+	let dy = (list.length - 1) * -15
+	let x = xc + dx
+	let y = yc + dy
+	let z = 5
+	for (let ix of list) {
+		let e = ui.lord_cylinder[ix]
 		e.style.top = (y - 23) + "px"
 		e.style.left = (x - 23) + "px"
-		e.style.zIndex = z
-		if (!is_upper)
-			++i
-		if (i >= wrap) {
-			i = 0
-			++k
-		}
+		e.style.zIndex = z++
+		y += 30
+	}
+}
+
+function layout_exile_box_cylinders(loc, list, dy) {
+	let [xc, yc] = locale_xy[loc]
+	let dx = (list.length - 1) * -23
+	let x = xc + dx
+	let y = yc + dy
+	let z = 5
+	for (let ix of list) {
+		let e = ui.lord_cylinder[ix]
+		e.style.top = (y - 23) + "px"
+		e.style.left = (x - 23) + "px"
+		e.style.zIndex = z++
+		x += 46
 	}
 }
 
 function layout_calendar() {
 	for (let loc = 1; loc <= 16; ++loc) {
 		let [cx, cy] = calendar_xy[loc]
-		let list = calendar_layout_vassal[loc]
+		let list
+
+		list = calendar_layout_lanc[loc]
+		for (let i = 0; i < list.length; ++i) {
+			let e = ui.lord_cylinder[list[i]]
+			let x = cx, y = cy, z = 30
+			x += 5
+			y += i * 30 - 2
+			e.style.top = y + "px"
+			e.style.left = x + "px"
+			e.style.zIndex = z
+
+			// cylinder is 44x48, exile marker is 39
+			if (is_lord_in_exile(list[i])) {
+				e = ui.lord_exile[list[i]]
+				e.style.top = y + 5 + "px"
+				e.style.left = x + 3 - 20 + "px"
+				e.style.zIndex = z - 1
+			}
+		}
+
+		list = calendar_layout_york[loc]
+		for (let i = 0; i < list.length; ++i) {
+			// ui.lord_exile[ix].classList.toggle("hide", !is_lord_in_exile(ix))
+			let e = ui.lord_cylinder[list[i]]
+			let x = cx, y = cy, z = 30
+			x += 50
+			y += i * 30 - 2
+			e.style.top = y + "px"
+			e.style.left = x + "px"
+			e.style.zIndex = z
+
+			// cylinder is 44, exile marker is 39
+			if (is_lord_in_exile(list[i])) {
+				e = ui.lord_exile[list[i]]
+				e.style.top = y + "px"
+				e.style.left = x + 3 + 20 + "px"
+				e.style.zIndex = z - 1
+			}
+		}
+
+		list = calendar_layout_vassal[loc]
 		for (let i = 0; i < list.length; ++i) {
 			let e = list[i]
-			let x = cx, y = cy, z = 60 - i
-			let d = 46 - 24
-			if (loc === expand_calendar) {
-				d = 46
-				z += 100
+			let x = cx, y = cy, z = 20 - i
+			let len_lanc = calendar_layout_lanc[loc].length
+			let len_york = calendar_layout_york[loc].length
+			if (len_lanc <= len_york) {
+				y += len_lanc * 30 + 48-30 + 3 + i * 20
+				x += 7
+			} else {
+				y += len_york * 30 + 48-30 + 3 + i * 20
+				x += 42
 			}
-			x += 10
-			y += i * d
 			e.style.top = y + "px"
 			e.style.left = x + "px"
 			e.style.zIndex = z
 		}
 
-		list = calendar_layout_cylinder[loc]
-		for (let i = 0; i < list.length; ++i) {
-			let e = list[i]
-			let x = cx, y = cy, z = 61 + i
-			x += 10
-			y += i * 32 - 3
-			e.style.top = y + "px"
-			e.style.left = x + "px"
-			e.style.zIndex = z
-		}
 	}
 }
 
 function add_vassal(parent, vassal, lord, routed) {
-	let elt
-	if (routed) {
-		if (is_action(force_action_name[VASSAL], vassal))
-			elt = get_cached_element(
-				"action unit " + force_class_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
-				force_action_name[VASSAL],
-				vassal
-			)
-		else
-			elt = get_cached_element(
-				"unit " + force_class_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
-				force_action_name[VASSAL],
-				vassal
-			)
-	} else {
-		if (is_action(force_action_name[VASSAL], vassal))
-			elt = get_cached_element(
-				"action unit " + force_class_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
-				force_action_name[VASSAL],
-				vassal
-			)
-		else if (view.vassal === vassal || set_has(view.vassal, vassal))
-			elt = get_cached_element(
-				"unit " + force_class_name[VASSAL] + " selected vassal_" + clean_name(data.vassals[vassal].name),
-				force_action_name[VASSAL],
-				vassal
-			)
-		else
-			elt = get_cached_element(
-				"unit " + force_class_name[VASSAL] + " vassal_" + clean_name(data.vassals[vassal].name),
-				force_action_name[VASSAL],
-				vassal
-			)
-	}
+	let elt = ui.vassal_mat[vassal]
+	elt.classList.toggle("selected", view.vassal === vassal || set_has(view.vassal, vassal))
 	parent.appendChild(elt)
 }
 
@@ -1008,13 +994,19 @@ function update_lord(ix) {
 		return
 	}
 	if (locale < CALENDAR) {
-		layout_locale_item(locale, ui.lord_cylinder[ix])
+		if (is_york_lord(ix))
+			locale_layout_york[locale].push(ix)
+		else
+			locale_layout_lanc[locale].push(ix)
 		ui.lord_cylinder[ix].classList.remove("hide")
 		update_lord_mat(ix)
 		ui.lord_exile[ix].classList.add("hide")
 	} else if (locale <= CALENDAR_EXILE + 16) {
 		let t = locale > CALENDAR_EXILE ? locale - CALENDAR_EXILE : locale - CALENDAR
-		calendar_layout_cylinder[t].push(ui.lord_cylinder[ix])
+		if (is_york_lord(ix))
+			calendar_layout_york[t].push(ix)
+		else
+			calendar_layout_lanc[t].push(ix)
 		ui.lord_cylinder[ix].classList.remove("hide")
 		ui.lord_exile[ix].classList.toggle("hide", !is_lord_in_exile(ix))
 	}
@@ -1031,7 +1023,13 @@ function update_lord(ix) {
 }
 
 function update_locale(loc) {
-	layout_locale_cylinders(loc)
+	if (data.locales[loc].type === "exile_box") {
+		layout_exile_box_cylinders(loc, locale_layout_lanc[loc], 0)
+		layout_exile_box_cylinders(loc, locale_layout_york[loc], 30)
+	} else {
+		layout_locale_cylinders(loc, locale_layout_lanc[loc], -30)
+		layout_locale_cylinders(loc, locale_layout_york[loc], 30)
+	}
 
 	ui.locale[loc].classList.toggle("action", is_action("locale", loc) || is_action("laden_march", loc))
 	ui.locale[loc].classList.toggle("selected", view.where === loc || set_has(view.where, loc))
@@ -1271,13 +1269,14 @@ function update_vassals() {
 			if (ui.vassal_map[v]) {
 				ui.vassal_map[v].classList.remove("hide")
 				ui.vassal_map[v].classList.toggle("action", is_action("vassal", v))
-				ui.vassal_map[v].classList.toggle("selected", v === view.vassal)
+				ui.vassal_map[v].classList.toggle("selected", v === view.vassal || set_has(view.vassal, v))
 			}
 		} else {
 			// on calendar (+ maybe on lord mat)
 			if (data.vassals[v].service > 0) {
 				ui.vassal_cal[v].classList.remove("hide")
 				ui.vassal_cal[v].classList.toggle("action", is_action("vassal", v))
+				ui.vassal_cal[v].classList.toggle("selected", v === view.vassal || set_has(view.vassal, v))
 				calendar_layout_vassal[srv].push(ui.vassal_cal[v])
 			} else {
 				// special vassal not on calendar
@@ -1328,12 +1327,15 @@ function on_update() {
 	}
 
 	for (let i = 0; i <= 16; ++i) {
-		calendar_layout_cylinder[i] = []
-		calendar_layout_vassal[i] = []
+		calendar_layout_york[i].length = 0
+		calendar_layout_lanc[i].length = 0
+		calendar_layout_vassal[i].length = 0
 	}
 
-	for (let i = 0; i < data.locales.length; ++i)
-		locale_layout[i].length = 0
+	for (let i = 0; i < data.locales.length; ++i) {
+		locale_layout_york[i].length = 0
+		locale_layout_lanc[i].length = 0
+	}
 
 	track_offset.fill(0)
 
