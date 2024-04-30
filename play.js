@@ -1,6 +1,5 @@
 "use strict"
 
-// TODO: "routed/fled" lords panel under battle
 
 function toggle_pieces() {
 	document.getElementById("pieces").classList.toggle("hide")
@@ -136,6 +135,7 @@ function on_focus(text) {
 
 function on_blur() {
 	document.getElementById("status").textContent = ""
+	update_current_card_display()
 }
 
 function get_locale_tip(id) {
@@ -148,6 +148,7 @@ function on_focus_cylinder(evt) {
 	let loc = get_lord_locale(lord)
 	let tip = info.short_name
 	on_focus(tip)
+	ui.command.replaceChildren(ui.lords2[lord])
 }
 
 // === GAME STATE ===
@@ -365,6 +366,7 @@ const ui = {
 
 	cards: [],
 	cards2: [],
+	lords2: [],
 	calendar: [],
 	seat: [],
 
@@ -440,6 +442,7 @@ function build_lord_mat(lord, ix, side, name) {
 	let mat = build_div(null, `mat ${side} ${name}`)
 	let board = build_div(mat, "board")
 	ui.mat_card[ix] = build_div(board, "card lord " + side + " " + name)
+	ui.lords2[ix] = build_div(null, "card lord " + side + " " + name)
 	build_div(board, "mask " + side)
 	ui.retinue[ix] = build_div(board, "retinue_vassals")
 	ui.routed_retinue[ix] = build_div(board, "routed_retinue_vassals")

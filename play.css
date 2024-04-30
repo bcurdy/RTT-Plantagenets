@@ -371,6 +371,7 @@ body.Lancaster #plan_actions .york { display: none }
 
 .marker.seat {
 	border-radius: 8px;
+	/* transform: rotate(315deg); */
 }
 
 
