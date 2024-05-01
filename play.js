@@ -280,6 +280,8 @@ function is_lord_in_battle(lord) {
 }
 
 function is_lord_command(ix) {
+	if (view.battle)
+		return false
 	return view.command === ix
 }
 
