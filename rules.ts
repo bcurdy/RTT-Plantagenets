@@ -149,8 +149,7 @@ interface Battle {
 	target: Lord[] | null,
 	ahits: number,
 	dhits: number,
-	aart?: { lord: Lord, hits: number },
-	dart?: { lord: Lord, hits: number },
+	culverins?: { lord: Lord, hits: number }[],
 	final_charge: 0 | 1,
 	ravine?: Lord,
 	caltrops?: Lord,
@@ -6659,6 +6658,7 @@ states.culverins_and_falconets = {
 		let die1 = roll_die()
 		let die2 = 0
 
+		log("L" + lord)
 		logcap(c)
 
 		if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE) && game.active === YORK) {
@@ -6669,17 +6669,31 @@ states.culverins_and_falconets = {
 			logi(`${die1} hits`)
 		}
 
-		if (is_attacker())
-			game.battle.aart = { lord, hits: (die1 + die2) }
-		else
-			game.battle.dart = { lord, hits: (die1 + die2) }
+		if (!game.battle.culverins)
+			game.battle.culverins = []
+
+		game.battle.culverins.push({ lord, hits: (die1 + die2) })
 
 		discard_lord_capability(lord, c)
-		end_culverins_and_falconets()
+
+		goto_culverins_and_falconets()
 	},
 	pass() {
 		end_culverins_and_falconets()
 	},
+}
+
+function use_culverins(lord: Lord) {
+	if (game.battle.culverins) {
+		for (let i = 0; i < game.battle.culverins.length; ++i) {
+			let art = game.battle.culverins[i]
+			if (art.lord === lord) {
+				array_remove(game.battle.culverins, i)
+				return art.hits << 1
+			}
+		}
+	}
+	return 0
 }
 
 // === BATTLE CAPABILITY: FINAL CHARGE ===
@@ -7187,23 +7201,12 @@ function goto_total_hits() {
 	for (let pos of game.battle.engagements[0]) {
 		let lord = game.battle.array[pos]
 		if (lord !== NOBODY) {
-			let hits = count_lord_hits(lord)
+			let hits = count_lord_hits(lord) + use_culverins(lord)
 			log_hits(hits / 2, lord_name[lord])
-			if (pos === A1 || pos === A2 || pos === A3) {
+			if (pos === A1 || pos === A2 || pos === A3)
 				ahits += hits
-				if (game.battle.aart && game.battle.aart.lord === lord) {
-					log_hits(game.battle.aart.hits, "artillery")
-					ahits += game.battle.aart.hits << 1
-					delete game.battle.aart
-				}
-			} else {
+			else
 				dhits += hits
-				if (game.battle.dart && game.battle.dart.lord === lord) {
-					log_hits(game.battle.dart.hits, "artillery")
-					ahits += game.battle.dart.hits << 1
-					delete game.battle.dart
-				}
-			}
 		}
 	}
 
