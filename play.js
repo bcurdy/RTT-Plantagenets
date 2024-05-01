@@ -955,10 +955,7 @@ function update_assets(parent, assets, lord_ix) {
 
 function add_valour(parent, lord) {
 	let elt
-	if (is_action("valour", lord))
-		elt = get_cached_element("action marker small valour", "valour", lord)
-	else
-		elt = get_cached_element("marker valour small")
+	elt = get_cached_element("marker valour small")
 	parent.appendChild(elt)
 }
 
@@ -1533,7 +1530,6 @@ function on_update() {
 	// REMOVE INFLUENCE
 	action_button("influence", "Influence")
 	action_button("favour", "Favour")
-	action_button("valour", "Reroll")
 
 	action_button("pass", "Pass")
 	action_button("done", "Done")

@@ -146,7 +146,6 @@ interface Battle {
 	routed_vassals: Vassal[],
 	reserves: Lord[],
 	engagements: any,
-	target: Lord[] | null,
 	ahits: number,
 	dhits: number,
 	reroll: 0 | 1,
@@ -192,7 +191,6 @@ interface State {
 
 	vassal?(vassal: Vassal): void,
 
-	valour?(): void,
 	add_men_at_arms?(): void,
 	add_militia2?(): void,
 	add_militia?(): void,
@@ -5881,7 +5879,6 @@ function goto_battle() {
 		reserves: [],
 		fled: [],
 		routed: [],
-		target: null,
 		ahits: 0,
 		dhits: 0,
 		reroll: 0,
@@ -6604,7 +6601,7 @@ states.swift_maneuver_1 = {
 		if (lord_has_routed_retinue(lord))
 			this.pass()
 		else
-			finish_action_assign_hits(game.who)
+			finish_action_assign_hits()
 	},
 	pass() {
 		game.battle.reroll = 0
@@ -6627,7 +6624,7 @@ states.swift_maneuver_2 = {
 	},
 	pass() {
 		set_active_enemy()
-		finish_action_assign_hits(game.who)
+		finish_action_assign_hits()
 	},
 }
 
@@ -7244,8 +7241,6 @@ function goto_total_hits() {
 	log_hits(ahits, "ATK TOTAL")
 	log_hits(dhits, "DEF TOTAL")
 
-	game.battle.target = null
-
 	game.battle.final_charge = 0
 
 	if (can_final_charge()) {
@@ -7269,7 +7264,6 @@ function goto_defender_assign_hits() {
 }
 
 function end_defender_assign_hits() {
-	game.battle.target = null
 	game.battle.ahits = 0
 	goto_attacker_assign_hits()
 }
@@ -7280,29 +7274,20 @@ function goto_attacker_assign_hits() {
 }
 
 function end_attacker_assign_hits() {
-	game.battle.target = null
 	game.battle.dhits = 0
 	end_battle_strike_step()
 }
 
 function goto_assign_hits() {
 	game.state = "assign_hits"
-	if (game.battle.target === null) {
-		let targets: Lord[] = []
-		for (let pos of game.battle.engagements[0]) {
-			let lord = game.battle.array[pos]
-			if (is_friendly_lord(lord)) {
-				targets.push(pos)
-			}
-		}
-		game.battle.target = targets
-	}
 }
 
 function prompt_hit_forces() {
 	let done = true
-	for (let target of game.battle.target) {
-		let lord = game.battle.array[target]
+	for (let pos of game.battle.engagements[0]) {
+		let lord = game.battle.array[pos]
+		if (!is_friendly_lord(lord))
+			continue
 
 		// Note: Must take hit from Final Charge on Retinue.
 		if (lord === LORD_RICHARD_III && game.battle.final_charge) {
@@ -7594,18 +7579,14 @@ function action_assign_hits(lord: Lord, type: Force, v=NOVASSAL) {
 		}
 	}
 
-	finish_action_assign_hits(lord)
+	finish_action_assign_hits()
 }
 
-function finish_action_assign_hits(lord: Lord) {
+function finish_action_assign_hits() {
 	if (game.battle.ahits)
 		game.battle.ahits--
 	else
 		game.battle.dhits--
-
-	if (!lord_has_unrouted_units(lord)) {
-		game.battle.target = null
-	}
 
 	if (game.active === game.battle.attacker)
 		goto_attacker_assign_hits()
@@ -12788,10 +12769,6 @@ function gen_action_coin(lord: Lord) {
 
 function gen_action_cart(lord: Lord) {
 	gen_action("cart", lord)
-}
-
-function gen_action_valour(lord: Lord) {
-	gen_action("valour", lord)
 }
 
 function gen_action_mercenaries(lord: Lord) {
