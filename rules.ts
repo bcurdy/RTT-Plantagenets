@@ -1396,7 +1396,7 @@ function lord_has_routed_troops(lord: Lord) {
 }
 
 function find_lord_with_capability_card(c: Card) {
-	for (let lord of all_friendly_lords())
+	for (let lord of all_lords)
 		if (lord_has_capability_card(lord, c))
 			return lord
 	return NOBODY
@@ -1440,6 +1440,14 @@ function get_modified_valour(lord: Lord) {
 }
 
 // === STATE: LORD (SHARED) ===
+
+function get_york_shared_assets(loc: Locale, what: Asset) {
+	let n = 0
+	for (let lord of all_york_lords)
+		if (get_lord_locale(lord) === loc)
+			n += get_lord_assets(lord, what)
+	return n
+}
 
 function get_shared_assets(loc: Locale, what: Asset) {
 	let n = 0
@@ -10551,7 +10559,7 @@ function eligible_charity() {
 	let lord = find_lord_with_capability_card(AOW_YORK_WE_DONE_DEEDS_OF_CHARITY)
 	if (lord !== NOBODY) {
 		let here = get_lord_locale(lord)
-		if (get_shared_assets(here, PROV) > 0)
+		if (get_york_shared_assets(here, PROV) > 0)
 			return true
 	}
 	return false
@@ -10566,15 +10574,17 @@ function goto_we_done_deeds_of_charity() {
 states.we_done_deeds_of_charity = {
 	inactive: "We done needs of charity",
 	prompt() {
-		view.prompt = "We done deeds of charity: Pay up to two Provender for +1 Influence point each."
 		let lord = find_lord_with_capability_card(AOW_YORK_WE_DONE_DEEDS_OF_CHARITY)
 		let here = get_lord_locale(lord)
 		if (game.count > 0) {
+			view.prompt = "We done deeds of charity: Pay up to two Provender for +1 Influence point each."
 			for (let lord of all_friendly_lords()) {
 				if (get_lord_locale(lord) === here && (get_lord_assets(lord, PROV) > 0)) {
 					gen_action_prov(lord)
 				}
 			}
+		} else {
+			view.prompt = "We done deeds of charity: All done."
 		}
 		view.actions.done = 1
 	},
