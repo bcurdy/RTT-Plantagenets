@@ -1574,7 +1574,7 @@ function muster_vassal(vassal: Vassal, lord: Lord) {
 }
 
 function disband_vassal(vassal: Vassal) {
-	let lord = get_vassal_lord(VASSAL_HASTINGS)
+	let lord = get_vassal_lord(vassal)
 
 	if (vassal === VASSAL_HASTINGS)
 		discard_lord_capability(lord, AOW_YORK_HASTINGS)
