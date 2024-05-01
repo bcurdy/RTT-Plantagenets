@@ -441,6 +441,14 @@ body.Lancaster #plan_actions .york { display: none }
 	box-shadow: 0 0 0 1px #333, 0 0 0 4px yellow !important;
 }
 
+.routed_retinue_vassals .unit.retinue.action {
+	box-shadow: 0 0 0 1px #333, 0 0 0 4px red !important;
+}
+
+.routed_retinue_vassals .unit.vassal.action {
+	box-shadow: 0 0 0 1px #333, 0 0 0 4px red !important;
+}
+
 .unit.shape.action {
 	filter:
 		drop-shadow(2px 0px 0px white)

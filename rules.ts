@@ -6215,6 +6215,9 @@ function action_battle_events(c: Card) {
 		case EVENT_YORK_SWIFT_MANEUVER:
 			resume_battle_events()
 			break
+		case EVENT_YORK_PATRICK_DE_LA_MOTE:
+			resume_battle_events()
+			break
 	}
 }
 
@@ -6586,17 +6589,36 @@ function is_swift_maneuver_in_play() {
 	return is_event_in_play(EVENT_YORK_SWIFT_MANEUVER)
 }
 
-states.swift_maneuver = {
+states.swift_maneuver_1 = {
+	get inactive() {
+		view.engaged = game.battle.engagements[0]
+		return format_strike_step()
+	},
+	prompt() {
+		view.prompt = "Swift Maneuver: Reroll routed retinue?"
+		view.actions.pass = 1
+		gen_action_routed_retinue(game.who)
+	},
+	routed_retinue(lord) {
+		action_spend_valour(lord, RETINUE)
+		if (lord_has_routed_retinue(lord))
+			this.pass()
+		else
+			finish_action_assign_hits(game.who)
+	},
+	pass() {
+		game.battle.reroll = 0
+		set_active_enemy()
+		game.state = "swift_maneuver_2"
+	},
+}
+
+states.swift_maneuver_2 = {
 	inactive: "Swift Maneuver",
 	prompt() {
 		view.prompt = "Swift Maneuver: You may end the battle round immediately."
 		view.actions.end_battle_round = 1
 		view.actions.pass = 1
-		if (view.battle.reroll)
-			gen_action_routed_retinue(game.who)
-	},
-	routed_retinue(lord) {
-		action_spend_valour(lord, RETINUE)
 	},
 	end_battle_round() {
 		logevent(EVENT_YORK_SWIFT_MANEUVER)
@@ -7043,7 +7065,6 @@ states.reposition_center = {
 const ENGAGEMENTS = [[],[],[],[],[],[],[],[],[],[[0,3]],[[3,1]],[[0,1,3]],[[2,3]],[[0,2,3]],[[1,2,3]],[[0,1,2,3]],[],[[0,4]],[[1,4]],[[0,1,4]],[[2,4]],[[0,2,4]],[[1,2,4]],[[0,1,2,4]],[],[[0,3,4]],[[1,3,4]],[[0,3],[1,4]],[[2,3,4]],[[0,3],[2,4]],[[1,2,3,4]],[[0,3],[1,2,4]],[],[[0,5]],[[5,1]],[[0,1,5]],[[2,5]],[[0,2,5]],[[1,2,5]],[[0,1,2,5]],[],[[0,3,5]],[[3,1,5]],[[0,3],[5,1]],[[2,3,5]],[[0,3],[2,5]],[[2,5],[3,1]],[],[],[[0,4,5]],[[1,4,5]],[[0,1,4,5]],[[2,4,5]],[[2,5],[0,4]],[[1,4],[2,5]],[[0,1,4],[2,5]],[],[[0,3,4,5]],[[1,3,4,5]],[[0,3],[1,4,5]],[[2,3,4,5]],[],[[1,3,4],[2,5]],[[0,3],[1,4],[2,5]]]
 const ENGAGEMENTS_61 = [[[0,3,4],[2,5]],[[0,3],[2,4,5]]]
 const ENGAGEMENTS_47 = [[[0,1,3],[2,5]],[[0,3],[1,2,5]]]
-
 
 function pack_battle_array() {
 	let bits = 0
@@ -7563,8 +7584,12 @@ function action_assign_hits(lord: Lord, type: Force, v=NOVASSAL) {
 
 		// Swift Maneuver event
 		if (is_swift_maneuver_in_play() && type === RETINUE) {
-			set_active_enemy()
-			game.state = "swift_maneuver"
+			if (game.battle.reroll) {
+				game.state = "swift_maneuver_1"
+			} else {
+				set_active_enemy()
+				game.state = "swift_maneuver_2"
+			}
 			return
 		}
 	}
