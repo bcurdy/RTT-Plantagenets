@@ -6592,6 +6592,11 @@ states.swift_maneuver = {
 		view.prompt = "Swift Maneuver: You may end the battle round immediately."
 		view.actions.end_battle_round = 1
 		view.actions.pass = 1
+		if (view.battle.reroll)
+			gen_action_routed_retinue(game.who)
+	},
+	routed_retinue(lord) {
+		action_spend_valour(lord, RETINUE)
 	},
 	end_battle_round() {
 		logevent(EVENT_YORK_SWIFT_MANEUVER)
@@ -7418,6 +7423,7 @@ states.assign_hits = {
 }
 
 function action_spend_valour(lord: Lord, force: Force, vassal: Vassal = NOVASSAL) {
+	game.state = "assign_hits"
 	game.battle.reroll = 0
 
 	if (is_yeomen_of_the_crown_triggered(lord, force)) {
@@ -7442,15 +7448,6 @@ function rout_unit(lord: Lord, type: Force, v: Vassal = NOVASSAL) {
 		add_lord_forces(lord, type, -1)
 		add_lord_routed_forces(lord, type, 1)
 	}
-
-	// Swift Maneuver event
-	if (is_swift_maneuver_in_play() && type === RETINUE) {
-		set_active_enemy()
-		game.state = "swift_maneuver"
-		return
-	}
-
-	finish_action_assign_hits(lord)
 }
 
 function unrout_unit(lord: Lord, type: Force, v: Vassal = NOVASSAL) {
@@ -7563,6 +7560,13 @@ function action_assign_hits(lord: Lord, type: Force, v=NOVASSAL) {
 		}
 
 		rout_unit(lord, type, v)
+
+		// Swift Maneuver event
+		if (is_swift_maneuver_in_play() && type === RETINUE) {
+			set_active_enemy()
+			game.state = "swift_maneuver"
+			return
+		}
 	}
 
 	finish_action_assign_hits(lord)
