@@ -1533,7 +1533,7 @@ function on_update() {
 	// REMOVE INFLUENCE
 	action_button("influence", "Influence")
 	action_button("favour", "Favour")
-	action_button("valour", "Valour")
+	action_button("valour", "Reroll")
 
 	action_button("pass", "Pass")
 	action_button("done", "Done")

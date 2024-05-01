@@ -149,8 +149,9 @@ interface Battle {
 	target: Lord[] | null,
 	ahits: number,
 	dhits: number,
-	culverins?: Lord[],
+	reroll: 0 | 1,
 	final_charge: 0 | 1,
+	culverins?: Lord[],
 	ravine?: Lord,
 	caltrops?: Lord,
 	force?: Force,
@@ -1615,6 +1616,10 @@ function pay_vassal(vassal: Vassal) {
 
 function rout_vassal(_lord: Lord, vassal: Vassal) {
 	set_add(game.battle.routed_vassals, vassal)
+}
+
+function unrout_vassal(_lord: Lord, vassal: Vassal) {
+	set_delete(game.battle.routed_vassals, vassal)
 }
 
 // === STATE: LOCALE ===
@@ -5879,6 +5884,7 @@ function goto_battle() {
 		target: null,
 		ahits: 0,
 		dhits: 0,
+		reroll: 0,
 		final_charge: 0,
 	}
 
@@ -7349,9 +7355,16 @@ states.assign_hits = {
 				view.actions.regroup = 1
 			view.actions.done = 1
 		}
+
+		if (game.battle.reroll)
+			view.actions.valour = 1
 	},
 	retinue(lord) {
-		if ((lord === LORD_MARGARET) && (lord_has_capability(lord, AOW_LANCASTER_YEOMEN_OF_THE_CROWN)) && get_lord_forces(lord, MEN_AT_ARMS) > 0)
+		if (
+			lord === LORD_MARGARET &&
+			lord_has_capability(lord, AOW_LANCASTER_YEOMEN_OF_THE_CROWN) &&
+			get_lord_forces(lord, MEN_AT_ARMS) > 0
+		)
 			action_assign_hits(lord, MEN_AT_ARMS)
 		else
 			action_assign_hits(lord, RETINUE)
@@ -7373,8 +7386,7 @@ states.assign_hits = {
 		action_assign_hits(lord, MILITIA)
 	},
 	vassal(vassal) {
-		let lord = get_vassal_lord(vassal)
-		action_assign_hits(lord, VASSAL, vassal)
+		action_assign_hits(get_vassal_lord(vassal), VASSAL, vassal)
 	},
 	regroup() {
 		push_undo()
@@ -7387,6 +7399,14 @@ states.assign_hits = {
 			end_attacker_assign_hits()
 		else
 			end_defender_assign_hits()
+	},
+	valour() {
+		let protection = get_modified_protection(game.who, game.battle.force)
+		spend_valour(game.who)
+		game.battle.reroll = 0
+		logi(`Reroll:`)
+		if (!assign_hit_roll(get_force_name(game.who, game.battle.force, game.vassal), protection, ""))
+			unrout_unit(game.who, game.battle.force, game.vassal)
 	},
 }
 
@@ -7406,6 +7426,15 @@ function rout_unit(lord: Lord, type: Force, v: Vassal = NOVASSAL) {
 	}
 
 	finish_action_assign_hits(lord)
+}
+
+function unrout_unit(lord: Lord, type: Force, v: Vassal = NOVASSAL) {
+	if (type === VASSAL) {
+		unrout_vassal(lord, v)
+	} else {
+		add_lord_forces(lord, type, 1)
+		add_lord_routed_forces(lord, type, -1)
+	}
 }
 
 function assign_hit_roll(what, prot, extra) {
@@ -7489,18 +7518,21 @@ function action_assign_hits(lord: Lord, type: Force, v=NOVASSAL) {
 	let protection = get_modified_protection(lord, type)
 	let extra = ""
 
+	game.battle.reroll = 0
+	game.vassal = NOVASSAL
+
 	if (assign_hit_roll(get_force_name(lord, type, v), protection, extra)) {
 		if (get_lord_remaining_valour(lord) > 0) {
-			game.state = "spend_valour"
+			game.battle.reroll = 1
 			game.battle.force = type
 			if (type === VASSAL)
 				game.vassal = v
-		} else {
-			rout_unit(lord, type, v)
 		}
-	} else {
-		finish_action_assign_hits(lord)
 	}
+
+	rout_unit(lord, type, v)
+
+	finish_action_assign_hits(lord)
 }
 
 function finish_action_assign_hits(lord: Lord) {
@@ -7517,33 +7549,6 @@ function finish_action_assign_hits(lord: Lord) {
 		goto_attacker_assign_hits()
 	else
 		goto_defender_assign_hits()
-}
-
-states.spend_valour = {
-	get inactive() {
-		view.engaged = game.battle.engagements[0]
-		return format_strike_step()
-	},
-	prompt() {
-		view.prompt = `Spend Valour: Reroll hit on ${get_force_name(game.who, game.battle.force, game.vassal)}?`
-		view.engaged = game.battle.engagements[0]
-		view.actions.valour = 1
-		view.actions.pass = 1
-	},
-	pass() {
-		rout_unit(game.who, game.battle.force, game.vassal)
-	},
-	valour() {
-		let protection = get_modified_protection(game.who, game.battle.force)
-
-		spend_valour(game.who)
-		log(`Reroll:`)
-		if (assign_hit_roll(get_force_name(game.who, game.battle.force, game.vassal), protection, "")) {
-			rout_unit(game.who, game.battle.force, game.vassal)
-		} else {
-			finish_action_assign_hits(game.who)
-		}
-	},
 }
 
 // === 4.4.2 BATTLE ROUNDS: LORD ROUT ===
