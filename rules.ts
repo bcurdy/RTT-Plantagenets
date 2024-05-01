@@ -5873,7 +5873,7 @@ function goto_battle() {
 			NOBODY, NOBODY, NOBODY,
 			NOBODY, NOBODY, NOBODY
 		],
-		valour: Array(lord_count).fill(0),
+		valour: [],
 		routed_vassals: [],
 		engagements: [],
 		reserves: [],
@@ -5900,7 +5900,9 @@ function goto_battle() {
 		if (get_lord_locale(lord) === here) {
 			set_lord_fought(lord)
 			set_add(game.battle.reserves, lord)
-			game.battle.valour[lord] = get_modified_valour(lord)
+			let n = get_modified_valour(lord)
+			if (n > 0)
+				map_set(game.battle.valour, lord, n)
 		}
 	}
 
@@ -7473,11 +7475,15 @@ function assign_hit_roll(what, prot, extra) {
 }
 
 function get_lord_remaining_valour(lord: Lord): number {
-	return game.battle.valour[lord]
+	return map_get(game.battle.valour, lord, 0)
 }
 
 function spend_valour(lord: Lord) {
-	game.battle.valour[lord] --
+	let n = map_get(game.battle.valour, lord, 0) - 1
+	if (n > 0)
+		map_set(game.battle.valour, lord, n)
+	else
+		map_delete(game.battle.valour, lord)
 }
 
 function get_inherent_protection(force: Force) {

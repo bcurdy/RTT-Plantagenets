@@ -962,10 +962,9 @@ function add_valour(parent, lord) {
 function update_valour(lord, parent, battle) {
 	parent.replaceChildren()
 	if (!battle) return
-	for (let i = 0; i < battle.valour[lord]; i++) {
+	let n = map_get(battle.valour, lord, 0)
+	for (let i = 0; i < n; i++)
 		add_valour(parent, lord)
-	}
-
 }
 
 function update_lord_mat(ix) {
