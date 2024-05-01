@@ -6716,11 +6716,13 @@ states.final_charge = {
 // === BATTLE CAPABILITY: VANGUARD ===
 
 function is_vanguard_in_battle() {
-	for (let p of battle_strike_positions) {
-		let lord = game.battle.array[p]
-		if (lord !== NOBODY) {
-			if (lord_has_capability(lord, AOW_YORK_VANGUARD))
-				return true
+	for (let eng of game.battle.engagements) {
+		for (let p of eng) {
+			let lord = game.battle.array[p]
+			if (lord !== NOBODY) {
+				if (lord_has_capability(lord, AOW_YORK_VANGUARD))
+					return true
+			}
 		}
 	}
 	return false
