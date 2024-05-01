@@ -7035,7 +7035,7 @@ states.reposition_center = {
 // === 4.4.2 BATTLE ROUNDS: ENGAGE / STRIKE ===
 
 // See tools/engage.js for generating these tables
-const ENGAGEMENTS = [null,null,null,null,null,null,null,null,null,[[0,3]],[[3,1]],[[0,1,3]],[[2,3]],[[0,2,3]],[[1,2,3]],[[0,1,2,3]],null,[[0,4]],[[1,4]],[[0,1,4]],[[2,4]],[[0,2,4]],[[1,2,4]],[[0,1,2,4]],null,[[0,3,4]],[[1,3,4]],[[0,3],[1,4]],[[2,3,4]],[[0,3],[2,4]],[[1,2,3,4]],[[0,3],[1,2,4]],null,[[0,5]],[[5,1]],[[0,1,5]],[[2,5]],[[0,2,5]],[[1,2,5]],[[0,1,2,5]],null,[[0,3,5]],[[3,1,5]],[[0,3],[5,1]],[[2,3,5]],[[0,3],[2,5]],[[2,5],[3,1]],null,null,[[0,4,5]],[[1,4,5]],[[0,1,4,5]],[[2,4,5]],[[2,5],[0,4]],[[1,4],[2,5]],[[0,1,4],[2,5]],null,[[0,3,4,5]],[[1,3,4,5]],[[0,3],[1,4,5]],[[2,3,4,5]],null,[[1,3,4],[2,5]],[[0,3],[1,4],[2,5]]]
+const ENGAGEMENTS = [[],[],[],[],[],[],[],[],[],[[0,3]],[[3,1]],[[0,1,3]],[[2,3]],[[0,2,3]],[[1,2,3]],[[0,1,2,3]],[],[[0,4]],[[1,4]],[[0,1,4]],[[2,4]],[[0,2,4]],[[1,2,4]],[[0,1,2,4]],[],[[0,3,4]],[[1,3,4]],[[0,3],[1,4]],[[2,3,4]],[[0,3],[2,4]],[[1,2,3,4]],[[0,3],[1,2,4]],[],[[0,5]],[[5,1]],[[0,1,5]],[[2,5]],[[0,2,5]],[[1,2,5]],[[0,1,2,5]],[],[[0,3,5]],[[3,1,5]],[[0,3],[5,1]],[[2,3,5]],[[0,3],[2,5]],[[2,5],[3,1]],[],[],[[0,4,5]],[[1,4,5]],[[0,1,4,5]],[[2,4,5]],[[2,5],[0,4]],[[1,4],[2,5]],[[0,1,4],[2,5]],[],[[0,3,4,5]],[[1,3,4,5]],[[0,3],[1,4,5]],[[2,3,4,5]],[],[[1,3,4],[2,5]],[[0,3],[1,4],[2,5]]]
 const ENGAGEMENTS_61 = [[[0,3,4],[2,5]],[[0,3],[2,4,5]]]
 const ENGAGEMENTS_47 = [[[0,1,3],[2,5]],[[0,3],[1,2,5]]]
 
@@ -7046,18 +7046,6 @@ function pack_battle_array() {
 		if (filled(p))
 			bits |= (1 << p)
 	return bits
-}
-
-function determine_engagements() {
-	let bits = pack_battle_array()
-	if (bits === 47)
-		throw "BIT47" // return ENGAGEMENTS_47[0].slice()
-	else if (bits === 61)
-		throw "BIT61" // return ENGAGEMENTS_61[0].slice()
-	else if (ENGAGEMENTS[bits])
-		return ENGAGEMENTS[bits].slice()
-	else
-		return []
 }
 
 function goto_determine_engagements() {
@@ -7356,19 +7344,38 @@ states.assign_hits = {
 			view.actions.done = 1
 		}
 
-		if (game.battle.reroll)
-			view.actions.valour = 1
+		if (game.battle.reroll) {
+			switch (game.battle.force) {
+				case VASSAL: gen_action_vassal(game.vassal); break
+				case RETINUE: gen_action_routed_retinue(game.who); break
+				case MEN_AT_ARMS: gen_action_routed_men_at_arms(game.who); break
+				case LONGBOWMEN: gen_action_routed_longbowmen(game.who); break
+				case MILITIA: gen_action_routed_militia(game.who); break
+				case BURGUNDIANS: gen_action_routed_burgundians(game.who); break
+				case MERCENARIES: gen_action_routed_mercenaries(game.who); break
+			}
+		}
 	},
-	retinue(lord) {
-		if (
-			lord === LORD_MARGARET &&
-			lord_has_capability(lord, AOW_LANCASTER_YEOMEN_OF_THE_CROWN) &&
-			get_lord_forces(lord, MEN_AT_ARMS) > 0
-		)
-			action_assign_hits(lord, MEN_AT_ARMS)
+
+	vassal(vassal) {
+		if (set_has(game.battle.routed_vassals, vassal))
+			action_spend_valour(get_vassal_lord(vassal), VASSAL, vassal)
 		else
-			action_assign_hits(lord, RETINUE)
+			action_assign_hits(get_vassal_lord(vassal), VASSAL, vassal)
+	},
+
+	retinue(lord) {
 		game.battle.final_charge = 0
+		action_assign_hits(lord, RETINUE)
+	},
+	men_at_arms(lord) {
+		action_assign_hits(lord, MEN_AT_ARMS)
+	},
+	longbowmen(lord) {
+		action_assign_hits(lord, LONGBOWMEN)
+	},
+	militia(lord) {
+		action_assign_hits(lord, MILITIA)
 	},
 	burgundians(lord) {
 		action_assign_hits(lord, BURGUNDIANS)
@@ -7376,18 +7383,26 @@ states.assign_hits = {
 	mercenaries(lord) {
 		action_assign_hits(lord, MERCENARIES)
 	},
-	longbowmen(lord) {
-		action_assign_hits(lord, LONGBOWMEN)
+
+	routed_retinue(lord) {
+		action_spend_valour(lord, RETINUE)
 	},
-	men_at_arms(lord) {
-		action_assign_hits(lord, MEN_AT_ARMS)
+	routed_men_at_arms(lord) {
+		action_spend_valour(lord, MEN_AT_ARMS)
 	},
-	militia(lord) {
-		action_assign_hits(lord, MILITIA)
+	routed_longbowmen(lord) {
+		action_spend_valour(lord, LONGBOWMEN)
 	},
-	vassal(vassal) {
-		action_assign_hits(get_vassal_lord(vassal), VASSAL, vassal)
+	routed_militia(lord) {
+		action_spend_valour(lord, MILITIA)
 	},
+	routed_burgundians(lord) {
+		action_spend_valour(lord, BURGUNDIANS)
+	},
+	routed_mercenaries(lord) {
+		action_spend_valour(lord, MERCENARIES)
+	},
+
 	regroup() {
 		push_undo()
 		game.who = NOBODY
@@ -7400,14 +7415,24 @@ states.assign_hits = {
 		else
 			end_defender_assign_hits()
 	},
-	valour() {
-		let protection = get_modified_protection(game.who, game.battle.force)
-		spend_valour(game.who)
-		game.battle.reroll = 0
-		logi(`Reroll:`)
-		if (!assign_hit_roll(get_force_name(game.who, game.battle.force, game.vassal), protection, ""))
-			unrout_unit(game.who, game.battle.force, game.vassal)
-	},
+}
+
+function action_spend_valour(lord: Lord, force: Force, vassal: Vassal = NOVASSAL) {
+	game.battle.reroll = 0
+
+	if (is_yeomen_of_the_crown_triggered(lord, force)) {
+		logcap(AOW_LANCASTER_YEOMEN_OF_THE_CROWN)
+		unrout_unit(lord, RETINUE)
+		rout_unit(lord, MEN_AT_ARMS)
+		return
+	}
+
+	let protection = get_modified_protection(lord, force)
+	spend_valour(lord)
+	logi(`Reroll:`)
+	if (!assign_hit_roll(get_force_name(lord, force, vassal), protection, ""))
+		unrout_unit(lord, force, vassal)
+	game.vassal = NOVASSAL
 }
 
 function rout_unit(lord: Lord, type: Force, v: Vassal = NOVASSAL) {
@@ -7510,6 +7535,14 @@ function get_modified_protection(lord: Lord, force: Force) {
 	return protection
 }
 
+function is_yeomen_of_the_crown_triggered(lord: Lord, type: Force) {
+	return (
+		type === RETINUE &&
+		lord_has_capability(lord, AOW_LANCASTER_YEOMEN_OF_THE_CROWN) &&
+		get_lord_forces(lord, MEN_AT_ARMS) > 0
+	)
+}
+
 function action_assign_hits(lord: Lord, type: Force, v=NOVASSAL) {
 	if (game.who !== lord) {
 		game.who = lord
@@ -7522,15 +7555,15 @@ function action_assign_hits(lord: Lord, type: Force, v=NOVASSAL) {
 	game.vassal = NOVASSAL
 
 	if (assign_hit_roll(get_force_name(lord, type, v), protection, extra)) {
-		if (get_lord_remaining_valour(lord) > 0) {
+		if (get_lord_remaining_valour(lord) > 0 || is_yeomen_of_the_crown_triggered(lord, type)) {
 			game.battle.reroll = 1
 			game.battle.force = type
 			if (type === VASSAL)
 				game.vassal = v
 		}
-	}
 
-	rout_unit(lord, type, v)
+		rout_unit(lord, type, v)
+	}
 
 	finish_action_assign_hits(lord)
 }
@@ -12754,6 +12787,10 @@ function gen_action_men_at_arms(lord: Lord) {
 
 function gen_action_militia(lord: Lord) {
 	gen_action("militia", lord)
+}
+
+function gen_action_routed_retinue(lord: Lord) {
+	gen_action("routed_retinue", lord)
 }
 
 function gen_action_routed_mercenaries(lord: Lord) {

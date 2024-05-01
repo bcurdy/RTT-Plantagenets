@@ -117,8 +117,8 @@ function make_engagement(array, choice) {
 	return null
 }
 
-const ENGAGEMENTS = []
-const CHOICE = []
+var ENGAGEMENTS = []
+var CHOICE = []
 
 function pack_battle_array(filled) {
 	let bits = 0
@@ -171,6 +171,7 @@ runall()
 console.log("</table>")
 
 console.log("<pre>")
+for (let i = 0; i < ENGAGEMENTS.length; ++i) if (!ENGAGEMENTS[i]) ENGAGEMENTS[i] = []
 console.log("const ENGAGEMENTS = " + JSON.stringify(ENGAGEMENTS))
 for (let [bits,a,b] of CHOICE)
 	console.log("const ENGAGEMENTS_" + bits + " = " + JSON.stringify([a,b]))
