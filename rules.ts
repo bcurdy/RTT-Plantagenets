@@ -8325,7 +8325,7 @@ states.escape_ship = {
 // === DEATH CHECK EVENT: TALBOT TO THE RESCUE ===
 
 function can_play_talbot_to_the_rescue() {
-	return true
+	return has_defeated_lords()
 }
 
 function goto_play_talbot_to_the_rescue() {
