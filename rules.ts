@@ -1594,7 +1594,7 @@ function disband_vassal(vassal: Vassal) {
 		discard_lord_capability(lord, AOW_LANCASTER_MONTAGU)
 	if (vassal === VASSAL_EDWARD)
 		discard_lord_capability(lord, AOW_LANCASTER_EDWARD)
-	if (vassal === VASSAL_STANLEY)
+	if (vassal === VASSAL_THOMAS_STANLEY)
 		discard_lord_capability(lord, AOW_LANCASTER_THOMAS_STANLEY)
 
 	if (data.vassals[vassal].service > 0) {
