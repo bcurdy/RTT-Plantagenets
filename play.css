@@ -536,6 +536,7 @@ body.shift .mat .capabilities {
 	top: 38px;
 	left: 24px;
 	height: 50px;
+	max-width: 170px;
 	display: flex;
 	align-content: center;
 	flex-wrap: wrap;
@@ -547,6 +548,7 @@ body.shift .mat .capabilities {
 	top: 240px;
 	left: 24px;
 	height: 50px;
+	max-width: 170px;
 	display: flex;
 	align-content: center;
 	flex-wrap: wrap;
