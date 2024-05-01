@@ -5601,6 +5601,11 @@ states.exile_spoils = {
 
 */
 
+// See tools/engage.js for generating this table
+const ENGAGEMENTS = [null,null,null,null,null,null,null,null,null,[[2,5]],[[2,4]],[[2,4,5]],[[2,3]],[[2,3,5]],[[2,3,4]],[[2,3,4,5]],null,[[5,1]],[[1,4]],[[1,4,5]],[[3,1]],[[3,1,5]],[[1,3,4]],[[1,3,4,5]],null,[[1,2,5]],[[1,2,4]],[[1,4],[2,5]],[[1,2,3]],[[2,5],[3,1]],[[1,2,3,4]],[[1,3,4],[2,5]],null,[[0,5]],[[0,4]],[[0,4,5]],[[0,3]],[[0,3,5]],[[0,3,4]],[[0,3,4,5]],null,[[0,2,5]],[[0,2,4]],[[2,5],[0,4]],[[0,2,3]],[[0,3],[2,5]],[[0,3],[2,4]],null,null,[[0,1,5]],[[0,1,4]],[[0,1,4,5]],[[0,1,3]],[[0,3],[5,1]],[[0,3],[1,4]],[[0,3],[1,4,5]],null,[[0,1,2,5]],[[0,1,2,4]],[[0,1,4],[2,5]],[[0,1,2,3]],null,[[0,3],[1,2,4]],[[0,3],[1,4],[2,5]]]
+const ENGAGEMENTS_47 = [[[0,3],[2,4,5]],[[0,3],[2,4,5]]]
+const ENGAGEMENTS_61 = [[[0,3],[1,2,5]],[[0,3],[1,2,5]]]
+
 const battle_strike_positions = [ D1, D2, D3, A1, A2, A3 ]
 
 const battle_steps = [
@@ -7001,7 +7006,9 @@ states.reposition_center = {
 
 // === 4.4.2 BATTLE ROUNDS: ENGAGE / STRIKE ===
 
-function determine_engagements() {
+function determine_engagements_BAD() {
+	// does not handle Ravine
+
 	let center = [ A2, D2 ]
 	let engagements = [
 		[ A1, D1 ],
@@ -7020,7 +7027,30 @@ function determine_engagements() {
 		}
 	}
 	results.unshift(center)
+
+	console.log("ENG", results)
+
 	return results
+}
+
+function pack_battle_array() {
+	let bits = 0
+	for (let p = 0; p < 6; ++p)
+		if (filled(p))
+			bits |= (1 << p)
+	return bits
+}
+
+function determine_engagements() {
+	let bits = pack_battle_array()
+	if (bits === 47)
+		throw "BIT47" // return ENGAGEMENTS_47[0].slice()
+	else if (bits === 61)
+		throw "BIT61" // return ENGAGEMENTS_61[0].slice()
+	else if (ENGAGEMENTS[bits])
+		return ENGAGEMENTS[bits].slice()
+	else
+		return []
 }
 
 function goto_determine_engagements() {
