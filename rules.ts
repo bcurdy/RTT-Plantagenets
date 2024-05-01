@@ -7585,6 +7585,9 @@ function goto_battle_lord_rout() {
 
 	log_h5("Lord Rout")
 
+	// lose any unused culverins (from ravine/vanguard combo)
+	delete game.battle.culverins
+
 	set_active_defender()
 	if (will_any_friendly_lords_rout())
 		game.state = "battle_lord_rout"
