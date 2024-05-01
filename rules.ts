@@ -6582,10 +6582,6 @@ function is_leeward_battle_line_in_play(lord: Lord) {
 
 // === BATTLE EVENT: SWIFT MANEUVER ===
 
-function is_swift_maneuver_in_play() {
-	return is_event_in_play(EVENT_YORK_SWIFT_MANEUVER)
-}
-
 states.swift_maneuver_1 = {
 	get inactive() {
 		view.engaged = game.battle.engagements[0]
@@ -7568,7 +7564,7 @@ function action_assign_hits(lord: Lord, type: Force, v=NOVASSAL) {
 		rout_unit(lord, type, v)
 
 		// Swift Maneuver event
-		if (is_swift_maneuver_in_play() && type === RETINUE) {
+		if (type === RETINUE && game.active === LANCASTER && is_event_in_play(EVENT_YORK_SWIFT_MANEUVER)) {
 			if (game.battle.reroll) {
 				game.state = "swift_maneuver_1"
 			} else {
