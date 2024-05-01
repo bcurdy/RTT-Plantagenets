@@ -149,7 +149,7 @@ interface Battle {
 	target: Lord[] | null,
 	ahits: number,
 	dhits: number,
-	culverins?: { lord: Lord, hits: number }[],
+	culverins?: Lord[],
 	final_charge: 0 | 1,
 	ravine?: Lord,
 	caltrops?: Lord,
@@ -239,6 +239,7 @@ interface State {
 	take_prov?(): void,
 	take_ship?(): void,
 	tax?(): void,
+	battle?(): void,
 
 	richard_iii?(): void,
 	exile?(): void,
@@ -6655,24 +6656,13 @@ states.culverins_and_falconets = {
 	},
 	card(c) {
 		let lord = find_lord_with_capability_card(c)
-		let die1 = roll_die()
-		let die2 = 0
 
 		log("L" + lord)
 		logcap(c)
 
-		if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE) && game.active === YORK) {
-			logcap(EVENT_YORK_PATRICK_DE_LA_MOTE)
-			die2 = roll_die()
-			logi(`${die1} + ${die2} hits`)
-		} else {
-			logi(`${die1} hits`)
-		}
-
 		if (!game.battle.culverins)
 			game.battle.culverins = []
-
-		game.battle.culverins.push({ lord, hits: (die1 + die2) })
+		set_add(game.battle.culverins, lord)
 
 		discard_lord_capability(lord, c)
 
@@ -6684,14 +6674,18 @@ states.culverins_and_falconets = {
 }
 
 function use_culverins(lord: Lord) {
-	if (game.battle.culverins) {
-		for (let i = 0; i < game.battle.culverins.length; ++i) {
-			let art = game.battle.culverins[i]
-			if (art.lord === lord) {
-				array_remove(game.battle.culverins, i)
-				return art.hits << 1
-			}
+	if (game.battle.culverins && set_has(game.battle.culverins, lord)) {
+		let die1 = roll_die()
+		let die2 = 0
+		if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE) && game.active === YORK) {
+			logcap(EVENT_YORK_PATRICK_DE_LA_MOTE)
+			die2 = roll_die()
+			logi(`${die1} + ${die2} culverins`)
+		} else {
+			logi(`${die1} culverins`)
 		}
+		set_delete(game.battle.culverins, lord)
+		return (die1 + die2) << 1
 	}
 	return 0
 }
@@ -6856,9 +6850,9 @@ states.flee_battle = {
 		for (let p of battle_strike_positions)
 			if (is_friendly_lord(game.battle.array[p]))
 				gen_action_lord(game.battle.array[p])
-		view.actions.done = 1
+		view.actions.battle = 1
 	},
-	done() {
+	battle() {
 		end_flee()
 	},
 	lord(lord) {
@@ -7142,10 +7136,13 @@ states.select_engagement = {
 	inactive: "Engagement",
 	prompt() {
 		view.prompt = `Battle: Choose the next engagement.`
-		for (let pos of battle_strike_positions) {
-			let lord = game.battle.array[pos]
-			if (is_friendly_lord(lord))
-				gen_action_lord(lord)
+
+		for (let eng of game.battle.engagements) {
+			for (let pos of eng) {
+				let lord = game.battle.array[pos]
+				if (is_friendly_lord(lord))
+					gen_action_lord(lord)
+			}
 		}
 	},
 	lord(lord) {
@@ -7201,8 +7198,9 @@ function goto_total_hits() {
 	for (let pos of game.battle.engagements[0]) {
 		let lord = game.battle.array[pos]
 		if (lord !== NOBODY) {
-			let hits = count_lord_hits(lord) + use_culverins(lord)
+			let hits = count_lord_hits(lord)
 			log_hits(hits / 2, lord_name[lord])
+			hits += use_culverins(lord)
 			if (pos === A1 || pos === A2 || pos === A3)
 				ahits += hits
 			else

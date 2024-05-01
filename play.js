@@ -1498,7 +1498,6 @@ function on_update() {
 
 	action_button("approach", "Approach")
 	action_button("intercept", "Intercept")
-	action_button("concede", "Concede")
 	action_button("battle", "Battle")
 
 	action_button("end_array", "End Array")
