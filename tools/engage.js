@@ -120,12 +120,21 @@ function make_engagement(array, choice) {
 const ENGAGEMENTS = []
 const CHOICE = []
 
-function run(bits, array) {
+function pack_battle_array(filled) {
+	let bits = 0
+	for (let p = 0; p < 6; ++p)
+		if (filled[p])
+			bits |= (1 << p)
+	return bits
+}
+
+function run(array) {
 	console.log("<tr>")
 	console.log("<td>")
 	show_array(array)
 	console.log("<td>")
 	let eng = make_engagement(array, 0)
+	let bits = pack_battle_array(array)
 	ENGAGEMENTS[bits] = eng
 	if (!eng) {
 		let eng_a = make_engagement(array, 1)
@@ -138,7 +147,7 @@ function run(bits, array) {
 function runall() {
 	for (let x = 0; x < 64; ++x) {
 		if ((x & 7) && (x & 56))
-			run(x, [ (x>>5)&1, (x>>4)&1, (x>>3)&1, (x>>2)&1, (x>>1)&1, (x>>0)&1 ])
+			run([ (x>>5)&1, (x>>4)&1, (x>>3)&1, (x>>2)&1, (x>>1)&1, (x>>0)&1 ])
 	}
 }
 

@@ -970,6 +970,20 @@ function update_valour(lord, parent, battle) {
 }
 
 function update_lord_mat(ix) {
+	ui.mat[ix].classList.remove("ravine")
+	ui.mat[ix].classList.remove("engaged")
+
+	if (view.battle) {
+		if (view.battle.ravine === ix)
+			ui.mat[ix].classList.add("ravine")
+		if (view.engaged) {
+			for (let p of view.engaged) {
+				if (ix === view.battle.array[p])
+					ui.mat[ix].classList.add("engaged")
+			}
+		}
+	}
+
 	if (view.reveal & (1 << ix)) {
 		ui.mat[ix].classList.remove("hidden")
 		update_assets(ui.assets[ix], view.pieces.assets, ix)
@@ -1724,7 +1738,7 @@ function map2_get(map, x, y, v) {
 }
 
 function set_has(set, item) {
-	if (!set)
+	if (!Array.isArray(set))
 		return false
 	let a = 0
 	let b = set.length - 1

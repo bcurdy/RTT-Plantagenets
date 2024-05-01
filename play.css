@@ -477,9 +477,14 @@ body.Lancaster #plan_actions .york { display: none }
 
 .mat.command .board { box-shadow: 0 0 0 1px #333, 0 0 0 4px gold; }
 .mat.selected .board { box-shadow: 0 0 0 1px #333, 0 0 0 4px yellow; }
+.mat.engaged .board { box-shadow: 0 0 0 1px #333, 0 0 0 4px indianred; }
 
 #court1 .mat.hidden .board,
 #court2 .mat.hidden .board {
+	filter: grayscale(100%)
+}
+
+.mat.ravine .board {
 	filter: grayscale(100%)
 }
 

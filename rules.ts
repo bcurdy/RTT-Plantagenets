@@ -273,6 +273,7 @@ interface View {
 	plan: Lord[],
 
 	battle?: Battle,
+	engaged?: Lord[],
 	arts_of_war?: Card[],
 	group?: Lord[],
 	what?: Card,
@@ -5601,14 +5602,10 @@ states.exile_spoils = {
 
 */
 
-// See tools/engage.js for generating this table
-const ENGAGEMENTS = [null,null,null,null,null,null,null,null,null,[[2,5]],[[2,4]],[[2,4,5]],[[2,3]],[[2,3,5]],[[2,3,4]],[[2,3,4,5]],null,[[5,1]],[[1,4]],[[1,4,5]],[[3,1]],[[3,1,5]],[[1,3,4]],[[1,3,4,5]],null,[[1,2,5]],[[1,2,4]],[[1,4],[2,5]],[[1,2,3]],[[2,5],[3,1]],[[1,2,3,4]],[[1,3,4],[2,5]],null,[[0,5]],[[0,4]],[[0,4,5]],[[0,3]],[[0,3,5]],[[0,3,4]],[[0,3,4,5]],null,[[0,2,5]],[[0,2,4]],[[2,5],[0,4]],[[0,2,3]],[[0,3],[2,5]],[[0,3],[2,4]],null,null,[[0,1,5]],[[0,1,4]],[[0,1,4,5]],[[0,1,3]],[[0,3],[5,1]],[[0,3],[1,4]],[[0,3],[1,4,5]],null,[[0,1,2,5]],[[0,1,2,4]],[[0,1,4],[2,5]],[[0,1,2,3]],null,[[0,3],[1,2,4]],[[0,3],[1,4],[2,5]]]
-const ENGAGEMENTS_47 = [[[0,3],[2,4,5]],[[0,3],[2,4,5]]]
-const ENGAGEMENTS_61 = [[[0,3],[1,2,5]],[[0,3],[1,2,5]]]
-
 const battle_strike_positions = [ D1, D2, D3, A1, A2, A3 ]
 
 const battle_steps = [
+	null,
 	{ name: "Missiles", hits: count_archery_hits },
 	{ name: "Melee", hits: count_melee_hits },
 ]
@@ -5749,11 +5746,11 @@ function is_attacker() {
 }
 
 function is_missiles_step() {
-	return game.battle.step === 0
+	return game.battle.step === 1
 }
 
 function is_melee_step() {
-	return game.battle.step === 1
+	return game.battle.step === 2
 }
 
 // Capabilities adding troops at start of the battle
@@ -6740,9 +6737,23 @@ function is_vanguard_in_battle() {
 }
 
 states.vanguard = {
+	get inactive() {
+		let lord = find_lord_with_capability_card(AOW_YORK_VANGUARD)
+		let p = get_lord_array_position(lord)
+		for (let eng of game.battle.engagements)
+			if (eng.includes(p))
+				view.engaged = eng
+		return "Vanguard"
+	},
 	prompt() {
 		view.prompt = "Vanguard: Norfolk may choose his engagement to be the only one."
-		view.who = find_lord_with_capability_card(AOW_YORK_VANGUARD)
+
+		let lord = find_lord_with_capability_card(AOW_YORK_VANGUARD)
+		let p = get_lord_array_position(lord)
+		for (let eng of game.battle.engagements)
+			if (eng.includes(p))
+				view.engaged = eng
+
 		view.actions.vanguard = 1
 		view.actions.pass = 1
 	},
@@ -6792,6 +6803,9 @@ states.vanguard = {
 
 function goto_battle_rounds() {
 	log_h4(`Battle Round ${game.battle.round}`)
+
+	game.battle.step = 0
+
 	if (game.battle.round === 1) {
 		set_active_defender()
 		goto_culverins_and_falconets()
@@ -7006,32 +7020,11 @@ states.reposition_center = {
 
 // === 4.4.2 BATTLE ROUNDS: ENGAGE / STRIKE ===
 
-function determine_engagements_BAD() {
-	// does not handle Ravine
+// See tools/engage.js for generating these tables
+const ENGAGEMENTS = [null,null,null,null,null,null,null,null,null,[[0,3]],[[3,1]],[[0,1,3]],[[2,3]],[[0,2,3]],[[1,2,3]],[[0,1,2,3]],null,[[0,4]],[[1,4]],[[0,1,4]],[[2,4]],[[0,2,4]],[[1,2,4]],[[0,1,2,4]],null,[[0,3,4]],[[1,3,4]],[[0,3],[1,4]],[[2,3,4]],[[0,3],[2,4]],[[1,2,3,4]],[[0,3],[1,2,4]],null,[[0,5]],[[5,1]],[[0,1,5]],[[2,5]],[[0,2,5]],[[1,2,5]],[[0,1,2,5]],null,[[0,3,5]],[[3,1,5]],[[0,3],[5,1]],[[2,3,5]],[[0,3],[2,5]],[[2,5],[3,1]],null,null,[[0,4,5]],[[1,4,5]],[[0,1,4,5]],[[2,4,5]],[[2,5],[0,4]],[[1,4],[2,5]],[[0,1,4],[2,5]],null,[[0,3,4,5]],[[1,3,4,5]],[[0,3],[1,4,5]],[[2,3,4,5]],null,[[1,3,4],[2,5]],[[0,3],[1,4],[2,5]]]
+const ENGAGEMENTS_61 = [[[0,3,4],[2,5]],[[0,3],[2,4,5]]]
+const ENGAGEMENTS_47 = [[[0,1,3],[2,5]],[[0,3],[1,2,5]]]
 
-	let center = [ A2, D2 ]
-	let engagements = [
-		[ A1, D1 ],
-		[ A3, D3 ],
-	]
-	let results = []
-
-	for (let x = 0; x < engagements.length; x++) {
-		let e = engagements[x]
-		if (filled(e[0]) && filled(e[1])) {
-			results.push(e)
-		} else if (filled(e[0])) {
-			set_add(center, e[0])
-		} else if (filled(e[1])) {
-			set_add(center, e[1])
-		}
-	}
-	results.unshift(center)
-
-	console.log("ENG", results)
-
-	return results
-}
 
 function pack_battle_array() {
 	let bits = 0
@@ -7054,18 +7047,72 @@ function determine_engagements() {
 }
 
 function goto_determine_engagements() {
-	game.battle.step = 0
-	game.battle.engagements = determine_engagements()
+	let bits = pack_battle_array()
+	if (bits === 47) {
+		set_active_attacker()
+		game.who = game.battle.array[A2]
+		game.state = "choose_flank_47"
+		return
+	}
+	if (bits === 61) {
+		set_active_defender()
+		game.who = game.battle.array[D2]
+		game.state = "choose_flank_61"
+		return
+	}
+	game.battle.engagements = ENGAGEMENTS[bits].slice()
+	end_determine_engagements()
+}
 
+states.choose_flank_47 = {
+	inactive: "Engagement",
+	prompt() {
+		view.prompt = `Battle: Choose flank to engage with ${lord_name[game.who]}.`
+		gen_action_lord(game.battle.array[D1])
+		gen_action_lord(game.battle.array[D3])
+	},
+	lord(lord) {
+		let p = get_lord_array_position(lord)
+		log("L" + game.who + " engages L" + lord)
+		if (p === D1)
+			game.battle.engagements = ENGAGEMENTS_47[0].slice()
+		else
+			game.battle.engagements = ENGAGEMENTS_47[1].slice()
+		end_determine_engagements()
+	},
+}
+
+states.choose_flank_61 = {
+	inactive: "Engagement",
+	prompt() {
+		view.prompt = `Battle: Choose flank to engage with ${lord_name[game.who]}.`
+		gen_action_lord(game.battle.array[A1])
+		gen_action_lord(game.battle.array[A3])
+	},
+	lord(lord) {
+		let p = get_lord_array_position(lord)
+		log("L" + game.who + " engages L" + lord)
+		if (p === A1)
+			game.battle.engagements = ENGAGEMENTS_61[0].slice()
+		else
+			game.battle.engagements = ENGAGEMENTS_61[1].slice()
+		end_determine_engagements()
+	},
+}
+
+function end_determine_engagements() {
 	if (game.battle.round === 1 && game.battle.engagements.length > 1 && is_vanguard_in_battle()) {
 		set_active(YORK)
 		game.state = "vanguard"
-	} else {
-		goto_select_engagement()
+		game.who = find_lord_with_capability_card(AOW_YORK_VANGUARD)
+		return
 	}
+	goto_select_engagement()
 }
 
 function goto_select_engagement() {
+	game.who = NOBODY
+
 	set_active_attacker()
 	if (game.battle.engagements.length === 0)
 		// if round is over
@@ -7078,7 +7125,7 @@ function goto_select_engagement() {
 }
 
 states.select_engagement = {
-	inactive: "Engagment",
+	inactive: "Engagement",
 	prompt() {
 		view.prompt = `Battle: Choose the next engagement.`
 		for (let pos of battle_strike_positions) {
@@ -7101,17 +7148,17 @@ states.select_engagement = {
 }
 
 function goto_missile_strike_step() {
-	game.battle.step = 0
-	goto_total_hits()
-}
-
-function goto_melee_strike_step() {
 	game.battle.step = 1
 	goto_total_hits()
 }
 
+function goto_melee_strike_step() {
+	game.battle.step = 2
+	goto_total_hits()
+}
+
 function end_battle_strike_step() {
-	if (game.battle.step === 0)
+	if (game.battle.step === 1)
 		goto_melee_strike_step()
 	else
 		end_engagement()
@@ -7279,10 +7326,12 @@ function prompt_hit_forces() {
 
 states.assign_hits = {
 	get inactive() {
+		view.engaged = game.battle.engagements[0]
 		return format_strike_step()
 	},
 	prompt() {
 		view.prompt = `${format_strike_step()}: ${format_hits()}`
+		view.engaged = game.battle.engagements[0]
 
 		let hits = 0
 		if (game.active === game.battle.attacker)
@@ -7471,10 +7520,12 @@ function finish_action_assign_hits(lord: Lord) {
 
 states.spend_valour = {
 	get inactive() {
+		view.engaged = game.battle.engagements[0]
 		return format_strike_step()
 	},
 	prompt() {
 		view.prompt = `Spend Valour: Reroll hit on ${get_force_name(game.who, game.battle.force, game.vassal)}?`
+		view.engaged = game.battle.engagements[0]
 		view.actions.valour = 1
 		view.actions.pass = 1
 	},
@@ -7522,7 +7573,7 @@ function will_any_friendly_lords_rout() {
 }
 
 function goto_battle_lord_rout() {
-	game.battle.step = 2
+	game.battle.step = 3
 
 	if (is_regroup_in_play()) {
 		goto_regroup()
