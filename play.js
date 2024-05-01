@@ -271,10 +271,6 @@ function is_lord_in_battle(lord) {
 		for (let i = 0; i < 6; ++i)
 			if (view.battle.array[i] === lord)
 				return true
-		if (set_has(view.battle.reserves, lord))
-			return true
-		if (set_has(view.battle.routed, lord))
-			return true
 	}
 	return false
 }
@@ -382,12 +378,6 @@ const ui = {
 	arts_of_war_panel: document.getElementById("arts_of_war_panel"),
 	arts_of_war: document.getElementById("arts_of_war"),
 
-	reserves_panel: document.getElementById("reserves_panel"),
-	reserves: document.getElementById("reserves"),
-
-	routed_panel: document.getElementById("routed_panel"),
-	routed: document.getElementById("routed"),
-
 	events_panel: document.getElementById("events_panel"),
 	events: document.getElementById("events"),
 
@@ -407,6 +397,8 @@ const ui = {
 	influence: document.getElementById("ip"),
 	battle: document.getElementById("battle"),
 
+	court1_panel: document.getElementById("court1_panel"),
+	court2_panel: document.getElementById("court2_panel"),
 	court1_header: document.getElementById("court1_header"),
 	court2_header: document.getElementById("court2_header"),
 	court1: document.getElementById("court1"),
@@ -1213,7 +1205,6 @@ function update_cards() {
 
 function update_battle() {
 	let array = view.battle.array
-
 	for (let i = 0; i < array.length; ++i) {
 		let lord = array[i]
 		ui.battle_grid_array[i].replaceChildren()
@@ -1221,21 +1212,17 @@ function update_battle() {
 			ui.battle_grid_array[i].appendChild(ui.mat[lord])
 		ui.battle_grid_array[i].classList.toggle("action", is_action("array", i))
 	}
-
-	ui.reserves.replaceChildren()
-	for (let lord of view.battle.reserves)
-		ui.reserves.appendChild(ui.mat[lord])
-
-	ui.routed.replaceChildren()
-	for (let lord of view.battle.routed)
-		ui.routed.appendChild(ui.mat[lord])
 }
 
 function update_court() {
+	let ycourt_panel = (player === "Lancaster") ? ui.court2_panel : ui.court1_panel
+	let lcourt_panel = (player === "Lancaster") ? ui.court1_panel : ui.court2_panel
 	let ycourt_hdr = (player === "Lancaster") ? ui.court2_header : ui.court1_header
 	let lcourt_hdr = (player === "Lancaster") ? ui.court1_header : ui.court2_header
 	let ycourt = (player === "Lancaster") ? ui.court2 : ui.court1
 	let lcourt = (player === "Lancaster") ? ui.court1 : ui.court2
+	ycourt_panel.className = "panel court_panel york"
+	lcourt_panel.className = "panel court_panel lancaster"
 	ycourt_hdr.textContent = "York Lords"
 	lcourt_hdr.textContent = "Lancaster Lords"
 	ycourt.replaceChildren()
@@ -1284,7 +1271,7 @@ function update_vassals() {
 	}
 }
 
-var track_offset = new Array(45).fill(0)
+var track_offset = new Array(46).fill(0)
 
 function show_track_marker(elt, pos) {
 	let n = track_offset[pos]++
@@ -1304,6 +1291,16 @@ function show_track_marker(elt, pos) {
 
 	elt.style.left = x + "px"
 	elt.style.top = y + "px"
+}
+
+function list_has_friendly_lords(list) {
+	for (let lord of list) {
+		if (player === "York" && is_york_lord(lord))
+			return true
+		if (player === "Lancaster" && is_lancaster_lord(lord))
+			return true
+	}
+	return false
 }
 
 function on_update() {
@@ -1409,8 +1406,6 @@ function on_update() {
 	update_cards()
 
 	if (view.battle) {
-		ui.reserves_panel.classList.toggle("hide", view.battle.reserves.length === 0)
-		ui.routed_panel.classList.toggle("hide", view.battle.routed.length === 0)
 		ui.battle_panel.classList.remove("hide")
 		ui.battle_header.textContent = "Battle at " + data.locales[view.battle.where].name
 		if (view.battle.attacker === player) {
@@ -1422,8 +1417,6 @@ function on_update() {
 		update_battle()
 	} else {
 		ui.battle_panel.classList.add("hide")
-		ui.reserves_panel.classList.add("hide")
-		ui.routed_panel.classList.add("hide")
 	}
 
 
