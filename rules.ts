@@ -529,25 +529,25 @@ function get_lord_influence(lord: Lord): number {
 }
 
 // from !node tools/gendata.js
-function is_seaport(x: Locale) { return x === 1 || (x >= 5 && x <= 6) || (x >= 14 && x <= 15) || x === 17 || (x >= 19 && x <= 22) || x === 24 || x === 26 || x === 35 || x === 37 || x === 51 || (x >= 56 && x <= 57) }
-function is_port_1(x: Locale) { return x === 1 || x === 35 || x === 37 || (x >= 56 && x <= 57) }
-function is_port_2(x: Locale) { return (x >= 14 && x <= 15) || x === 17 || (x >= 19 && x <= 22) || x === 24 || x === 51 }
-function is_port_3(x: Locale) { return (x >= 5 && x <= 6) || x === 26 }
-function is_adjacent_north_sea(x: Locale) { return x === 1 || x === 35 || x === 37 || (x >= 56 && x <= 57) }
-function is_adjacent_english_channel(x: Locale) { return (x >= 14 && x <= 15) || x === 17 || (x >= 19 && x <= 22) || x === 24 || x === 51 }
-function is_adjacent_irish_sea(x: Locale) { return (x >= 5 && x <= 6) || x === 26 }
-function is_stronghold(x: Locale) { return (x >= 0 && x <= 51) || (x >= 56 && x <= 57) }
-function is_fortress(x: Locale) { return x === 0 || x === 6 || x === 9 || x === 37 || x === 57 }
-function is_north(x: Locale) { return (x >= 0 && x <= 4) || x === 56 }
-function is_city(x: Locale) { return x === 1 || x === 4 || (x >= 7 && x <= 8) || (x >= 10 && x <= 13) || x === 16 || x === 18 || x === 21 || x === 23 || (x >= 25 && x <= 28) || x === 36 || (x >= 38 && x <= 39) || x === 41 || x === 43 || (x >= 46 && x <= 47) || (x >= 49 && x <= 50) }
-function is_town(x: Locale) { return (x >= 2 && x <= 3) || (x >= 14 && x <= 15) || x === 17 || (x >= 19 && x <= 20) || x === 22 || x === 24 || x === 29 || (x >= 31 && x <= 35) || x === 40 || x === 42 || (x >= 44 && x <= 45) || x === 48 || x === 56 }
-function is_harlech(x: Locale) { return x === 5 }
-function is_wales(x: Locale) { return (x >= 5 && x <= 10) }
-function is_south(x: Locale) { return (x >= 11 && x <= 19) }
-function is_england(x: Locale) { return (x >= 20 && x <= 51) || x === 57 }
+function is_seaport(x: Locale) { return (x >= 0 && x <= 16) }
+function is_port_1(x: Locale) { return (x >= 0 && x <= 4) }
+function is_port_2(x: Locale) { return (x >= 5 && x <= 13) }
+function is_port_3(x: Locale) { return (x >= 14 && x <= 16) }
+function is_adjacent_north_sea(x: Locale) { return (x >= 0 && x <= 4) }
+function is_adjacent_english_channel(x: Locale) { return (x >= 5 && x <= 13) }
+function is_adjacent_irish_sea(x: Locale) { return (x >= 14 && x <= 16) }
+function is_stronghold(x: Locale) { return (x >= 0 && x <= 53) }
+function is_fortress(x: Locale) { return (x >= 0 && x <= 1) || x === 15 || x === 42 || x === 53 }
+function is_england(x: Locale) { return (x >= 0 && x <= 2) || (x >= 5 && x <= 9) || x === 14 || (x >= 17 && x <= 40) }
+function is_town(x: Locale) { return x === 2 || x === 4 || (x >= 7 && x <= 13) || (x >= 31 && x <= 40) || (x >= 43 && x <= 44) }
+function is_city(x: Locale) { return x === 3 || x === 6 || x === 14 || (x >= 17 && x <= 29) || x === 41 || (x >= 45 && x <= 52) }
+function is_north(x: Locale) { return (x >= 3 && x <= 4) || (x >= 41 && x <= 44) }
+function is_calais(x: Locale) { return x === 5 }
+function is_south(x: Locale) { return (x >= 10 && x <= 13) || (x >= 45 && x <= 49) }
+function is_wales(x: Locale) { return (x >= 15 && x <= 16) || (x >= 50 && x <= 53) }
+function is_harlech(x: Locale) { return x === 16 }
 function is_london(x: Locale) { return x === 30 }
-function is_calais(x: Locale) { return x === 51 }
-function is_exile_box(x: Locale) { return (x >= 52 && x <= 55) }
+function is_exile_box(x: Locale) { return (x >= 54 && x <= 57) }
 function is_sea(x: Locale) { return (x >= 58 && x <= 60) }
 
 function is_adjacent(a: Locale, b: Locale) {
