@@ -4287,6 +4287,7 @@ function end_sail() {
 
 	// Disbanded in battle!
 	if (!is_lord_on_map(game.command)) {
+		game.group = null
 		clear_flag(FLAG_MARCH_TO_PORT)
 		clear_flag(FLAG_SAIL_TO_PORT)
 		spend_all_actions()
@@ -4977,6 +4978,7 @@ function end_march() {
 
 	// Disbanded in battle!
 	if (!is_lord_on_map(game.command)) {
+		game.group = null
 		clear_flag(FLAG_MARCH_TO_PORT)
 		clear_flag(FLAG_SAIL_TO_PORT)
 		spend_all_actions()
@@ -6245,123 +6247,6 @@ states.ravine = {
 	},
 }
 
-// === BATTLE EVENT: REGROUP ===
-
-function is_regroup_in_play() {
-	if (is_event_in_play(EVENT_YORK_REGROUP)) {
-		for (let p of battle_strike_positions) {
-			let lord = game.battle.array[p]
-			if (is_york_lord(lord) && lord_has_routed_troops(lord) && get_lord_forces(lord, RETINUE))
-				return true
-		}
-	}
-	return false
-}
-
-function goto_regroup() {
-	set_active(YORK)
-	game.state = "regroup"
-}
-
-states.regroup = {
-	prompt() {
-		for (let p of battle_strike_positions) {
-			let lord = game.battle.array[p]
-			if (is_york_lord(lord) && lord_has_routed_troops(lord) && get_lord_forces(lord, RETINUE))
-				gen_action_lord(lord)
-		}
-		if (game.battle.step >= 2) {
-			view.prompt = "Regroup: You may choose a lord to regroup."
-			view.actions.pass = 1
-		} else {
-			view.prompt = "Regroup: Choose a lord to regroup."
-		}
-	},
-	lord(lord) {
-		push_undo()
-		logevent(EVENT_YORK_REGROUP)
-		logi("L" + lord)
-		game.who = lord
-		game.state = "regroup_roll_protection"
-		game.event_regroup = [
-			0,
-			0,
-			get_lord_routed_forces(lord, MEN_AT_ARMS),
-			get_lord_routed_forces(lord, LONGBOWMEN),
-			get_lord_routed_forces(lord, MILITIA),
-			get_lord_routed_forces(lord, BURGUNDIANS),
-			get_lord_routed_forces(lord, MERCENARIES),
-		]
-	},
-	pass() {
-		goto_battle_lord_rout()
-	},
-}
-
-states.regroup_roll_protection = {
-	prompt() {
-		view.prompt = "Regroup: Roll each routed troop's protection for them to recover."
-		if (game.event_regroup[MEN_AT_ARMS] > 0)
-			gen_action_routed_men_at_arms(game.who)
-		if (game.event_regroup[LONGBOWMEN] > 0)
-			gen_action_routed_longbowmen(game.who)
-		if (game.event_regroup[MILITIA] > 0)
-			gen_action_routed_militia(game.who)
-		if (game.event_regroup[BURGUNDIANS] > 0)
-			gen_action_routed_burgundians(game.who)
-		if (game.event_regroup[MERCENARIES] > 0)
-			gen_action_routed_mercenaries(game.who)
-	},
-	routed_burgundians(lord) {
-		action_regroup(lord, BURGUNDIANS)
-	},
-	routed_mercenaries(lord) {
-		action_regroup(lord, MERCENARIES)
-	},
-	routed_longbowmen(lord) {
-		action_regroup(lord, LONGBOWMEN)
-	},
-	routed_men_at_arms(lord) {
-		action_regroup(lord, MEN_AT_ARMS)
-	},
-	routed_militia(lord) {
-		action_regroup(lord, MILITIA)
-	},
-}
-
-function action_regroup(lord: Lord, type: Force) {
-	let protection = get_modified_protection(lord, type)
-
-	let die = roll_die()
-	if (die <= protection) {
-		logi(`${get_force_name(lord, type)} ${range(protection)}: W${die}`)
-		add_lord_routed_forces(lord, type, -1)
-		add_lord_forces(lord, type, 1)
-	} else {
-		logi(`${get_force_name(lord, type)} ${range(protection)}: B${die}`)
-	}
-
-	game.event_regroup[type]--
-
-	for (let i = 2; i < 7; ++i)
-		if (game.event_regroup[i] > 0)
-			return
-	end_regroup()
-}
-
-function end_regroup() {
-	// remove event from play once used
-	set_delete(game.events, EVENT_YORK_REGROUP)
-
-	game.who = NOBODY
-	delete game.event_regroup
-
-	if (game.battle.step < 2)
-		game.state = "assign_hits"
-	else
-		goto_battle_lord_rout()
-}
-
 // === BATTLE EVENT: CALTROPS ===
 
 states.caltrops = {
@@ -6582,48 +6467,160 @@ function is_leeward_battle_line_in_play(lord: Lord) {
 	return false
 }
 
-// === BATTLE EVENT: SWIFT MANEUVER ===
+// === BATTLE EVENT: REGROUP ===
 
-states.swift_maneuver_1 = {
-	get inactive() {
-		view.engaged = game.battle.engagements[0]
-		return format_strike_step()
-	},
+function is_regroup_in_play() {
+	if (is_event_in_play(EVENT_YORK_REGROUP)) {
+		for (let p of battle_strike_positions) {
+			let lord = game.battle.array[p]
+			if (is_york_lord(lord) && lord_has_routed_troops(lord) && get_lord_forces(lord, RETINUE))
+				return true
+		}
+	}
+	return false
+}
+
+function goto_regroup() {
+	set_active(YORK)
+	game.state = "regroup"
+}
+
+states.regroup = {
 	prompt() {
-		view.prompt = "Swift Maneuver: Reroll routed retinue?"
-		view.actions.pass = 1
-		gen_action_routed_retinue(game.who)
+		for (let p of battle_strike_positions) {
+			let lord = game.battle.array[p]
+			if (is_york_lord(lord) && lord_has_routed_troops(lord) && get_lord_forces(lord, RETINUE))
+				gen_action_lord(lord)
+		}
+		if (game.battle.step >= 2) {
+			view.prompt = "Regroup: You may choose a lord to regroup."
+			view.actions.pass = 1
+		} else {
+			view.prompt = "Regroup: Choose a lord to regroup."
+		}
 	},
-	routed_retinue(lord) {
-		action_spend_valour(lord, RETINUE)
-		if (lord_has_routed_retinue(lord))
-			this.pass()
-		else
-			finish_action_assign_hits()
+	lord(lord) {
+		push_undo()
+		logevent(EVENT_YORK_REGROUP)
+		logi("L" + lord)
+		game.who = lord
+		game.state = "regroup_roll_protection"
+		game.event_regroup = [
+			0,
+			0,
+			get_lord_routed_forces(lord, MEN_AT_ARMS),
+			get_lord_routed_forces(lord, LONGBOWMEN),
+			get_lord_routed_forces(lord, MILITIA),
+			get_lord_routed_forces(lord, BURGUNDIANS),
+			get_lord_routed_forces(lord, MERCENARIES),
+		]
 	},
 	pass() {
-		game.battle.reroll = 0
-		set_active_enemy()
-		game.state = "swift_maneuver_2"
+		goto_battle_lord_rout()
 	},
 }
 
-states.swift_maneuver_2 = {
-	inactive: "Swift Maneuver",
+states.regroup_roll_protection = {
 	prompt() {
-		view.prompt = "Swift Maneuver: You may end the battle round immediately."
-		view.actions.end_battle_round = 1
-		view.actions.pass = 1
+		view.prompt = "Regroup: Roll each routed troop's protection for them to recover."
+		if (game.event_regroup[MEN_AT_ARMS] > 0)
+			gen_action_routed_men_at_arms(game.who)
+		if (game.event_regroup[LONGBOWMEN] > 0)
+			gen_action_routed_longbowmen(game.who)
+		if (game.event_regroup[MILITIA] > 0)
+			gen_action_routed_militia(game.who)
+		if (game.event_regroup[BURGUNDIANS] > 0)
+			gen_action_routed_burgundians(game.who)
+		if (game.event_regroup[MERCENARIES] > 0)
+			gen_action_routed_mercenaries(game.who)
 	},
-	end_battle_round() {
-		logevent(EVENT_YORK_SWIFT_MANEUVER)
-		set_active_enemy()
+	routed_burgundians(lord) {
+		action_regroup(lord, BURGUNDIANS)
+	},
+	routed_mercenaries(lord) {
+		action_regroup(lord, MERCENARIES)
+	},
+	routed_longbowmen(lord) {
+		action_regroup(lord, LONGBOWMEN)
+	},
+	routed_men_at_arms(lord) {
+		action_regroup(lord, MEN_AT_ARMS)
+	},
+	routed_militia(lord) {
+		action_regroup(lord, MILITIA)
+	},
+}
+
+function action_regroup(lord: Lord, type: Force) {
+	let protection = get_modified_protection(lord, type)
+
+	let die = roll_die()
+	if (die <= protection) {
+		logi(`${get_force_name(lord, type)} ${range(protection)}: W${die}`)
+		add_lord_routed_forces(lord, type, -1)
+		add_lord_forces(lord, type, 1)
+	} else {
+		logi(`${get_force_name(lord, type)} ${range(protection)}: B${die}`)
+	}
+
+	game.event_regroup[type]--
+
+	for (let i = 2; i < 7; ++i)
+		if (game.event_regroup[i] > 0)
+			return
+	end_regroup()
+}
+
+function end_regroup() {
+	// remove event from play once used
+	set_delete(game.events, EVENT_YORK_REGROUP)
+
+	game.who = NOBODY
+	delete game.event_regroup
+
+	if (game.battle.step < 2)
+		game.state = "assign_hits"
+	else
 		goto_battle_lord_rout()
-	},
-	pass() {
-		set_active_enemy()
-		finish_action_assign_hits()
-	},
+}
+
+// === 4.4.2 BATTLE ROUNDS ===
+
+/*
+
+	for each round (until one side is fully routed)
+		flee (defender)
+		flee (attacker)
+		reposition (defender)
+		reposition (attacker)
+		determine engagements
+		VANGUARD (round 1 only)
+		for each engagement
+			archery strike
+				total hits
+				assign hits (defender then attacker)
+					SWIFT MANEUVER - skip to check lord rout
+			melee strike
+				total hits
+					FINAL CHARGE
+				assign hits (defender then attacker)
+					SWIFT MANEUVER - skip to check lord rout
+		check lord rout (defender then attacker)
+			REGROUP
+
+*/
+
+function goto_battle_rounds() {
+	log_h4(`Battle Round ${game.battle.round}`)
+
+	game.battle.step = 0
+
+	if (game.battle.round === 1) {
+		set_active_defender()
+		goto_culverins_and_falconets()
+	} else {
+		goto_flee()
+	}
 }
 
 // === BATTLE CAPABILITY: CULVERINS AND FALCONETS ===
@@ -6716,138 +6713,6 @@ function use_culverins(lord: Lord) {
 		return (die1 + die2) << 1
 	}
 	return 0
-}
-
-// === BATTLE CAPABILITY: FINAL CHARGE ===
-
-function can_final_charge() {
-	// If LORD_RICHARD_III with RETINUE in engagement before melee strike.
-	if (is_melee_step()) {
-		for (let pos of game.battle.engagements[0]) {
-			let lord = game.battle.array[pos]
-			if (lord === LORD_RICHARD_III && get_lord_forces(lord, RETINUE) > 0)
-				return true
-		}
-	}
-	return false
-}
-
-states.final_charge = {
-	prompt() {
-		view.prompt = "Final Charge: Retinue may suffer +1 hit to add +3 extra hits against enemy."
-		view.actions.final_charge = 1
-		view.actions.pass = 1
-	},
-	final_charge() {
-		logcap(AOW_YORK_FINAL_CHARGE)
-		log_hits("+3", lord_name[find_lord_with_capability_card(AOW_YORK_FINAL_CHARGE)])
-		log_hits("+1", "Final Charge")
-		game.battle.final_charge = 1
-		if (game.battle.attacker === YORK) {
-			game.battle.ahits += 1
-			game.battle.dhits += 3
-		} else {
-			game.battle.ahits += 3
-			game.battle.dhits += 1
-		}
-		goto_defender_assign_hits()
-	},
-	pass() {
-		goto_defender_assign_hits()
-	},
-}
-
-// === BATTLE CAPABILITY: VANGUARD ===
-
-function is_vanguard_in_battle() {
-	for (let eng of game.battle.engagements) {
-		for (let p of eng) {
-			let lord = game.battle.array[p]
-			if (lord !== NOBODY) {
-				if (lord_has_capability(lord, AOW_YORK_VANGUARD))
-					return true
-			}
-		}
-	}
-	return false
-}
-
-states.vanguard = {
-	get inactive() {
-		let lord = find_lord_with_capability_card(AOW_YORK_VANGUARD)
-		let p = get_lord_array_position(lord)
-		for (let eng of game.battle.engagements)
-			if (eng.includes(p))
-				view.engaged = eng
-		return "Vanguard"
-	},
-	prompt() {
-		view.prompt = "Vanguard: Norfolk may choose his engagement to be the only one."
-
-		let lord = find_lord_with_capability_card(AOW_YORK_VANGUARD)
-		let p = get_lord_array_position(lord)
-		for (let eng of game.battle.engagements)
-			if (eng.includes(p))
-				view.engaged = eng
-
-		view.actions.vanguard = 1
-		view.actions.pass = 1
-	},
-	vanguard() {
-		let lord = find_lord_with_capability_card(AOW_YORK_VANGUARD)
-
-		// Filter out engagements that don't contain Vanguard lord
-		game.battle.engagements = game.battle.engagements.filter(engagement => {
-			for (let p of engagement)
-				if (game.battle.array[p] === lord)
-					return true
-			return false
-		})
-
-		goto_select_engagement()
-	},
-	pass() {
-		goto_select_engagement()
-	},
-}
-
-// === 4.4.2 BATTLE ROUNDS ===
-
-/*
-
-	for each round (until one side is fully routed)
-		flee (defender)
-		flee (attacker)
-		reposition (defender)
-		reposition (attacker)
-		determine engagements
-		VANGUARD (round 1 only)
-		for each engagement
-			archery strike
-				total hits
-				assign hits (defender then attacker)
-					SWIFT MANEUVER - skip to check lord rout
-			melee strike
-				total hits
-					FINAL CHARGE
-				assign hits (defender then attacker)
-					SWIFT MANEUVER - skip to check lord rout
-		check lord rout (defender then attacker)
-			REGROUP
-
-*/
-
-function goto_battle_rounds() {
-	log_h4(`Battle Round ${game.battle.round}`)
-
-	game.battle.step = 0
-
-	if (game.battle.round === 1) {
-		set_active_defender()
-		goto_culverins_and_falconets()
-	} else {
-		goto_flee()
-	}
 }
 
 // === 4.4.2 BATTLE ROUNDS: FLEE ===
@@ -7195,6 +7060,60 @@ function end_engagement() {
 	goto_select_engagement()
 }
 
+// === BATTLE CAPABILITY: VANGUARD ===
+
+function is_vanguard_in_battle() {
+	for (let eng of game.battle.engagements) {
+		for (let p of eng) {
+			let lord = game.battle.array[p]
+			if (lord !== NOBODY) {
+				if (lord_has_capability(lord, AOW_YORK_VANGUARD))
+					return true
+			}
+		}
+	}
+	return false
+}
+
+states.vanguard = {
+	get inactive() {
+		let lord = find_lord_with_capability_card(AOW_YORK_VANGUARD)
+		let p = get_lord_array_position(lord)
+		for (let eng of game.battle.engagements)
+			if (eng.includes(p))
+				view.engaged = eng
+		return "Vanguard"
+	},
+	prompt() {
+		view.prompt = "Vanguard: Norfolk may choose his engagement to be the only one."
+
+		let lord = find_lord_with_capability_card(AOW_YORK_VANGUARD)
+		let p = get_lord_array_position(lord)
+		for (let eng of game.battle.engagements)
+			if (eng.includes(p))
+				view.engaged = eng
+
+		view.actions.vanguard = 1
+		view.actions.pass = 1
+	},
+	vanguard() {
+		let lord = find_lord_with_capability_card(AOW_YORK_VANGUARD)
+
+		// Filter out engagements that don't contain Vanguard lord
+		game.battle.engagements = game.battle.engagements.filter(engagement => {
+			for (let p of engagement)
+				if (game.battle.array[p] === lord)
+					return true
+			return false
+		})
+
+		goto_select_engagement()
+	},
+	pass() {
+		goto_select_engagement()
+	},
+}
+
 // === 4.4.2 BATTLE ROUNDS: TOTAL HITS (ROUND UP) ===
 
 function goto_total_hits() {
@@ -7252,6 +7171,45 @@ function goto_total_hits() {
 
 function log_hits(total, name) {
 	logi(`${total} ${name}`)
+}
+
+// === BATTLE CAPABILITY: FINAL CHARGE ===
+
+function can_final_charge() {
+	// If LORD_RICHARD_III with RETINUE in engagement before melee strike.
+	if (is_melee_step()) {
+		for (let pos of game.battle.engagements[0]) {
+			let lord = game.battle.array[pos]
+			if (lord === LORD_RICHARD_III && get_lord_forces(lord, RETINUE) > 0)
+				return true
+		}
+	}
+	return false
+}
+
+states.final_charge = {
+	prompt() {
+		view.prompt = "Final Charge: Retinue may suffer +1 hit to add +3 extra hits against enemy."
+		view.actions.final_charge = 1
+		view.actions.pass = 1
+	},
+	final_charge() {
+		logcap(AOW_YORK_FINAL_CHARGE)
+		log_hits("+3", lord_name[find_lord_with_capability_card(AOW_YORK_FINAL_CHARGE)])
+		log_hits("+1", "Final Charge")
+		game.battle.final_charge = 1
+		if (game.battle.attacker === YORK) {
+			game.battle.ahits += 1
+			game.battle.dhits += 3
+		} else {
+			game.battle.ahits += 3
+			game.battle.dhits += 1
+		}
+		goto_defender_assign_hits()
+	},
+	pass() {
+		goto_defender_assign_hits()
+	},
 }
 
 // === 4.4.2 BATTLE ROUNDS: ROLL BY HIT (PROTECTION ROLL, VALOUR RE-ROLL, FORCES ROUT) ===
@@ -7596,6 +7554,50 @@ function finish_action_assign_hits() {
 		goto_defender_assign_hits()
 }
 
+// === BATTLE EVENT: SWIFT MANEUVER ===
+
+states.swift_maneuver_1 = {
+	get inactive() {
+		view.engaged = game.battle.engagements[0]
+		return format_strike_step()
+	},
+	prompt() {
+		view.prompt = "Swift Maneuver: Reroll routed retinue?"
+		view.actions.pass = 1
+		gen_action_routed_retinue(game.who)
+	},
+	routed_retinue(lord) {
+		action_spend_valour(lord, RETINUE)
+		if (lord_has_routed_retinue(lord))
+			this.pass()
+		else
+			finish_action_assign_hits()
+	},
+	pass() {
+		game.battle.reroll = 0
+		set_active_enemy()
+		game.state = "swift_maneuver_2"
+	},
+}
+
+states.swift_maneuver_2 = {
+	inactive: "Swift Maneuver",
+	prompt() {
+		view.prompt = "Swift Maneuver: You may end the battle round immediately."
+		view.actions.end_battle_round = 1
+		view.actions.pass = 1
+	},
+	end_battle_round() {
+		logevent(EVENT_YORK_SWIFT_MANEUVER)
+		set_active_enemy()
+		goto_battle_lord_rout()
+	},
+	pass() {
+		set_active_enemy()
+		finish_action_assign_hits()
+	},
+}
+
 // === 4.4.2 BATTLE ROUNDS: LORD ROUT ===
 
 function rout_lord(lord: Lord) {
@@ -7625,6 +7627,7 @@ function will_any_friendly_lords_rout() {
 
 function goto_battle_lord_rout() {
 	game.battle.step = 3
+	game.who = NOBODY
 
 	if (is_regroup_in_play()) {
 		goto_regroup()
@@ -7865,6 +7868,7 @@ states.battle_losses = {
 		action_losses(lord, MILITIA)
 	},
 	done() {
+		game.who = NOBODY
 		end_battle_losses()
 	},
 }

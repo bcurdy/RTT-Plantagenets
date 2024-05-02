@@ -32,6 +32,7 @@
 				<li class="debug separator">
 			</menu>
 		</details>
+		<button onclick="toggle_seats()"><img src="images/shield.svg"></button>
 		<button onclick="toggle_pieces()"><img src="/images/earth-africa-europe.svg"></button>
 	</div>
 </header>
@@ -62,18 +63,20 @@
 <div id="map">
 
 <div id="locales"></div>
-<div id="boxes"></div>
+
+<div id="seats"></div>
 
 <div id="pieces">
-	<div id="turn" class="marker circle turn levy"></div>
-	<div id="end" class="marker circle end"></div>
-	<div id="victory_check" class="marker square victory_check"></div>
-	<div id="towns" class="marker square towns"></div>
-	<div id="cities" class="marker square cities"></div>
-	<div id="fortresses" class="marker square fortresses"></div>
-	<div id="ip" class="marker square ip"></div>
 	<div id="battle" class="hide" style="z-index:50"></div>
 </div>
+
+<div id="turn" class="marker circle turn levy"></div>
+<div id="end" class="marker circle end"></div>
+<div id="victory_check" class="marker square victory_check"></div>
+<div id="towns" class="marker square towns"></div>
+<div id="cities" class="marker square cities"></div>
+<div id="fortresses" class="marker square fortresses"></div>
+<div id="ip" class="marker square ip"></div>
 
 </div>
 </div>
@@ -100,16 +103,6 @@
 	<div class="grid_array def" id="grid_d2"></div>
 	<div class="grid_array def" id="grid_d3"></div>
 </div>
-</div>
-
-<div id="reserves_panel" class="panel hide">
-<div id="reserves_header" class="panel_header">Reserves</div>
-<div id="reserves" class="panel_body court_body"></div>
-</div>
-
-<div id="routed_panel" class="panel hide">
-<div id="routed_header" class="panel_header">Routed / Fled</div>
-<div id="routed" class="panel_body court_body"></div>
 </div>
 
 <div id="arts_of_war_panel" class="panel hide">
@@ -228,7 +221,6 @@
 <div data-card="L35" class="card aow lancaster c71"><div class="event sh1"><div class="title">Margaret Beaufort</div><div class="subtitle">Henry Tudor's mother</div><div class="text"><b>This Levy</b><br>Henry Tudor may attempt to Levy any Vassals on the map.</div></div><div class="capability sh2 shr"><div class="title">Thomas Stanley</div><div class="text">This Lord Levies Special Vassal Stanley (free). Once per Levy, he can Levy Troops for 0 Lordship.</div></div><div class="number">L35</div></div>
 <div data-card="L36" class="card aow lancaster c72"><div class="event"><div class="title">Talbot to the Rescue</div><div class="text"><b>Hold:</b> Play upon Death check to Disband any Routed Lancastrians instead of rolling for Death.</div></div><div class="capability sh3"><div class="title">Chevaliers</div><div class="subtitle">French knights</div><div class="text">This Lord’s Men-at-Arms suffer -1 Armour against Missiles but Melee Strike x2.</div></div><div class="number">L36</div></div>
 <div data-card="L37" class="card aow lancaster c73"><div class="event"><div class="title">The Earl of Richmond</div><div class="subtitle">is with a mighty power landed at Milford</div><div class="text"><b>This Levy</b><br>Lancastrian Vassal Levy always succeeds.</div></div><div class="capability sh3"><div class="title">Madame La Grande</div><div class="subtitle">Louis XI's daughter Anne finances Tudors</div><div class="text">Each Pay segment (3.2) that this Lord at or adjacent to a Friendly English Channel Port, he receives 1 Coin.</div></div><div class="number">L37</div></div>
-
 
 <!-- END CARD DATA -->
 </div>

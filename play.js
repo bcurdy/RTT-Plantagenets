@@ -6,6 +6,10 @@ function toggle_pieces() {
 	document.getElementById("pieces").classList.toggle("hide")
 }
 
+function toggle_seats() {
+	document.getElementById("seats").classList.toggle("hide")
+}
+
 // === CONSTANTS (matching those in rules.js) ===
 
 function find_lord(name) { return data.lords.findIndex((x) => x.name === name) }
@@ -366,7 +370,6 @@ const ui = {
 	cards: [],
 	cards2: [],
 	lords2: [],
-	calendar: [],
 	seat: [],
 
 	plan_panel: document.getElementById("plan_panel"),
@@ -600,7 +603,7 @@ function build_map() {
 		//e.style.transform = "rotate(315deg)"
 		e.style.zIndex = "-50"
 		register_tooltip(e, data.lords[ix].short_name)
-		document.getElementById("pieces").appendChild(e)
+		document.getElementById("seats").appendChild(e)
 	})
 
 	data.lords.forEach((lord, ix) => {
@@ -653,22 +656,8 @@ function build_map() {
 		register_tooltip(e, data.vassals[ix].name)
 	})
 
-	for (let i = 1; i <= 16; ++i) {
-		let name = "box" + i
-		let x = calendar_boxes[name][0]
-		let y = calendar_boxes[name][1]
-		let w = calendar_boxes[name][2]
-		let h = calendar_boxes[name][3]
-		calendar_xy[i] = [ x, y, w, h ]
-
-		let e = ui.calendar[i] = document.createElement("div")
-		e.className = "calendar box " + name
-		e.style.left = x + "px"
-		e.style.top = y + "px"
-		e.style.width = w + "px"
-		e.style.height = h + "px"
-		document.getElementById("boxes").appendChild(e)
-	}
+	for (let i = 1; i <= 16; ++i)
+		calendar_xy[i] = calendar_boxes["box" + i]
 
 	for (let i = 0; i <= 45; ++i) {
 		let name = "track" + i

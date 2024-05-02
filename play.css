@@ -7,8 +7,8 @@ body.Lancaster header.your_turn { background-color: hsl(355, 83%, 72%); }
 #turn_info { background-color: gray; }
 
 .panel_header { background-color: hsl(34, 10%, 30%); }
-body.York #event_header, body.York #plan_header, .court_panel.york .panel_header { background-color: hsl(217, 15%, 33%); }
-body.Lancaster #event_header, body.Lancaster #plan_header, .court_panel.lancaster .panel_header { background-color: hsl(355, 15%, 33%); }
+body.York #event_header, body.York #hand_header, body.York #plan_header, .court_panel.york .panel_header { background-color: hsl(217, 15%, 33%); }
+body.Lancaster #event_header, body.Lancaster #hand_header, body.Lancaster #plan_header, .court_panel.lancaster .panel_header { background-color: hsl(355, 15%, 33%); }
 
 /* LOG */
 
@@ -330,7 +330,7 @@ body.Lancaster #plan_actions .york { display: none }
 	gap: 4px;
 }
 
-#pieces .marker {
+#map .marker {
 	position: absolute;
 }
 
