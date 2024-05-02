@@ -113,34 +113,6 @@ const boxes = {
 	"vassal vassal_devon": [406,1400,27,30],
 	"vassal vassal_bonville": [174,1377,27,30],
 	"vassal vassal_beaumont": [753,787,27,30],
-	"seat lancaster lord_henry_vi": [834,1169,50,50],
-	"seat lancaster lord_margaret": [833,1170,50,50],
-	"seat lancaster lord_henry_tudor": [834,1170,50,50],
-	"seat lancaster lord_clarence": [650,637,50,50],
-	"seat lancaster lord_northumberland_l": [392,430,50,50],
-	"seat lancaster lord_buckingham": [714,975,50,50],
-	"seat lancaster lord_jasper_tudor_2": [346,921,50,50],
-	"seat lancaster lord_jasper_tudor_1": [127,1104,50,50],
-	"seat lancaster lord_oxford": [678,1078,50,50],
-	"seat lancaster lord_warwick_l": [1150,1350,50,50],
-	"seat lancaster lord_exeter_1": [300,1333,50,50],
-	"seat lancaster lord_somerset_1": [453,1277,50,50],
-	"seat york lord_edward_iv": [952,1148,50,50],
-	"seat york lord_gloucester_2": [953,1148,50,50],
-	"seat york lord_gloucester_1": [609,1074,50,50],
-	"seat york lord_salisbury": [770,636,50,50],
-	"seat york lord_march": [427,969,50,50],
-	"seat york lord_rutland": [1125,1214,50,50],
-	"seat york lord_devon": [359,1318,50,50],
-	"seat york lord_pembroke": [184,1067,50,50],
-	"seat york lord_norfolk": [795,1398,50,50],
-	"seat york lord_northumberland_y1": [391,431,50,50],
-	"seat york lord_warwick_y": [1150,1349,50,50],
-	"seat york lord_york": [906,937,50,50],
-	"seat york lord_northumberland_y2": [391,431,50,50],
-	"seat york lord_richard_iii": [953,1149,50,50],
-	"seat lancaster lord_somerset_2": [452,1276,50,50],
-	"seat lancaster lord_exeter_2": [300,1333,50,50],
 }
 
 let data = []
@@ -176,20 +148,6 @@ function defloc(region, type, name) {
 	}
 	ways.push([])
 }
-
-function defseat(name) {
-	let [x, y, w, h] = boxes[name]
-	x = Math.floor(x)
-	y = Math.floor(y)
-	w = Math.ceil(w)
-	h = Math.ceil(h)
-	locmap[name] = locales.length
-	seat.push({ name, box: { x, y, w, h } })
-}
-
-function defvassal(name) {
-}
-
 
 function defway(type, aname, bname) {
 	let aix = locmap[aname]
@@ -300,52 +258,6 @@ defloc("England", "fortress", "Ravenspur")
 defloc(null, "sea", "English Channel")
 defloc(null, "sea", "Irish Sea")
 defloc(null, "sea", "North Sea")
-
-//LOCALE SEAT
-defseat("seat york lord_york")
-defseat("seat york lord_march")
-defseat("seat york lord_edward_iv")
-defseat("seat york lord_salisbury")
-defseat("seat york lord_rutland")
-defseat("seat york lord_pembroke")
-defseat("seat york lord_devon")
-defseat("seat york lord_northumberland_y1")
-defseat("seat york lord_northumberland_y2")
-defseat("seat york lord_gloucester_1")
-defseat("seat york lord_gloucester_2")
-defseat("seat york lord_richard_iii")
-defseat("seat york lord_norfolk")
-defseat("seat york lord_warwick_y")
-defseat("seat lancaster lord_henry_vi")
-defseat("seat lancaster lord_margaret")
-defseat("seat lancaster lord_somerset_1")
-defseat("seat lancaster lord_somerset_2")
-defseat("seat lancaster lord_exeter_1")
-defseat("seat lancaster lord_exeter_2")
-defseat("seat lancaster lord_buckingham")
-defseat("seat lancaster lord_northumberland_l")
-defseat("seat lancaster lord_clarence")
-defseat("seat lancaster lord_jasper_tudor_1")
-defseat("seat lancaster lord_jasper_tudor_2")
-defseat("seat lancaster lord_henry_tudor")
-defseat("seat lancaster lord_oxford")
-defseat("seat lancaster lord_warwick_l")
-
-// VASSAL SEAT
-
-defvassal("Westmoreland")
-defvassal("Stanley")
-defvassal("Dudley")
-defvassal("Shrewsbury")
-defvassal("Worcester")
-defvassal("Oxford")
-defvassal("Essex")
-defvassal("Suffolk")
-defvassal("Fauconberg")
-defvassal("Norfolk")
-defvassal("Devon")
-defvassal("Bonville")
-defvassal("Beaumont")
 
 //WAYS BETWEEN LOCALES
 
@@ -1467,9 +1379,6 @@ dumplist("ways", ways)
 dumplist("lords", lords)
 dumplist("vassals", vassals)
 dumplist("cards", cards)
-
-// layout client only
-dumplist("seat", seat)
 
 print("}")
 

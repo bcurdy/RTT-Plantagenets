@@ -4,6 +4,14 @@ function single {
 	convert -colorspace RGB -resize 25% -colorspace sRGB HIRES/output/$1.png images/$1.png
 }
 
+function rotate_lanc {
+	convert -background '#e02027' -rotate 315 -colorspace RGB -resize 132x132 -colorspace sRGB HIRES/output/$1.png images/raw_$1.png
+}
+
+function rotate_york {
+	convert -background white -rotate 315 -colorspace RGB -resize 132x132 -colorspace sRGB HIRES/output/$1.png images/raw_$1.png
+}
+
 function multi {
 	BGND=$1
 	SIZE=$2
@@ -60,29 +68,29 @@ single source
 single valour
 single victory_check
 
-single seat_york_devon
-single seat_york_edward_iv
-single seat_york_gloucester
-single seat_york_march
-single seat_york_norfolk
-single seat_york_northumberland
-single seat_york_pembroke
-single seat_york_rutland
-single seat_york_salisbury
-single seat_york_warwick
-single seat_york_york
+rotate_york seat_york_devon
+rotate_york seat_york_edward_iv
+rotate_york seat_york_gloucester
+rotate_york seat_york_march
+rotate_york seat_york_norfolk
+rotate_york seat_york_northumberland
+rotate_york seat_york_pembroke
+rotate_york seat_york_rutland
+rotate_york seat_york_salisbury
+rotate_york seat_york_warwick
+rotate_york seat_york_york
 
-single seat_lancaster_buckingham
-single seat_lancaster_clarence
-single seat_lancaster_exeter
-single seat_lancaster_henry_tudor
-single seat_lancaster_henry_vi
-single seat_lancaster_jasper_tudor
-single seat_lancaster_margaret
-single seat_lancaster_northumberland
-single seat_lancaster_oxford
-single seat_lancaster_somerset
-single seat_lancaster_warwick
+rotate_lanc seat_lancaster_buckingham
+rotate_lanc seat_lancaster_clarence
+rotate_lanc seat_lancaster_exeter
+rotate_lanc seat_lancaster_henry_tudor
+rotate_lanc seat_lancaster_henry_vi
+rotate_lanc seat_lancaster_jasper_tudor
+rotate_lanc seat_lancaster_margaret
+rotate_lanc seat_lancaster_northumberland
+rotate_lanc seat_lancaster_oxford
+rotate_lanc seat_lancaster_somerset
+rotate_lanc seat_lancaster_warwick
 
 single vassal_beaumont
 single vassal_bonville
@@ -98,34 +106,19 @@ single vassal_suffolk
 single vassal_westmoreland
 single vassal_worcester
 
-single vassal_beaumont_b
-single vassal_bonville_b
-single vassal_devon_b
-single vassal_dudley_b
-single vassal_essex_b
-single vassal_fauconberg_b
-single vassal_norfolk_b
-single vassal_oxford_b
-single vassal_shrewsbury_b
-single vassal_stanley_b
-single vassal_suffolk_b
-single vassal_westmoreland_b
-single vassal_worcester_b
-
-single vassal_beaumont_b
-single vassal_bonville_b
-single vassal_devon_b
-single vassal_dudley_b
-single vassal_essex_b
-single vassal_fauconberg_b
-single vassal_norfolk_b
-single vassal_oxford_b
-single vassal_shrewsbury_b
-single vassal_stanley_b
-single vassal_suffolk_b
-single vassal_westmoreland_b
-single vassal_worcester_b
-
+# single vassal_beaumont_b
+# single vassal_bonville_b
+# single vassal_devon_b
+# single vassal_dudley_b
+# single vassal_essex_b
+# single vassal_fauconberg_b
+# single vassal_norfolk_b
+# single vassal_oxford_b
+# single vassal_shrewsbury_b
+# single vassal_stanley_b
+# single vassal_suffolk_b
+# single vassal_westmoreland_b
+# single vassal_worcester_b
 
 single vassal_clifford
 single vassal_edward
@@ -134,12 +127,12 @@ single vassal_thomas_stanley
 single vassal_trollope
 single vassal_montagu
 
-single vassal_clifford_b
-single vassal_edward_b
-single vassal_hastings_b
-single vassal_thomas_stanley_b
-single vassal_trollope_b
-single vassal_montagu_b
+# single vassal_clifford_b
+# single vassal_edward_b
+# single vassal_hastings_b
+# single vassal_thomas_stanley_b
+# single vassal_trollope_b
+# single vassal_montagu_b
 
 multi "#ffffff" 6x1 numbers_york \
 	HIRES/output/number_1_york.png \

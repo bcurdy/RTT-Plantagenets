@@ -586,25 +586,12 @@ function build_map() {
 
 	})
 
-	// Lord seats
-	data.seat.forEach((seat, ix) => {
-		let e = ui.seat[ix] = document.createElement("div")
-		let { x, y, w, h } = seat.box
-		let xc = Math.round(x + w / 2)
-		let yc = Math.round(y + h / 2)
-		let small = 46
-		e.className = "hide marker " + seat.name
-		e.style.position = "absolute"
-		e.style.top = y + "px"
-		e.style.left = x + "px"
-		e.style.width = 46 + "px"
-		e.style.height = 46 + "px"
-		e.style.backgroundSize = small + "px"
-		//e.style.transform = "rotate(315deg)"
-		e.style.zIndex = "-50"
-		register_tooltip(e, data.lords[ix].short_name)
-		document.getElementById("seats").appendChild(e)
-	})
+	let layout_seat_york = []
+	let layout_seat_lanc = []
+	for (let loc = first_locale; loc <= last_locale; ++loc) {
+		layout_seat_york[loc] = []
+		layout_seat_lanc[loc] = []
+	}
 
 	data.lords.forEach((lord, ix) => {
 		let e = ui.lord_cylinder[ix] = document.createElement("div")
@@ -620,7 +607,43 @@ function build_map() {
 		document.getElementById("pieces").appendChild(exile)
 
 		build_lord_mat(lord, ix, side, lord.id)
+
+		let loc = data.lords[ix].seat
+		e = ui.seat[ix] = document.createElement("div")
+		register_tooltip(e, data.lords[ix].short_name)
+		document.getElementById("seats").appendChild(e)
+		if (is_york_lord(ix)) {
+			e.className = "hide seat york " + lord.id
+			layout_seat_york[loc].push(e)
+		} else {
+			e.className = "hide seat lancaster " + lord.id
+			layout_seat_lanc[loc].push(e)
+		}
 	})
+
+	function layout_seat_markers(loc, dx, dy, list) {
+		let [ x, y ] = locale_xy[loc]
+		y -= (list.length - 1) * 15
+		x += dx
+		y += dy
+		for (let e of list) {
+			e.style.top = y - 37 + "px"
+			e.style.left = x - 37 + "px"
+			y += 30
+		}
+	}
+
+	for (let loc = first_locale; loc <= last_locale; ++loc) {
+		if (layout_seat_lanc[loc].length + layout_seat_york[loc].length === 1) {
+			layout_seat_markers(loc, 0, -22, layout_seat_lanc[loc])
+			layout_seat_markers(loc, 0, -22, layout_seat_york[loc])
+		} else if (data.locales[loc].name === "Calais" || data.locales[loc].name === "Carlisle") {
+			layout_seat_markers(loc, -44, 0, layout_seat_york[loc].concat(layout_seat_lanc[loc]))
+		} else {
+			layout_seat_markers(loc, -44, 0, layout_seat_lanc[loc])
+			layout_seat_markers(loc, 44, 0, layout_seat_york[loc])
+		}
+	}
 
 	ui.captured_king = document.createElement("div")
 	ui.captured_king.className = "cylinder lancaster " + data.lords[LORD_HENRY_VI].id
@@ -1027,8 +1050,6 @@ function update_lord(ix) {
 
 	ui.lord_cylinder[ix].classList.toggle("command", is_lord_command(ix))
 	ui.mat[ix].classList.toggle("command", is_lord_command(ix))
-
-	ui.seat[ix].classList.toggle("hide", !is_lord_in_game(ix))
 }
 
 function update_locale(loc) {
@@ -1321,6 +1342,7 @@ function on_update() {
 	track_offset.fill(0)
 
 	for (let ix = 0; ix < data.lords.length; ++ix) {
+		ui.seat[ix].classList.toggle("hide", !is_lord_in_game(ix))
 		if (get_lord_locale(ix) < 0) {
 			ui.lord_cylinder[ix].classList.add("hide")
 		} else {
