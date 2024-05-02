@@ -14,18 +14,19 @@ body.Lancaster #event_header, body.Lancaster #hand_header, body.Lancaster #plan_
 
 #log {
 	font-variant-numeric: tabular-nums;
-	background-color: whitesmoke;
+	background-color: floralwhite;
 }
 
 #log .h1 { font-weight: bold; padding-top:2px; padding-bottom:2px; text-align: center; }
 #log .h2 { padding-top:2px; padding-bottom:2px; text-align: center; }
-#log .h3 { text-align: center; }
+#log .h3 { text-decoration: underline; }
 #log .h4 { text-decoration: underline; }
-#log .h5 { text-decoration: underline; }
 
-#log .h1 { background-color: hsl(0,0%,80%); }
-#log .h2 { background-color: hsl(0,0%,80%); }
-#log .h3 { background-color: hsl(0,0%,80%); }
+#log .h1 { background-color: #e5ce98 }
+#log .h2 { background-color: #d1cfa1 }
+
+#log .h2.lancaster { background-color: #fad2d3 }
+#log .h2.york { background-color: #d1ddf1 }
 
 #log div { padding-left: 20px; text-indent: -12px; }
 #log div.i { padding-left: 32px; text-indent: -12px; }

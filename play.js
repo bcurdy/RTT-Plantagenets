@@ -610,7 +610,8 @@ function build_map() {
 
 		let loc = data.lords[ix].seat
 		e = ui.seat[ix] = document.createElement("div")
-		register_tooltip(e, data.lords[ix].short_name)
+		e.my_id = ix
+		register_tooltip(e, on_focus_cylinder)
 		document.getElementById("seats").appendChild(e)
 		if (is_york_lord(ix)) {
 			e.className = "hide seat york " + lord.id
@@ -623,13 +624,13 @@ function build_map() {
 
 	function layout_seat_markers(loc, dx, dy, list) {
 		let [ x, y ] = locale_xy[loc]
-		y -= (list.length - 1) * 15
+		y -= (list.length - 1) * 8
 		x += dx
 		y += dy
 		for (let e of list) {
 			e.style.top = y - 37 + "px"
 			e.style.left = x - 37 + "px"
-			y += 30
+			y += 16
 		}
 	}
 
@@ -1430,110 +1431,83 @@ function on_update() {
 		ui.battle_panel.classList.add("hide")
 	}
 
-
 	update_court()
 
-	// Misc
-	action_button("richard_iii", "Richard III")
-	action_button("exile", "Exile")
-	action_button("vanguard", "Vanguard")
-	action_button("final_charge", "Final Charge")
-	action_button("lordship", "Lordship")
-	action_button("march", "March")
-	action_button("avoid", "Avoid Battle")
-	action_button("withdraw", "Withdraw")
-	action_button("retreat", "Retreat")
-	action_button("regroup", "Regroup")
-	action_button("remove", "Remove")
-	action_button("surrender", "Surrender")
-	action_button("roll", "Roll")
-
-	// Use all commands
-	action_button("heralds", "Heralds")
-	
-	// Use one command
-	action_button("sail", "Sail")
-	action_button("parley", "Parley")
-	action_button("forage", "Forage")
-	action_button("supply", "Supply")
-	action_button("tax", "Tax")
-	action_button("merchants", "Merchants")
-	action_button("agitators", "Agitators")
-	action_button("exile_pact", "Exile Pact")
-
-	// Muster & Spoils
-	action_button("take_prov", "Provender")
-	action_button("take_ship", "Ship")
-	action_button("take_cart", "Cart")
-	action_button("take_all", "Take all")
-	action_button("levy_troops", "Levy Troops")
-	action_button("levy_beloved_warwick", "Beloved Warwick")
-	action_button("levy_irishmen", "Irishmen")
-	action_button("soldiers_of_fortune", "Soldiers of Fortune")
-	action_button("commission_of_array", "Commission of Array")
-
-	action_button("capability", "Capability")
-
-	// Influence Check
-	action_button_with_argument("check", 2, "Check +2")
-	action_button_with_argument("check", 1, "Check +1")
-	action_button_with_argument("check", 0, "Check")
-
-	// Supply
+	// QUESTIONS
+	action_button("favour", "Favour")
+	action_button("influence", "Influence")
 	action_button("stronghold", "Stronghold")
 	action_button("port", "Port")
 
-	// Pay or Disband
-	action_button("pay_all", "Pay All")
-	action_button("pay", "Pay")
-	action_button("disband", "Disband")
-	action_button("pillage", "Pillage")
+	// CAPABILITIES / EVENTS
+	action_button("add_men_at_arms", "Add Men at Arms")
+	action_button("add_militia", "Add Militia")
+	action_button("add_militia2", "Add 2 Militia")
+	action_button("agitators", "Agitators")
+	action_button("commission_of_array", "Commission of Array")
+	action_button("exile", "Exile")
+	action_button("exile_pact", "Exile Pact")
+	action_button("final_charge", "Final Charge")
+	action_button("heralds", "Heralds")
+	action_button("levy_beloved_warwick", "Beloved Warwick")
+	action_button("levy_irishmen", "Irishmen")
+	action_button("loyalty_and_trust", "Loyalty and Trust")
+	action_button("merchants", "Merchants")
+	action_button("regroup", "Regroup")
+	action_button("richard_iii", "Richard III")
+	action_button("soldiers_of_fortune", "Soldiers of Fortune")
+	action_button("vanguard", "Vanguard")
 
-	// Events
-	action_button("decline", "Decline")
-	action_button("deploy", "Deploy")
-	action_button("discard", "Discard")
-	action_button("play", "Play")
-	action_button("hold", "Hold")
-
+	// MARCH
+	action_button("march", "March")
 	action_button("approach", "Approach")
 	action_button("intercept", "Intercept")
 	action_button("battle", "Battle")
 
+	// ARTS OF WAR
+	action_button("play", "Play")
+	action_button("hold", "Hold")
+	action_button("discard", "Discard")
+
+	// LEVY
+	action_button("levy_troops", "Troops")
+	action_button("take_ship", "Ship")
+	action_button("take_prov", "Provender")
+	action_button("take_cart", "Cart")
+	action_button("take_all", "Take All")
+	action_button("capability", "Capability")
+
+	// CAMPAIGN
+	action_button("supply", "Supply")
+	action_button("sail", "Sail")
+	action_button("forage", "Forage")
+	action_button("tax", "Tax")
+
+	// LEVY & CAMPAIGN
+	action_button("parley", "Parley")
+
+	// PAY/FEED/PILLAGE
+	action_button("pay_all", "Pay All")
+	action_button("pay", "Pay")
+	action_button("pillage", "Pillage")
+	action_button("disband", "Disband")
+
+	// INFLUENCE CHECK
+	action_button_with_argument("check", 2, "Check +2")
+	action_button_with_argument("check", 1, "Check +1")
+	action_button_with_argument("check", 0, "Check")
+
 	action_button("end_array", "End Array")
-	action_button("end_avoid_battle", "End Avoid Battle")
+	action_button("end_battle_round", "End Round")
 	action_button("end_command", "End Command")
-	action_button("end_disband", "End Disband")
 	action_button("end_discard", "End Discard")
 	action_button("end_feed", "End Feed")
-	action_button("end_growth", "End Growth")
-	action_button("end_levy", "End Levy")
 	action_button("end_muster", "End Muster")
 	action_button("end_pay", "End Pay")
 	action_button("end_plan", "End Plan")
-	action_button("end_plow_and_reap", "End Plow and Reap")
-	action_button("end_remove", "End Remove")
-	action_button("end_sack", "End Sack")
-	action_button("end_setup", "End Setup")
 	action_button("end_spoils", "End Spoils")
-	action_button("end_supply", "End Supply")
-	action_button("escape_ship", "End Escape Ship")
-	action_button("loyalty_and_trust", "+3 Lordship")
 
-	action_button("end_wastage", "End Wastage")
-	action_button("end_withdraw", "End Withdraw")
-	action_button("end_battle_round", "End Round")
-
-	// ADDING TROOPS THROUGH EVENTS
-	action_button("add_militia", "Add Militia")
-	action_button("add_militia2", "Add 2 Militia")
-
-	action_button("add_men_at_arms", "Add Men at Arms")
-	
-	// REMOVE INFLUENCE
-	action_button("influence", "Influence")
-	action_button("favour", "Favour")
-
+	action_button("roll", "Roll")
 	action_button("pass", "Pass")
 	action_button("done", "Done")
 	action_button("undo", "Undo")
@@ -1671,7 +1645,7 @@ function on_log(text) {
 	text = text.replace(/C(\d+)/g, sub_card_capability)
 	text = text.replace(/E(\d+)/g, sub_card_event)
 	text = text.replace(/L(\d+)/g, sub_lord_name)
-	text = text.replace(/%(\d+)/g, sub_locale_name)
+	text = text.replace(/S(\d+)/g, sub_locale_name)
 	text = text.replace(/V(\d+)/g, sub_vassal_name)
 
 	text = text.replace(/\b[BW]\d\b/g, sub_icon)
@@ -1688,21 +1662,12 @@ function on_log(text) {
 	} else if (text.match(/^\.h2/)) {
 		text = text.substring(4)
 		p.className = "h2"
-	} else if (text.match(/^\.h3y/)) {
-		text = text.substring(5)
-		p.className = "h3 york"
-	} else if (text.match(/^\.h3l/)) {
-		text = text.substring(5)
-		p.className = "h3 lancaster"
 	} else if (text.match(/^\.h3/)) {
 		text = text.substring(4)
 		p.className = "h3"
 	} else if (text.match(/^\.h4/)) {
 		text = text.substring(4)
 		p.className = "h4"
-	} else if (text.match(/^\.h5/)) {
-		text = text.substring(4)
-		p.className = "h5"
 	}
 
 	p.innerHTML = text
