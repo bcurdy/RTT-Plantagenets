@@ -3781,6 +3781,12 @@ states.command = {
 
 		prompt_held_event_at_campaign()
 
+		if (!is_lord_on_map(game.command)) {
+			view.prompt = `Command: ${lord_name[game.command]} is not on the map.`
+			view.actions.end_command = 1
+			return
+		}
+
 		// 4.3.2 Marshals MAY take other lords
 		if (
 			is_marshal(game.command) ||
