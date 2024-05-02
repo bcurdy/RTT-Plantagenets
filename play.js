@@ -525,6 +525,11 @@ function build_map() {
 			ay = y + 6
 			aw = w - 13
 			ah = h - 21
+		} else if (locale.type === "fortress") {
+			ax = x - 12
+			aw = w + 24
+			ay = y - 28
+			ah = h + 28
 		} else {
 			ax = x - 6
 			ay = y - 6
@@ -1668,6 +1673,9 @@ function on_log(text) {
 	} else if (text.match(/^\.h4/)) {
 		text = text.substring(4)
 		p.className = "h4"
+	} else if (text.match(/^\.ip/)) {
+		text = text.substring(4)
+		p.className = "ip"
 	}
 
 	p.innerHTML = text

@@ -1951,6 +1951,13 @@ function is_lancaster_dominating_wales() {
 
 // === 1.4 INFLUENCE ===
 
+function log_ip(n) {
+	if (n < 0)
+		log(".ip " + n)
+	else if (n > 0)
+		log(".ip +" + n)
+}
+
 function reduce_influence(amt: number) {
 	if (game.active === YORK)
 		reduce_york_influence(amt)
@@ -1959,18 +1966,22 @@ function reduce_influence(amt: number) {
 }
 
 function reduce_york_influence(amt: number) {
+	log_ip(-amt)
 	game.influence = Math.max(-45, Math.min(45, game.influence + amt))
 }
 
 function increase_york_influence(amt: number) {
+	log_ip(amt)
 	game.influence = Math.max(-45, Math.min(45, game.influence - amt))
 }
 
 function reduce_lancaster_influence(amt: number) {
+	log_ip(-amt)
 	game.influence = Math.max(-45, Math.min(45, game.influence - amt))
 }
 
 function increase_lancaster_influence(amt: number) {
+	log_ip(amt)
 	game.influence = Math.max(-45, Math.min(45, game.influence + amt))
 }
 
@@ -2181,9 +2192,9 @@ function discard_card_event(c: Card) {
 
 function goto_levy_arts_of_war_first() {
 	if (game.active === YORK)
-		log_h2("Arts of War - York")
+		log_h2_active("Arts of War - York")
 	else
-		log_h2("Arts of War - Lancaster")
+		log_h2_active("Arts of War - Lancaster")
 	game.state = "levy_arts_of_war_first"
 	game.arts_of_war = draw_two_cards()
 }
@@ -2242,9 +2253,9 @@ function end_levy_arts_of_war_first() {
 
 function goto_levy_arts_of_war() {
 	if (game.active === YORK)
-		log_h2("Arts of War - York")
+		log_h2_active("Arts of War - York")
 	else
-		log_h2("Arts of War - Lancaster")
+		log_h2_active("Arts of War - Lancaster")
 	game.arts_of_war = draw_two_cards()
 	resume_levy_arts_of_war()
 }
@@ -2499,13 +2510,13 @@ function can_pillage(loc: Locale) {
 function do_pillage(lord: Lord) {
 	let here = get_lord_locale(lord)
 
-	log(`Pillage at S${here}.`)
-
 	// Same values as Taxing.
 	let n = get_tax_amount(here, lord)
 	add_lord_assets(lord, COIN, n)
 	add_lord_assets(lord, PROV, n)
 	reduce_influence(4 * n)
+
+	log(`Pillage at S${here}.`)
 
 	add_exhausted_marker(here)
 
@@ -2601,6 +2612,7 @@ states.pay_lords = {
 	},
 	pay() {
 		reduce_influence(is_exile_box(get_lord_locale(game.who)) ? 2 : 1)
+		log("Pay L" + game.who)
 		set_lord_moved(game.who, 0)
 		game.who = NOBODY
 	},
@@ -2609,6 +2621,7 @@ states.pay_lords = {
 		for (let lord of all_friendly_lords()) {
 			if (is_lord_on_map(lord) && is_lord_unfed(lord)) {
 				reduce_influence(is_exile_box(get_lord_locale(lord)) ? 2 : 1)
+				log("Pay L" + lord)
 				set_lord_moved(lord, 0)
 			}
 		}
@@ -2643,7 +2656,6 @@ function end_pay_vassals() {
 	set_active_enemy()
 
 	if (game.active === P1) {
-		log_h3("Muster Exiles")
 		goto_muster_exiles()
 	} else {
 		goto_pay_vassals()
@@ -2778,6 +2790,8 @@ function can_muster_exile(lord) {
 function goto_muster_exiles() {
 	for (let lord of all_friendly_lords()) {
 		if (can_muster_exile(lord)) {
+			if (game.active === P1)
+				log_h2_common("Muster Exiles")
 			game.state = "muster_exiles"
 			return
 		}
@@ -2841,7 +2855,7 @@ states.muster_exiles = {
 		game.who = lord
 	},
 	locale(loc) {
-		log(`Muster L${game.who} at S${loc}.`)
+		log(`L${game.who} to S${loc}.`)
 
 		muster_lord_in_exile(game.who, loc)
 
@@ -2932,9 +2946,9 @@ function goto_muster() {
 			game.levy_flags.loyalty_and_trust = 1
 
 	if (game.active === YORK)
-		log_h2("Muster - York")
+		log_h2_active("Muster - York")
 	else
-		log_h2("Muster - Lancaster")
+		log_h2_active("Muster - Lancaster")
 
 	game.state = "muster"
 }
@@ -3677,13 +3691,13 @@ function goto_command_activation() {
 	}
 
 	if (game.command === NOBODY) {
-		log_h2("Pass")
+		log_h2_active("Pass")
 		goto_command_activation()
 	} else if (!is_lord_on_map(game.command)) {
-		log_h2(`L${game.command} - Pass`)
+		log_h2_active(`L${game.command} - Pass`)
 		goto_command_activation()
 	} else {
-		log_h2(`L${game.command} at S${get_lord_locale(game.command)}`)
+		log_h2_active(`L${game.command} at S${get_lord_locale(game.command)}`)
 		goto_command()
 	}
 }
@@ -5085,12 +5099,8 @@ states.march_confirm_intercept = {
 
 // === 4.3.4 INTERCEPT ===
 
-function format_group() {
-	let list = []
-	for (let lord of game.group)
-		if (lord !== game.command)
-			list.push("L" + lord)
-	return list.join(" and ")
+function format_intercept() {
+	return game.intercept.map(x => "L" + x).join(" and ")
 }
 
 function has_unmoving_friendly_lord(here) {
@@ -5214,9 +5224,9 @@ states.intercept = {
 			let roll = roll_die()
 			success = roll <= valour
 			if (success)
-				log(`Intercept with ${format_group()} ${range(valour)}: B${roll}`)
+				log(`Intercept with ${format_intercept()} ${range(valour)}: B${roll}`)
 			else
-				log(`Intercept with ${format_group()} ${range(valour)}: W${roll}`)
+				log(`Intercept with ${format_intercept()} ${range(valour)}: W${roll}`)
 		}
 		if (success) {
 			goto_intercept_march()
@@ -7469,8 +7479,7 @@ function action_spend_valour(lord: Lord, force: Force, vassal: Vassal = NOVASSAL
 
 	let protection = get_modified_protection(lord, force)
 	spend_valour(lord)
-	logi(`Reroll:`)
-	if (!assign_hit_roll(get_force_name(lord, force, vassal), protection, ""))
+	if (!assign_hit_roll("Reroll", protection, ">>"))
 		unrout_unit(lord, force, vassal)
 	game.vassal = NOVASSAL
 }
@@ -7493,13 +7502,13 @@ function unrout_unit(lord: Lord, type: Force, v: Vassal = NOVASSAL) {
 	}
 }
 
-function assign_hit_roll(what, prot, extra) {
+function assign_hit_roll(what, prot, indent) {
 	let die = roll_die()
 	if (die <= prot) {
-		logi(`${what} ${range(prot)}: W${die}${extra}`)
+		log(`${indent}${what} ${range(prot)}: W${die}`)
 		return false
 	} else {
-		logi(`${what} ${range(prot)}: B${die}${extra}`)
+		log(`${indent}${what} ${range(prot)}: B${die}`)
 		return true
 	}
 }
@@ -7584,12 +7593,11 @@ function action_assign_hits(lord: Lord, type: Force, v=NOVASSAL) {
 		log(`L${lord}`)
 	}
 	let protection = get_modified_protection(lord, type)
-	let extra = ""
 
 	game.battle.reroll = 0
 	game.vassal = NOVASSAL
 
-	if (assign_hit_roll(get_force_name(lord, type, v), protection, extra)) {
+	if (assign_hit_roll(get_force_name(lord, type, v), protection, ">")) {
 		if (get_lord_remaining_valour(lord) > 0 || is_yeomen_of_the_crown_triggered(lord, type)) {
 			game.battle.reroll = 1
 			game.battle.force = type
@@ -8116,8 +8124,6 @@ function action_held_event_at_death_check(c: Card) {
 states.death_check = {
 	inactive: "Death Check",
 	prompt() {
-		// TODO: extra "roll" step or not?
-
 		if (game.who === NOBODY) {
 			view.prompt = `Death Check: Routed lords now die or disband.`
 
@@ -8840,7 +8846,7 @@ function tow(n: number, what: string): number {
 function goto_tides_of_war() {
 	set_active(BOTH)
 
-	log_h2("Tides of War")
+	log_h2_common("Tides of War")
 
 	let cities = count_favour(all_city_locales)
 	let towns = count_favour(all_town_locales)
@@ -8898,6 +8904,7 @@ function goto_tides_of_war() {
 	if (set_has(INFLUENCE_TURNS, current_turn()))
 		lanc += tow_influence(all_lancaster_lords)
 
+	increase_lancaster_influence(lanc)
 	log("Total: " + lanc)
 
 	log_h3("York")
@@ -8930,10 +8937,8 @@ function goto_tides_of_war() {
 	if (set_has(INFLUENCE_TURNS, current_turn()))
 		york += tow_influence(all_york_lords)
 
-	log("Total: " + york)
-
-	increase_lancaster_influence(lanc)
 	increase_york_influence(york)
+	log("Total: " + york)
 
 	if (eligible_charity())
 		goto_we_done_deeds_of_charity()
@@ -12464,7 +12469,7 @@ states.surprise_landing = {
 function range(x) {
 	switch (x) {
 		case 0: return "0"
-		case 1: return "1"
+		case 1: return "1-1"
 		case 2: return "1-2"
 		case 3: return "1-3"
 		case 4: return "1-4"
@@ -12505,7 +12510,7 @@ function log_h1(msg: string) {
 	log_br()
 }
 
-function log_h2(msg: string) {
+function log_h2_active(msg: string) {
 	log_br()
 	if (game.active === YORK)
 		log(".h2y " + msg)
@@ -12513,6 +12518,12 @@ function log_h2(msg: string) {
 		log(".h2l " + msg)
 	else
 		log(".h2 " + msg)
+	log_br()
+}
+
+function log_h2_common(msg: string) {
+	log_br()
+	log(".h2 " + msg)
 	log_br()
 }
 
