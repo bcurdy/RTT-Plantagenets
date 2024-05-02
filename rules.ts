@@ -9272,7 +9272,7 @@ const scenario_name = exports.scenarios = [
 	"Ia. Henry VI",
 	"Ib. Towton",
 	"Ic. Somerset's Return",
-	"II. Warwicks' Rebellion",
+	"II. Warwick's Rebellion",
 	"III. My Kingdom for a Horse",
 // TODO	"I-III. Wars of the Roses",
 ]
