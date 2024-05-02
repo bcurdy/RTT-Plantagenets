@@ -9465,12 +9465,14 @@ function setup_Ib() {
 	set_flag(FLAG_REBEL_IS_YORK)
 	game.active = YORK
 	game.influence = 0
+
+	muster_lord(LORD_SOMERSET_1, LOC_NEWCASTLE)
+	muster_lord(LORD_EXETER_1, LOC_NEWCASTLE)
+	muster_lord(LORD_NORTHUMBERLAND_L, LOC_CARLISLE)
+
+	muster_lord(LORD_MARCH, LOC_LONDON)
 	muster_lord(LORD_NORFOLK, LOC_LONDON)
 	muster_lord(LORD_WARWICK_Y, LOC_LONDON)
-	muster_lord(LORD_MARCH, LOC_LUDLOW)
-	muster_lord(LORD_EXETER_1, LOC_NEWCASTLE)
-	muster_lord(LORD_SOMERSET_1, LOC_NEWCASTLE)
-	muster_lord(LORD_NORTHUMBERLAND_L, LOC_CARLISLE)
 
 	add_lancaster_favour(LOC_ST_ALBANS)
 	add_lancaster_favour(LOC_SCARBOROUGH)
