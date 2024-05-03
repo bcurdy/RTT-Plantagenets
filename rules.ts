@@ -16,6 +16,9 @@
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
 
+	NAVAL BLOCKADE + PARLEY - long way around button
+	NAVAL BLOCKADE + TAX - always long way around if exists
+
 	flee markers
 
 	Review all undo steps.
@@ -1752,16 +1755,6 @@ function remove_depleted_marker(loc: Locale) {
 
 function remove_exhausted_marker(loc: Locale) {
 	set_delete(game.pieces.exhausted, loc)
-}
-
-function refresh_locale(locale: Locale) {
-	if (has_depleted_marker(locale)) {
-		remove_depleted_marker(locale)
-	}
-	if (has_exhausted_marker(locale)) {
-		remove_exhausted_marker(locale)
-		add_depleted_marker(locale)
-	}
 }
 
 function deplete_locale(loc: Locale) {
@@ -9116,6 +9109,7 @@ function disband_influence_penalty(lord: Lord) {
 
 function goto_advance_campaign() {
 	game.turn++
+	set_active(P1)
 	log_h1("Levy " + current_turn_name())
 	goto_levy_arts_of_war()
 }
@@ -9158,27 +9152,29 @@ function goto_victory_check() {
 // === 4.8.4 END CAMPAIGN: GROW ===
 
 function do_grow() {
-	log("Grow:")
-	logi("Changing all Depleted locales to Normal.")
-	logi("Changing all Exhausted locales to Depleted.")
+	log_h2_common("Grow")
 
-	for (let x of all_locales) {
-		refresh_locale(x)
-	}
+	log("Recover " + game.pieces.exhausted.length + " Exhausted.")
+	log("Recover " + game.pieces.depleted.length + " Depleted.")
+
+	game.pieces.depleted = game.pieces.exhausted
+	game.pieces.exhausted = []
 }
 
 // === 4.8.5 END CAMPAIGN: WASTE ===
 
 function do_waste() {
-	log("Waste:")
-	logi("Removing half of all lords provinder, carts, and ships.")
-	logi("Resetting Lords Coin and Troops to initial values.")
+	log_h2_common("Waste")
 
-	for (let x of all_lords) {
-		if (is_lord_on_map(x)) {
-			do_lord_waste(x)
-		}
-	}
+	log("Remove half Provender.")
+	log("Remove half Carts.")
+	log("Remove half Ships.")
+	log("Reset Coin.")
+	log("Reset Troops.")
+
+	for (let lord of all_lords)
+		if (is_lord_on_map(lord))
+			do_lord_waste(lord)
 }
 
 function do_lord_waste(lord: Lord) {
@@ -9196,6 +9192,8 @@ function remove_half(lord: Lord, type: Asset) {
 // === 4.8.6 END CAMPAIGN: RESET (DISCARD ARTS OF WAR) ===
 
 function goto_reset() {
+	log_h2_common("Reset")
+	set_active(P2)
 	game.state = "reset"
 }
 
@@ -9203,31 +9201,19 @@ states.reset = {
 	inactive: "Reset",
 	prompt() {
 		view.prompt = "Reset: You may discard any held Arts of War cards desired."
-		if (game.active === YORK) {
-			for (let c of all_york_cards) {
-				if (set_has(game.hand_y, c)) {
-					gen_action_card(c)
-				}
-			}
-		}
-		if (game.active === LANCASTER) {
-			for (let c of all_lancaster_cards) {
-				if (set_has(game.hand_l, c)) {
-					gen_action_card(c)
-				}
-			}
-		}
+		if (game.active === YORK)
+			for (let c of game.hand_y)
+				gen_action_card(c)
+		if (game.active === LANCASTER)
+			for (let c of game.hand_l)
+				gen_action_card(c)
 		view.actions.end_discard = 1
 	},
 	card(c) {
 		push_undo()
-		if (set_has(game.hand_y, c)) {
-			log("Discarded Held card.")
-			set_delete(game.hand_y, c)
-		} else if (set_has(game.hand_l, c)) {
-			log("Discarded Held card.")
-			set_delete(game.hand_l, c)
-		}
+		log("Discard Held card.")
+		set_delete(game.hand_y, c)
+		set_delete(game.hand_l, c)
 	},
 	end_discard() {
 		end_reset()
@@ -9237,8 +9223,6 @@ states.reset = {
 function end_reset() {
 	set_active_enemy()
 	if (game.active === P2)
-		goto_reset()
-	else
 		goto_advance_campaign()
 }
 
@@ -10863,10 +10847,10 @@ function can_naval_blockade_route(mask: number) {
 function roll_blockade() {
 	let roll = roll_die()
 	if (roll <= 2) {
-		log("Naval Blockade 1-2: W" + roll)
+		log("C" + AOW_YORK_NAVAL_BLOCKADE + " 1-2: B" + roll)
 		return true
 	} else {
-		log("Naval Blockade 1-2: B" + roll)
+		log("C" + AOW_YORK_NAVAL_BLOCKADE + " 1-2: W" + roll)
 		return false
 	}
 }
@@ -11151,14 +11135,42 @@ function goto_lancaster_event_henry_pressures_parliament() {
 // === EVENT: LANCASTER HENRY'S PROCLAMATION ===
 
 function goto_lancaster_event_henrys_proclamation() {
-	for (let vassal of all_vassals) {
-		if (is_vassal_mustered_with_york_lord(vassal) && !is_special_vassal(vassal)) {
-			set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), current_turn())
-			logi(`Vassal ${vassal_name[vassal]} moved to current turn`)
-
+	let t = current_turn()
+	for (let v of all_vassals) {
+		if (is_vassal_mustered_with_york_lord(v) && !is_special_vassal(v) && get_vassal_service(v) !== t) {
+			game.state = "henrys_proclamation"
+			return
 		}
 	}
+	logi("No effect.")
 	end_immediate_event()
+}
+
+states.henrys_proclamation = {
+	inactive: "Henry's Proclamation",
+	prompt() {
+		view.prompt = "Henry's Proclamation: Shift each Yorkist vassal's calendar marker."
+		let t = current_turn()
+		let done = true
+		for (let v of all_vassals) {
+			if (is_vassal_mustered_with_york_lord(v) && !is_special_vassal(v) && get_vassal_service(v) !== t) {
+				gen_action_vassal(v)
+				done = false
+			}
+		}
+		if (done) {
+			view.prompt = "Henry's Proclamation: All done."
+			view.actions.done = 1
+		}
+	},
+	vassal(v) {
+		log("V" + v + " to T" + current_turn() + ".")
+		set_vassal_lord_and_service(v, get_vassal_lord(v), current_turn())
+	},
+	done() {
+		delete game.event_she_wolf
+		end_immediate_event()
+	},
 }
 
 // === EVENT: LANCASTER FRENCH TROOPS ===
@@ -11858,20 +11870,16 @@ states.london_for_york = {
 // === EVENT: SHE-WOLF OF FRANCE ===
 
 function goto_york_event_shewolf_of_france() {
-	let can_play = false
 	for (let v of all_vassals) {
-		if (is_vassal_mustered_with_friendly_lord(v)) {
-			can_play = true
+		if (is_vassal_mustered_with_friendly_lord(v) && !is_special_vassal(v)) {
+			game.state = "she_wolf"
+			game.event_she_wolf = []
+			game.who = NOBODY
+			return
 		}
 	}
-	if (can_play) {
-		game.state = "she_wolf"
-		game.event_she_wolf = []
-		game.who = NOBODY
-	} else {
-		logi("No effect.")
-		end_immediate_event()
-	}
+	logi("No effect.")
+	end_immediate_event()
 }
 
 states.she_wolf = {
@@ -11891,10 +11899,11 @@ states.she_wolf = {
 		}
 	},
 	vassal(v) {
-		if (current_turn() < 16)
-			set_vassal_lord_and_service(v, get_vassal_lord(v), get_vassal_service(v) + 1)
+		let t = get_vassal_service(v) + 1
+		if (t < 16)
+			set_vassal_lord_and_service(v, get_vassal_lord(v), t)
 		set_add(game.event_she_wolf, v)
-		logi(`Vassal ${vassal_name[v]} shifted one calendar box`)
+		log(`${vassal_name[v]} to T${t}.`)
 	},
 	done() {
 		delete game.event_she_wolf

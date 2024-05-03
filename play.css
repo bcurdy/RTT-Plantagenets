@@ -354,7 +354,7 @@ body.Lancaster #plan_actions .york { display: none }
 
 /* PIECES */
 
-.cylinder, .marker {
+.cylinder, .marker, #map .vassal {
 	transition-property: top, left;
 	transition-duration: 700ms;
 	transition-timing-function: ease;

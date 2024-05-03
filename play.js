@@ -360,8 +360,7 @@ const ui = {
 	assets: [],
 
 	lord_exile: [],
-	vassal_cal: [], // token on calendar
-	vassal_map: [], // token on map
+	vassal_map: [], // token on map/calendar
 	vassal_mat: [], // token on mat
 	valour_area: [],
 	marker_area: [],
@@ -669,15 +668,8 @@ function build_map() {
 			let yc = Math.round(y + h / 2)
 			e.className = "hide unit vassal vassal_" + vassal.name.toLowerCase()
 			e.style.position = "absolute"
-			e.style.top = yc - 27 + "px"
-			e.style.left = xc - 27 + "px"
-			register_action(e, "vassal", ix)
-			register_tooltip(e, data.vassals[ix].name)
-			document.getElementById("pieces").appendChild(e)
-
-			e = ui.vassal_cal[ix] = document.createElement("div")
-			e.className = "hide unit vassal vassal_" + vassal.name.toLowerCase()
-			e.style.position = "absolute"
+			e.my_map_x = xc - 27 + "px"
+			e.my_map_y = yc - 27 + "px"
 			register_action(e, "vassal", ix)
 			register_tooltip(e, data.vassals[ix].name)
 			document.getElementById("pieces").appendChild(e)
@@ -1266,21 +1258,20 @@ function update_vassals() {
 		if (loc === VASSAL_OUT_OF_PLAY) {
 			// not present
 			ui.vassal_map[v].classList.add("hide")
-			ui.vassal_cal[v].classList.add("hide")
 		} else if (loc === VASSAL_READY) {
 			// ready on map
 			ui.vassal_map[v].classList.remove("hide")
 			ui.vassal_map[v].classList.toggle("action", is_action("vassal", v))
 			ui.vassal_map[v].classList.toggle("selected", v === view.vassal || set_has(view.vassal, v))
-			ui.vassal_cal[v].classList.add("hide")
+			ui.vassal_map[v].style.top = ui.vassal_map[v].my_map_y
+			ui.vassal_map[v].style.left = ui.vassal_map[v].my_map_x
 		} else {
 			// mustered or disbanded
-			ui.vassal_map[v].classList.add("hide")
-			ui.vassal_cal[v].classList.remove("hide")
-			ui.vassal_cal[v].classList.toggle("back", loc === VASSAL_DISBANDED)
-			ui.vassal_cal[v].classList.toggle("action", is_action("vassal", v))
-			ui.vassal_cal[v].classList.toggle("selected", v === view.vassal || set_has(view.vassal, v))
-			calendar_layout_vassal[srv].push(ui.vassal_cal[v])
+			ui.vassal_map[v].classList.remove("hide")
+			ui.vassal_map[v].classList.toggle("back", loc === VASSAL_DISBANDED)
+			ui.vassal_map[v].classList.toggle("action", is_action("vassal", v))
+			ui.vassal_map[v].classList.toggle("selected", v === view.vassal || set_has(view.vassal, v))
+			calendar_layout_vassal[srv].push(ui.vassal_map[v])
 		}
 	}
 }
