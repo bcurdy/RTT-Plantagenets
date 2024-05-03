@@ -22,7 +22,7 @@ L3
 
 Escape Ship
 
-Hold: Play upon Death check if Lancastrian Route (4.5.1) (4.5.1) to Port for any Routed Lancastrians to go into Exile instead.
+Hold: Play upon Death check if Lancastrian Route (4.5.1) to Port for any Routed Lancastrians to go into Exile instead.
 
 Muster'd my soldiers
 Gather'd flocks of friends
@@ -270,7 +270,7 @@ L27
 L'Universelle Aragne
 Louis XI of France, a cunning King
 
-Select 2 Yorkist Mustered Yorkist Mustered Vassals. Their Lords check Influence for each - failure Disbands the Vassal.
+Select 2 Yorkist Mustered Vassals. Their Lords check Influence for each - failure Disbands the Vassal.
 
 Barded Horse
 
