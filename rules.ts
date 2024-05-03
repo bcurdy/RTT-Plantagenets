@@ -3956,7 +3956,7 @@ function search_supply_by_way(result, start: Locale, carts: number, ships: numbe
 		}
 
 		if (is_friendly_locale(here)) {
-			if (next_dist <= carts) {
+			if ((next_dist >> 3) <= carts) {
 				for (let next of data.locales[here].adjacent) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
