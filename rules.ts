@@ -2291,7 +2291,7 @@ states.levy_arts_of_war = {
 	},
 	hold() {
 		let c = game.arts_of_war.shift()
-		log(`Hold Event.`)
+		log(`Held Event.`)
 		if (game.active === YORK)
 			set_add(game.hand_y, c)
 		else
