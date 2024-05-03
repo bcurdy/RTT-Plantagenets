@@ -2554,7 +2554,7 @@ function goto_pay_lords() {
 	}
 
 	if (has_friendly_lord_who_must_pay_troops()) {
-		log_h3("Pay Lords:")
+		log_h3("Pay Lords")
 		game.count = 0
 		game.who = NOBODY
 		game.state = "pay_lords"
@@ -2641,7 +2641,7 @@ function goto_pay_vassals() {
 			is_vassal_mustered_with_friendly_lord(v) &&
 			get_vassal_service(v) === current_turn()
 		) {
-			log_h3("Pay Vassals:")
+			log_h3("Pay Vassals")
 			game.state = "pay_vassals"
 			game.vassal = NOVASSAL
 			return
@@ -3353,7 +3353,7 @@ states.levy_lord_at_seat = {
 	locale(loc) {
 		push_undo()
 
-		logii(`L${game.who} at S${loc}.`)
+		logi(`at S${loc}`)
 
 		set_lord_moved(game.who, 1)
 		muster_lord(game.who, loc)
@@ -3719,15 +3719,24 @@ function goto_command() {
 
 	game.actions = data.lords[game.command].command
 
-	if (lord_has_capability(game.command, AOW_LANCASTER_MARRIED_TO_A_NEVILLE))
-		if (get_lord_locale(LORD_WARWICK_L) === here && is_friendly_locale(here))
+	if (lord_has_capability(game.command, AOW_LANCASTER_MARRIED_TO_A_NEVILLE)) {
+		if (get_lord_locale(LORD_WARWICK_L) === here && is_friendly_locale(here)) {
+			logcap(AOW_LANCASTER_MARRIED_TO_A_NEVILLE)
 			game.actions += 1
-	if (lord_has_capability(game.command, AOW_YORK_THOMAS_BOURCHIER) && is_city(here))
+		}
+	}
+	if (lord_has_capability(game.command, AOW_YORK_THOMAS_BOURCHIER) && is_city(here)) {
+		logcap(AOW_YORK_THOMAS_BOURCHIER)
 		game.actions += 1
-	if (lord_has_capability(game.command, AOW_YORK_YORKS_FAVOURED_SON))
+	}
+	if (lord_has_capability(game.command, AOW_YORK_YORKS_FAVOURED_SON)) {
+		logcap(AOW_YORK_YORKS_FAVOURED_SON)
 		game.actions += 1
-	if (lord_has_capability(game.command, AOW_YORK_HASTINGS))
+	}
+	if (lord_has_capability(game.command, AOW_YORK_HASTINGS)) {
+		logcap(AOW_YORK_HASTINGS)
 		game.actions += 1
+	}
 
 	game.group = [ game.command ]
 
@@ -6835,7 +6844,7 @@ function use_culverins(lord: Lord) {
 		let die1 = roll_die()
 		let die2 = 0
 		if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE) && game.active === YORK) {
-			logcap(EVENT_YORK_PATRICK_DE_LA_MOTE)
+			logevent(EVENT_YORK_PATRICK_DE_LA_MOTE)
 			die2 = roll_die()
 			logi(`${die1} + ${die2} culverins`)
 		} else {
@@ -8664,7 +8673,7 @@ function goto_feed() {
 
 	if (is_campaign_phase() && has_flag(FLAG_SUPPLY_DEPOT) && game.active === LANCASTER) {
 		clear_flag(FLAG_SUPPLY_DEPOT)
-		logcap(EVENT_LANCASTER_REBEL_SUPPLY_DEPOT)
+		logevent(EVENT_LANCASTER_REBEL_SUPPLY_DEPOT)
 		end_feed()
 		return
 	}
@@ -10553,36 +10562,56 @@ function apply_lordship_effects() {
 
 	game.actions = data.lords[lord].lordship
 
-	if (is_friendly_locale(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_FAIR_ARBITER))
+	if (is_friendly_locale(get_lord_locale(lord)) && lord_has_capability(lord, AOW_YORK_FAIR_ARBITER)) {
+		logcap(AOW_YORK_FAIR_ARBITER)
 		game.actions += 1
-	if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE))
+	}
+	if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER) && !is_lord_in_play(LORD_CLARENCE)) {
+		logcap(AOW_YORK_FALLEN_BROTHER)
 		game.actions += 1
-	if (is_event_in_play(EVENT_YORK_EDWARD_V) && (lord === LORD_GLOUCESTER_1 || lord === LORD_GLOUCESTER_2))
+	}
+	if (is_event_in_play(EVENT_YORK_EDWARD_V) && (lord === LORD_GLOUCESTER_1 || lord === LORD_GLOUCESTER_2)) {
+		logevent(EVENT_YORK_EDWARD_V)
 		game.actions += 3
+	}
 
 	game.levy_flags.gloucester_as_heir = 0
-	if (is_event_in_play(EVENT_YORK_GLOUCESTER_AS_HEIR))
-		if (lord === LORD_GLOUCESTER_2 || lord === LORD_GLOUCESTER_1)
+	if (is_event_in_play(EVENT_YORK_GLOUCESTER_AS_HEIR)) {
+		if (lord === LORD_GLOUCESTER_2 || lord === LORD_GLOUCESTER_1) {
+			logevent(EVENT_YORK_GLOUCESTER_AS_HEIR)
 			game.levy_flags.gloucester_as_heir = 3
+		}
+	}
 
 	game.levy_flags.my_crown_is_in_my_heart = 0
-	if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART))
-		if (lord === LORD_HENRY_VI)
+	if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART)) {
+		if (lord === LORD_HENRY_VI) {
+			logevent(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART)
 			game.levy_flags.my_crown_is_in_my_heart = 2
+		}
+	}
 
 	game.levy_flags.thomas_stanley = 0
-	if (lord_has_capability(lord, AOW_LANCASTER_THOMAS_STANLEY))
+	if (lord_has_capability(lord, AOW_LANCASTER_THOMAS_STANLEY)) {
+		logcap(AOW_LANCASTER_THOMAS_STANLEY)
 		game.levy_flags.thomas_stanley = 1
+	}
 
 	game.levy_flags.parliament_votes = 0
-	if (is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES))
-		if (game.active === LANCASTER)
+	if (is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES)) {
+		if (game.active === LANCASTER) {
+			logevent(EVENT_LANCASTER_PARLIAMENT_VOTES)
 			game.levy_flags.parliament_votes = 1
+		}
+	}
 
 	game.levy_flags.succession = 0
-	if (is_event_in_play(EVENT_YORK_SUCCESSION))
-		if (game.active === YORK)
+	if (is_event_in_play(EVENT_YORK_SUCCESSION)) {
+		if (game.active === YORK) {
+			logevent(EVENT_YORK_SUCCESSION)
 			game.levy_flags.succession = 1
+		}
+	}
 
 	game.levy_flags.jack_cade = 0
 	if (is_jack_cade_eligible(lord)) {
