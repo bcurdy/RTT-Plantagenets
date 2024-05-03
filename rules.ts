@@ -3233,7 +3233,7 @@ states.blockade_levy_ship = {
 		view.actions.roll = 1
 	},
 	roll() {
-		if (roll_blockade())
+		if (roll_blockade("Levy Ship"))
 			do_levy_ship()
 		else
 			resume_muster_lord()
@@ -4186,7 +4186,7 @@ states.blockade_supply = {
 		view.actions.roll = 1
 	},
 	roll() {
-		if (roll_blockade())
+		if (roll_blockade("Supply"))
 			use_port_supply(game.where, get_port_supply_amount(game.where))
 		end_supply()
 	},
@@ -4329,7 +4329,7 @@ states.blockade_sail = {
 	roll() {
 		let to = game.where
 		game.where = NOWHERE
-		if (roll_blockade())
+		if (roll_blockade("Sail"))
 			do_sail(to)
 		else
 			fail_sail()
@@ -4603,7 +4603,7 @@ states.blockade_tax = {
 		view.actions.roll = 1
 	},
 	roll() {
-		if (roll_blockade())
+		if (roll_blockade("Tax"))
 			game.state = "tax"
 		else
 			end_tax()
@@ -4910,7 +4910,7 @@ states.blockade_parley = {
 		view.actions.roll = 1
 	},
 	roll() {
-		if (roll_blockade())
+		if (roll_blockade("Parley"))
 			game.state = "parley"
 		else
 			end_parley(false)
@@ -10844,13 +10844,14 @@ function can_naval_blockade_route(mask: number) {
 	return false
 }
 
-function roll_blockade() {
+function roll_blockade(fail: string) {
 	let roll = roll_die()
 	if (roll <= 2) {
-		log("C" + AOW_YORK_NAVAL_BLOCKADE + " 1-2: B" + roll)
+		log("C" + AOW_YORK_NAVAL_BLOCKADE + " 1-2: W" + roll)
 		return true
 	} else {
-		log("C" + AOW_YORK_NAVAL_BLOCKADE + " 1-2: W" + roll)
+		log("C" + AOW_YORK_NAVAL_BLOCKADE + " 1-2: B" + roll)
+		logi(fail)
 		return false
 	}
 }
@@ -11820,7 +11821,7 @@ states.blockade_tax_collectors = {
 		view.actions.roll = 1
 	},
 	roll() {
-		if (roll_blockade())
+		if (roll_blockade("Tax Collectors"))
 			game.state = "tax_collectors_lord"
 		else
 			end_tax_collectors_lord()
