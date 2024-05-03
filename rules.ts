@@ -16,18 +16,7 @@
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
 
-	SEARCH BY SEA (RULES)
-		Supply -- by way only, if ships can end at port
-		Levy Parley -- by way only, except from exile box (or mix and match, distance matters)
-		Campaign Parley -- adjacent only (also adjacent via sea)
-		Tax -- by way and ship mix and match, distance doesn't matter (only seas for naval blockade)
-
-	NAVAL BLOCKADE - for Tax and Tax Collectors
-	NAVAL BLOCKADE - Great Ships
-
 	flee markers
-	limited troop pieces (burgundians/mercenaries)
-	disbanded vassals show back on calendar
 
 	Review all undo steps.
 	Review all states for needless pauses.
@@ -9523,6 +9512,9 @@ function setup_Ia() {
 	add_york_favour(LOC_IRELAND)
 
 	setup_vassals()
+
+	log("Allied Networks.")
+	log("Capture of the King.")
 }
 
 // === SCENARIO: IB ===
@@ -9571,6 +9563,9 @@ function setup_Ib() {
 
 	setup_vassals([ VASSAL_FAUCONBERG, VASSAL_NORFOLK ])
 	muster_vassal(VASSAL_FAUCONBERG, LORD_MARCH)
+
+	log("Norfolk is Late.")
+	log("Test of Arms.")
 }
 
 // === SCENARIO: IC ===
@@ -9620,6 +9615,9 @@ function setup_Ic() {
 	capability_muster_effects_common(LORD_WARWICK_Y, AOW_LANCASTER_MONTAGU)
 
 	setup_vassals()
+
+	log("Montagu.")
+	log("Brief Rebellion.")
 }
 
 // === SCENARIO: II ===
@@ -9665,8 +9663,9 @@ function setup_II() {
 
 	setup_vassals([ VASSAL_DEVON, VASSAL_OXFORD ])
 
-	// TODO: Add Foreign Haven rule
-	// TODO: Add Skaky Allies rules
+	log("Foreign Haven.")
+	log("Shaky Allies.")
+	log("Queen Regent.")
 }
 
 function foreign_haven_shift_lords() {
@@ -9726,6 +9725,9 @@ function setup_III() {
 	muster_lord(LORD_OXFORD, LOC_FRANCE)
 
 	game.turn = 3 << 1
+
+	log("King Richard.")
+	log("Ravaged Land.")
 }
 
 states.my_kingdom_for_a_horse_setup = {
