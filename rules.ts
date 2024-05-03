@@ -255,7 +255,6 @@ interface State {
 	end_discard?(): void,
 	end_feed?(): void,
 	end_muster?(): void,
-	end_pay?(): void,
 	end_spoils?(): void,
 
 	roll?(): void,
@@ -1629,12 +1628,6 @@ function disband_vassal(vassal: Vassal) {
 	}
 }
 
-function pay_vassal(vassal: Vassal) {
-	reduce_influence(1)
-	log("Pay V" + vassal + ".")
-	set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), current_turn() + 1)
-}
-
 function rout_vassal(_lord: Lord, vassal: Vassal) {
 	set_add(game.battle.routed_vassals, vassal)
 }
@@ -2197,10 +2190,7 @@ function discard_card_event(c: Card) {
 }
 
 function goto_levy_arts_of_war_first() {
-	if (game.active === YORK)
-		log_h2_active("Arts of War - York")
-	else
-		log_h2_active("Arts of War - Lancaster")
+	log_h2_active("Arts of War - " + game.active)
 	game.state = "levy_arts_of_war_first"
 	game.arts_of_war = draw_two_cards()
 }
@@ -2258,10 +2248,7 @@ function end_levy_arts_of_war_first() {
 // === 3.1 LEVY: ARTS OF WAR ===
 
 function goto_levy_arts_of_war() {
-	if (game.active === YORK)
-		log_h2_active("Arts of War - York")
-	else
-		log_h2_active("Arts of War - Lancaster")
+	log_h2_active("Arts of War - " + game.active)
 	game.arts_of_war = draw_two_cards()
 	resume_levy_arts_of_war()
 }
@@ -2331,13 +2318,24 @@ function end_levy_arts_of_war() {
 	set_active_enemy()
 	if (game.active === P2)
 		goto_levy_arts_of_war()
-	else {
-		log_h2_common("Pay")
-		goto_pay_troops()
-	}
+	else
+		goto_pay()
 }
 
-// === 3.2 LEVY: PAY ===
+// === 3.2 LEVY: PAY TROOPS ===
+
+function goto_pay() {
+	log_h2_active("Pay - " + game.active)
+	goto_pay_troops()
+}
+
+function end_pay() {
+	set_active_enemy()
+	if (game.active === P2)
+		goto_pay()
+	else
+		goto_muster_exiles()
+}
 
 function reset_unpaid_lords(here: Locale) {
 	for (let lord of all_friendly_lords()) {
@@ -2419,7 +2417,7 @@ states.pay_troops = {
 		// All done!
 		if (done) {
 			view.prompt = "Pay Troops: All done."
-			view.actions.end_pay = 1
+			view.actions.done = 1
 		}
 	},
 	coin(lord) {
@@ -2441,7 +2439,7 @@ states.pay_troops = {
 			game.state = "pay_troops_disband"
 		}
 	},
-	end_pay() {
+	done() {
 		end_pay_troops()
 	},
 }
@@ -2502,11 +2500,7 @@ states.pay_troops_disband = {
 
 function end_pay_troops() {
 	game.who = NOBODY
-	set_active_enemy()
-	if (game.active === P2) {
-		goto_pay_troops()
-	} else
-		goto_pay_lords()
+	goto_pay_lords()
 }
 
 // === 3.2.1 PILLAGE ===
@@ -2560,6 +2554,7 @@ function goto_pay_lords() {
 	}
 
 	if (has_friendly_lord_who_must_pay_troops()) {
+		log_h3("Pay Lords:")
 		game.count = 0
 		game.who = NOBODY
 		game.state = "pay_lords"
@@ -2569,12 +2564,7 @@ function goto_pay_lords() {
 }
 
 function end_pay_lords() {
-	set_active_enemy()
-
-	if (game.active === P2)
-		goto_pay_lords()
-	else
-		goto_pay_vassals()
+	goto_pay_vassals()
 }
 
 function count_pay_lord_influence_cost() {
@@ -2651,6 +2641,7 @@ function goto_pay_vassals() {
 			is_vassal_mustered_with_friendly_lord(v) &&
 			get_vassal_service(v) === current_turn()
 		) {
+			log_h3("Pay Vassals:")
 			game.state = "pay_vassals"
 			game.vassal = NOVASSAL
 			return
@@ -2661,13 +2652,7 @@ function goto_pay_vassals() {
 }
 
 function end_pay_vassals() {
-	set_active_enemy()
-
-	if (game.active === P1) {
-		goto_muster_exiles()
-	} else {
-		goto_pay_vassals()
-	}
+	end_pay()
 }
 
 function count_pay_vassals_influence_cost() {
@@ -2676,6 +2661,12 @@ function count_pay_vassals_influence_cost() {
 		if (is_vassal_mustered_with_friendly_lord(v) && get_vassal_service(v) === current_turn())
 			++n
 	return n
+}
+
+function pay_vassal(vassal: Vassal) {
+	reduce_influence(1)
+	log("Pay V" + vassal + ".")
+	set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), current_turn() + 1)
 }
 
 states.pay_vassals = {
@@ -2969,10 +2960,7 @@ function goto_muster() {
 		if (game.active === YORK)
 			game.levy_flags.loyalty_and_trust = 1
 
-	if (game.active === YORK)
-		log_h2_active("Muster - York")
-	else
-		log_h2_active("Muster - Lancaster")
+	log_h2_active("Muster - " + game.active)
 
 	game.state = "muster"
 }
@@ -10719,12 +10707,11 @@ states.we_done_deeds_of_charity = {
 	prov(lord) {
 		push_undo()
 		increase_york_influence(1)
+		logcap(AOW_YORK_WE_DONE_DEEDS_OF_CHARITY)
 		add_lord_assets(lord, PROV, -1)
 		game.count--
 	},
 	done() {
-		logi(`${AOW_YORK_WE_DONE_DEEDS_OF_CHARITY}`)
-		log("York paid " + game.count + " provender to add " + game.count + " Influence Points")
 		game.count = 0
 
 		// TODO: who should disembark first?
