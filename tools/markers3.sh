@@ -106,19 +106,19 @@ single vassal_suffolk
 single vassal_westmoreland
 single vassal_worcester
 
-# single vassal_beaumont_b
-# single vassal_bonville_b
-# single vassal_devon_b
-# single vassal_dudley_b
-# single vassal_essex_b
-# single vassal_fauconberg_b
-# single vassal_norfolk_b
-# single vassal_oxford_b
-# single vassal_shrewsbury_b
-# single vassal_stanley_b
-# single vassal_suffolk_b
-# single vassal_westmoreland_b
-# single vassal_worcester_b
+single vassal_beaumont_b
+single vassal_bonville_b
+single vassal_devon_b
+single vassal_dudley_b
+single vassal_essex_b
+single vassal_fauconberg_b
+single vassal_norfolk_b
+single vassal_oxford_b
+single vassal_shrewsbury_b
+single vassal_stanley_b
+single vassal_suffolk_b
+single vassal_westmoreland_b
+single vassal_worcester_b
 
 single vassal_clifford
 single vassal_edward
@@ -127,12 +127,12 @@ single vassal_thomas_stanley
 single vassal_trollope
 single vassal_montagu
 
-# single vassal_clifford_b
-# single vassal_edward_b
-# single vassal_hastings_b
-# single vassal_thomas_stanley_b
-# single vassal_trollope_b
-# single vassal_montagu_b
+single vassal_clifford_b
+single vassal_edward_b
+single vassal_hastings_b
+single vassal_thomas_stanley_b
+single vassal_trollope_b
+single vassal_montagu_b
 
 multi "#ffffff" 6x1 numbers_york \
 	HIRES/output/number_1_york.png \

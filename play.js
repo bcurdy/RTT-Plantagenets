@@ -61,8 +61,12 @@ const LONDON_FOR_YORK = 300
 const CAPTURE_OF_THE_KING = 400 // Ia. special rule (400 + lord ID that has him captured)
 
 const VASSAL_READY = 29
-const VASSAL_CALENDAR = 30
+const VASSAL_DISBANDED = 30
 const VASSAL_OUT_OF_PLAY = 31
+
+function is_special_vassal(v) {
+	return data.vassals[v].box === null
+}
 
 const TOWN = "town"
 const CITY = "city"
@@ -658,7 +662,7 @@ function build_map() {
 	data.vassals.forEach((vassal, ix) => {
 		let e
 
-		if (vassal.box) {
+		if (!is_special_vassal(ix)) {
 			let { x, y, w, h } = vassal.box
 			e = ui.vassal_map[ix] = document.createElement("div")
 			let xc = Math.round(x + w / 2)
@@ -670,14 +674,14 @@ function build_map() {
 			register_action(e, "vassal", ix)
 			register_tooltip(e, data.vassals[ix].name)
 			document.getElementById("pieces").appendChild(e)
-		}
 
-		e = ui.vassal_cal[ix] = document.createElement("div")
-		e.className = "hide unit vassal vassal_" + vassal.name.toLowerCase()
-		e.style.position = "absolute"
-		register_action(e, "vassal", ix)
-		register_tooltip(e, data.vassals[ix].name)
-		document.getElementById("pieces").appendChild(e)
+			e = ui.vassal_cal[ix] = document.createElement("div")
+			e.className = "hide unit vassal vassal_" + vassal.name.toLowerCase()
+			e.style.position = "absolute"
+			register_action(e, "vassal", ix)
+			register_tooltip(e, data.vassals[ix].name)
+			document.getElementById("pieces").appendChild(e)
+		}
 
 		e = ui.vassal_mat[ix] = document.createElement("div")
 		e.className = "unit vassal vassal_" + vassal.name.toLowerCase()
@@ -1253,36 +1257,30 @@ function update_court() {
 
 function update_vassals() {
 	for (let v = first_vassal; v <= last_vassal; v++) {
+		if (is_special_vassal(v))
+			return
+
 		let loc = get_vassal_lord(v)
 		let srv = get_vassal_service(v)
+
 		if (loc === VASSAL_OUT_OF_PLAY) {
 			// not present
+			ui.vassal_map[v].classList.add("hide")
 			ui.vassal_cal[v].classList.add("hide")
-			if (ui.vassal_map[v]) {
-				ui.vassal_map[v].classList.add("hide")
-			}
 		} else if (loc === VASSAL_READY) {
-			// on map
+			// ready on map
+			ui.vassal_map[v].classList.remove("hide")
+			ui.vassal_map[v].classList.toggle("action", is_action("vassal", v))
+			ui.vassal_map[v].classList.toggle("selected", v === view.vassal || set_has(view.vassal, v))
 			ui.vassal_cal[v].classList.add("hide")
-			if (ui.vassal_map[v]) {
-				ui.vassal_map[v].classList.remove("hide")
-				ui.vassal_map[v].classList.toggle("action", is_action("vassal", v))
-				ui.vassal_map[v].classList.toggle("selected", v === view.vassal || set_has(view.vassal, v))
-			}
 		} else {
-			// on calendar (+ maybe on lord mat)
-			if (data.vassals[v].service > 0) {
-				ui.vassal_cal[v].classList.remove("hide")
-				ui.vassal_cal[v].classList.toggle("action", is_action("vassal", v))
-				ui.vassal_cal[v].classList.toggle("selected", v === view.vassal || set_has(view.vassal, v))
-				calendar_layout_vassal[srv].push(ui.vassal_cal[v])
-			} else {
-				// special vassal not on calendar
-				ui.vassal_cal[v].classList.add("hide")
-			}
-			if (ui.vassal_map[v]) {
-				ui.vassal_map[v].classList.add("hide")
-			}
+			// mustered or disbanded
+			ui.vassal_map[v].classList.add("hide")
+			ui.vassal_cal[v].classList.remove("hide")
+			ui.vassal_cal[v].classList.toggle("back", loc === VASSAL_DISBANDED)
+			ui.vassal_cal[v].classList.toggle("action", is_action("vassal", v))
+			ui.vassal_cal[v].classList.toggle("selected", v === view.vassal || set_has(view.vassal, v))
+			calendar_layout_vassal[srv].push(ui.vassal_cal[v])
 		}
 	}
 }

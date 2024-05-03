@@ -16,8 +16,17 @@
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
 
+	SEARCH BY SEA (RULES)
+		Supply -- by way only, if ships can end at port
+		Levy Parley -- by way only, except from exile box (or mix and match, distance matters)
+		Campaign Parley -- adjacent only (also adjacent via sea)
+		Tax -- by way and ship mix and match, distance doesn't matter (only seas for naval blockade)
+
 	NAVAL BLOCKADE - for Tax and Tax Collectors
 	NAVAL BLOCKADE - Great Ships
+
+	limited troop pieces (burgundians/mercenaries)
+	disbanded vassals show back on calendar
 
 	Review all undo steps.
 	Review all states for needless pauses.
@@ -356,7 +365,7 @@ const LONDON_FOR_YORK = 300 as Locale // extra london marker
 const CAPTURE_OF_THE_KING = 400 as Locale // Ia. special rule (400 + lord ID that has him captured)
 
 const VASSAL_READY = 29 as Lord
-const VASSAL_CALENDAR = 30 as Lord
+const VASSAL_DISBANDED = 30 as Lord
 const VASSAL_OUT_OF_PLAY = 31 as Lord
 
 const SUMMER = 0 as Season
@@ -1616,8 +1625,8 @@ function disband_vassal(vassal: Vassal) {
 
 	if (data.vassals[vassal].service > 0) {
 		let new_turn = current_turn() + (6 - data.vassals[vassal].service)
-		set_vassal_lord_and_service(vassal, VASSAL_CALENDAR, new_turn)
-		log(`Disband V${vassal} to turn ${current_turn() + (6 - data.vassals[vassal].service)}.`)
+		set_vassal_lord_and_service(vassal, VASSAL_DISBANDED, new_turn)
+		log(`Disband V${vassal} to T${current_turn() + (6 - data.vassals[vassal].service)}.`)
 	} else {
 		// TODO: special vassals with no service marker!?
 		set_vassal_lord_and_service(vassal, VASSAL_OUT_OF_PLAY, 0)
@@ -2529,7 +2538,7 @@ function do_pillage_disband(lord: Lord) {
 	disband_influence_penalty(lord)
 	// shipwreck if unfed at sea
 	if (is_lord_at_sea(lord))
-		remove_lord(lord)
+		shipwreck_lord(lord)
 	else
 		disband_lord(lord)
 }
@@ -2753,23 +2762,39 @@ function remove_lord(lord: Lord) {
 	clear_lord(lord)
 }
 
+function death_lord(lord: Lord) {
+	if (game.scenario === SCENARIO_II) {
+		if (lord === LORD_WARWICK_L && game.battle.attacker === YORK)
+			foreign_haven_shift_lords()
+	}
+	log(`Death L${lord}.`)
+	set_lord_locale(lord, NOWHERE)
+	clear_lord(lord)
+}
+
+function shipwreck_lord(lord: Lord) {
+	log(`Shipwreck L${lord}.`)
+	set_lord_locale(lord, NOWHERE)
+	clear_lord(lord)
+}
+
 function disband_lord(lord: Lord) {
 	let turn = current_turn()
 	set_lord_calendar(lord, turn + (6 - data.lords[lord].influence))
-	log(`Disband L${lord} to ${get_lord_calendar(lord)}.`)
+	log(`Disband L${lord} T${get_lord_calendar(lord)}.`)
 	clear_lord(lord)
 }
 
 function exile_lord(lord: Lord) {
 	if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME) && !is_event_in_play(EVENT_LANCASTER_BLOCKED_FORD)) {
 		logcap(AOW_YORK_ENGLAND_IS_MY_HOME)
-		log(`Disband L${lord} to ${current_turn() + 1}`)
+		log(`Disband L${lord} T${current_turn() + 1}`)
 		set_lord_calendar(lord, current_turn() + 1)
 		clear_lord(lord)
 	} else {
 		set_lord_calendar(lord, current_turn() + 6 - data.lords[lord].influence)
 		set_lord_in_exile(lord)
-		log(`Exile L${lord} to ${get_lord_calendar(lord)}.`)
+		log(`Exile L${lord} to T${get_lord_calendar(lord)}.`)
 		clear_lord(lord)
 	}
 }
@@ -4396,20 +4421,20 @@ function goto_forage() {
 	if (!has_adjacent_enemy(here) && is_neutral_locale(here)) {
 		let die = roll_die()
 		if (die <= 4) {
-			log(`Forage 1-4 at S${here}: B${die}`)
+			log(`Forage at S${here} 1-4: B${die}`)
 			add_lord_assets(game.command, PROV, 1)
 			deplete_locale(here)
 		} else {
-			log(`Forage 1-4 at S${here}: W${die}`)
+			log(`Forage at S${here} 1-4: W${die}`)
 		}
 	} else if (has_adjacent_enemy(here) || is_enemy_locale(here)) {
 		let die = roll_die()
 		if (die <= 3) {
-			log(`Forage 1-3 at S${here}: B${die}`)
+			log(`Forage at S${here} 1-3: B${die}`)
 			add_lord_assets(game.command, PROV, 1)
 			deplete_locale(here)
 		} else {
-			log(`Forage 1-3 at S${here}: W${die}`)
+			log(`Forage at S${here} 1-3: W${die}`)
 		}
 	} else {
 		log(`Forage at S${here}.`)
@@ -8163,7 +8188,7 @@ states.death_check = {
 		if (set_has(game.battle.fled, game.who)) {
 			if (die >= 5) {
 				logi("L" + game.who + " 5-6 B" + die)
-				kill_lord(game.who)
+				death_lord(game.who)
 			} else {
 				logi("L" + game.who + " 5-6 W" + die)
 				disband_lord(game.who)
@@ -8171,7 +8196,7 @@ states.death_check = {
 		} else {
 			if (die >= 3) {
 				logi("L" + game.who + " 3-6 B" + die)
-				kill_lord(game.who)
+				death_lord(game.who)
 			} else {
 				logi("L" + game.who + " 3-6 W" + die)
 				disband_lord(game.who)
@@ -8190,14 +8215,6 @@ states.death_check = {
 		end_death_check()
 	},
 	card: action_held_event_at_death_check,
-}
-
-function kill_lord(lord: Lord) {
-	if (game.scenario === SCENARIO_II) {
-		if (lord === LORD_WARWICK_L && game.battle.attacker === YORK)
-			foreign_haven_shift_lords()
-	}
-	remove_lord(lord)
 }
 
 // === DEATH CHECK CAPABILITY: BLOODY THOU ART ===
@@ -8240,7 +8257,7 @@ states.bloody_thou_art = {
 		}
 	},
 	lord(lord) {
-		remove_lord(lord)
+		death_lord(lord)
 		set_delete(game.battle.routed, lord)
 	},
 	vassal(v) {
@@ -8477,7 +8494,7 @@ states.warden_of_the_marches = {
 		set_delete(game.battle.fled, lord)
 		set_delete(game.battle.routed, lord)
 
-		logi(`Moved lord to ${locale_name[game.where]}`)
+		log(`L${lord} to S${game.where}.`)
 
 		set_lord_forces(lord, RETINUE, 1)
 		for (let x of all_force_types)
@@ -9028,7 +9045,7 @@ states.disembark = {
 		} else {
 			// Shipwreck!
 			disband_influence_penalty(game.who)
-			remove_lord(game.who)
+			shipwreck_lord(game.who)
 			game.who = NOBODY
 			goto_disembark()
 		}
