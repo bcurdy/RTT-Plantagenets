@@ -25,6 +25,7 @@
 	NAVAL BLOCKADE - for Tax and Tax Collectors
 	NAVAL BLOCKADE - Great Ships
 
+	flee markers
 	limited troop pieces (burgundians/mercenaries)
 	disbanded vassals show back on calendar
 
@@ -561,6 +562,13 @@ function is_sea(x: Locale) { return (x >= 58 && x <= 60) }
 
 function is_adjacent(a: Locale, b: Locale) {
 	return is_stronghold(a) && is_stronghold(b) && set_has(data.locales[a].adjacent, b)
+}
+
+function find_sea_mask(here: Locale) {
+	if (is_port_1(here)) return 1
+	if (is_port_2(here)) return 2
+	if (is_port_3(here)) return 4
+	return 0
 }
 
 function find_ports(here: Locale, lord: Lord): Locale[] {
@@ -1285,12 +1293,10 @@ function add_lord_assets(lord: Lord, n: Asset, x: number) {
 }
 
 function drop_prov(lord: Lord) {
-	push_undo()
 	add_lord_assets(lord, PROV, -1)
 }
 
 function drop_cart(lord: Lord) {
-	push_undo()
 	add_lord_assets(lord, CART, -1)
 }
 
@@ -2016,7 +2022,7 @@ function parley_ic_cost(lord: Lord, spend: number) {
 	let cost = common_ic_cost(lord, spend)
 
 	// Note: use of game.where
-	cost += map_get(game.parley, game.where, 0)
+	cost += map_get(game.parley, game.where, 0) >> 3 /* scaled by 8 to account for seas crossed */
 
 	if (game.active === LANCASTER) {
 		if (is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
@@ -2074,7 +2080,7 @@ function parley_ic_success(lord: Lord) {
 
 function common_ic_rating(lord: Lord, spend: number) {
 	let here = get_lord_locale(lord)
-	let rating = data.lords[lord].influence
+	let rating = get_lord_influence(lord)
 	rating += spend
 	if (game.active === YORK) {
 		if (is_event_in_play(EVENT_YORK_YORKIST_PARADE))
@@ -2779,20 +2785,22 @@ function shipwreck_lord(lord: Lord) {
 }
 
 function disband_lord(lord: Lord) {
-	let turn = current_turn()
-	set_lord_calendar(lord, turn + (6 - data.lords[lord].influence))
-	log(`Disband L${lord} T${get_lord_calendar(lord)}.`)
+	let from = get_lord_locale(lord)
+	set_lord_calendar(lord, current_turn() + (6 - get_lord_influence(lord)))
+	if (is_exile_box(from))
+		set_lord_in_exile(lord)
+	log(`Disband L${lord} to T${get_lord_calendar(lord)}.`)
 	clear_lord(lord)
 }
 
 function exile_lord(lord: Lord) {
 	if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME) && !is_event_in_play(EVENT_LANCASTER_BLOCKED_FORD)) {
 		logcap(AOW_YORK_ENGLAND_IS_MY_HOME)
-		log(`Disband L${lord} T${current_turn() + 1}`)
+		log(`Disband L${lord} to T${current_turn() + 1}`)
 		set_lord_calendar(lord, current_turn() + 1)
 		clear_lord(lord)
 	} else {
-		set_lord_calendar(lord, current_turn() + 6 - data.lords[lord].influence)
+		set_lord_calendar(lord, current_turn() + 6 - get_lord_influence(lord))
 		set_lord_in_exile(lord)
 		log(`Exile L${lord} to T${get_lord_calendar(lord)}.`)
 		clear_lord(lord)
@@ -3916,7 +3924,18 @@ states.command = {
 	},
 }
 
-// === 4.5 ACTION: SUPPLY (SEARCH) ===
+// === 4.5 ACTION: SUPPLY ===
+
+/*
+	Supply has these possibilities:
+		- from exile box to port at same sea (or all seas if great ships)
+		- from stronghold via ways to port
+		- from stronghold via ways to non-port
+	Naval Blockade
+		We check source (exile box) and destination (port) only.
+		If using great ships to supply from Ireland to port on the north sea,
+		and Warwick is in the English Channel, we do not detect this case!
+*/
 
 function can_supply_at(source: Locale, ships: number) {
 	// if theoretically possible to supply from this source (does not check carts or ships)
@@ -3938,6 +3957,7 @@ function search_supply_by_way(result, start: Locale, carts: number, ships: numbe
 	while (queue.length > 0) {
 		let here = queue.shift()
 		let dist = search_dist[here]
+		let next_dist = dist + 8
 
 		if (can_supply_at(here, ships)) {
 			if (result)
@@ -3947,7 +3967,6 @@ function search_supply_by_way(result, start: Locale, carts: number, ships: numbe
 		}
 
 		if (is_friendly_locale(here)) {
-			let next_dist = dist + 1
 			if (next_dist <= carts) {
 				for (let next of data.locales[here].adjacent) {
 					if (!search_seen[next]) {
@@ -3972,7 +3991,7 @@ function search_supply_by_sea(result, here: Locale) {
 		for (let next of find_ports(here, game.command)) {
 			if (can_supply_at(next, 1)) {
 				if (result)
-					map_set(result, next, 0)
+					map_set(result, next, 0 | find_sea_mask(here) | find_sea_mask(next))
 				else
 					return true
 			}
@@ -3993,7 +4012,6 @@ function search_supply(result) {
 	return result
 }
 
-// === 4.5 ACTION: SUPPLY ===
 
 function command_has_harbingers() {
 	return (
@@ -4054,7 +4072,7 @@ function modify_supply(loc: Locale, supply: number) {
 	let carts = count_shared_carts(here, true)
 
 	// Must carry supply over land with one cart per provender per way
-	let distance = map_get(game.supply, loc, 0)
+	let distance = map_get(game.supply, loc, 0) >> 3
 	if (distance > 0)
 		supply = Math.min(supply, Math.floor(carts / distance))
 
@@ -4122,7 +4140,8 @@ states.supply_source = {
 
 		if (port_supply > 0 && stronghold_supply === 0) {
 			game.where = loc
-			if (can_naval_blockade(game.where)) {
+			// blockade at source or destination
+			if (can_naval_blockade(get_lord_locale(game.command)) || can_naval_blockade(game.where)) {
 				game.state = "blockade_supply"
 			} else {
 				use_port_supply(loc, port_supply)
@@ -4169,7 +4188,8 @@ states.select_supply_type = {
 		end_supply()
 	},
 	port() {
-		if (can_naval_blockade(game.where)) {
+		// blockade at source or destination
+		if (can_naval_blockade(get_lord_locale(game.command)) || can_naval_blockade(game.where)) {
 			game.state = "blockade_supply"
 		} else {
 			use_port_supply(game.where, get_port_supply_amount(game.where))
@@ -4320,7 +4340,7 @@ states.sail = {
 }
 
 states.blockade_sail = {
-	inactive: "Muster",
+	inactive: "Sail",
 	prompt() {
 		view.prompt = "Sail: Warwick may naval blockade this sail action."
 		view.actions.roll = 1
@@ -4481,10 +4501,12 @@ function search_tax(result, start: Locale, lord: Lord) {
 	let queue = [ start ]
 	while (queue.length > 0) {
 		let here = queue.shift()
+		let dist = search_dist[here]
+		let next_dist = dist + 8
 
 		if (can_tax_at(here, lord)) {
 			if (result)
-				set_add(result, here)
+				map_set(result, here, dist)
 			else
 				return true
 		}
@@ -4493,6 +4515,7 @@ function search_tax(result, start: Locale, lord: Lord) {
 			for (let next of data.locales[here].adjacent) {
 				if (!search_seen[next]) {
 					search_seen[next] = 1
+					search_dist[next] = next_dist
 					queue.push(next)
 				}
 			}
@@ -4500,12 +4523,14 @@ function search_tax(result, start: Locale, lord: Lord) {
 				for (let next of find_ports(here, lord)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
+						search_dist[next] = next_dist
 						queue.push(next)
 					}
 				}
 			}
 		}
 	}
+
 	if (result)
 		return result
 	else
@@ -4556,8 +4581,10 @@ states.tax = {
 	prompt() {
 		if (game.where === NOWHERE) {
 			view.prompt = "Tax: Choose a stronghold."
-			for (let loc of search_tax([], get_lord_locale(game.command), game.command))
-				gen_action_locale(loc)
+			map_for_each_key(
+				search_tax([], get_lord_locale(game.command), game.command),
+				gen_action_locale
+			)
 		} else {
 			view.prompt = `Tax: ${locale_name[game.where]}.`
 			prompt_influence_check(game.command)
@@ -4565,11 +4592,18 @@ states.tax = {
 	},
 	locale(loc) {
 		game.where = loc
-		// TODO: naval blockade if only reachable by sea
 		if (loc === get_lord_seat(game.command)) {
 			log("Tax at S" + game.where + ".")
 			do_tax(game.command, game.where, 1)
 			end_tax()
+		} else {
+			let dist = map_get(
+				search_tax([], get_lord_locale(game.command), game.command),
+				loc,
+				0
+			)
+			if (can_naval_blockade_route(dist))
+				game.state = "blockade_tax"
 		}
 	},
 	check(spend) {
@@ -4578,6 +4612,20 @@ states.tax = {
 		else
 			fail_tax(game.command)
 		end_tax()
+	},
+}
+
+states.blockade_tax = {
+	inactive: "Tax",
+	prompt() {
+		view.prompt = "Tax: Warwick may naval blockade this tax action."
+		view.actions.roll = 1
+	},
+	roll() {
+		if (roll_blockade())
+			game.state = "tax"
+		else
+			end_tax()
 	},
 }
 
@@ -4655,6 +4703,8 @@ function can_parley_at(loc: Locale) {
 }
 
 function search_parley_levy(result, start: Locale, lord: Lord) {
+	let ships = count_shared_ships(start, false)
+
 	search_dist.fill(0)
 	search_seen.fill(0)
 	search_seen[start] = 1
@@ -4663,7 +4713,7 @@ function search_parley_levy(result, start: Locale, lord: Lord) {
 	while (queue.length > 0) {
 		let here = queue.shift()
 		let dist = search_dist[here]
-		let next_dist = dist + 1
+		let next_dist = dist + 8
 
 		if (can_parley_at(here)) {
 			if (result)
@@ -4681,11 +4731,11 @@ function search_parley_levy(result, start: Locale, lord: Lord) {
 				}
 			}
 
-			if (here === start && is_exile_box(here) && count_shared_ships(start, false) > 0) {
+			if (ships > 0 && (is_seaport(here) || is_exile_box(here))) {
 				for (let next of find_ports(here, lord)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
-						search_dist[next] = next_dist
+						search_dist[next] = next_dist | find_sea_mask(here) | find_sea_mask(next)
 						queue.push(next)
 					}
 				}
@@ -4738,12 +4788,12 @@ function search_parley_campaign(here: Locale, lord: Lord) {
 	if (is_friendly_locale(here)) {
 		for (let next of data.locales[here].adjacent)
 			if (can_parley_at(next))
-				map_set(result, next, 1)
+				map_set(result, next, 8)
 
 		if (is_exile_box(here) && count_shared_ships(here, false) > 0)
 			for (let next of find_ports(here, lord))
 				if (can_parley_at(next))
-					map_set(result, next, 1)
+					map_set(result, next, 8 | find_sea_mask(here) | find_sea_mask(next))
 	}
 
 	return result
@@ -4857,8 +4907,8 @@ states.parley = {
 		game.where = loc
 		let here = get_lord_locale(game.command)
 		if (!is_adjacent(here, loc)) {
-			// TODO: check interaction of Naval Blockade with Great Ships when parleying across multiple seas
-			if (can_naval_blockade(here))
+			let dist = map_get(game.parley, loc, 0)
+			if (can_naval_blockade_route(dist))
 				game.state = "blockade_parley"
 		}
 	},
@@ -5526,7 +5576,7 @@ states.choose_exile = {
 		push_undo()
 		give_up_spoils(lord)
 
-		reduce_influence(data.lords[lord].influence + count_vassals_with_lord(lord))
+		reduce_influence(get_lord_influence(lord) + count_vassals_with_lord(lord))
 
 		exile_lord(lord)
 
@@ -6382,16 +6432,12 @@ function can_play_suspicion() {
 	return highest_friendly_influence() > lowest_enemy_influence()
 }
 
-function get_printed_lord_influence(lord) {
-	return data.lords[lord].influence
-}
-
 function lowest_enemy_influence() {
 	let score = 10
 	for (let lord of all_enemy_lords()) {
 		if (get_lord_locale(lord) === game.battle.where) {
-			if (get_printed_lord_influence(lord) < score) {
-				score = get_printed_lord_influence(lord)
+			if (get_lord_influence(lord) < score) {
+				score = get_lord_influence(lord)
 			}
 		}
 	}
@@ -6402,8 +6448,8 @@ function highest_friendly_influence() {
 	let score = 0
 	for (let lord of all_friendly_lords()) {
 		if (get_lord_locale(lord) === game.battle.where) {
-			if (get_printed_lord_influence(lord) > score) {
-				score = get_printed_lord_influence(lord)
+			if (get_lord_influence(lord) > score) {
+				score = get_lord_influence(lord)
 			}
 		}
 	}
@@ -6416,10 +6462,10 @@ states.suspicion_1 = {
 		view.prompt = "Suspicion: Choose a lord to check influence."
 		let lowest = lowest_enemy_influence()
 		for (let lord of game.battle.array)
-			if (is_friendly_lord(lord) && get_printed_lord_influence(lord) > lowest)
+			if (is_friendly_lord(lord) && get_lord_influence(lord) > lowest)
 				gen_action_lord(lord)
 		for (let lord of game.battle.reserves)
-			if (is_friendly_lord(lord) && get_printed_lord_influence(lord) > lowest)
+			if (is_friendly_lord(lord) && get_lord_influence(lord) > lowest)
 				gen_action_lord(lord)
 	},
 	lord(lord) {
@@ -6451,9 +6497,9 @@ states.suspicion_3 = {
 	inactive: "Suspicion",
 	prompt() {
 		view.prompt = "Suspicion: Disband one enemy lord with lower influence rating."
-		let highest = get_printed_lord_influence(game.who)
+		let highest = get_lord_influence(game.who)
 		for (let lord of game.battle.array)
-			if (is_enemy_lord(lord) && get_printed_lord_influence(lord) < highest)
+			if (is_enemy_lord(lord) && get_lord_influence(lord) < highest)
 				gen_action_lord(lord)
 	},
 	lord(lord) {
@@ -7870,7 +7916,7 @@ function goto_battle_influence() {
 		let influence = 0
 		for (let lord of game.battle.routed)
 			if (is_friendly_lord(lord))
-				influence += data.lords[lord].influence + count_vassals_with_lord(lord)
+				influence += get_lord_influence(lord) + count_vassals_with_lord(lord)
 
 		reduce_influence(influence)
 		goto_battle_spoils()
@@ -9070,7 +9116,7 @@ states.disembark_to = {
 }
 
 function disband_influence_penalty(lord: Lord) {
-	let influence = data.lords[lord].influence
+	let influence = get_lord_influence(lord)
 	for (let v of all_vassals)
 		if (is_vassal_mustered_with(v, lord))
 			influence += 1
@@ -10777,13 +10823,26 @@ function can_naval_blockade(here: Locale) {
 	return false
 }
 
+function can_naval_blockade_route(mask: number) {
+	if (game.active === LANCASTER && is_naval_blockade_in_play()) {
+		let w = get_lord_locale(LORD_WARWICK_Y)
+		if ((mask & 1) && is_port_1(w))
+			return true
+		if ((mask & 2) && is_port_2(w))
+			return true
+		if ((mask & 4) && is_port_3(w))
+			return true
+	}
+	return false
+}
+
 function roll_blockade() {
 	let roll = roll_die()
 	if (roll <= 2) {
-		log("Naval Blockade B" + roll)
+		log("Naval Blockade 1-2: W" + roll)
 		return true
 	} else {
-		log("Naval Blockade W" + roll)
+		log("Naval Blockade 1-2: B" + roll)
 		return false
 	}
 }
@@ -11685,8 +11744,10 @@ states.tax_collectors_lord = {
 	prompt() {
 		if (game.where === NOWHERE) {
 			view.prompt = `Tax Collectors: ${lord_name[game.who]}. Choose a stronghold.`
-			for (let loc of search_tax([], get_lord_locale(game.who), game.who))
-				gen_action_locale(loc)
+			map_for_each_key(
+				search_tax([], get_lord_locale(game.who), game.who),
+				gen_action_locale
+			)
 		} else {
 			view.prompt = `Tax Collectors: Tax ${locale_name[game.where]} with ${lord_name[game.who]}.`
 			prompt_influence_check(game.who)
@@ -11694,10 +11755,17 @@ states.tax_collectors_lord = {
 	},
 	locale(loc) {
 		game.where = loc
-		// TODO: naval blockade if only reachable by sea
 		if (loc === get_lord_seat(game.who)) {
 			do_tax(game.who, game.where, 2)
 			end_tax_collectors_lord()
+		} else {
+			let dist = map_get(
+				search_tax([], get_lord_locale(game.who), game.who),
+				loc,
+				0
+			)
+			if (can_naval_blockade_route(dist))
+				game.state = "blockade_tax_collectors"
 		}
 	},
 	check(spend) {
@@ -11706,6 +11774,20 @@ states.tax_collectors_lord = {
 		else
 			fail_tax(game.who)
 		end_tax_collectors_lord()
+	},
+}
+
+states.blockade_tax_collectors = {
+	inactive: "Tax Collectors",
+	prompt() {
+		view.prompt = "Tax Collectors: Warwick may naval blockade this tax action."
+		view.actions.roll = 1
+	},
+	roll() {
+		if (roll_blockade())
+			game.state = "tax_collectors_lord"
+		else
+			end_tax_collectors_lord()
 	},
 }
 
@@ -13090,6 +13172,16 @@ function map_delete(map, item) {
 			return
 		}
 	}
+}
+
+function map_for_each_key(map, f) {
+	for (let i = 0; i < map.length; i += 2)
+		f(map[i])
+}
+
+function map_for_each(map, f) {
+	for (let i = 0; i < map.length; i += 2)
+		f(map[i], map[i+1])
 }
 
 // === FUZZING ASSERTS ===
