@@ -1630,6 +1630,8 @@ function disband_vassal(vassal: Vassal) {
 }
 
 function pay_vassal(vassal: Vassal) {
+	reduce_influence(1)
+	log("Pay V" + vassal + ".")
 	set_vassal_lord_and_service(vassal, get_vassal_lord(vassal), current_turn() + 1)
 }
 
@@ -2329,8 +2331,10 @@ function end_levy_arts_of_war() {
 	set_active_enemy()
 	if (game.active === P2)
 		goto_levy_arts_of_war()
-	else
+	else {
+		log_h2_common("Pay")
 		goto_pay_troops()
+	}
 }
 
 // === 3.2 LEVY: PAY ===
@@ -2548,6 +2552,8 @@ function has_friendly_lord_who_must_pay_troops() {
 }
 
 function goto_pay_lords() {
+	log_br()
+
 	for (let lord of all_friendly_lords()) {
 		if (is_lord_on_map(lord))
 			set_lord_unfed(lord, 1)
@@ -2616,7 +2622,7 @@ states.pay_lords = {
 	},
 	pay() {
 		reduce_influence(is_exile_box(get_lord_locale(game.who)) ? 2 : 1)
-		log("Pay L" + game.who)
+		log("Pay L" + game.who + ".")
 		set_lord_moved(game.who, 0)
 		game.who = NOBODY
 	},
@@ -2625,7 +2631,7 @@ states.pay_lords = {
 		for (let lord of all_friendly_lords()) {
 			if (is_lord_on_map(lord) && is_lord_unfed(lord)) {
 				reduce_influence(is_exile_box(get_lord_locale(lord)) ? 2 : 1)
-				log("Pay L" + lord)
+				log("Pay L" + lord + ".")
 				set_lord_moved(lord, 0)
 			}
 		}
@@ -2638,22 +2644,20 @@ states.pay_lords = {
 // === 3.2.3 PAY VASSALS ===
 
 function goto_pay_vassals() {
-	let vassal_to_pay = false
+	log_br()
 
 	for (let v of all_vassals) {
 		if (
 			is_vassal_mustered_with_friendly_lord(v) &&
 			get_vassal_service(v) === current_turn()
 		) {
-			vassal_to_pay = true
+			game.state = "pay_vassals"
+			game.vassal = NOVASSAL
+			return
 		}
 	}
-	if (vassal_to_pay) {
-		game.state = "pay_vassals"
-		game.vassal = NOVASSAL
-	} else {
-		end_pay_vassals()
-	}
+
+	end_pay_vassals()
 }
 
 function end_pay_vassals() {
@@ -2708,7 +2712,6 @@ states.pay_vassals = {
 	pay() {
 		push_undo()
 		pay_vassal(game.vassal)
-		reduce_influence(1)
 		game.vassal = NOVASSAL
 	},
 	pay_all() {
@@ -2716,7 +2719,6 @@ states.pay_vassals = {
 		for (let v of all_vassals) {
 			if (is_vassal_mustered_with_friendly_lord(v) && get_vassal_service(v) === current_turn()) {
 				pay_vassal(v)
-				reduce_influence(1)
 			}
 		}
 	},
@@ -8598,7 +8600,10 @@ states.aftermath_disband = {
 }
 
 function end_battle_aftermath() {
-	set_active(game.battle.attacker)
+	if (is_york_lord(game.command))
+		set_active(YORK)
+	else
+		set_active(LANCASTER)
 
 	// Discard battle held events
 	set_delete(game.events, EVENT_LANCASTER_FOR_TRUST_NOT_HIM)
@@ -9171,6 +9176,7 @@ function do_waste() {
 	log("Waste:")
 	logi("Removing half of all lords provinder, carts, and ships.")
 	logi("Resetting Lords Coin and Troops to initial values.")
+
 	for (let x of all_lords) {
 		if (is_lord_on_map(x)) {
 			do_lord_waste(x)
@@ -11469,7 +11475,7 @@ function goto_lancaster_event_luniverselle_aragne() {
 		game.state = "aragne_1"
 		game.event_aragne = []
 	} else {
-		logi("No Effect")
+		logi("No effect.")
 		end_immediate_event()
 	}
 }
@@ -11566,8 +11572,8 @@ function goto_lancaster_event_to_wilful_disobedience() {
 		game.who = NOBODY
 		game.count = 0
 	} else {
+		logi("No effect.")
 		end_immediate_event()
-		logi(`No Effect`)
 	}
 
 }
@@ -11595,7 +11601,7 @@ states.wilful_disobedience = {
 		logi(`Favour removed at ${loc}`)
 	},
 	done() {
-		logi(`No Effect`)
+		logi("No effect.")
 		end_immediate_event()
 	}
 }
@@ -11627,7 +11633,7 @@ function goto_lancaster_event_robins_rebellion() {
 		game.who = NOBODY
 		game.count = 0
 	} else {
-		logi(`No Effect`)
+		logi("No effect.")
 		end_immediate_event()
 	}
 }
@@ -11669,7 +11675,7 @@ function goto_lancaster_event_tudor_banners() {
 		game.state = "tudor_banners"
 		game.who = LORD_HENRY_TUDOR
 	} else {
-		logi(`No Effect`)
+		logi("No effect.")
 		end_immediate_event()
 	}
 }
@@ -11813,7 +11819,7 @@ function goto_york_event_london_for_york() {
 	if (has_york_favour(LOC_LONDON) && !has_york_favour(LONDON_FOR_YORK)) {
 		game.state = "london_for_york"
 	} else {
-		logi(`No Effect`)
+		logi("No effect.")
 		end_immediate_event()
 	}
 }
@@ -11847,7 +11853,7 @@ function goto_york_event_shewolf_of_france() {
 		game.event_she_wolf = []
 		game.who = NOBODY
 	} else {
-		logi(`No Effect`)
+		logi("No effect.")
 		end_immediate_event()
 	}
 }
@@ -11886,7 +11892,7 @@ function goto_york_event_sir_richard_leigh() {
 	if (!has_york_favour(LOC_LONDON)) {
 		game.state = "richard_leigh"
 	} else {
-		logi(`No Effect`)
+		logi("No effect.")
 		end_immediate_event()
 	}
 }
@@ -11948,7 +11954,7 @@ function goto_dubious_clarence() {
 		game.state = "dubious_clarence"
 		game.who = LORD_EDWARD_IV
 	} else {
-		logi(`No Effect`)
+		logi("No effect.")
 		end_immediate_event()
 	}
 }
