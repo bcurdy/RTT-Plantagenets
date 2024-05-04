@@ -767,7 +767,7 @@ body.shift .mat .capabilities {
 .marker.moved_fought { background-image: url(images/moved_fought.png) }
 .marker.feed.x2 { background-image: url(images/feed_x2.png) }
 .marker.feed.x3 { background-image: url(images/feed_x3.png) }
-.marker.fled { background-image: url(images/fled.png) }
+.unit.retinue.fled { background-image: url(images/fled.png) }
 .marker.exile { background-image: url(images/exile.png) }
 .marker.exile_rose.lancaster { background-image: url(images/exile_lancaster.png) }
 .marker.exile_rose.york { background-image: url(images/exile_york.png) }
@@ -951,7 +951,7 @@ body.shift .mat .capabilities {
 .marker.exile_rose.york { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); }
 .marker.feed.x2 { background-color: hsl(204,100%,37%); border-color: hsl(204,100%,47%) hsl(204,100%,27%) hsl(204,100%,27%) hsl(204,100%,47%); }
 .marker.feed.x3 { background-color: hsl(200,100%,29%); border-color: hsl(200,100%,39%) hsl(200,100%,19%) hsl(200,100%,19%) hsl(200,100%,39%); }
-.marker.fled { background-color: hsl(347,47%,4%); border-color: hsl(347,47%,14%) hsl(347,47%,0%) hsl(347,47%,0%) hsl(347,47%,14%); }
+.unit.retinue.fled { background-color: hsl(347,47%,4%); border-color: hsl(347,47%,14%) hsl(347,47%,0%) hsl(347,47%,0%) hsl(347,47%,14%); }
 .marker.hits.lancaster { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); }
 .marker.hits.york { background-color: hsl(217,53%,88%); border-color: hsl(217,53%,98%) hsl(217,53%,78%) hsl(217,53%,78%) hsl(217,53%,98%); }
 .marker.rose.lancaster { background-color: hsl(358,83%,91%); border-color: hsl(358,83%,100%) hsl(358,83%,81%) hsl(358,83%,81%) hsl(358,83%,100%); }

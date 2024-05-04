@@ -16,11 +16,6 @@
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
 
-	NAVAL BLOCKADE + PARLEY - long way around button
-	NAVAL BLOCKADE + TAX - always long way around if exists
-
-	flee markers
-
 	Review all undo steps.
 	Review all states for needless pauses.
 	Review all states for adding extra pauses to prevent loss of control.

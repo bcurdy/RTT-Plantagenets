@@ -350,6 +350,8 @@ const ui = {
 	depleted: [],
 	locale_markers_rose: [],
 	lord_cylinder: [],
+	lord_retinue: [],
+	lord_routed_retinue: [],
 	mat: [],
 	mat_card: [],
 	mat_caps: [],
@@ -367,7 +369,6 @@ const ui = {
 
 	lord_moved1: [],
 	lord_moved2: [],
-	lord_fled: [],
 	lord_feed: [],
 
 	cards: [],
@@ -459,7 +460,6 @@ function build_lord_mat(lord, ix, side, name) {
 
 	ui.lord_moved1[ix] = build_div(ui.marker_area[ix], "marker square moved_fought one hide")
 	ui.lord_moved2[ix] = build_div(ui.marker_area[ix], "marker square moved_fought two hide")
-	ui.lord_fled[ix] = build_div(ui.marker_area[ix], "marker square fled hide")
 	ui.lord_feed[ix] = build_div(ui.marker_area[ix], "marker small feed x2")
 
 	ui.mat[ix] = mat
@@ -617,6 +617,14 @@ function build_map() {
 		exile.className = "marker small exile hide"
 		exile.style.zIndex=1
 		document.getElementById("pieces").appendChild(exile)
+
+		ui.lord_retinue[ix] = document.createElement("div")
+		ui.lord_retinue[ix].className = "unit retinue"
+		register_action(ui.lord_retinue[ix], "retinue", ix)
+
+		ui.lord_routed_retinue[ix] = document.createElement("div")
+		ui.lord_routed_retinue[ix].className = "unit retinue"
+		register_action(ui.lord_routed_retinue[ix], "routed_retinue", ix)
 
 		build_lord_mat(lord, ix, side, lord.id)
 
@@ -893,6 +901,26 @@ function layout_calendar() {
 	}
 }
 
+function add_retinue(parent, lord) {
+	let elt = ui.lord_retinue[lord]
+	elt.classList.toggle("action", is_action("retinue", lord))
+	parent.appendChild(elt)
+	if (view.battle && set_has(view.battle.fled, lord))
+		elt.classList.add("fled")
+	else
+		elt.classList.remove("fled")
+}
+
+function add_routed_retinue(parent, lord) {
+	let elt = ui.lord_routed_retinue[lord]
+	elt.classList.toggle("action", is_action("routed_retinue", lord))
+	parent.appendChild(elt)
+	if (view.battle && set_has(view.battle.fled, lord))
+		elt.classList.add("fled")
+	else
+		elt.classList.remove("fled")
+}
+
 function add_vassal(parent, vassal, lord, routed) {
 	let elt = ui.vassal_mat[vassal]
 	elt.classList.toggle("selected", view.vassal === vassal || set_has(view.vassal, vassal))
@@ -927,31 +955,39 @@ function add_asset(parent, type, n, lord, first, z) {
 	parent.appendChild(elt)
 }
 
-function update_forces(parent, a, b, forces, lord_ix, routed) {
+function update_lord_troops(parent, forces, lord_ix, routed) {
 	parent.replaceChildren()
 	let z = 5
-	for (let i = a; i <= b; ++i) {
-		if (i === VASSAL) {
-			for_each_vassal_with_lord(lord_ix, v => {
-				if (view.battle) {
-					if (set_has(view.battle.routed_vassals, v) === routed)
-						add_vassal(parent, v, lord_ix, routed)
-				} else {
-					if (routed === false)
-						add_vassal(parent, v, lord_ix, routed)
-				}
-			})
-		} else {
-			let n = map_get_pack4(forces, lord_ix, i, 0)
-			for (let k = 0; k < n; ++k) {
-				add_force(parent, i, lord_ix, routed, k === n-1, z++)
-			}
-			if (i > 1) {
-				z = 5
-				parent.appendChild(get_cached_element("break"))
-			}
+	for (let i = 2; i <= 6; ++i) {
+		let n = map_get_pack4(forces, lord_ix, i, 0)
+		for (let k = 0; k < n; ++k) {
+			add_force(parent, i, lord_ix, routed, k === n-1, z++)
+		}
+		if (i > 1) {
+			z = 5
+			parent.appendChild(get_cached_element("break"))
 		}
 	}
+}
+
+function update_lord_retinue(parent, forces, lord_ix, routed, fled) {
+	parent.replaceChildren()
+	let n = map_get_pack4(forces, lord_ix, 0, 0)
+	if (n > 0) {
+		if (routed)
+			add_routed_retinue(parent, lord_ix)
+		else
+			add_retinue(parent, lord_ix)
+	}
+	for_each_vassal_with_lord(lord_ix, v => {
+		if (view.battle) {
+			if (set_has(view.battle.routed_vassals, v) === routed)
+				add_vassal(parent, v, lord_ix, routed)
+		} else {
+			if (routed === false)
+				add_vassal(parent, v, lord_ix, routed)
+		}
+	})
 }
 
 function update_assets(parent, assets, lord_ix) {
@@ -1016,10 +1052,13 @@ function update_lord_mat(ix) {
 	if (view.reveal & (1 << ix)) {
 		ui.mat[ix].classList.remove("hidden")
 		update_assets(ui.assets[ix], view.pieces.assets, ix)
-		update_forces(ui.retinue[ix], 0, 1, view.pieces.forces, ix, false)
-		update_forces(ui.routed_retinue[ix], 0, 1, view.pieces.routed, ix, true)
-		update_forces(ui.troops[ix], 2, 6, view.pieces.forces, ix, false)
-		update_forces(ui.routed_troops[ix], 2, 6, view.pieces.routed, ix, true)
+
+		update_lord_retinue(ui.retinue[ix], view.pieces.forces, ix, false)
+		update_lord_retinue(ui.routed_retinue[ix], view.pieces.routed, ix, true)
+
+		update_lord_troops(ui.troops[ix], view.pieces.forces, ix, false)
+		update_lord_troops(ui.routed_troops[ix], view.pieces.routed, ix, true)
+
 		ui.lord_feed[ix].classList.toggle("hide", count_lord_all_forces(ix) <= 6)
 
 		if (get_lord_locale(LORD_HENRY_VI) === CAPTURE_OF_THE_KING + ix)
@@ -1041,7 +1080,6 @@ function update_lord_mat(ix) {
 	let m = get_lord_moved(ix)
 	ui.lord_moved1[ix].classList.toggle("hide", is_levy_phase() || (m !== 1 && m !== 2))
 	ui.lord_moved2[ix].classList.toggle("hide", is_levy_phase() || (m !== 2))
-	ui.lord_fled[ix].classList.toggle("hide", view.battle === undefined || !set_has(view.battle.fled, ix))
 	update_valour(ix, ui.valour_area[ix], view.battle)
 }
 
