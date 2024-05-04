@@ -1564,7 +1564,6 @@ function on_update() {
 	action_button("end_array", "End Array")
 	action_button("end_battle_round", "End Round")
 	action_button("end_command", "End Command")
-	action_button("end_discard", "End Discard")
 	action_button("end_feed", "End Feed")
 	action_button("end_muster", "End Muster")
 	action_button("end_pay", "End Pay")

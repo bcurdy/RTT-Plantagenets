@@ -1,24 +1,12 @@
 "use strict"
 
-// TODO: log end victory conditions at scenario start
-// TODO: check all who = NOBODY etc resets
-
-// TODO: check interaction of Naval Blockade with Great Ships when parleying across multiple seas
-
-// TODO: [Influence] button instead of [Pay] when paying influence (or [Pay influence])?
-
-// TODO: logcap hidden or not hidden checks
-// TODO: log IP changes right aligned (like in Algeria)?
-
-// TODO: routed lords panel in UI
-// TODO: show fled retinue backsides
-
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
 
 	Review all undo steps.
 	Review all states for needless pauses.
 	Review all states for adding extra pauses to prevent loss of control.
+	Review all who = NOBODY etc resets
 
 	Review all prompts.
 	Review all inactive prompts.
@@ -252,7 +240,6 @@ interface State {
 	end_array?(): void,
 	end_battle_round?(): void,
 	end_command?(): void,
-	end_discard?(): void,
 	end_feed?(): void,
 	end_muster?(): void,
 	end_spoils?(): void,
@@ -3361,6 +3348,7 @@ states.levy_lord_at_seat = {
 			}
 		}
 
+		game.who = NOBODY
 		goto_the_kings_name("Levy Lord")
 	},
 }
@@ -3398,6 +3386,7 @@ states.levy_vassal = {
 	check(spend) {
 		if (roll_influence_check("Levy V" + game.vassal, game.command, spend, vassal_ic)) {
 			muster_vassal(game.vassal, game.command)
+			game.vassal = NOVASSAL
 			goto_the_kings_name("Levy Vassal")
 		} else {
 			resume_muster_lord()
@@ -9200,19 +9189,17 @@ function goto_reset() {
 	log_h2_common("Reset")
 	set_active(P2)
 	game.state = "reset"
+	if (current_hand().length === 0)
+		end_reset()
 }
 
 states.reset = {
 	inactive: "Reset",
 	prompt() {
 		view.prompt = "Reset: You may discard any held Arts of War cards desired."
-		if (game.active === YORK)
-			for (let c of game.hand_y)
-				gen_action_card(c)
-		if (game.active === LANCASTER)
-			for (let c of game.hand_l)
-				gen_action_card(c)
-		view.actions.end_discard = 1
+		for (let c of current_hand())
+			gen_action_card(c)
+		view.actions.done = 1
 	},
 	card(c) {
 		push_undo()
@@ -9220,7 +9207,7 @@ states.reset = {
 		set_delete(game.hand_y, c)
 		set_delete(game.hand_l, c)
 	},
-	end_discard() {
+	done() {
 		end_reset()
 	},
 }
@@ -9229,6 +9216,8 @@ function end_reset() {
 	set_active_enemy()
 	if (game.active === P2)
 		goto_advance_campaign()
+	else if (current_hand().length === 0)
+		end_reset()
 }
 
 // === 5.1 CAMPAIGN VICTORY ===

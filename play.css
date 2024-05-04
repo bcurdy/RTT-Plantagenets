@@ -193,6 +193,10 @@ body.Lancaster #event_header, body.Lancaster #hand_header, body.Lancaster #plan_
 
 /* PLAN */
 
+#plan_panel {
+	max-width: fit-content;
+}
+
 #plan_actions {
 	background-color: #444;
 	min-height: 130px;
