@@ -678,7 +678,7 @@ function build_map() {
 			e = ui.vassal_map[ix] = document.createElement("div")
 			let xc = Math.round(x + w / 2)
 			let yc = Math.round(y + h / 2)
-			e.className = "hide unit vassal vassal_" + vassal.name.toLowerCase()
+			e.className = "hide unit vassal vassal_" + vassal.name.toLowerCase().replaceAll(" ", "_")
 			e.style.position = "absolute"
 			e.my_map_x = xc - 27 + "px"
 			e.my_map_y = yc - 27 + "px"
@@ -688,7 +688,7 @@ function build_map() {
 		}
 
 		e = ui.vassal_mat[ix] = document.createElement("div")
-		e.className = "unit vassal vassal_" + vassal.name.toLowerCase()
+		e.className = "unit vassal vassal_" + vassal.name.toLowerCase().replaceAll(" ", "_")
 		register_action(e, "vassal", ix)
 		register_tooltip(e, data.vassals[ix].name)
 	})
