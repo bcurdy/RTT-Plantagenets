@@ -1449,11 +1449,9 @@ function find_lord_with_capability_card(c: Card) {
 	return NOBODY
 }
 
-function get_force_name(lord: Lord, n: Force, x: Vassal = NOVASSAL) {
-	if (n === RETINUE)
-		return `${lord_name[lord]}'s Retinue`
+function get_force_name(_lord: Lord, n: Force, x: Vassal = NOVASSAL) {
 	if (n === VASSAL)
-		return `Vassal ${vassal_name[x]}`
+		return "V" + x
 	return FORCE_TYPE_NAME[n]
 }
 
@@ -1503,6 +1501,14 @@ function get_modified_valour(lord: Lord, report: boolean) {
 	}
 
 	return valour
+}
+
+function can_pick_up_lords(lord: Lord) {
+	if (is_marshal(lord) || is_lieutenant(lord))
+		return true
+	if (lord_has_capability(lord, AOW_YORK_CAPTAIN) && !has_other_marshal_or_lieutenant(lord, get_lord_locale(lord)))
+		return true
+	return false
 }
 
 // === STATE: LORD (SHARED) ===
@@ -1901,18 +1907,11 @@ function is_lord_in_or_adjacent_to_wales(lord: Lord) {
 	return false
 }
 
-// Captain capability (lieutenant/marshall only if no other)
-function other_marshal_or_lieutenant(loc: Locale) {
-	let n = 0
-	for (let lord of all_friendly_lords())
-		if (lord !== game.command) {
-			if (get_lord_locale(lord) === loc && (is_marshal(lord) || is_lieutenant(lord)))
-				n += 1
-		}
-	if (n === 0)
-		return false
-	else
-		return true
+function has_other_marshal_or_lieutenant(lord: Lord, here: Locale) {
+	for (let other of all_friendly_lords())
+		if (other !== lord && get_lord_locale(other) === here && (is_marshal(other) || is_lieutenant(other)))
+			return true
+	return false
 }
 
 function has_adjacent_enemy(loc: Locale) {
@@ -2836,7 +2835,7 @@ function death_lord(lord: Lord) {
 		if (lord === LORD_WARWICK_L && game.battle.attacker === YORK)
 			foreign_haven_shift_lords()
 	}
-	log(`Death L${lord}.`)
+	log(`Removed L${lord}.`)
 	set_lord_locale(lord, NOWHERE)
 	clear_lord(lord)
 }
@@ -3901,6 +3900,7 @@ function end_command() {
 states.command = {
 	inactive: "Command",
 	prompt() {
+		let here = get_lord_locale(game.command)
 		if (game.actions === 0)
 			view.prompt = `Command: ${lord_name[game.command]} has no more actions.`
 		else if (game.actions === 1)
@@ -3910,8 +3910,6 @@ states.command = {
 
 		view.group = game.group
 
-		let here = get_lord_locale(game.command)
-
 		prompt_held_event_at_campaign()
 
 		if (!is_lord_on_map(game.command)) {
@@ -3920,25 +3918,11 @@ states.command = {
 			return
 		}
 
-		// 4.3.2 Marshals MAY take other lords
-		// TODO: PICK_UP_LORDS
-		if (
-			is_marshal(game.command) ||
-			(lord_has_capability(game.command, AOW_YORK_CAPTAIN) && !other_marshal_or_lieutenant(here))
-		) {
-			for (let lord of all_friendly_lords())
-				if (lord !== game.command)
-					if (get_lord_locale(lord) === here)
-						gen_action_lord(lord)
-		}
-
-		// Lieutenant may not take marshall
-		if (is_lieutenant(game.command)) {
-			for (let lord of all_friendly_lords())
-				if (lord !== game.command)
-					if (get_lord_locale(lord) === here && !is_marshal(lord)) {
-						gen_action_lord(lord)
-					}
+		if (can_pick_up_lords(game.command)) {
+			for_each_friendly_lord_in_locale(here, other => {
+				if (other !== game.command && !is_marshal(other))
+					gen_action_lord(other)
+			})
 		}
 
 		if (game.actions > 0) {
@@ -3946,7 +3930,8 @@ states.command = {
 			view.actions.supply = 0
 			view.actions.forage = 0
 			view.actions.tax = 0
-			view.actions.sail = 0
+			if (is_seaport(here) || is_exile_box(here))
+				view.actions.sail = 0
 			view.actions.parley = 0
 			view.actions.pass = 1
 		} else {
@@ -4921,7 +4906,7 @@ function goto_parley_campaign() {
 
 	// Campaign phase, and current location is no cost (except some events), and always successful.
 	if (can_parley_at(here)) {
-		log(`Parley at ${locale_name[here]}`)
+		log(`Parley at S${here}.`)
 		shift_favour_toward(here)
 		if (is_lancaster_lord(game.command) && is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
 			reduce_lancaster_influence(1)
@@ -5339,6 +5324,8 @@ states.intercept = {
 	inactive: "Intercept",
 	prompt() {
 		let to = game.march.to
+
+		view.group = game.intercept
 		view.where = to
 
 		if (game.who === NOBODY) {
@@ -5357,13 +5344,10 @@ states.intercept = {
 
 			gen_action_lord(game.who)
 
-			// TODO: PICK_UP_LORDS
-			// 4.3.2 Marshals MAY take other lords
-			// or CAPTAIN?
-			if (is_marshal(game.who) || is_lieutenant(game.who)) {
-				for_each_friendly_lord_in_locale(get_lord_locale(game.who), lord => {
-					if (!is_marshal(lord) && is_move_allowed(lord, to))
-						gen_action_lord(lord)
+			if (can_pick_up_lords(game.who)) {
+				for_each_friendly_lord_in_locale(get_lord_locale(game.who), other => {
+					if (other !== game.who && !is_marshal(other) && is_move_allowed(other, to))
+						gen_action_lord(other)
 				})
 			}
 
@@ -5401,6 +5385,7 @@ states.intercept = {
 	intercept() {
 		let success = false
 		if (is_flank_attack_in_play()) {
+			log("Intercept with " + format_intercept() + ".")
 			end_passive_held_event()
 			success = true
 		}
@@ -5409,11 +5394,13 @@ states.intercept = {
 			let roll = roll_die()
 			success = roll <= valour
 			if (success)
-				log(`Intercept with ${format_intercept()} ${range(valour)}: B${roll}`)
+				log(`Intercept ${range(valour)}: B${roll}`)
 			else
-				log(`Intercept with ${format_intercept()} ${range(valour)}: W${roll}`)
+				log(`Intercept ${range(valour)}: W${roll}`)
+			log(">with " + format_intercept())
 			get_modified_valour(game.who, true)
 		}
+
 		if (success) {
 			goto_intercept_march()
 		} else {
@@ -6131,7 +6118,7 @@ function remove_battle_capability_troops(lord: Lord) {
 function goto_battle() {
 	let here = get_lord_locale(game.command)
 
-	log_h3(`Battle at S${here}`)
+	log_h2_common(`Battle at S${here}`)
 
 	game.battle = {
 		where: here,
@@ -6875,7 +6862,7 @@ function end_regroup() {
 */
 
 function goto_battle_rounds() {
-	log_h4(`Battle Round ${game.battle.round}`)
+	log_h3(`Round ${game.battle.round}`)
 
 	game.battle.step = 0
 
@@ -6969,9 +6956,9 @@ function use_culverins(lord: Lord) {
 		if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE) && game.active === YORK) {
 			logevent(EVENT_YORK_PATRICK_DE_LA_MOTE)
 			die2 = roll_die()
-			logi(`${die1} + ${die2} culverins`)
+			logi(`${die1} + ${die2} Cannons`)
 		} else {
-			logi(`${die1} culverins`)
+			logi(`${die1} Cannons`)
 		}
 		set_delete(game.battle.culverins, lord)
 		return (die1 + die2) << 1
@@ -7014,7 +7001,7 @@ states.flee_battle = {
 	},
 	lord(lord) {
 		push_undo()
-		log(`${lord_name[lord]} Fled the battle of S${game.battle.where}.`)
+		log(`Flee L${lord}.`)
 		set_add(game.battle.routed, lord)
 		set_add(game.battle.fled, lord)
 		remove_lord_from_battle(lord)
@@ -7399,7 +7386,7 @@ function goto_total_hits() {
 		let lord = game.battle.array[pos]
 		if (lord !== NOBODY) {
 			let hits = count_lord_hits(lord)
-			log_hits(hits / 2, lord_name[lord])
+			log_hits(hits / 2, "L" + lord)
 			hits += use_culverins(lord)
 			if (pos === A1 || pos === A2 || pos === A3)
 				ahits += hits
@@ -7420,9 +7407,6 @@ function goto_total_hits() {
 
 	game.battle.ahits = ahits
 	game.battle.dhits = dhits
-
-	log_hits(ahits, "ATK TOTAL")
-	log_hits(dhits, "DEF TOTAL")
 
 	game.battle.final_charge = 0
 
@@ -7461,7 +7445,7 @@ states.final_charge = {
 	},
 	final_charge() {
 		logcap(AOW_YORK_FINAL_CHARGE)
-		log_hits("+3", lord_name[find_lord_with_capability_card(AOW_YORK_FINAL_CHARGE)])
+		log_hits("+3", "L" + find_lord_with_capability_card(AOW_YORK_FINAL_CHARGE))
 		log_hits("+1", "Final Charge")
 		game.battle.final_charge = 1
 		if (game.battle.attacker === YORK) {
@@ -7865,7 +7849,7 @@ states.swift_maneuver_2 = {
 // === 4.4.2 BATTLE ROUNDS: LORD ROUT ===
 
 function rout_lord(lord: Lord) {
-	log(`L${lord} Routed.`)
+	log(">L" + lord)
 
 	let pos = get_lord_array_position(lord)
 
@@ -8003,13 +7987,15 @@ function set_active_victor() {
 }
 
 function end_battle() {
-	if (game.battle.loser === BOTH)
-		log_h4(`Both Sides Lost`)
-	else
-		log_h4(`${game.battle.loser} Lost`)
-
 	//game.battle.array = null
 	game.battle.caltrops = NOBODY
+
+	log_h3("Ending the Battle")
+	if (game.battle.loser === BOTH)
+		log("Both sides lose.")
+	else
+		log(`${game.battle.loser} lose.`)
+
 	goto_battle_influence()
 }
 
@@ -8023,111 +8009,22 @@ function has_defeated_lords() {
 // === 4.4.3 ENDING THE BATTLE: INFLUENCE ===
 
 function goto_battle_influence() {
+	log_h4(`Influence`)
+
 	if (game.battle.loser !== BOTH) {
 		set_active_loser()
 
-		let influence = 0
-		for (let lord of game.battle.routed)
-			if (is_friendly_lord(lord))
-				influence += get_lord_influence(lord) + count_vassals_with_lord(lord)
+		for (let lord of game.battle.routed) {
+			if (is_friendly_lord(lord)) {
+				reduce_influence(get_lord_influence(lord) + count_vassals_with_lord(lord))
+				log(">L" + lord)
+			}
+		}
 
-		reduce_influence(influence)
 		goto_battle_spoils()
 	} else {
 		end_battle_losses()
 	}
-}
-
-// === 4.4.3 ENDING THE BATTLE: LOSSES ===
-
-function has_battle_losses() {
-	for (let lord of all_friendly_lords())
-		if (lord_has_routed_troops(lord))
-			return true
-	return false
-}
-
-function goto_battle_losses_victor() {
-	set_active_victor()
-	game.who = NOBODY
-	if (has_battle_losses())
-		log_h4(`${game.active} Losses`)
-	resume_battle_losses()
-}
-
-function resume_battle_losses() {
-	game.state = "battle_losses"
-	if (!has_battle_losses())
-		end_battle_losses()
-}
-
-function roll_losses(lord: Lord, type: Force) {
-	let protection = get_inherent_protection(type)
-
-	let die = roll_die()
-	if (die <= protection) {
-		logi(`${get_force_name(lord, type)} ${range(protection)}: W${die}`)
-		add_lord_routed_forces(lord, type, -1)
-		add_lord_forces(lord, type, 1)
-	} else {
-		logi(`${get_force_name(lord, type)} ${range(protection)}: B${die}`)
-		add_lord_routed_forces(lord, type, -1)
-	}
-}
-
-function action_losses(lord: Lord, type: Force) {
-	if (game.who !== lord) {
-		log(`L${lord}`)
-		game.who = lord
-	}
-	roll_losses(lord, type)
-	resume_battle_losses()
-}
-
-states.battle_losses = {
-	inactive: "Losses",
-	prompt() {
-		let done = true
-		view.prompt = "Losses: Determine the fate of your routed units."
-		for (let lord of all_friendly_lords()) {
-			if (lord_has_routed_troops(lord) && !lord_has_routed_retinue(lord)) {
-				if (get_lord_routed_forces(lord, MERCENARIES) > 0)
-					gen_action_routed_mercenaries(lord)
-				if (get_lord_routed_forces(lord, LONGBOWMEN) > 0)
-					gen_action_routed_longbowmen(lord)
-				if (get_lord_routed_forces(lord, BURGUNDIANS) > 0)
-					gen_action_routed_burgundians(lord)
-				if (get_lord_routed_forces(lord, MEN_AT_ARMS) > 0)
-					gen_action_routed_men_at_arms(lord)
-				if (get_lord_routed_forces(lord, MILITIA) > 0)
-					gen_action_routed_militia(lord)
-				done = false
-			}
-		}
-		if (done) {
-			view.prompt = "Losses: All done."
-			view.actions.done = 1
-		}
-	},
-	routed_mercenaries(lord: Lord) {
-		action_losses(lord, MERCENARIES)
-	},
-	routed_longbowmen(lord: Lord) {
-		action_losses(lord, LONGBOWMEN)
-	},
-	routed_burgundians(lord: Lord) {
-		action_losses(lord, BURGUNDIANS)
-	},
-	routed_men_at_arms(lord: Lord) {
-		action_losses(lord, MEN_AT_ARMS)
-	},
-	routed_militia(lord: Lord) {
-		action_losses(lord, MILITIA)
-	},
-	done() {
-		game.who = NOBODY
-		end_battle_losses()
-	},
 }
 
 // === 4.4.3 ENDING THE BATTLE: SPOILS ===
@@ -8205,6 +8102,98 @@ states.battle_spoils = {
 
 	end_spoils() {
 		end_battle_spoils()
+	},
+}
+
+// === 4.4.3 ENDING THE BATTLE: LOSSES ===
+
+function has_battle_losses() {
+	for (let lord of all_friendly_lords())
+		if (lord_has_routed_troops(lord))
+			return true
+	return false
+}
+
+function goto_battle_losses_victor() {
+	set_active_victor()
+	game.who = NOBODY
+	if (has_battle_losses())
+		log_h4(`Losses`)
+	resume_battle_losses()
+}
+
+function resume_battle_losses() {
+	game.state = "battle_losses"
+	if (!has_battle_losses())
+		end_battle_losses()
+}
+
+function roll_losses(lord: Lord, type: Force) {
+	let protection = get_inherent_protection(type)
+
+	let die = roll_die()
+	if (die <= protection) {
+		logi(`${get_force_name(lord, type)} ${range(protection)}: W${die}`)
+		add_lord_routed_forces(lord, type, -1)
+		add_lord_forces(lord, type, 1)
+	} else {
+		logi(`${get_force_name(lord, type)} ${range(protection)}: B${die}`)
+		add_lord_routed_forces(lord, type, -1)
+	}
+}
+
+function action_losses(lord: Lord, type: Force) {
+	if (game.who !== lord) {
+		log(`L${lord}`)
+		game.who = lord
+	}
+	roll_losses(lord, type)
+	resume_battle_losses()
+}
+
+states.battle_losses = {
+	inactive: "Losses",
+	prompt() {
+		let done = true
+		view.prompt = "Losses: Determine the fate of your routed units."
+		for (let lord of all_friendly_lords()) {
+			if (lord_has_routed_troops(lord) && !lord_has_routed_retinue(lord)) {
+				if (get_lord_routed_forces(lord, MERCENARIES) > 0)
+					gen_action_routed_mercenaries(lord)
+				if (get_lord_routed_forces(lord, LONGBOWMEN) > 0)
+					gen_action_routed_longbowmen(lord)
+				if (get_lord_routed_forces(lord, BURGUNDIANS) > 0)
+					gen_action_routed_burgundians(lord)
+				if (get_lord_routed_forces(lord, MEN_AT_ARMS) > 0)
+					gen_action_routed_men_at_arms(lord)
+				if (get_lord_routed_forces(lord, MILITIA) > 0)
+					gen_action_routed_militia(lord)
+				done = false
+			}
+		}
+		if (done) {
+			view.prompt = "Losses: All done."
+			view.actions.done = 1
+		}
+	},
+	routed_mercenaries(lord: Lord) {
+		action_losses(lord, MERCENARIES)
+	},
+	routed_longbowmen(lord: Lord) {
+		action_losses(lord, LONGBOWMEN)
+	},
+	routed_burgundians(lord: Lord) {
+		action_losses(lord, BURGUNDIANS)
+	},
+	routed_men_at_arms(lord: Lord) {
+		action_losses(lord, MEN_AT_ARMS)
+	},
+	routed_militia(lord: Lord) {
+		action_losses(lord, MILITIA)
+	},
+	done() {
+		game.who = NOBODY
+		end_battle_losses()
 	},
 }
 
@@ -8346,18 +8335,18 @@ states.death_check = {
 		let die = roll_die()
 		if (set_has(game.battle.fled, game.who)) {
 			if (die >= 5) {
-				logi("L" + game.who + " 5-6 B" + die)
+				logi("L" + game.who + " 5-6: B" + die)
 				death_lord(game.who)
 			} else {
-				logi("L" + game.who + " 5-6 W" + die)
+				logi("L" + game.who + " 5-6: W" + die)
 				disband_lord(game.who)
 			}
 		} else {
 			if (die >= 3) {
-				logi("L" + game.who + " 3-6 B" + die)
+				logi("L" + game.who + " 3-6: B" + die)
 				death_lord(game.who)
 			} else {
-				logi("L" + game.who + " 3-6 W" + die)
+				logi("L" + game.who + " 3-6: W" + die)
 				disband_lord(game.who)
 			}
 		}
@@ -11022,8 +11011,7 @@ states.agitators = {
 	},
 	locale(loc) {
 		push_undo()
-		logcap(AOW_YORK_AGITATORS)
-		logi("S" + loc)
+		log("C" + AOW_YORK_AGITATORS + " at S" + loc + ".")
 		if (has_depleted_marker(loc))
 			add_exhausted_marker(loc)
 		else
@@ -11251,18 +11239,12 @@ states.scots = {
 // === EVENT: LANCASTER HENRY PRESSURES PARLIAMENT ===
 
 function goto_lancaster_event_henry_pressures_parliament() {
-	let count = 0
-	for (let vassal of all_vassals) {
-		if (is_vassal_mustered_with_york_lord(vassal)) {
-			count++
+	for (let v of all_vassals) {
+		if (is_vassal_mustered_with_york_lord(v)) {
+			reduce_york_influence(1)
+			log(">V" + v)
 		}
 	}
-
-	if (count > 0) {
-		logi(`Removed ${count} York influence.`)
-		reduce_york_influence(count)
-	}
-
 	end_immediate_event()
 }
 
@@ -11456,13 +11438,13 @@ states.warwicks_propaganda_yorkist_choice = {
 		push_undo()
 		remove_york_favour(game.where)
 		remove_propaganda_target(game.where)
-		logi(`Removed favour in ${game.where}`)
+		logi(`Removed York Favour at S${game.where}.`)
 		game.where = NOWHERE
 	},
 	influence() {
 		push_undo()
 		reduce_influence(2)
-		logi(`Paid 2 to keep ${game.where}`)
+		logi(`Paid 2 to keep S${game.where}`)
 		remove_propaganda_target(game.where)
 		game.where = NOWHERE
 	},
@@ -11606,7 +11588,7 @@ states.welsh_rebellion_remove_favour = {
 	locale(loc) {
 		push_undo()
 		remove_york_favour(loc)
-		logi(`Removed favour at ${locale_name[loc]}`)
+		log(`Removed York Favour at S${loc}.`)
 		game.count++
 	},
 	done() {
@@ -11618,8 +11600,8 @@ states.welsh_rebellion_remove_favour = {
 
 function goto_lancaster_event_henry_released() {
 	if (has_lancaster_favour(LOC_LONDON)) {
-		logi(`Henry Released : 5 Influence for Lancaster`)
 		increase_lancaster_influence(5)
+		log("London Favours Lancastrians.")
 	}
 	end_immediate_event()
 }
@@ -11659,7 +11641,7 @@ states.aragne_1 = {
 	vassal(v) {
 		push_undo()
 		set_add(game.event_aragne, v)
-		logi(`Vassal ${vassal_name[v]} selected`)
+		log(">V" + v)
 	},
 	done() {
 		push_undo()
@@ -11760,7 +11742,7 @@ states.wilful_disobedience = {
 		push_undo()
 		remove_york_favour(loc)
 		game.count++
-		logi(`Favour removed at ${loc}`)
+		logi(`Yorkist Favour removed at S${loc}`)
 	},
 	done() {
 		logi("No effect.")
@@ -11773,9 +11755,9 @@ states.wilful_disobedience = {
 function goto_lancaster_event_french_war_loans() {
 	for (let lord of all_lancaster_lords) {
 		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
+			logi(">L" + lord)
 			add_lord_assets(lord, PROV, 1)
 			add_lord_assets(lord, COIN, 1)
-			logi(`1 Coin and 1 Provender added to ${lord_name[lord]}`)
 		}
 	}
 	end_immediate_event()
@@ -11812,7 +11794,7 @@ states.robins_rebellion = {
 	locale(loc) {
 		push_undo()
 		shift_favour_toward(loc)
-		logi(`Placed/Removed favour at ${locale_name[loc]}`)
+		log(`Placed/Removed Favour at S${loc}.`)
 		game.count++
 	},
 	done() {
@@ -11861,7 +11843,7 @@ states.tudor_banners = {
 		push_undo()
 		remove_york_favour(loc)
 		add_lancaster_favour(loc)
-		logi(`Placed Lancastrian favour at ${locale_name[loc]}`)
+		log(`Placed Lancastrian Favour at S${loc}`)
 	},
 	done() {
 		game.who = NOBODY
@@ -12036,7 +12018,7 @@ states.she_wolf = {
 		if (t < 16)
 			set_vassal_lord_and_service(v, get_vassal_lord(v), t)
 		set_add(game.event_she_wolf, v)
-		log(`${vassal_name[v]} to T${t}.`)
+		log(`>V${v} to T${t}`)
 	},
 	done() {
 		delete game.event_she_wolf
@@ -12531,7 +12513,7 @@ states.sun_in_splendour = {
 		muster_lord(LORD_EDWARD_IV, loc)
 		set_lord_moved(LORD_EDWARD_IV, 1)
 
-		log(`L${LORD_EDWARD_IV} at ${locale_name[loc]}`)
+		log(`L${LORD_EDWARD_IV} at ${locale_name[loc]}.`)
 
 		end_held_event()
 		game.state = "muster"
@@ -12731,29 +12713,13 @@ states.surprise_landing = {
 	inactive: "Surprise Landing",
 	prompt() {
 		view.prompt = "Surprise Landing: Free march."
-
 		view.group = game.group
-		let here = get_lord_locale(game.command)
 
-		// 4.3.2 Marshals MAY take other lords
-		// TODO: PICK_UP_LORDS
-		if (
-			is_marshal(game.command) ||
-			(lord_has_capability(game.command, AOW_YORK_CAPTAIN) && !other_marshal_or_lieutenant(here))
-		) {
-			for (let lord of all_friendly_lords())
-				if (lord !== game.command)
-					if (get_lord_locale(lord) === here)
-						gen_action_lord(lord)
-		}
-
-		// Lieutenant may not take marshall
-		if (is_lieutenant(game.command)) {
-			for (let lord of all_friendly_lords())
-				if (lord !== game.command)
-					if (get_lord_locale(lord) === here && !is_marshal(lord)) {
-						gen_action_lord(lord)
-					}
+		if (can_pick_up_lords(game.command)) {
+			for_each_friendly_lord_in_locale(get_lord_locale(game.command), other => {
+				if (other !== game.command && !is_marshal(other))
+					gen_action_lord(other)
+			})
 		}
 
 		prompt_march()

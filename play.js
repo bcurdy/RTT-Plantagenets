@@ -1423,7 +1423,7 @@ function on_update() {
 
 	if (view.battle) {
 		let { x, y, w, h } = data.locales[view.battle.where].box
-		ui.battle.className = "marker circle battle"
+		ui.battle.className = "marker square battle"
 		ui.battle.style.left = ((x+w/2)|0) - 27 + "px"
 		ui.battle.style.top = y + h - 27 + "px"
 	} else {
@@ -1542,8 +1542,8 @@ function on_update() {
 	action_button("capability", "Capability")
 
 	// CAMPAIGN
-	action_button("supply", "Supply")
 	action_button("sail", "Sail")
+	action_button("supply", "Supply")
 	action_button("forage", "Forage")
 	action_button("tax", "Tax")
 
