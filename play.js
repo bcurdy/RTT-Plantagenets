@@ -424,9 +424,11 @@ const ui = {
 
 let locale_layout_york = []
 let locale_layout_lanc = []
-let calendar_layout_vassal = []
 let calendar_layout_york = []
 let calendar_layout_lanc = []
+let calendar_vassal_disband = []
+let calendar_vassal_york = []
+let calendar_vassal_lanc = []
 
 function clean_name(name) {
 	return name.toLowerCase().replaceAll("&", "and").replaceAll(" ", "_")
@@ -504,7 +506,9 @@ function build_map() {
 	for (let i = 0; i <= 16; ++i) {
 		calendar_layout_york[i] = []
 		calendar_layout_lanc[i] = []
-		calendar_layout_vassal[i] = []
+		calendar_vassal_disband[i] = []
+		calendar_vassal_york[i] = []
+		calendar_vassal_lanc[i] = []
 	}
 
 	for (let i = 0; i < data.locales.length; ++i) {
@@ -847,19 +851,40 @@ function layout_calendar() {
 			}
 		}
 
-		list = calendar_layout_vassal[loc]
+		list = calendar_vassal_lanc[loc]
+		for (let i = 0; i < list.length; ++i) {
+			let e = list[i]
+			let x = cx, y = cy, z = 25 - i
+			let len_lanc = calendar_layout_lanc[loc].length
+			y += len_lanc * 30 + 10 + i * 32
+			x += 0
+			e.style.top = y + "px"
+			e.style.left = x + "px"
+			e.style.zIndex = z
+		}
+
+		list = calendar_vassal_york[loc]
+		for (let i = 0; i < list.length; ++i) {
+			let e = list[i]
+			let x = cx, y = cy, z = 30 - i
+			let len_york = calendar_layout_york[loc].length
+			y += len_york * 30 + 10 + i * 32
+			x += 51
+			e.style.top = y + "px"
+			e.style.left = x + "px"
+			e.style.zIndex = z
+		}
+
+		list = calendar_vassal_disband[loc]
 		for (let i = 0; i < list.length; ++i) {
 			let e = list[i]
 			let x = cx, y = cy, z = 20 - i
-			let len_lanc = calendar_layout_lanc[loc].length
-			let len_york = calendar_layout_york[loc].length
-			if (len_lanc <= len_york) {
-				y += len_lanc * 30 + 48-30 + 3 + i * 32
-				x += 7
-			} else {
-				y += len_york * 30 + 48-30 + 3 + i * 32
-				x += 42
-			}
+			let len_lanc = calendar_layout_lanc[loc].length * 30 + 10
+			let len_york = calendar_layout_york[loc].length * 30 + 10
+			let len_lanc2 = calendar_vassal_lanc[loc].length * 32
+			let len_york2 = calendar_vassal_york[loc].length * 32
+			y += Math.max(len_lanc + len_lanc2, len_york + len_york2) + i * 32
+			x += 25
 			e.style.top = y + "px"
 			e.style.left = x + "px"
 			e.style.zIndex = z
@@ -1258,20 +1283,24 @@ function update_vassals() {
 		if (loc === VASSAL_OUT_OF_PLAY) {
 			// not present
 			ui.vassal_map[v].classList.add("hide")
-		} else if (loc === VASSAL_READY) {
-			// ready on map
-			ui.vassal_map[v].classList.remove("hide")
-			ui.vassal_map[v].classList.toggle("action", is_action("vassal", v))
-			ui.vassal_map[v].classList.toggle("selected", v === view.vassal || set_has(view.vassal, v))
-			ui.vassal_map[v].style.top = ui.vassal_map[v].my_map_y
-			ui.vassal_map[v].style.left = ui.vassal_map[v].my_map_x
 		} else {
-			// mustered or disbanded
 			ui.vassal_map[v].classList.remove("hide")
 			ui.vassal_map[v].classList.toggle("back", loc === VASSAL_DISBANDED)
 			ui.vassal_map[v].classList.toggle("action", is_action("vassal", v))
 			ui.vassal_map[v].classList.toggle("selected", v === view.vassal || set_has(view.vassal, v))
-			calendar_layout_vassal[srv].push(ui.vassal_map[v])
+			if (loc === VASSAL_READY) {
+				// ready on map
+				ui.vassal_map[v].style.top = ui.vassal_map[v].my_map_y
+				ui.vassal_map[v].style.left = ui.vassal_map[v].my_map_x
+			} else {
+				// mustered or disbanded
+				if (is_lancaster_lord(loc))
+					calendar_vassal_lanc[srv].push(ui.vassal_map[v])
+				else if (is_york_lord(loc))
+					calendar_vassal_york[srv].push(ui.vassal_map[v])
+				else
+					calendar_vassal_disband[srv].push(ui.vassal_map[v])
+			}
 		}
 	}
 }
@@ -1326,7 +1355,9 @@ function on_update() {
 	for (let i = 0; i <= 16; ++i) {
 		calendar_layout_york[i].length = 0
 		calendar_layout_lanc[i].length = 0
-		calendar_layout_vassal[i].length = 0
+		calendar_vassal_disband[i].length = 0
+		calendar_vassal_york[i].length = 0
+		calendar_vassal_lanc[i].length = 0
 	}
 
 	for (let i = 0; i < data.locales.length; ++i) {
