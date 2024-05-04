@@ -4845,7 +4845,7 @@ function can_action_parley_campaign() {
 				return true
 		}
 
-		if (is_exile_box(here) && count_shared_ships(here, false) > 0)
+		if ((is_seaport(here) || is_exile_box(here)) && count_shared_ships(here, false) > 0)
 			for (let next of find_ports(here, game.command))
 				if (can_parley_at(next))
 					return true
@@ -4865,7 +4865,7 @@ function search_parley_campaign(here: Locale, lord: Lord) {
 			if (can_parley_at(next))
 				map_set(result, next, 8)
 
-		if (is_exile_box(here) && count_shared_ships(here, false) > 0)
+		if ((is_seaport(here) || is_exile_box(here)) && count_shared_ships(here, false) > 0)
 			for (let next of find_ports(here, lord))
 				if (!map_has(result, next) && can_parley_at(next))
 					map_set(result, next, 8 | find_sea_mask(here) | find_sea_mask(next))
@@ -4952,10 +4952,12 @@ function end_parley(success: boolean) {
 	}
 
 	if (is_campaign_phase()) {
-		if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT))
+		if (game.active === YORK && is_event_in_play(EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT)) {
+			logevent(EVENT_LANCASTER_NEW_ACT_OF_PARLIAMENT)
 			spend_all_actions()
-		else
+		} else {
 			spend_action(1)
+		}
 		resume_command()
 	} else {
 		if (success)
