@@ -3,6 +3,22 @@
 /*
 	EVENTS and CAPABILITIES trigger - Pass instead of Done
 
+	CAP/EVENT logging when used
+		AOW_YORK_GREAT_SHIPS, AOW_LANCASTER_GREAT_SHIPS
+
+	report battle capabilities at start of engagement
+		AOW_YORK_BARRICADES, AOW_LANCASTER_BARDED_HORSE, AOW_LANCASTER_MONTAGU, AOW_LANCASTER_CHURCH_BLESSINGS
+
+	report at tides of war start
+		AOW_YORK_WELSHMEN
+		AOW_YORK_SOUTHERNERS
+
+	report when march/sail with other lords
+		AOW_YORK_CAPTAIN
+
+	report in better place
+		AOW_YORK_FINAL_CHARGE
+
 	Review all undo steps.
 	Review all states for needless pauses.
 	Review all states for adding extra pauses to prevent loss of control.
@@ -805,7 +821,7 @@ const AOW_LANCASTER_HAY_WAINS = L8
 const AOW_LANCASTER_QUARTERMASTERS = L9
 const AOW_LANCASTER_CHAMBERLAINS = L10
 const AOW_LANCASTER_IN_THE_NAME_OF_THE_KING = L11
-const AOW_LANCASTER_COMMISION_OF_ARRAY = L12
+const AOW_LANCASTER_COMMISSION_OF_ARRAY = L12
 const AOW_LANCASTER_EXPERT_COUNSELLORS = L13
 const AOW_LANCASTER_PERCYS_POWER = L14
 const AOW_LANCASTER_KINGS_PARLEY = L15
@@ -860,7 +876,7 @@ const AOW_YORK_PERCYS_NORTH1 = Y27
 const AOW_YORK_FIRST_SON = Y28
 const AOW_YORK_STAFFORD_BRANCH = Y29
 const AOW_YORK_CAPTAIN = Y30
-const AOW_YORK_WOODWILLES = Y31
+const AOW_YORK_WOODVILLES = Y31
 const AOW_YORK_FINAL_CHARGE = Y32
 const AOW_YORK_BLOODY_THOU_ART = Y33
 const AOW_YORK_SO_WISE_SO_YOUNG = Y34
@@ -1580,8 +1596,10 @@ function count_unrouted_vassals_with_lord(lord: Lord) {
 function muster_vassal(vassal: Vassal, lord: Lord) {
 	if (data.vassals[vassal].service !== 0) {
 		let service = current_turn() + data.vassals[vassal].service
-		if (lord_has_capability(lord, AOW_YORK_ALICE_MONTAGU))
+		if (lord_has_capability(lord, AOW_YORK_ALICE_MONTAGU)) {
+			logcap(AOW_YORK_ALICE_MONTAGU)
 			service += 1
+		}
 		set_vassal_lord_and_service(vassal, lord, service)
 	} else {
 		set_vassal_lord_and_service(vassal, lord, 0)
@@ -2039,36 +2057,61 @@ function parley_ic_success(lord: Lord) {
 	return false
 }
 
-function common_ic_rating(lord: Lord, spend: number) {
+function common_ic_rating(lord: Lord, spend: number, report: boolean) {
 	let here = get_lord_locale(lord)
 	let rating = get_lord_influence(lord)
 	rating += spend
 	if (game.active === YORK) {
-		if (is_event_in_play(EVENT_YORK_YORKIST_PARADE))
+		if (is_event_in_play(EVENT_YORK_YORKIST_PARADE)) {
+			if (report)
+				logevent(EVENT_YORK_YORKIST_PARADE)
 			rating += 2
-		if (is_event_in_play(EVENT_YORK_PRIVY_COUNCIL))
+		}
+		if (is_event_in_play(EVENT_YORK_PRIVY_COUNCIL)) {
+			if (report)
+				logevent(EVENT_YORK_PRIVY_COUNCIL)
 			rating += 1
-		if (lord_has_capability(lord, AOW_YORK_YORKS_FAVOURED_SON))
+		}
+		if (lord_has_capability(lord, AOW_YORK_YORKS_FAVOURED_SON)) {
+			if (report)
+				logcap(AOW_YORK_YORKS_FAVOURED_SON)
 			rating += 1
-		if (lord_has_capability(lord, AOW_YORK_FAIR_ARBITER))
-			if (is_friendly_locale(here))
+		}
+		if (lord_has_capability(lord, AOW_YORK_FAIR_ARBITER)) {
+			if (is_friendly_locale(here)) {
+				if (report)
+					logcap(AOW_YORK_FAIR_ARBITER)
 				rating += 1
-		if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER))
-			if (!is_lord_in_play(LORD_CLARENCE))
+			}
+		}
+		if (lord_has_capability(lord, AOW_YORK_FALLEN_BROTHER)) {
+			if (!is_lord_in_play(LORD_CLARENCE)) {
+				if (report)
+					logcap(AOW_YORK_FALLEN_BROTHER)
 				rating += 2
+			}
+		}
 	} else {
-		if (lord_has_capability(lord, AOW_LANCASTER_MARRIED_TO_A_NEVILLE))
-			if (get_lord_locale(LORD_WARWICK_L) === here && is_friendly_locale(here))
+		if (lord_has_capability(lord, AOW_LANCASTER_MARRIED_TO_A_NEVILLE)) {
+			if (get_lord_locale(LORD_WARWICK_L) === here && is_friendly_locale(here)) {
+				if (report)
+					logcap(AOW_LANCASTER_MARRIED_TO_A_NEVILLE)
 				rating += 2
-		if (lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET))
-			if (get_lord_locale(LORD_MARGARET) === here)
+			}
+		}
+		if (lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET)) {
+			if (get_lord_locale(LORD_MARGARET) === here) {
+				if (report)
+					logcap(AOW_LANCASTER_LOYAL_SOMERSET)
 				rating += 1
+			}
+		}
 	}
 	return rating
 }
 
-function vassal_ic_rating(lord: Lord, spend: number) {
-	let rating = common_ic_rating(lord, spend)
+function vassal_ic_rating(lord: Lord, spend: number, report: boolean) {
+	let rating = common_ic_rating(lord, spend, report)
 
 	// Note: use of game.vassal
 	if (game.active === LANCASTER)
@@ -2079,15 +2122,21 @@ function vassal_ic_rating(lord: Lord, spend: number) {
 	return rating
 }
 
-function parley_ic_rating(lord: Lord, spend: number) {
-	let rating = common_ic_rating(lord, spend)
+function parley_ic_rating(lord: Lord, spend: number, report: boolean) {
+	let rating = common_ic_rating(lord, spend, report)
 
 	if (game.active === YORK) {
-		if (is_event_in_play(EVENT_YORK_RICHARD_OF_YORK))
+		if (is_event_in_play(EVENT_YORK_RICHARD_OF_YORK)) {
+			if (report)
+				logevent(EVENT_YORK_RICHARD_OF_YORK)
 			rating += 1
+		}
 	} else {
-		if (lord_has_capability(lord, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING))
+		if (lord_has_capability(lord, AOW_LANCASTER_IN_THE_NAME_OF_THE_KING)) {
+			if (report)
+				logcap(AOW_LANCASTER_IN_THE_NAME_OF_THE_KING)
 			rating += 1
+		}
 	}
 
 	return rating
@@ -2099,7 +2148,7 @@ function prompt_influence_check(lord: Lord, calc=common_ic) {
 		view.prompt += ` Influence success for ${cost} IP.`
 		view.actions.check = [ 0 ]
 	} else {
-		let rating = Math.max(1, Math.min(5, calc.rating(lord, 0)))
+		let rating = Math.max(1, Math.min(5, calc.rating(lord, 0, false)))
 
 		view.prompt += ` Influence 1-${rating} for ${cost} IP.`
 
@@ -2122,14 +2171,16 @@ function roll_influence_check(what: string, lord: Lord, spend: number, calc=comm
 		log(`${what}.`)
 		return true
 	} else {
-		let rating = Math.max(1, Math.min(5, calc.rating(lord, spend)))
+		let rating = Math.max(1, Math.min(5, calc.rating(lord, spend, false)))
 
 		let die = roll_die()
 		if (die <= rating) {
 			log(`${what} 1-${rating}: B${die}`)
+			calc.rating(lord, spend, true)
 			return true
 		} else {
 			log(`${what} 1-${rating}: W${die}`)
+			calc.rating(lord, spend, true)
 			return false
 		}
 	}
@@ -3157,6 +3208,7 @@ states.muster_lord = {
 		push_undo()
 		push_the_kings_name()
 		log(`Levy Troops.`)
+		logcap(AOW_YORK_BELOVED_WARWICK)
 		add_lord_forces(game.command, MILITIA, 5)
 		end_levy_troops()
 	},
@@ -3165,6 +3217,7 @@ states.muster_lord = {
 		push_undo()
 		push_the_kings_name()
 		log(`Levy Troops.`)
+		logcap(AOW_YORK_IRISHMEN)
 		add_lord_forces(game.command, MILITIA, 5)
 		end_levy_troops()
 	},
@@ -3173,6 +3226,7 @@ states.muster_lord = {
 		push_undo()
 		push_the_kings_name()
 		log(`Levy Troops.`)
+		logcap(AOW_YORK_SOLDIERS_OF_FORTUNE)
 		game.state = "soldiers_of_fortune"
 	},
 
@@ -3180,6 +3234,7 @@ states.muster_lord = {
 		push_undo()
 		push_the_kings_name()
 		log(`Levy Troops.`)
+		logcap(AOW_LANCASTER_COMMISSION_OF_ARRAY)
 		game.state = "commission_of_array"
 	},
 
@@ -3198,7 +3253,7 @@ states.muster_lord = {
 
 	loyalty_and_trust() {
 		push_undo()
-		log(`Loyalty and Trust.`)
+		logevent(EVENT_YORK_LOYALTY_AND_TRUST)
 		game.actions += 3
 		game.levy_flags.loyalty_and_trust = 0
 	},
@@ -3241,11 +3296,14 @@ function chamberlains_eligible_levy(loc: Locale) {
 
 function do_levy_troops() {
 	let here = get_lord_locale(game.command)
-	if (
-		!lord_has_capability(game.command, AOW_LANCASTER_QUARTERMASTERS) &&
-		!lord_has_capability(game.command, AOW_YORK_WOODWILLES) &&
-		!chamberlains_eligible_levy(here)
-	)
+
+	if (lord_has_capability(game.command, AOW_YORK_WOODVILLES))
+		logcap(AOW_YORK_WOODVILLES)
+	else if (lord_has_capability(game.command, AOW_LANCASTER_QUARTERMASTERS))
+		logcap(AOW_LANCASTER_QUARTERMASTERS)
+	else if (chamberlains_eligible_levy(here))
+		logcap(AOW_LANCASTER_CHAMBERLAINS)
+	else
 		deplete_locale(here)
 
 	let here_type = data.locales[here].type
@@ -3416,7 +3474,7 @@ function can_add_troops(locale: Locale) {
 }
 
 function can_add_troops_coa(lord: Lord, here: Locale) {
-	if (lord_has_capability(lord, AOW_LANCASTER_COMMISION_OF_ARRAY)) {
+	if (lord_has_capability(lord, AOW_LANCASTER_COMMISSION_OF_ARRAY)) {
 		for (let next of data.locales[here].adjacent) {
 			if (is_friendly_locale(next) && !has_enemy_lord(next))
 				if (can_add_troops(next))
@@ -3980,13 +4038,6 @@ function search_supply(result) {
 }
 
 
-function command_has_harbingers() {
-	return (
-		lord_has_capability(game.command, AOW_LANCASTER_HARBINGERS) ||
-		lord_has_capability(game.command, AOW_YORK_HARBINGERS)
-	)
-}
-
 function chamberlains_eligible_supply(source: Locale) {
 	if (lord_has_capability(game.command, AOW_LANCASTER_CHAMBERLAINS)) {
 		for (let vassal of all_vassals)
@@ -4034,7 +4085,7 @@ function goto_supply() {
 	init_supply()
 }
 
-function modify_supply(loc: Locale, supply: number) {
+function modify_supply(loc: Locale, supply: number, report: boolean) {
 	let here = get_lord_locale(game.command)
 	let carts = count_shared_carts(here, true)
 
@@ -4043,23 +4094,31 @@ function modify_supply(loc: Locale, supply: number) {
 	if (distance > 0)
 		supply = Math.min(supply, Math.floor(carts / distance))
 
-	// Harbingers event doubles supply received
-	if (command_has_harbingers())
-		supply = supply * 2
+	// Harbingers capability doubles supply received
+	if (lord_has_capability(game.command, AOW_LANCASTER_HARBINGERS)) {
+		if (report)
+			logcap(AOW_LANCASTER_HARBINGERS)
+		supply *= 2
+	}
+	if (lord_has_capability(game.command, AOW_YORK_HARBINGERS)) {
+		if (report)
+			logcap(AOW_YORK_HARBINGERS)
+		supply *= 2
+	}
 
 	return supply
 }
 
-function get_port_supply_amount(loc: Locale) {
+function get_port_supply_amount(loc: Locale, report: boolean) {
 	if (is_seaport(loc) || is_exile_box(loc)) {
 		let here = get_lord_locale(game.command)
 		let ships = count_shared_ships(here, true)
-		return modify_supply(loc, ships)
+		return modify_supply(loc, ships, report)
 	}
 	return 0
 }
 
-function get_stronghold_supply_amount(loc: Locale) {
+function get_stronghold_supply_amount(loc: Locale, report: boolean) {
 	if (!has_exhausted_marker(loc)) {
 		let supply = 0
 
@@ -4070,10 +4129,13 @@ function get_stronghold_supply_amount(loc: Locale) {
 		else
 			supply = 1
 
-		if (lord_has_stafford_branch(loc, game.command))
+		if (lord_has_stafford_branch(loc, game.command)) {
+			if (report)
+				logcap(AOW_YORK_STAFFORD_BRANCH)
 			supply += 1
+		}
 
-		return modify_supply(loc, supply)
+		return modify_supply(loc, supply, report)
 	}
 	return 0
 }
@@ -4096,8 +4158,8 @@ states.supply_source = {
 			gen_action_locale(game.supply[i] as Locale)
 	},
 	locale(loc) {
-		let port_supply = get_port_supply_amount(loc)
-		let stronghold_supply = get_stronghold_supply_amount(loc)
+		let port_supply = get_port_supply_amount(loc, false)
+		let stronghold_supply = get_stronghold_supply_amount(loc, false)
 
 		if (stronghold_supply > 0 && port_supply === 0) {
 			use_stronghold_supply(loc, stronghold_supply)
@@ -4144,14 +4206,14 @@ function end_supply() {
 states.select_supply_type = {
 	inactive: "Supply",
 	prompt() {
-		let port = get_port_supply_amount(game.where)
-		let stronghold = get_stronghold_supply_amount(game.where)
+		let port = get_port_supply_amount(game.where, false)
+		let stronghold = get_stronghold_supply_amount(game.where, false)
 		view.prompt = `Supply: ${stronghold} from stronghold or ${port} from port?`
 		view.actions.stronghold = 1
 		view.actions.port = 1
 	},
 	stronghold() {
-		use_stronghold_supply(game.where, get_stronghold_supply_amount(game.where))
+		use_stronghold_supply(game.where, get_stronghold_supply_amount(game.where, true))
 		end_supply()
 	},
 	port() {
@@ -4159,7 +4221,7 @@ states.select_supply_type = {
 		if (can_naval_blockade(get_lord_locale(game.command)) || can_naval_blockade(game.where)) {
 			game.state = "blockade_supply"
 		} else {
-			use_port_supply(game.where, get_port_supply_amount(game.where))
+			use_port_supply(game.where, get_port_supply_amount(game.where, true))
 			end_supply()
 		}
 	},
@@ -4173,7 +4235,7 @@ states.blockade_supply = {
 	},
 	roll() {
 		if (roll_blockade("Supply"))
-			use_port_supply(game.where, get_port_supply_amount(game.where))
+			use_port_supply(game.where, get_port_supply_amount(game.where, true))
 		end_supply()
 	},
 }
@@ -5053,11 +5115,17 @@ function march_with_group_2() {
 	let to = game.march.to
 	let type = get_way_type(from, to)
 
+	log(`March to S${to}${format_group_move()}.`)
+
 	if (game.group.length === 1 && type === "road") {
-		if (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT))
+		if (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT)) {
+			logcap(AOW_YORK_YORKISTS_NEVER_WAIT)
 			type = "highway"
-		if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_FORCED_MARCHES))
+		}
+		if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_FORCED_MARCHES)) {
+			logevent(EVENT_LANCASTER_FORCED_MARCHES)
 			type = "highway"
+		}
 	}
 
 	if (type === "highway") {
@@ -5082,8 +5150,6 @@ function march_with_group_2() {
 	else if (type === "path") {
 		spend_all_actions()
 	}
-
-	log(`March to S${to}${format_group_move()}.`)
 
 	for (let lord of game.group)
 		set_lord_locale(lord, to)
@@ -7227,6 +7293,8 @@ states.vanguard = {
 	vanguard() {
 		let lord = find_lord_with_capability_card(AOW_YORK_VANGUARD)
 
+		logcap(AOW_YORK_VANGUARD)
+
 		// Filter out engagements that don't contain Vanguard lord
 		game.battle.engagements = game.battle.engagements.filter(engagement => {
 			for (let p of engagement)
@@ -7609,7 +7677,7 @@ function get_modified_protection(lord: Lord, force: Force) {
 		}
 	}
 
-	if (lord_has_capability(lord, AOW_YORK_BARRICADES) || lord_has_capability(lord, AOW_YORK_BARRICADES)) {
+	if (lord_has_capability(lord, AOW_YORK_BARRICADES)) {
 		if (is_friendly_locale(game.battle.where)) {
 			if (force === MEN_AT_ARMS)
 				protection = 4
@@ -10513,8 +10581,8 @@ function capability_muster_effects_common(lord: Lord, c: Card) {
 
 	if (AOW_YORK_BURGUNDIANS.includes(c)) {
 		if (is_seaport(get_lord_locale(lord)) && !is_exile_box(get_lord_locale(lord))) {
-			add_lord_forces(lord, BURGUNDIANS, 2)
 			logcap(c)
+			add_lord_forces(lord, BURGUNDIANS, 2)
 			set_flag(FLAG_BURGUNDIANS)
 		}
 		else {
@@ -10525,12 +10593,18 @@ function capability_muster_effects_common(lord: Lord, c: Card) {
 
 // When a lord levies a capability during Levy (not first Arts of War), its Lordship effects must apply.
 function capability_muster_effects_levy(_lord: Lord, c: Card) {
-	if (c === AOW_LANCASTER_THOMAS_STANLEY)
+	if (c === AOW_LANCASTER_THOMAS_STANLEY) {
+		logcap(AOW_LANCASTER_THOMAS_STANLEY)
 		game.levy_flags.thomas_stanley = 1
-	if (c === AOW_YORK_FAIR_ARBITER && is_friendly_locale(get_lord_locale(LORD_SALISBURY)))
+	}
+	if (c === AOW_YORK_FAIR_ARBITER && is_friendly_locale(get_lord_locale(LORD_SALISBURY))) {
+		logcap(AOW_YORK_FAIR_ARBITER)
 		game.actions += 1
-	if (c === AOW_YORK_FALLEN_BROTHER && !is_lord_in_play(LORD_CLARENCE))
+	}
+	if (c === AOW_YORK_FALLEN_BROTHER && !is_lord_in_play(LORD_CLARENCE)) {
+		logcap(AOW_YORK_FALLEN_BROTHER)
 		game.actions += 1
+	}
 }
 
 // === LORDSHIP AND THIS LEVY EFFECTS ===
@@ -10614,9 +10688,6 @@ states.soldiers_of_fortune = {
 	},
 	coin(lord) {
 		push_undo()
-
-		// TODO: to log or not log muster capabilities?
-		logcap(AOW_YORK_SOLDIERS_OF_FORTUNE)
 
 		add_lord_assets(lord, COIN, -1)
 
@@ -12335,13 +12406,11 @@ function action_held_event_at_campaign(c: Card) {
 			break
 
 		// Play after march/sail to seaport
-		// TODO: move into states.command ?
 		case EVENT_LANCASTER_REBEL_SUPPLY_DEPOT:
 			goto_play_rebel_supply_depot()
 			break
 
 		// Play after sail to seaport
-		// TODO: move into states.command ?
 		case EVENT_LANCASTER_SURPRISE_LANDING:
 			goto_play_surprise_landing()
 			break
