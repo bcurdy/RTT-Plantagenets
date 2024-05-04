@@ -1,34 +1,13 @@
 "use strict"
 
 /*
-	EVENTS and CAPABILITIES trigger - Pass instead of Done
-
-	// TODO: PICK_UP_LORDS
-
-	BATTLE LOGGING
-
-	CAP/EVENT logging when used
+	report when used to parley/tax by sea
 		AOW_YORK_GREAT_SHIPS, AOW_LANCASTER_GREAT_SHIPS
-
-	report battle capabilities at start of engagement
-		AOW_YORK_BARRICADES, AOW_LANCASTER_BARDED_HORSE, AOW_LANCASTER_MONTAGU, AOW_LANCASTER_CHURCH_BLESSINGS
-		AOW_LANCASTER_PIQUIERS = L34
-		AOW_LANCASTER_CHEVALIERS))
 
 	report at tides of war start
 		AOW_YORK_WELSHMEN
 		AOW_YORK_SOUTHERNERS
 		AOW_LANCASTER_NORTHMEN
-
-	report when march/sail
-		AOW_YORK_CAPTAIN
-			with other lords
-		AOW_LANCASTER_HAY_WAINS
-		AOW_YORK_GREAT_SHIPS
-		AOW_LANCASTER_GREAT_SHIPS
-
-	report when supply
-		AOW_LANCASTER_HAY_WAINS
 
 	report in better place
 		AOW_YORK_FINAL_CHARGE
@@ -1459,43 +1438,48 @@ function get_inherent_valour(lord: Lord) {
 	return data.lords[lord].valour
 }
 
+function log_valour(lord: Lord, c: Card) {
+	log("L" + lord)
+	log(">C" + c)
+}
+
 function get_modified_valour(lord: Lord, report: boolean) {
 	let valour = get_inherent_valour(lord)
 
 	if (lord_has_capability(lord, AOW_LANCASTER_EXPERT_COUNSELLORS)) {
 		if (report)
-			logcap(AOW_LANCASTER_EXPERT_COUNSELLORS)
+			log_valour(lord, AOW_LANCASTER_EXPERT_COUNSELLORS)
 		valour += 2
 	}
 
 	if (lord_has_capability(lord, AOW_LANCASTER_VETERAN_OF_FRENCH_WARS)) {
 		if (report)
-			logcap(AOW_LANCASTER_VETERAN_OF_FRENCH_WARS)
+			log_valour(lord, AOW_LANCASTER_VETERAN_OF_FRENCH_WARS)
 		valour += 2
 	}
 
 	if (lord_has_capability(lord, AOW_LANCASTER_ANDREW_TROLLOPE)) {
 		if (report)
-			logcap(AOW_LANCASTER_ANDREW_TROLLOPE)
+			log_valour(lord, AOW_LANCASTER_ANDREW_TROLLOPE)
 		valour += 1
 	}
 
 	if (lord_has_capability(lord, AOW_LANCASTER_MY_FATHERS_BLOOD)) {
 		if (report)
-			logcap(AOW_LANCASTER_MY_FATHERS_BLOOD)
+			log_valour(lord, AOW_LANCASTER_MY_FATHERS_BLOOD)
 		valour += 1
 	}
 
 	if (lord_has_capability(lord, AOW_LANCASTER_EDWARD)) {
 		if (report)
-			logcap(AOW_LANCASTER_EDWARD)
+			log_valour(lord, AOW_LANCASTER_EDWARD)
 		valour += 1
 	}
 
 	if (lord_has_capability(lord, AOW_LANCASTER_LOYAL_SOMERSET)) {
 		if (get_lord_locale(lord) === get_lord_locale(LORD_MARGARET)) {
 			if (report)
-				logcap(AOW_LANCASTER_LOYAL_SOMERSET)
+				log_valour(lord, AOW_LANCASTER_LOYAL_SOMERSET)
 			valour += 1
 		}
 	}
@@ -2835,7 +2819,7 @@ function death_lord(lord: Lord) {
 		if (lord === LORD_WARWICK_L && game.battle.attacker === YORK)
 			foreign_haven_shift_lords()
 	}
-	log(`Removed L${lord}.`)
+	log(`Dead L${lord}.`)
 	set_lord_locale(lord, NOWHERE)
 	clear_lord(lord)
 }
@@ -3392,6 +3376,7 @@ function do_levy_troops() {
 function end_levy_troops() {
 
 	if (game.levy_flags.thomas_stanley === 1) {
+		logcap(AOW_LANCASTER_THOMAS_STANLEY)
 		++game.actions
 		game.levy_flags.thomas_stanley = 0
 	}
@@ -4233,6 +4218,10 @@ states.supply_source = {
 
 function use_stronghold_supply(source: Locale, amount: number) {
 	log(`Supply ${amount} from S${source}.`)
+
+	if (lord_has_capability(game.command, AOW_LANCASTER_HAY_WAINS))
+		logcap(AOW_LANCASTER_HAY_WAINS)
+
 	add_lord_assets(game.command, PROV, amount)
 	if (chamberlains_eligible_supply(source))
 		logcap(AOW_LANCASTER_CHAMBERLAINS)
@@ -4244,6 +4233,14 @@ function use_stronghold_supply(source: Locale, amount: number) {
 
 function use_port_supply(source: Locale, amount: number) {
 	log(`Supply ${amount} from S${source} (Port).`)
+
+	if (lord_has_capability(game.command, AOW_LANCASTER_HAY_WAINS))
+		logcap(AOW_LANCASTER_HAY_WAINS)
+	if (lord_has_capability(game.command, AOW_YORK_GREAT_SHIPS))
+		logcap(AOW_YORK_GREAT_SHIPS)
+	if (lord_has_capability(game.command, AOW_LANCASTER_GREAT_SHIPS))
+		logcap(AOW_LANCASTER_GREAT_SHIPS)
+
 	add_lord_assets(game.command, PROV, amount)
 }
 
@@ -4429,6 +4426,14 @@ states.blockade_sail = {
 
 function do_sail(to: Locale) {
 	log(`Sail to S${to}${format_group_move()}.`)
+
+	if (!is_marshal(game.command) && !is_lieutenant(game.command) && game.group.length > 1)
+		logcap(AOW_YORK_CAPTAIN)
+
+	if (lord_has_capability(game.command, AOW_YORK_GREAT_SHIPS))
+		logcap(AOW_YORK_GREAT_SHIPS)
+	if (lord_has_capability(game.command, AOW_LANCASTER_GREAT_SHIPS))
+		logcap(AOW_LANCASTER_GREAT_SHIPS)
 
 	game.sail_from = get_lord_locale(game.command)
 
@@ -4906,11 +4911,10 @@ function goto_parley_campaign() {
 
 	// Campaign phase, and current location is no cost (except some events), and always successful.
 	if (can_parley_at(here)) {
+		if (is_lancaster_lord(game.command) && is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST))
+			reduce_lancaster_influence(1)
 		log(`Parley at S${here}.`)
 		shift_favour_toward(here)
-		if (is_lancaster_lord(game.command) && is_event_in_play(EVENT_YORK_AN_HONEST_TALE_SPEEDS_BEST)) {
-			reduce_lancaster_influence(1)
-		}
 		end_parley(true)
 		return
 	}
@@ -4925,26 +4929,35 @@ function end_parley(success: boolean) {
 
 	// Track use of parley capabilities / events.
 	if (is_levy_phase()) {
-		if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
+		if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET)) {
+			logevent(EVENT_YORK_DORSET)
 			++game.actions
-		else if (game.levy_flags.jack_cade > 0) {
+		} else if (game.levy_flags.jack_cade > 0) {
 			// Jack Cade: free action, zero influence cost, and success
+			logevent(EVENT_YORK_JACK_CADE)
 			--game.levy_flags.jack_cade
 			++game.actions
 		}
 		else {
 			// Parliament Votes / Succession: reduced cost and success
-			if (game.levy_flags.parliament_votes > 0)
+			if (game.levy_flags.parliament_votes > 0) {
+				logevent(EVENT_LANCASTER_PARLIAMENT_VOTES)
 				--game.levy_flags.parliament_votes
-			if (game.levy_flags.succession > 0)
+			}
+
+			if (game.levy_flags.succession > 0) {
+				logevent(EVENT_YORK_SUCCESSION)
 				--game.levy_flags.succession
+			}
 
 			// My crown / as heir: free action
 			if (game.levy_flags.my_crown_is_in_my_heart > 0) {
+				logevent(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART)
 				--game.levy_flags.my_crown_is_in_my_heart
 				++game.actions
 			}
 			else if (game.levy_flags.gloucester_as_heir > 0) {
+				logevent(EVENT_YORK_GLOUCESTER_AS_HEIR)
 				--game.levy_flags.gloucester_as_heir
 				++game.actions
 			}
@@ -5162,6 +5175,12 @@ function march_with_group_2() {
 	let type = get_way_type(from, to)
 
 	log(`March to S${to}${format_group_move()}.`)
+
+	if (!is_marshal(game.command) && !is_lieutenant(game.command) && game.group.length > 1)
+		logcap(AOW_YORK_CAPTAIN)
+
+	if (lord_has_capability(game.command, AOW_LANCASTER_HAY_WAINS))
+		logcap(AOW_LANCASTER_HAY_WAINS)
 
 	if (game.group.length === 1 && type === "road") {
 		if (lord_has_capability(game.command, AOW_YORK_YORKISTS_NEVER_WAIT)) {
@@ -5864,7 +5883,27 @@ states.exile_spoils = {
 
 */
 
+const attack_positions = [ A1, A2, A3 ]
+const defend_positions = [ D1, D2, D3 ]
 const battle_strike_positions = [ D1, D2, D3, A1, A2, A3 ]
+
+function log_lord_cap_ii(lord: Lord, c: Card) {
+	if (lord_has_capability(lord, c))
+		log(">>C" + c)
+}
+
+function log_lord_engage(lord: Lord) {
+	if (lord === NOBODY)
+		return
+	log(">L" + lord)
+
+	log_lord_cap_ii(lord, AOW_LANCASTER_BARDED_HORSE)
+	log_lord_cap_ii(lord, AOW_LANCASTER_CHEVALIERS)
+	log_lord_cap_ii(lord, AOW_LANCASTER_CHURCH_BLESSINGS)
+	log_lord_cap_ii(lord, AOW_LANCASTER_MONTAGU)
+	log_lord_cap_ii(lord, AOW_LANCASTER_PIQUIERS)
+	log_lord_cap_ii(lord, AOW_YORK_BARRICADES)
+}
 
 const battle_steps = [
 	null,
@@ -6015,6 +6054,11 @@ function is_melee_step() {
 	return game.battle.step === 2
 }
 
+function log_battle_cap(lord: Lord, c: Card) {
+	log("L" + lord)
+	log(">C" + c)
+}
+
 // Capabilities adding troops at start of the battle
 function add_battle_capability_troops() {
 	let here = game.battle.where
@@ -6026,45 +6070,37 @@ function add_battle_capability_troops() {
 			continue
 
 		if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_york_favour(here)) {
-			logcap(AOW_YORK_MUSTERD_MY_SOLDIERS)
-			logi("L" + lord)
+			log_battle_cap(lord, AOW_YORK_MUSTERD_MY_SOLDIERS)
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 			add_lord_forces(lord, LONGBOWMEN, 1)
 		}
 		if (lord_has_capability(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS) && has_lancaster_favour(here)) {
-			logcap(AOW_LANCASTER_MUSTERD_MY_SOLDIERS)
-			logi("L" + lord)
+			log_battle_cap(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS)
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 			add_lord_forces(lord, LONGBOWMEN, 1)
 		}
 		if (lord_has_capability(lord, AOW_LANCASTER_WELSH_LORD) && is_wales(here)) {
-			logcap(AOW_LANCASTER_WELSH_LORD)
-			logi("L" + lord)
+			log_battle_cap(lord, AOW_LANCASTER_WELSH_LORD)
 			add_lord_forces(lord, LONGBOWMEN, 2)
 		}
 		if (lord_has_capability(lord, AOW_YORK_PEMBROKE) && is_wales(here)) {
-			logcap(AOW_YORK_PEMBROKE)
-			logi("L" + lord)
+			log_battle_cap(lord, AOW_YORK_PEMBROKE)
 			add_lord_forces(lord, LONGBOWMEN, 2)
 		}
 		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && is_north(here)) {
-			logcap(AOW_YORK_PERCYS_NORTH1)
-			logi("L" + lord)
+			log_battle_cap(lord, AOW_YORK_PERCYS_NORTH1)
 			add_lord_forces(lord, MILITIA, 4)
 		}
 		if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && has_route_to(here, LOC_CARLISLE)) {
-			logcap(AOW_YORK_PERCYS_NORTH2)
-			logi("L" + lord)
+			log_battle_cap(lord, AOW_YORK_PERCYS_NORTH2)
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 		}
 		if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
-			logcap(AOW_YORK_KINGDOM_UNITED)
-			logi("L" + lord)
+			log_battle_cap(lord, AOW_YORK_KINGDOM_UNITED)
 			add_lord_forces(lord, MILITIA, 3)
 		}
 		if (lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) && is_at_or_adjacent_to_lancastrian_english_channel_port(here)) {
-			logcap(AOW_LANCASTER_PHILIBERT_DE_CHANDEE)
-			logi("L" + lord)
+			log_battle_cap(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE)
 			add_lord_forces(lord, MEN_AT_ARMS, 2)
 		}
 	}
@@ -6074,45 +6110,29 @@ function add_battle_capability_troops() {
 function remove_battle_capability_troops(lord: Lord) {
 	let here = game.battle.where
 	if (lord_has_capability(lord, AOW_YORK_MUSTERD_MY_SOLDIERS) && has_york_favour(here)) {
-		logcap(AOW_YORK_MUSTERD_MY_SOLDIERS)
-		logi("L" + lord)
 		add_lord_forces(lord, MEN_AT_ARMS, -2)
 		add_lord_forces(lord, LONGBOWMEN, -1)
 	}
 	if (lord_has_capability(lord, AOW_LANCASTER_MUSTERD_MY_SOLDIERS) && has_lancaster_favour(here)) {
-		logcap(AOW_LANCASTER_MUSTERD_MY_SOLDIERS)
-		logi("L" + lord)
 		add_lord_forces(lord, MEN_AT_ARMS, -2)
 		add_lord_forces(lord, LONGBOWMEN, -1)
 	}
 	if (lord_has_capability(lord, AOW_LANCASTER_WELSH_LORD) && is_wales(here)) {
-		logcap(AOW_LANCASTER_WELSH_LORD)
-		logi("L" + lord)
 		add_lord_forces(lord, LONGBOWMEN, -2)
 	}
 	if (lord_has_capability(lord, AOW_YORK_PEMBROKE) && is_wales(here)) {
-		logcap(AOW_YORK_PEMBROKE)
-		logi("L" + lord)
 		add_lord_forces(lord, LONGBOWMEN, -2)
 	}
 	if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && is_north(here)) {
-		logcap(AOW_YORK_PERCYS_NORTH1)
-		logi("L" + lord)
 		add_lord_forces(lord, MILITIA, -4)
 	}
 	if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && has_route_to(here, LOC_CARLISLE)) {
-		logcap(AOW_YORK_PERCYS_NORTH2)
-		logi("L" + lord)
 		add_lord_forces(lord, MEN_AT_ARMS, -2)
 	}
 	if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
-		logcap(AOW_YORK_KINGDOM_UNITED)
-		logi("L" + lord)
 		add_lord_forces(lord, MILITIA, -3)
 	}
 	if (lord_has_capability(lord, AOW_LANCASTER_PHILIBERT_DE_CHANDEE) && is_at_or_adjacent_to_lancastrian_english_channel_port(here)) {
-		logcap(AOW_LANCASTER_PHILIBERT_DE_CHANDEE)
-		logi("L" + lord)
 		add_lord_forces(lord, MEN_AT_ARMS, -2)
 	}
 }
@@ -6936,7 +6956,7 @@ states.culverins_and_falconets = {
 		let lord = find_lord_with_capability_card(c)
 
 		log("L" + lord)
-		logcap(c)
+		log(">C" + c)
 
 		if (!game.battle.culverins)
 			game.battle.culverins = []
@@ -7003,7 +7023,7 @@ states.flee_battle = {
 	},
 	lord(lord) {
 		push_undo()
-		log(`Flee L${lord}.`)
+		log(`Fled L${lord}.`)
 		set_add(game.battle.routed, lord)
 		set_add(game.battle.fled, lord)
 		remove_lord_from_battle(lord)
@@ -7292,6 +7312,11 @@ states.select_engagement = {
 }
 
 function goto_missile_strike_step() {
+	log_h3("Engage")
+
+	for (let p of game.battle.engagements[0])
+		log_lord_engage(game.battle.array[p])
+
 	game.battle.step = 1
 	goto_total_hits()
 }
@@ -7352,7 +7377,8 @@ states.vanguard = {
 	vanguard() {
 		let lord = find_lord_with_capability_card(AOW_YORK_VANGUARD)
 
-		logcap(AOW_YORK_VANGUARD)
+		log("L" + lord)
+		log(">C" + AOW_YORK_VANGUARD)
 
 		// Filter out engagements that don't contain Vanguard lord
 		game.battle.engagements = game.battle.engagements.filter(engagement => {
@@ -9025,6 +9051,18 @@ function goto_tides_of_war() {
 	let lanc = 0
 	let york = 0
 
+	let cap_lord = find_lord_with_capability_card(AOW_LANCASTER_NORTHMEN)
+	if (is_lancaster_lord(cap_lord) && is_north(get_lord_locale(cap_lord)))
+		logcap(AOW_LANCASTER_NORTHMEN)
+
+	cap_lord = find_lord_with_capability_card(AOW_YORK_SOUTHERNERS)
+	if (is_york_lord(cap_lord) && is_south(get_lord_locale(cap_lord)))
+		logcap(AOW_YORK_SOUTHERNERS)
+
+	cap_lord = find_lord_with_capability_card(AOW_YORK_WELSHMEN)
+	if (is_york_lord(cap_lord) && is_wales(get_lord_locale(cap_lord)))
+		logcap(AOW_YORK_WELSHMEN)
+
 	log_h3("Lancaster")
 
 	lanc += tow_presence("Lord in North", all_lancaster_lords, is_lord_in_north)
@@ -10691,7 +10729,6 @@ function apply_lordship_effects() {
 	game.levy_flags.gloucester_as_heir = 0
 	if (is_event_in_play(EVENT_YORK_GLOUCESTER_AS_HEIR)) {
 		if (lord === LORD_GLOUCESTER_2 || lord === LORD_GLOUCESTER_1) {
-			logevent(EVENT_YORK_GLOUCESTER_AS_HEIR)
 			game.levy_flags.gloucester_as_heir = 3
 		}
 	}
@@ -10699,21 +10736,19 @@ function apply_lordship_effects() {
 	game.levy_flags.my_crown_is_in_my_heart = 0
 	if (is_event_in_play(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART)) {
 		if (lord === LORD_HENRY_VI) {
-			logevent(EVENT_LANCASTER_MY_CROWN_IS_IN_MY_HEART)
 			game.levy_flags.my_crown_is_in_my_heart = 2
 		}
 	}
 
 	game.levy_flags.thomas_stanley = 0
 	if (lord_has_capability(lord, AOW_LANCASTER_THOMAS_STANLEY)) {
-		logcap(AOW_LANCASTER_THOMAS_STANLEY)
+		// logged on use
 		game.levy_flags.thomas_stanley = 1
 	}
 
 	game.levy_flags.parliament_votes = 0
 	if (is_event_in_play(EVENT_LANCASTER_PARLIAMENT_VOTES)) {
 		if (game.active === LANCASTER) {
-			logevent(EVENT_LANCASTER_PARLIAMENT_VOTES)
 			game.levy_flags.parliament_votes = 1
 		}
 	}
@@ -10721,14 +10756,12 @@ function apply_lordship_effects() {
 	game.levy_flags.succession = 0
 	if (is_event_in_play(EVENT_YORK_SUCCESSION)) {
 		if (game.active === YORK) {
-			logevent(EVENT_YORK_SUCCESSION)
 			game.levy_flags.succession = 1
 		}
 	}
 
 	game.levy_flags.jack_cade = 0
 	if (is_jack_cade_eligible(lord)) {
-		logevent(EVENT_YORK_JACK_CADE)
 		game.levy_flags.jack_cade = 2
 	}
 }
