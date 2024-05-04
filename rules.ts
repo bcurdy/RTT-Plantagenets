@@ -7433,7 +7433,7 @@ function can_final_charge() {
 		for (let pos of game.battle.engagements[0]) {
 			let lord = game.battle.array[pos]
 			if (lord === LORD_RICHARD_III && get_lord_forces(lord, RETINUE) > 0)
-				return true
+				return lord_has_capability(lord, AOW_YORK_FINAL_CHARGE)
 		}
 	}
 	return false
