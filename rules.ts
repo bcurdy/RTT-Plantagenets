@@ -5,6 +5,8 @@
 
 	// TODO: PICK_UP_LORDS
 
+	BATTLE LOGGING
+
 	CAP/EVENT logging when used
 		AOW_YORK_GREAT_SHIPS, AOW_LANCASTER_GREAT_SHIPS
 
@@ -426,6 +428,8 @@ const PROV = 0 as Asset
 const COIN = 1 as Asset
 const CART = 2 as Asset
 const SHIP = 3 as Asset
+
+const ASSET_TYPE_NAME = [ "Provender", "Coin", "Cart", "Ship" ]
 
 const all_asset_types = make_list(0, 3) as Asset[]
 
@@ -3858,10 +3862,18 @@ function spend_sail_action() {
 	clear_flag(FLAG_SURPRISE_LANDING)
 	clear_flag(FLAG_FIRST_ACTION)
 	clear_flag(FLAG_FIRST_MARCH_HIGHWAY)
-	if (is_seamanship_in_play())
+
+	if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_SEAMANSHIP)) {
+		logevent(EVENT_LANCASTER_SEAMANSHIP)
 		game.actions -= 1
-	else
+	}
+	else if (game.active === YORK && is_event_in_play(EVENT_YORK_SEAMANSHIP)) {
+		logevent(EVENT_YORK_SEAMANSHIP)
+		game.actions -= 1
+	}
+	else {
 		game.actions = 0
+	}
 }
 
 function spend_all_actions() {
@@ -3960,7 +3972,7 @@ states.command = {
 		if (can_action_agitators())
 			view.actions.agitators = 1
 
-		if (is_york_lord(game.command))
+		if (is_york_lord(game.command) && game.group.length === 1)
 			if (can_action_exile_pact())
 				view.actions.exile_pact = 1
 	},
@@ -4301,14 +4313,6 @@ function has_enough_available_ships_for_army() {
 	let army = count_lord_all_forces(game.command)
 	let needed_ships = army / 6
 	return needed_ships <= ships
-}
-
-function is_seamanship_in_play() {
-	if (game.active === LANCASTER && is_event_in_play(EVENT_LANCASTER_SEAMANSHIP))
-		return true
-	if (game.active === YORK && is_event_in_play(EVENT_YORK_SEAMANSHIP))
-		return true
-	return false
 }
 
 function can_sail_to(to: Locale) {
@@ -11991,8 +11995,7 @@ states.london_for_york = {
 	locale(loc) {
 		push_undo()
 		add_york_favour(LONDON_FOR_YORK)
-		logi(`Second marker placed at ${locale_name[loc]}`)
-		logi(`Immune to Lancastrian parley unless aided by event`)
+		log(`Two favour at S${loc}.`)
 		end_immediate_event()
 	},
 }
@@ -12063,7 +12066,10 @@ states.richard_leigh = {
 	},
 	locale(loc) {
 		shift_favour_toward(loc)
-		logi(`London shifted once in your favour`)
+		if (has_york_favour(loc))
+			log(`L${loc} to Yorkist Favour.`)
+		else
+			log(`L${loc} to neutral.`)
 		end_immediate_event()
 	}
 }
@@ -12091,7 +12097,7 @@ states.charles_the_bold = {
 		}
 	},
 	lord(lord) {
-		logi(`1 Coin and 1 Provender added to ${lord_name[lord]}`)
+		log(">L" + lord)
 		set_lord_moved(lord, 1)
 		add_lord_assets(lord, PROV, 1)
 		add_lord_assets(lord, COIN, 1)
@@ -12184,11 +12190,13 @@ states.earl_rivers = {
 		game.who = lord
 	},
 	add_militia() {
+		log(">L" + game.who)
 		set_lord_moved(game.who, 1)
 		add_lord_forces(game.who, MILITIA, 1)
 		game.who = NOBODY
 	},
 	add_militia2() {
+		log(">L" + game.who)
 		set_lord_moved(game.who, 1)
 		add_lord_forces(game.who, MILITIA, 2)
 		game.who = NOBODY
@@ -12302,17 +12310,16 @@ states.the_commons = {
 		view.actions.done = 1
 	},
 	add_militia() {
-		push_undo()
+		logevent(EVENT_YORK_THE_COMMONS)
 		add_lord_forces(game.command, MILITIA, 1)
 		end_the_commons()
 	},
 	add_militia2() {
-		push_undo()
+		logevent(EVENT_YORK_THE_COMMONS)
 		add_lord_forces(game.command, MILITIA, 2)
 		end_the_commons()
 	},
 	done() {
-		push_undo()
 		end_the_commons()
 	}
 }
@@ -12357,7 +12364,7 @@ states.exile_pact = {
 				gen_action_locale(loc)
 	},
 	locale(loc) {
-		push_undo()
+		log(`E${EVENT_YORK_EXILE_PACT} to S${loc}.`)
 		set_lord_locale(game.command, loc)
 		end_exile_pact()
 	}
@@ -12524,7 +12531,7 @@ states.sun_in_splendour = {
 		muster_lord(LORD_EDWARD_IV, loc)
 		set_lord_moved(LORD_EDWARD_IV, 1)
 
-		logi(`Mustered Edward IV at ${locale_name[loc]}`)
+		log(`L${LORD_EDWARD_IV} at ${locale_name[loc]}`)
 
 		end_held_event()
 		game.state = "muster"
@@ -12564,10 +12571,20 @@ function goto_play_aspielles() {
 	clear_undo() // cannot undo after looking at hidden information!
 	game.state = "aspielles"
 	game.who = NOBODY
-	if (game.active === YORK)
-		log("Lancaster hand shown to the York player")
-	if (game.active === LANCASTER)
-		log("York hand shown to the Lancaster player")
+	if (game.active === YORK) {
+		if (game.hand_l.length > 0)
+			for (let c of game.hand_l)
+				log(">E" + c)
+		else
+			log(">Empty")
+	}
+	if (game.active === LANCASTER) {
+		if (game.hand_y.length > 0)
+			for (let c of game.hand_y)
+				log(">E" + c)
+		else
+			log(">Empty")
+	}
 }
 
 states.aspielles = {
@@ -12593,7 +12610,31 @@ states.aspielles = {
 			view.hand = game.hand_y
 	},
 	lord(lord) {
-		log(`Spied L${lord} mat.`)
+		log(`Reveal L${lord}:`)
+
+		let c = get_lord_capability(lord, 0)
+		if (c !== NOCARD)
+			log(">C" + c)
+		c = get_lord_capability(lord, 1)
+		if (c !== NOCARD)
+			log(">C" + c)
+
+		for_each_vassal_with_lord(lord, v => {
+			log(">V" + v)
+		})
+
+		for (let i of simple_force_type) {
+			let n = get_lord_forces(lord, i)
+			if (n > 0)
+				log(">" + n + " " + FORCE_TYPE_NAME[i])
+		}
+
+		for (let i of all_asset_types) {
+			let n = get_lord_assets(lord, i)
+			if (n > 0)
+				log(">" + n + " " + ASSET_TYPE_NAME[i])
+		}
+
 		game.who = lord
 	},
 	done() {
