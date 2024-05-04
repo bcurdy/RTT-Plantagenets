@@ -7234,7 +7234,7 @@ states.choose_flank_47 = {
 	},
 	lord(lord) {
 		let p = get_lord_array_position(lord)
-		log("L" + game.who + " engages L" + lord)
+		log("L" + game.who + " flanks L" + lord)
 		if (p === D1)
 			game.battle.engagements = ENGAGEMENTS_47[0].slice()
 		else
@@ -7252,7 +7252,7 @@ states.choose_flank_61 = {
 	},
 	lord(lord) {
 		let p = get_lord_array_position(lord)
-		log("L" + game.who + " engages L" + lord)
+		log("L" + game.who + " flanks L" + lord)
 		if (p === A1)
 			game.battle.engagements = ENGAGEMENTS_61[0].slice()
 		else
@@ -10693,7 +10693,6 @@ function capability_muster_effects_common(lord: Lord, c: Card) {
 // When a lord levies a capability during Levy (not first Arts of War), its Lordship effects must apply.
 function capability_muster_effects_levy(_lord: Lord, c: Card) {
 	if (c === AOW_LANCASTER_THOMAS_STANLEY) {
-		logcap(AOW_LANCASTER_THOMAS_STANLEY)
 		game.levy_flags.thomas_stanley = 1
 	}
 	if (c === AOW_YORK_FAIR_ARBITER && is_friendly_locale(get_lord_locale(LORD_SALISBURY))) {
@@ -12159,19 +12158,18 @@ states.dubious_clarence = {
 // === EVENT: YORKIST NORTH ===
 
 function goto_york_event_yorkist_north() {
-	// TODO: manual?
-	let influence_gained = 0
 	for (let lord of all_york_lords) {
-		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord) && is_lord_in_north(lord))
-			influence_gained++
-	}
-	for (let loc of all_locales) {
-		if (loc !== NOWHERE && loc < CALENDAR && has_york_favour(loc) && is_north(loc)) {
-			influence_gained++
+		if (is_lord_in_north(lord)) {
+			increase_york_influence(1)
+			log(">L" + lord)
 		}
 	}
-	logi(`Yorkist North : ${influence_gained} Influence for Yorkists`)
-	increase_york_influence(influence_gained)
+	for (let loc of all_north_locales) {
+		if (has_york_favour(loc)) {
+			increase_york_influence(1)
+			log(">S" + loc)
+		}
+	}
 	end_immediate_event()
 }
 
@@ -12258,9 +12256,8 @@ states.the_kings_name = {
 	},
 	pay() {
 		restore_state_for_the_kings_name()
-		log(`Levy action cancelled.`)
-		logevent(EVENT_YORK_THE_KINGS_NAME)
 		reduce_york_influence(1)
+		logevent(EVENT_YORK_THE_KINGS_NAME)
 		resume_muster_lord()
 	},
 	pass() {
@@ -12569,7 +12566,7 @@ states.sun_in_splendour_now = {
 	},
 	locale(loc) {
 		muster_lord(LORD_EDWARD_IV, loc)
-		logi(`Mustered L${LORD_EDWARD_IV} at S${loc}.`)
+		log(`L${LORD_EDWARD_IV} at S${loc}.`)
 		end_immediate_event()
 	},
 }
