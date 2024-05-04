@@ -121,6 +121,7 @@ interface Game {
 	battle?: Battle,
 	supply?: MyMap<Locale,number>,
 	parley?: MyMap<Locale,number>,
+	tax?: MyMap<Locale,number>,
 	spoils?: number[],
 
 	/* temporary properties for various events */
@@ -200,6 +201,7 @@ interface State {
 	influence?(): void,
 	stronghold?(): void,
 	port?(): void,
+	by_way?(): void,
 
 	// capabilities / events
 	add_men_at_arms?(): void,
@@ -4473,8 +4475,9 @@ function can_tax_at(here: Locale, lord: Lord) {
 }
 
 // adjacent friendly locales to an eligible stronghold (can_tax_at)
-function search_tax(result, start: Locale, lord: Lord) {
-	let ships = count_shared_ships(start, false)
+function search_tax(result, start: Locale, lord: Lord, ships: boolean) {
+	if (count_shared_ships(start, false) === 0)
+		ships = false
 
 	search_seen.fill(0)
 	search_seen[start] = 1
@@ -4500,7 +4503,7 @@ function search_tax(result, start: Locale, lord: Lord) {
 					queue.push(next)
 				}
 			}
-			if (ships > 0 && (is_seaport(here) || is_exile_box(here))) {
+			if (ships && (is_seaport(here) || is_exile_box(here))) {
 				for (let next of find_ports(here, lord)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
@@ -4524,16 +4527,18 @@ function can_action_tax(): boolean {
 	let here = get_lord_locale(game.command)
 	if (can_tax_at(here, game.command))
 		return true
-	return search_tax(false, here, game.command)
+	return search_tax(false, here, game.command, true)
 }
 
 function goto_tax() {
 	push_undo()
 	game.state = "tax"
+	game.tax = search_tax([], get_lord_locale(game.command), game.command, true)
 	game.where = NOWHERE
 }
 
 function end_tax() {
+	delete game.tax
 	game.where = NOWHERE
 	spend_action(1)
 	resume_command()
@@ -4562,10 +4567,7 @@ states.tax = {
 	prompt() {
 		if (game.where === NOWHERE) {
 			view.prompt = "Tax: Choose a stronghold."
-			map_for_each_key(
-				search_tax([], get_lord_locale(game.command), game.command),
-				gen_action_locale
-			)
+			map_for_each_key(game.tax, gen_action_locale)
 		} else {
 			view.prompt = `Tax: ${locale_name[game.where]}.`
 			prompt_influence_check(game.command)
@@ -4578,13 +4580,14 @@ states.tax = {
 			do_tax(game.command, game.where, 1)
 			end_tax()
 		} else {
-			let dist = map_get(
-				search_tax([], get_lord_locale(game.command), game.command),
-				loc,
-				0
-			)
-			if (can_naval_blockade_route(dist))
-				game.state = "blockade_tax"
+			let dist = map_get(game.tax, loc, 0)
+			if (can_naval_blockade_route(dist)) {
+				let tax_way = search_tax([], get_lord_locale(game.command), game.command, false)
+				if (map_has(tax_way, game.where))
+					game.tax = tax_way
+				else
+					game.state = "blockade_tax"
+			}
 		}
 	},
 	check(spend) {
@@ -4683,8 +4686,9 @@ function can_parley_at(loc: Locale) {
 	return !is_exile_box(loc) && !is_friendly_locale(loc) && !has_enemy_lord(loc) && !is_sea(loc)
 }
 
-function search_parley_levy(result, start: Locale, lord: Lord) {
-	let ships = count_shared_ships(start, false)
+function search_parley_levy(result, start: Locale, lord: Lord, ships: boolean) {
+	if (count_shared_ships(start, false) === 0)
+		ships = false
 
 	search_dist.fill(0)
 	search_seen.fill(0)
@@ -4712,7 +4716,7 @@ function search_parley_levy(result, start: Locale, lord: Lord) {
 				}
 			}
 
-			if (ships > 0 && (is_seaport(here) || is_exile_box(here))) {
+			if (ships && (is_seaport(here) || is_exile_box(here))) {
 				for (let next of find_ports(here, lord)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
@@ -4773,7 +4777,7 @@ function search_parley_campaign(here: Locale, lord: Lord) {
 
 		if (is_exile_box(here) && count_shared_ships(here, false) > 0)
 			for (let next of find_ports(here, lord))
-				if (can_parley_at(next))
+				if (!map_has(result, next) && can_parley_at(next))
 					map_set(result, next, 8 | find_sea_mask(here) | find_sea_mask(next))
 	}
 
@@ -4787,7 +4791,7 @@ function can_action_parley_levy(): boolean {
 	let here = get_lord_locale(game.command)
 	if (can_parley_at(here))
 		return true
-	return search_parley_levy(false, here, game.command)
+	return search_parley_levy(false, here, game.command, true)
 }
 
 function goto_parley_levy() {
@@ -4796,7 +4800,7 @@ function goto_parley_levy() {
 
 	game.state = "parley"
 
-	game.parley = search_parley_levy([], here, lord)
+	game.parley = search_parley_levy([], here, lord, true)
 
 	if (game.parley.length === 2 && game.parley[0] === here)
 		game.where = here
@@ -4884,7 +4888,6 @@ states.parley = {
 		}
 	},
 	locale(loc) {
-		push_undo()
 		game.where = loc
 		let here = get_lord_locale(game.command)
 		if (!is_adjacent(here, loc)) {
@@ -4907,7 +4910,14 @@ states.blockade_parley = {
 	inactive: "Parley",
 	prompt() {
 		view.prompt = "Parley: Warwick may naval blockade this parley action."
+		let by_way = search_parley_levy([], get_lord_locale(game.command), game.command, false)
+		if (map_has(by_way, game.where))
+			view.actions.by_way = 1
 		view.actions.roll = 1
+	},
+	by_way() {
+		game.parley = search_parley_levy([], get_lord_locale(game.command), game.command, false)
+		game.state = "parley"
 	},
 	roll() {
 		if (roll_blockade("Parley"))
@@ -11746,7 +11756,7 @@ function can_tax_collectors(lord: Lord) {
 	let here = get_lord_locale(lord)
 	if (can_tax_at(here, lord))
 		return true
-	return !!search_tax(false, here, lord)
+	return !!search_tax(false, here, lord, true)
 }
 
 states.tax_collectors = {
@@ -11770,6 +11780,7 @@ states.tax_collectors = {
 		game.where = NOWHERE
 		game.who = lord
 		game.state = "tax_collectors_lord"
+		game.tax = search_tax([], get_lord_locale(game.who), game.who, true)
 	},
 	done() {
 		end_tax_collectors()
@@ -11781,10 +11792,7 @@ states.tax_collectors_lord = {
 	prompt() {
 		if (game.where === NOWHERE) {
 			view.prompt = `Tax Collectors: ${lord_name[game.who]}. Choose a stronghold.`
-			map_for_each_key(
-				search_tax([], get_lord_locale(game.who), game.who),
-				gen_action_locale
-			)
+			map_for_each_key(game.tax, gen_action_locale)
 		} else {
 			view.prompt = `Tax Collectors: Tax ${locale_name[game.where]} with ${lord_name[game.who]}.`
 			prompt_influence_check(game.who)
@@ -11796,13 +11804,14 @@ states.tax_collectors_lord = {
 			do_tax(game.who, game.where, 2)
 			end_tax_collectors_lord()
 		} else {
-			let dist = map_get(
-				search_tax([], get_lord_locale(game.who), game.who),
-				loc,
-				0
-			)
-			if (can_naval_blockade_route(dist))
-				game.state = "blockade_tax_collectors"
+			let dist = map_get(game.tax, loc, 0)
+			if (can_naval_blockade_route(dist)) {
+				let tax_way = search_tax([], get_lord_locale(game.who), game.who, false)
+				if (map_has(tax_way, game.where))
+					game.tax = tax_way
+				else
+					game.state = "blockade_tax_collectors"
+			}
 		}
 	},
 	check(spend) {
@@ -11829,6 +11838,7 @@ states.blockade_tax_collectors = {
 }
 
 function end_tax_collectors_lord() {
+	delete game.tax
 	game.where = NOWHERE
 	game.who = NOBODY
 	game.state = "tax_collectors"
@@ -13155,6 +13165,22 @@ function map_has_value(map, value) {
 
 function map_clear(map) {
 	map.length = 0
+}
+
+function map_has(map, key) {
+	let a = 0
+	let b = (map.length >> 1) - 1
+	while (a <= b) {
+		let m = (a + b) >> 1
+		let x = map[m<<1]
+		if (key < x)
+			b = m - 1
+		else if (key > x)
+			a = m + 1
+		else
+			return true
+	}
+	return false
 }
 
 function map_get(map, key, missing) {

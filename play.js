@@ -1463,6 +1463,7 @@ function on_update() {
 	action_button("influence", "Influence")
 	action_button("stronghold", "Stronghold")
 	action_button("port", "Port")
+	action_button("by_way", "By way")
 
 	// CAPABILITIES / EVENTS
 	action_button("add_men_at_arms", "Add Men at Arms")
