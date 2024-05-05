@@ -630,8 +630,6 @@ function build_map() {
 
 		let loc = data.lords[ix].seat
 		e = ui.seat[ix] = document.createElement("div")
-		e.my_id = ix
-		register_tooltip(e, on_focus_cylinder)
 		document.getElementById("seats").appendChild(e)
 		if (is_york_lord(ix)) {
 			e.className = "hide seat york " + lord.id

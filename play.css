@@ -219,6 +219,7 @@ body.Lancaster #plan_actions .york { display: none }
 /* MARKERS */
 
 .seat {
+	pointer-events: none;
 	position: absolute;
 	background-size: 74px 74px;
 	border-radius: 50%;
