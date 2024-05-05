@@ -11863,9 +11863,17 @@ states.robins_rebellion = {
 	inactive: "Robin's Rebellion",
 	prompt() {
 		view.prompt = "Robin's Rebellion: Place and/or remove up to 3 favour total in the North."
-		for (let loc of all_locales)
-			if (game.count < 3 && is_north(loc))
-				gen_action_locale(loc)
+		let done = true
+		if (game.count < 3) {
+			for (let loc of all_north_locales) {
+				if (!is_friendly_locale(loc)) {
+					gen_action_locale(loc)
+					done = false
+				}
+			}
+		}
+		if (done)
+			view.prompt = "Robin's Rebellion: All done."
 		view.actions.done = 1
 	},
 	locale(loc) {
