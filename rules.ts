@@ -7502,9 +7502,22 @@ states.final_charge = {
 
 // === 4.4.2 BATTLE ROUNDS: ROLL BY HIT (PROTECTION ROLL, VALOUR RE-ROLL, FORCES ROUT) ===
 
+function no_remaining_targets() {
+	for (let pos of game.battle.engagements[0]) {
+		let lord = game.battle.array[pos]
+		if (is_friendly_lord(lord))
+			if (lord_has_unrouted_units(lord))
+				return false
+	}
+	return true
+}
+
 function goto_defender_assign_hits() {
 	set_active_defender()
-	goto_assign_hits()
+	if (game.battle.ahits === 0 || no_remaining_targets())
+		end_defender_assign_hits()
+	else
+		game.state = "assign_hits"
 }
 
 function end_defender_assign_hits() {
@@ -7514,16 +7527,15 @@ function end_defender_assign_hits() {
 
 function goto_attacker_assign_hits() {
 	set_active_attacker()
-	goto_assign_hits()
+	if (game.battle.dhits === 0 || no_remaining_targets())
+		end_attacker_assign_hits()
+	else
+		game.state = "assign_hits"
 }
 
 function end_attacker_assign_hits() {
 	game.battle.dhits = 0
 	end_battle_strike_step()
-}
-
-function goto_assign_hits() {
-	game.state = "assign_hits"
 }
 
 function prompt_hit_forces() {
