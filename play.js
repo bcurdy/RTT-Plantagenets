@@ -1063,8 +1063,9 @@ function update_lord_mat(ix) {
 	} else {
 		ui.mat[ix].classList.add("hidden")
 		ui.assets[ix].replaceChildren()
-		ui.retinue[ix].replaceChildren()
-		ui.routed_retinue[ix].replaceChildren()
+		ui.retinue_area[ix].replaceChildren()
+		ui.vassal_area[ix].replaceChildren()
+		ui.routed_retinue_vassal_area[ix].replaceChildren()
 		ui.troops[ix].replaceChildren()
 		ui.routed_troops[ix].replaceChildren()
 		ui.lord_moved1[ix].classList.add("hide")
