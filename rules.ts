@@ -7,14 +7,6 @@
 	report in better place
 		AOW_YORK_FINAL_CHARGE
 
-	streamline pay
-		pay troops -> lords -> vassals -> done
-
-	manual french war loans
-
-	Review all undo steps.
-	Review all states for needless pauses.
-	Review all states for adding extra pauses to prevent loss of control.
 	Review all who = NOBODY etc resets
 */
 
@@ -246,6 +238,7 @@ interface State {
 	end_command?(): void,
 	end_feed?(): void,
 	end_muster?(): void,
+	end_pay?(): void,
 	end_spoils?(): void,
 
 	roll?(): void,
@@ -2415,11 +2408,20 @@ function goto_pay_troops() {
 		}
 		set_lord_unfed(lord, n)
 	}
+	resume_pay_troops()
+}
+
+function resume_pay_troops() {
+	game.who = NOBODY
 	game.state = "pay_troops"
+	for (let lord of all_friendly_lords())
+		if (is_lord_unfed(lord))
+			return
+	goto_pay_lords()
 }
 
 states.pay_troops = {
-	inactive: "Pay Troops",
+	inactive: "Pay",
 	prompt() {
 		view.prompt = "Pay Troops."
 		let done = true
@@ -2471,13 +2473,14 @@ states.pay_troops = {
 
 		// All done!
 		if (done) {
-			view.prompt = "Pay Troops: All done."
-			view.actions.done = 1
+			throw "IMPOSSIBLE"
 		}
 	},
 	coin(lord) {
+		push_undo()
 		add_lord_assets(lord, COIN, -1)
 		pay_lord(lord)
+		resume_pay_troops()
 	},
 	lord(lord) {
 		push_undo()
@@ -2492,14 +2495,10 @@ states.pay_troops = {
 			game.state = "pay_troops_disband"
 		}
 	},
-	done() {
-		push_undo()
-		end_pay_troops()
-	},
 }
 
 states.pay_troops_shared = {
-	inactive: "Pay Troops",
+	inactive: "Pay",
 	prompt() {
 		view.prompt = `Pay Troops: Pay ${lord_name[game.who]}'s troops with shared coin.`
 		let loc = get_lord_locale(game.who)
@@ -2519,14 +2518,12 @@ states.pay_troops_shared = {
 }
 
 function resume_pay_troops_shared() {
-	if (!is_lord_unfed(game.who) || !can_pay_from_shared(game.who, 1)) {
-		game.who = NOBODY
-		game.state = "pay_troops"
-	}
+	if (!is_lord_unfed(game.who) || !can_pay_from_shared(game.who, 1))
+		resume_pay_troops()
 }
 
 states.pay_troops_pillage = {
-	inactive: "Pay Troops",
+	inactive: "Pay",
 	prompt() {
 		let here = get_lord_locale(game.who)
 		view.prompt = `Pay Troops: Pillage ${locale_name[here]} with ${lord_name[game.who]}.`
@@ -2534,27 +2531,20 @@ states.pay_troops_pillage = {
 	},
 	pillage() {
 		do_pillage(game.who)
-		game.who = NOBODY
-		game.state = "pay_troops"
+		resume_pay_troops()
 	},
 }
 
 states.pay_troops_disband = {
-	inactive: "Pay Troops",
+	inactive: "Pay",
 	prompt() {
 		view.prompt = `Pay Troops: Disband ${lord_name[game.who]}.`
 		view.actions.disband = 1
 	},
 	disband() {
 		do_pillage_disband(game.who)
-		game.who = NOBODY
-		game.state = "pay_troops"
+		resume_pay_troops()
 	},
-}
-
-function end_pay_troops() {
-	game.who = NOBODY
-	goto_pay_lords()
 }
 
 // === 3.2.1 PILLAGE ===
@@ -2592,7 +2582,7 @@ function do_pillage_disband(lord: Lord) {
 
 // === 3.2.2 PAY LORDS ===
 
-function has_friendly_lord_who_must_pay_lords() {
+function has_unpaid_lords() {
 	for (let lord of all_friendly_lords())
 		if (is_lord_unfed(lord))
 			return true
@@ -2603,24 +2593,26 @@ function goto_pay_lords() {
 	log_br()
 
 	for (let lord of all_friendly_lords()) {
-		if (is_lord_on_map(lord))
+		if (is_lord_on_map(lord)) {
 			if (lord_has_capability(lord, AOW_LANCASTER_PERCYS_POWER) && is_lord_in_north(lord))
 				continue
 			set_lord_unfed(lord, 1)
+		}
 	}
 
-	if (has_friendly_lord_who_must_pay_lords()) {
+	if (has_unpaid_lords()) {
 		log_h3("Pay Lords")
-		game.count = 0
 		game.who = NOBODY
 		game.state = "pay_lords"
 	} else {
-		end_pay_lords()
+		goto_pay_vassals()
 	}
 }
 
-function end_pay_lords() {
-	goto_pay_vassals()
+function resume_pay_lords() {
+	game.who = NOBODY
+	if (!has_unpaid_lords())
+		goto_pay_vassals()
 }
 
 function count_pay_lord_influence_cost() {
@@ -2632,25 +2624,16 @@ function count_pay_lord_influence_cost() {
 }
 
 states.pay_lords = {
-	inactive: "Pay Lords",
+	inactive: "Pay",
 	prompt() {
 		if (game.who === NOBODY) {
 			let total = count_pay_lord_influence_cost()
-			let done = true
-			for (let lord of all_friendly_lords()) {
-				if (is_lord_on_map(lord) && is_lord_unfed(lord)) {
+			view.prompt = `Pay Lords: Pay influence or disband your lords. Pay ${total} for all lords.`
+			for (let lord of all_friendly_lords())
+				if (is_lord_on_map(lord) && is_lord_unfed(lord))
 					gen_action_lord(lord)
-					done = false
-				}
-			}
 
-			if (done) {
-				view.prompt = "Pay Lords: All done."
-				view.actions.done = 1
-			} else {
-				view.prompt = `Pay Lords: Pay influence or disband your lords. Pay ${total} for all lords.`
-				view.actions.pay_all = 1
-			}
+			view.actions.pay_all = 1
 		} else {
 			let total = is_exile_box(get_lord_locale(game.who)) ? 2 : 1
 			view.prompt = `Pay Lords: Pay ${total} influence or disband ${lord_name[game.who]}.`
@@ -2664,13 +2647,13 @@ states.pay_lords = {
 	},
 	disband() {
 		disband_lord(game.who)
-		game.who = NOBODY
+		resume_pay_lords()
 	},
 	pay() {
 		reduce_influence(is_exile_box(get_lord_locale(game.who)) ? 2 : 1)
 		log("Pay L" + game.who + ".")
 		set_lord_moved(game.who, 0)
-		game.who = NOBODY
+		resume_pay_lords()
 	},
 	pay_all() {
 		push_undo()
@@ -2681,43 +2664,45 @@ states.pay_lords = {
 				set_lord_moved(lord, 0)
 			}
 		}
-	},
-	done() {
-		push_undo()
-		end_pay_lords()
+		goto_pay_vassals()
 	},
 }
 
 // === 3.2.3 PAY VASSALS ===
 
-function goto_pay_vassals() {
-	log_br()
+function has_unpaid_vassals() {
+	let result = false
+	for_each_unpaid_vassal(_ => {
+		result = true
+	})
+	return result
+}
 
+function for_each_unpaid_vassal(f) {
 	for (let v of all_vassals) {
 		let lord = get_vassal_lord(v)
 		if (is_friendly_lord(lord) && get_vassal_service(v) === current_turn()) {
 			if (lord_has_capability(lord, AOW_LANCASTER_PERCYS_POWER) && is_lord_in_north(lord))
 				continue
-			log_h3("Pay Vassals")
-			game.state = "pay_vassals"
-			game.vassal = NOVASSAL
-			return
+			f(v)
 		}
 	}
-
-	end_pay_vassals()
 }
 
-function end_pay_vassals() {
-	end_pay()
+function goto_pay_vassals() {
+	if (has_unpaid_vassals()) {
+		log_h3("Pay Vassals")
+		game.state = "pay_vassals"
+		game.vassal = NOVASSAL
+	} else {
+		goto_pay_done()
+	}
 }
 
-function count_pay_vassals_influence_cost() {
-	let n = 0
-	for (let v of all_vassals)
-		if (is_vassal_mustered_with_friendly_lord(v) && get_vassal_service(v) === current_turn())
-			++n
-	return n
+function resume_pay_vassals() {
+	game.vassal = NOVASSAL
+	if (!has_unpaid_vassals())
+		goto_pay_done()
 }
 
 function pay_vassal(vassal: Vassal) {
@@ -2727,28 +2712,16 @@ function pay_vassal(vassal: Vassal) {
 }
 
 states.pay_vassals = {
-	inactive: "Pay Vassals",
+	inactive: "Pay",
 	prompt() {
-		let done = true
 		if (game.vassal === NOVASSAL) {
-			for (let v of all_vassals) {
-				let lord = get_vassal_lord(v)
-				if (is_friendly_lord(lord) && get_vassal_service(v) === current_turn()) {
-					if (lord_has_capability(lord, AOW_LANCASTER_PERCYS_POWER) && is_lord_in_north(lord))
-						continue
-					gen_action_vassal(v)
-					done = false
-				}
-			}
-
-			if (done) {
-				view.prompt = "Pay Vassals: All done."
-				view.actions.done = 1
-			} else {
-				let total = count_pay_vassals_influence_cost()
-				view.prompt = `Pay Vassals: Pay influence or disband your vassals in the current turn's calendar box. Pay ${total} for all vassals.`
-				view.actions.pay_all = 1
-			}
+			let total = 0
+			for_each_unpaid_vassal(v => {
+				gen_action_vassal(v)
+				total += 1
+			})
+			view.prompt = `Pay Vassals: Pay influence or disband your vassals in the current turn's calendar box. Pay ${total} for all vassals.`
+			view.actions.pay_all = 1
 		} else {
 			view.prompt = `Pay Vassals: Pay 1 influence or disband ${vassal_name[game.vassal]}.`
 			view.vassal = game.vassal
@@ -2762,22 +2735,35 @@ states.pay_vassals = {
 	},
 	pay() {
 		pay_vassal(game.vassal)
-		game.vassal = NOVASSAL
-	},
-	pay_all() {
-		push_undo()
-		for (let v of all_vassals) {
-			if (is_vassal_mustered_with_friendly_lord(v) && get_vassal_service(v) === current_turn()) {
-				pay_vassal(v)
-			}
-		}
+		resume_pay_vassals()
 	},
 	disband() {
 		disband_vassal(game.vassal)
-		game.vassal = NOVASSAL
+		resume_pay_vassals()
 	},
-	done() {
-		end_pay_vassals()
+	pay_all() {
+		push_undo()
+		for_each_unpaid_vassal(v => {
+			pay_vassal(v)
+		})
+		goto_pay_done()
+	},
+}
+
+// === 3.2.X PAY DONE ===
+
+function goto_pay_done() {
+	game.state = "pay_done"
+}
+
+states.pay_done = {
+	inactive: "Pay",
+	prompt() {
+		view.prompt = "Pay: All done."
+		view.actions.end_pay = 1
+	},
+	end_pay() {
+		end_pay()
 	},
 }
 
@@ -3079,7 +3065,6 @@ states.muster = {
 	lord(lord) {
 		push_undo()
 
-		log_br()
 		log_h3(`L${lord} at S${get_lord_locale(lord)}`)
 
 		game.state = "muster_lord"
@@ -5898,8 +5883,6 @@ states.exile_spoils = {
 
 */
 
-const attack_positions = [ A1, A2, A3 ]
-const defend_positions = [ D1, D2, D3 ]
 const battle_strike_positions = [ D1, D2, D3, A1, A2, A3 ]
 
 function log_lord_cap_ii(lord: Lord, c: Card) {
