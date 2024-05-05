@@ -7541,6 +7541,7 @@ function goto_defender_assign_hits() {
 }
 
 function end_defender_assign_hits() {
+	game.who = NOBODY
 	game.battle.ahits = 0
 	goto_attacker_assign_hits()
 }
@@ -7554,6 +7555,7 @@ function goto_attacker_assign_hits() {
 }
 
 function end_attacker_assign_hits() {
+	game.who = NOBODY
 	game.battle.dhits = 0
 	end_battle_strike_step()
 }
@@ -7696,7 +7698,6 @@ states.assign_hits = {
 		goto_regroup()
 	},
 	done() {
-		game.who = NOBODY
 		if (game.active === game.battle.attacker)
 			end_attacker_assign_hits()
 		else
