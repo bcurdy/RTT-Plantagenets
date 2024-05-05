@@ -75,9 +75,7 @@ body.Lancaster #event_header, body.Lancaster #hand_header, body.Lancaster #plan_
 	width: 1275px;
 	height: 1650px;
 	background-color: #999f85;
-	margin: 12px auto;
 	box-shadow: 1px 2px 4px #0004;
-	border: 2px solid #333;
 }
 
 #map {
@@ -96,8 +94,8 @@ body.Lancaster #event_header, body.Lancaster #hand_header, body.Lancaster #plan_
 /* PANELS */
 
 .panel {
-	min-width: 1275px;
-	max-width: 1275px;
+	min-width: 1271px;
+	max-width: 1271px;
 	background-color: hsl(34, 10%, 35%);
 	background-color: #555;
 	margin: 12px auto;
