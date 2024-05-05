@@ -39,40 +39,12 @@ body.Lancaster #event_header, body.Lancaster #hand_header, body.Lancaster #plan_
 #log .vassal_tip:hover { cursor: pointer; text-decoration: underline; }
 #log .locale_tip:hover { cursor: pointer; text-decoration: underline; }
 
-/*
-#log span.black, #log span.white {
-	display: inline-block;
-	width: 12px;
-	height: 12px;
-	line-height: 12px;
-	text-align: center;
-	padding: 0;
-	text-indent: 0;
-	background-color: #999;
-	border: 1px solid black;
-	font-weight: bold;
-	border-radius: 50%;
-}
-
-#log span.black {
-	background-color: #666;
-	color: white;
-	border: 1px solid #222;
-}
-
-#log span.white {
-	background-color: #eee;
-	border: 1px solid #666;
-}
-*/
-
 #log .white, #log .black {
 	display: inline-block;
 	vertical-align: -2px;
-	width: 12px;
-	height: 12px;
+	width: 11px;
+	height: 11px;
 	border-radius: 0px;
-	border: none;
 	background-size: 600% 100%;
 	background-repeat: no-repeat;
 }
@@ -80,12 +52,12 @@ body.Lancaster #event_header, body.Lancaster #hand_header, body.Lancaster #plan_
 #log .white {
 	background-image: url(images/die_black_pips.svg);
 	background-color: #fff;
-	border: 1px solid #444;
+	border: 1px solid #555;
 }
 
 #log .black {
 	background-image: url(images/die_white_pips.svg);
-	background-color: #666;
+	background-color: #777;
 	border: 1px solid #222;
 }
 
@@ -96,7 +68,6 @@ body.Lancaster #event_header, body.Lancaster #hand_header, body.Lancaster #plan_
 .d4 { background-position: 60% 0; }
 .d5 { background-position: 80% 0; }
 .d6 { background-position: 100% 0; }
-
 
 /* MAP */
 
@@ -333,7 +304,8 @@ body.Lancaster #plan_actions .york { display: none }
 }
 
 .locale.tip {
-	background-color: #ff08;
+	background-color: #0ff8;
+	border-color: #0ff;
 }
 
 .locale_markers {
@@ -387,6 +359,14 @@ body.Lancaster #plan_actions .york { display: none }
 		drop-shadow(0px 2px 0px gold)
 		drop-shadow(0px -2px 0px gold)
 		drop-shadow(-2px 0px 0px gold);
+}
+
+.cylinder.tip {
+	filter:
+		drop-shadow(2px 0px 0px cyan)
+		drop-shadow(0px 2px 0px cyan)
+		drop-shadow(0px -2px 0px cyan)
+		drop-shadow(-2px 0px 0px cyan);
 }
 
 .marker.exile {
@@ -701,8 +681,6 @@ width:105px;
 	background-image: url(images/battle_background_dark.jpg);
 	background-size: 1275px;
 	background-position: center;
-
-	//border-top: 2px solid #0008;
 }
 
 #battle_grid .grid_array {
@@ -723,10 +701,12 @@ width:105px;
 
 .defender .att,
 .attacker .def,
-.defender .att .retinue_vassals,
-.attacker .def .retinue_vassals,
-.defender .att .routed_retinue_vassals,
-.attacker .def .routed_retinue_vassals,
+.defender .att .retinue_area,
+.attacker .def .retinue_area,
+.defender .att .vassal_area,
+.attacker .def .vassal_area,
+.defender .att .routed_retinue_vassal_area,
+.attacker .def .routed_retinue_vassal_area,
 .defender .att .assets,
 .attacker .def .assets,
 .defender .att .troops,

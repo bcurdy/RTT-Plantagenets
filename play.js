@@ -1,6 +1,8 @@
 "use strict"
 
-// TODO: tooltip lord card when mouseover cylinder
+/* global data, view, player, action_button, action_button_with_argument, send_action */
+
+/* export toggle_pieces, toggle_seats, on_update, on_log */
 
 function toggle_pieces() {
 	document.getElementById("pieces").classList.toggle("hide")
@@ -10,14 +12,57 @@ function toggle_seats() {
 	document.getElementById("seats").classList.toggle("hide")
 }
 
-// === CONSTANTS (matching those in rules.js) ===
+// === GAME STATE ===
 
-function find_lord(name) { return data.lords.findIndex((x) => x.name === name) }
-function find_card(name) { return data.cards.findIndex((x) => x.name === name) }
-function find_locale(name) { return data.locales.findIndex(x => x.name === name) }
+function map_get(map, key, missing) {
+	let a = 0
+	let b = (map.length >> 1) - 1
+	while (a <= b) {
+		let m = (a + b) >> 1
+		let x = map[m << 1]
+		if (key < x)
+			b = m - 1
+		else if (key > x)
+			a = m + 1
+		else
+			return map[(m << 1) + 1]
+	}
+	return missing
+}
 
-const LORD_HENRY_VI = find_lord("Henry VI")
-const LOC_LONDON = find_locale("London")
+function map_get_pack4(map, lord, k) {
+	return pack4_get(map_get(map, lord, 0), k)
+}
+
+function map2_get(map, x, y, v) {
+	return map_get(map, (x << 1) + y, v)
+}
+
+function set_has(set, item) {
+	if (!Array.isArray(set))
+		return false
+	let a = 0
+	let b = set.length - 1
+	while (a <= b) {
+		let m = (a + b) >> 1
+		let x = set[m]
+		if (item < x)
+			b = m - 1
+		else if (item > x)
+			a = m + 1
+		else
+			return true
+	}
+	return false
+}
+
+function pack4_get(word, n) {
+	n = n << 2
+	return (word >>> n) & 15
+}
+
+const LORD_HENRY_VI = data.lords.findIndex(x => x.name === "Henry VI")
+const LOC_LONDON = data.locales.findIndex(x => x.name === "London")
 
 const first_york_lord = 0
 const last_york_lord = 13
@@ -36,20 +81,16 @@ const last_locale = data.locales.length - 1
 const first_vassal = 0
 const last_vassal = data.vassals.length - 1
 
-const RETINUE = 0
-const VASSAL = 1
 const MEN_AT_ARMS = 2
 const LONGBOWMEN = 3
 const MILITIA = 4
 const BURGUNDIANS = 5
 const MERCENARIES = 6
-const force_type_count = 7
 
 const force_action_name = [ "retinue", "vassal", "men_at_arms", "longbowmen", "militia", "burgundians", "mercenaries" ]
 const force_class_name = [ "retinue", "vassal", "shape men_at_arms", "shape longbowmen", "shape militia", "shape burgundians", "shape mercenaries" ]
 const routed_force_action_name = [ "routed_retinue", "routed_vassal", "routed_men_at_arms", "routed_longbowmen", "routed_militia", "routed_burgundians", "routed_mercenaries" ]
 
-const COIN = 1
 const asset_type_count = 4
 const asset_action_name = [ "prov", "coin", "cart", "ship" ]
 const asset_type_x34 = [ 1, 1, 1, 0 ]
@@ -96,71 +137,6 @@ const SEASONS = [
 	WINTER,
 	null
 ]
-// === ACTIONS ===
-
-function is_action(action, arg) {
-	if (arg === undefined)
-		return !!(view.actions && view.actions[action] === 1)
-	return !!(view.actions && view.actions[action] && set_has(view.actions[action], arg))
-}
-
-function on_action(evt) {
-	if (evt.button === 0) {
-		if (evt.target.my_id === undefined) {
-			send_action(evt.target.my_action)
-			if (evt.target.my_action_2)
-				send_action(evt.target.my_action_2)
-		} else {
-			send_action(evt.target.my_action, evt.target.my_id)
-			if (evt.target.my_action_2)
-				send_action(evt.target.my_action_2, evt.target.my_id)
-		}
-	}
-}
-
-function register_action(elt, action, id, action_2) {
-	elt.my_id = id
-	elt.my_action = action
-	elt.my_action_2 = action_2
-	elt.onmousedown = on_action
-}
-
-// === TOOLTIPS ===
-
-function register_tooltip(elt, focus, blur) {
-	if (typeof focus === "function")
-		elt.onmouseenter = focus
-	else
-		elt.onmouseenter = () => on_focus(focus)
-	if (blur)
-		elt.onmouseleave = blur
-	else
-		elt.onmouseleave = on_blur
-}
-
-function on_focus(text) {
-	document.getElementById("status").textContent = text
-}
-
-function on_blur() {
-	document.getElementById("status").textContent = ""
-	update_current_card_display()
-}
-
-function get_locale_tip(id) {
-	return data.locales[id].name
-}
-
-function on_focus_cylinder(evt) {
-	let lord = evt.target.my_id
-	let info = data.lords[lord]
-	let loc = get_lord_locale(lord)
-	let tip = info.short_name
-	on_focus(tip)
-	ui.command.replaceChildren(ui.lords2[lord])
-}
-
-// === GAME STATE ===
 
 function current_season() {
 	return SEASONS[view.turn >> 1]
@@ -168,10 +144,14 @@ function current_season() {
 
 function max_plan_length() {
 	switch (current_season()) {
-	case SUMMER: return 7
-	case WINTER: return 4
-	case SPRING: return 6
-	case AUTUMN: return 6
+		case SUMMER:
+			return 7
+		case WINTER:
+			return 4
+		case SPRING:
+			return 6
+		case AUTUMN:
+			return 6
 	}
 }
 
@@ -191,16 +171,8 @@ function get_lord_moved(lord) {
 	return map_get(view.pieces.moved, lord, 0)
 }
 
-function get_lord_assets(lord, n) {
-	return map_get_pack4(view.pieces.assets, lord, n, 0)
-}
-
 function get_lord_forces(lord, n) {
 	return map_get_pack4(view.pieces.forces, lord, n, 0)
-}
-
-function get_lord_routed(lord, n) {
-	return map_get_pack4(view.pieces.routed, lord, n, 0)
 }
 
 function get_lord_capability(lord, n) {
@@ -248,14 +220,6 @@ function for_each_vassal_with_lord(lord, f) {
 			f(x)
 }
 
-function is_york_locale(loc) {
-	return loc >= first_york_locale && loc <= last_york_locale
-}
-
-function is_lancaster_locale(loc) {
-	return loc >= first_lancaster_locale && loc <= last_lancaster_locale
-}
-
 function is_lord_on_map(lord) {
 	let loc = get_lord_locale(lord)
 	return loc !== NOWHERE && loc < CALENDAR
@@ -263,11 +227,6 @@ function is_lord_on_map(lord) {
 
 function is_lord_in_game(lord) {
 	return get_lord_locale(lord) !== NOWHERE
-}
-
-function is_lord_on_calendar(lord) {
-	let loc = get_lord_locale(lord)
-	return loc >= CALENDAR
 }
 
 function is_levy_phase() {
@@ -297,56 +256,37 @@ function is_lord_selected(ix) {
 	return false
 }
 
-function lord_has_capability_card(lord, c) {
-	let name = data.cards[c].capability
-	let c1 = get_lord_capability(lord, 0)
-	if (c1 >= 0 && data.cards[c1].capability === name)
-		return true
-	let c2 = get_lord_capability(lord, 1)
-	if (c2 >= 0 && data.cards[c2].capability === name)
-		return true
-	return false
-}
-
-function lord_has_capability(lord, card_or_list) {
-	if (Array.isArray(card_or_list)) {
-		for (let card of card_or_list)
-			if (lord_has_capability_card(lord, card))
-				return true
-		return false
-	}
-	return lord_has_capability_card(lord, card_or_list)
-}
-
 // === BUILD UI ===
 
-const calendar_boxes = {
-	"box1": [204,38,100,162],
-	"box2": [306,38,100,162],
-	"box3": [408,38,100,162],
-	"box4": [510,38,100,162],
-	"box5": [612,38,100,162],
-	"box6": [734,38,100,162],
-	"box7": [836,38,100,162],
-	"box8": [938,38,100,162],
-	"box9": [1040,38,100,162],
-	"box10": [1142,38,100,162],
-	"box11": [734,260,100,162],
-	"box12": [836,260,100,162],
-	"box13": [938,260,100,162],
-	"box14": [1040,260,100,162],
-	"box15": [1142,260,100,162],
-	"box16": [938,423,310,52],
+function is_action(action, arg) {
+	if (arg === undefined)
+		return !!(view.actions && view.actions[action] === 1)
+	return !!(view.actions && view.actions[action] && set_has(view.actions[action], arg))
 }
 
-const track_xy = []
-const calendar_xy = []
-const locale_xy = []
+function register_action(target, action, id) {
+	target.my_id = id
+	target.my_action = action
+	target.onmousedown = (evt) => on_action(evt, target)
+}
+
+function on_action(evt, target) {
+	if (evt.button === 0)
+		if (send_action(target.my_action, target.my_id))
+			evt.stopPropagation()
+}
+
+var locale_lord_york = []
+var locale_lord_lanc = []
+var calendar_lord_york = []
+var calendar_lord_lanc = []
+var calendar_vassal_disband = []
+var calendar_vassal_york = []
+var calendar_vassal_lanc = []
 
 const ui = {
 	favicon: document.getElementById("favicon"),
 	locale: [],
-	locale_name: [],
 	depleted: [],
 	locale_markers_rose: [],
 	lord_cylinder: [],
@@ -425,13 +365,41 @@ const ui = {
 	],
 }
 
-let locale_layout_york = []
-let locale_layout_lanc = []
-let calendar_layout_york = []
-let calendar_layout_lanc = []
-let calendar_vassal_disband = []
-let calendar_vassal_york = []
-let calendar_vassal_lanc = []
+const TRACK_XY = []
+
+for (let i = 0; i <= 45; ++i) {
+	let x = 0, y = 0
+	if (i <= 25) {
+		x = 24 + i * 47.25 + 22
+		y = 1577 + 22
+	} else {
+		x = 1205 + 22
+		y = 1577 - (i-25) * 47.25 + 22
+	}
+	TRACK_XY[i] = [ x, y ]
+}
+
+const CALENDAR_XY = [
+	[102,38,100,162],
+	[204,38,100,162],
+	[306,38,100,162],
+	[408,38,100,162],
+	[510,38,100,162],
+	[612,38,100,162],
+	[734,38,100,162],
+	[836,38,100,162],
+	[938,38,100,162],
+	[1040,38,100,162],
+	[1142,38,100,162],
+	[734,260,100,162],
+	[836,260,100,162],
+	[938,260,100,162],
+	[1040,260,100,162],
+	[1142,260,100,162],
+	[938,423,310,52],
+]
+
+const LOCALE_XY = []
 
 function clean_name(name) {
 	return name.toLowerCase().replaceAll("&", "and").replaceAll(" ", "_")
@@ -445,7 +413,7 @@ function build_div(parent, className) {
 	return e
 }
 
-function build_lord_mat(lord, ix, side, name) {
+function build_lord_mat(ix, side, name) {
 	let mat = build_div(null, `mat ${side} ${name}`)
 	let board = build_div(mat, "board")
 	ui.mat_card[ix] = build_div(board, "card lord " + side + " " + name)
@@ -469,54 +437,21 @@ function build_lord_mat(lord, ix, side, name) {
 	register_action(ui.mat_card[ix], "lord", ix)
 }
 
-function build_card(side, c, id) {
-	let card = ui.cards[c] = document.querySelector(`div[data-card="${id}"]`)
+function build_card(c, name) {
+	let card = ui.cards[c] = document.querySelector(`div[data-card="${name}"]`)
 	ui.cards2[c] = card.cloneNode(true)
 	register_action(card, "card", c)
 }
 
-function build_plan() {
+(function build_map() {
 	let elt
 
-	for (let i = 0; i < 7; ++i) {
-		elt = document.createElement("div")
-		elt.className = "hide"
-		ui.plan_cards.push(elt)
-		ui.plan.appendChild(elt)
-	}
-
-	for (let lord = 0; lord < 28; ++lord) {
-		let side = lord < 14 ? "york" : "lancaster"
-		elt = document.createElement("div")
-		elt.className = `card cc ${side} ${data.lords[lord].id}`
-		register_action(elt, "plan", lord)
-		ui.plan_action_cards.push(elt)
-		ui.plan_actions.appendChild(elt)
-	}
-
-	ui.plan_action_pass_york = elt = document.createElement("div")
-	elt.className = `card cc york pass`
-	register_action(elt, "plan", -1)
-	ui.plan_actions.appendChild(elt)
-
-	ui.plan_action_pass_lancaster = elt = document.createElement("div")
-	elt.className = `card cc lancaster pass`
-	register_action(elt, "plan", -1)
-	ui.plan_actions.appendChild(elt)
-}
-
-function build_map() {
 	for (let i = 0; i <= 16; ++i) {
-		calendar_layout_york[i] = []
-		calendar_layout_lanc[i] = []
+		calendar_lord_york[i] = []
+		calendar_lord_lanc[i] = []
 		calendar_vassal_disband[i] = []
 		calendar_vassal_york[i] = []
 		calendar_vassal_lanc[i] = []
-	}
-
-	for (let i = 0; i < data.locales.length; ++i) {
-		locale_layout_york[i] = []
-		locale_layout_lanc[i] = []
 	}
 
 	data.locales.forEach((locale, ix) => {
@@ -527,10 +462,13 @@ function build_map() {
 		let yc = Math.round(y + h / 2)
 		let e
 
-		locale_xy[ix] = [ xc, yc ]
+		LOCALE_XY[ix] = [ xc, yc ]
+
+		locale_lord_york[ix] = []
+		locale_lord_lanc[ix] = []
 
 		if (locale.type === "exile_box") {
-			locale_xy[ix] = [ xc, y + 45 ]
+			LOCALE_XY[ix] = [ xc, y + 45 ]
 			ax = x + 6
 			ay = y + 6
 			aw = w - 13
@@ -557,7 +495,7 @@ function build_map() {
 		e.style.top = ay + "px"
 		e.style.width = aw + "px"
 		e.style.height = ah + "px"
-		register_action(e, "locale", ix, "laden_march")
+		register_action(e, "locale", ix)
 		register_tooltip(e, get_locale_tip(ix))
 		document.getElementById("locales").appendChild(e)
 
@@ -629,7 +567,7 @@ function build_map() {
 		ui.lord_routed_retinue[ix].className = "unit retinue"
 		register_action(ui.lord_routed_retinue[ix], "routed_retinue", ix)
 
-		build_lord_mat(lord, ix, side, lord.id)
+		build_lord_mat(ix, side, lord.id)
 
 		let loc = data.lords[ix].seat
 		e = ui.seat[ix] = document.createElement("div")
@@ -644,7 +582,7 @@ function build_map() {
 	})
 
 	function layout_seat_markers(loc, dx, dy, list) {
-		let [ x, y ] = locale_xy[loc]
+		let [ x, y ] = LOCALE_XY[loc]
 		y -= (list.length - 1) * 8
 		x += dx
 		y += dy
@@ -694,31 +632,39 @@ function build_map() {
 		register_tooltip(e, data.vassals[ix].name)
 	})
 
-	for (let i = 1; i <= 16; ++i)
-		calendar_xy[i] = calendar_boxes["box" + i]
-
-	for (let i = 0; i <= 45; ++i) {
-		let name = "track" + i
-		let x = 0, y = 0
-		if (i <= 25) {
-			x = 24 + i * 47.25 + 22
-			y = 1577 + 22
-		} else {
-			x = 1205 + 22
-			y = 1577 - (i-25) * 47.25 + 22
-		}
-		track_xy[i] = [ x, y ]
+	for (let i = 0; i < 7; ++i) {
+		elt = document.createElement("div")
+		elt.className = "hide"
+		ui.plan_cards.push(elt)
+		ui.plan.appendChild(elt)
 	}
 
-	build_plan()
+	for (let lord = 0; lord < 28; ++lord) {
+		let side = lord < 14 ? "york" : "lancaster"
+		elt = document.createElement("div")
+		elt.className = `card cc ${side} ${data.lords[lord].id}`
+		register_action(elt, "plan", lord)
+		ui.plan_action_cards.push(elt)
+		ui.plan_actions.appendChild(elt)
+	}
+
+	ui.plan_action_pass_york = elt = document.createElement("div")
+	elt.className = `card cc york pass`
+	register_action(elt, "plan", -1)
+	ui.plan_actions.appendChild(elt)
+
+	ui.plan_action_pass_lancaster = elt = document.createElement("div")
+	elt.className = `card cc lancaster pass`
+	register_action(elt, "plan", -1)
+	ui.plan_actions.appendChild(elt)
 
 	for (let i = 0; i < 6; ++i)
 		register_action(ui.battle_grid_array[i], "array", i)
 
 	for (let c = first_york_card; c <= last_york_card; ++c)
-		build_card("york", c, "Y" + (1 + c - first_york_card))
+		build_card(c, "Y" + (1 + c - first_york_card))
 	for (let c = first_lancaster_card; c <= last_lancaster_card; ++c)
-		build_card("lancaster", c, "L" + (1 + c - first_lancaster_card))
+		build_card(c, "L" + (1 + c - first_lancaster_card))
 
 	ui.card_aow_lancaster_back = build_div(null, "card aow lancaster back")
 	ui.card_aow_york_back = build_div(null, "card aow york back")
@@ -730,7 +676,7 @@ function build_map() {
 		ui.card_cc[i] = build_div(null, "card cc york " + data.lords[i].id)
 	for (let i = 14; i < 28; ++i)
 		ui.card_cc[i] = build_div(null, "card cc lancaster " + data.lords[i].id)
-}
+})()
 
 // === UPDATE UI ===
 
@@ -787,7 +733,7 @@ function update_current_card_display() {
 }
 
 function layout_locale_cylinders(loc, list, dx) {
-	let [xc, yc] = locale_xy[loc]
+	let [xc, yc] = LOCALE_XY[loc]
 	let dy = (list.length - 1) * -15
 	let x = xc + dx
 	let y = yc + dy
@@ -802,7 +748,7 @@ function layout_locale_cylinders(loc, list, dx) {
 }
 
 function layout_exile_box_cylinders(loc, list, dy) {
-	let [xc, yc] = locale_xy[loc]
+	let [xc, yc] = LOCALE_XY[loc]
 	let dx = (list.length - 1) * -23
 	let x = xc + dx
 	let y = yc + dy
@@ -818,10 +764,10 @@ function layout_exile_box_cylinders(loc, list, dy) {
 
 function layout_calendar() {
 	for (let loc = 1; loc <= 16; ++loc) {
-		let [cx, cy] = calendar_xy[loc]
+		let [cx, cy] = CALENDAR_XY[loc]
 		let list
 
-		list = calendar_layout_lanc[loc]
+		list = calendar_lord_lanc[loc]
 		for (let i = 0; i < list.length; ++i) {
 			let e = ui.lord_cylinder[list[i]]
 			let x = cx, y = cy, z = 30 + i
@@ -840,7 +786,7 @@ function layout_calendar() {
 			}
 		}
 
-		list = calendar_layout_york[loc]
+		list = calendar_lord_york[loc]
 		for (let i = 0; i < list.length; ++i) {
 			// ui.lord_exile[ix].classList.toggle("hide", !is_lord_in_exile(ix))
 			let e = ui.lord_cylinder[list[i]]
@@ -864,7 +810,7 @@ function layout_calendar() {
 		for (let i = 0; i < list.length; ++i) {
 			let e = list[i]
 			let x = cx, y = cy, z = 25 - i
-			let len_lanc = calendar_layout_lanc[loc].length
+			let len_lanc = calendar_lord_lanc[loc].length
 			y += len_lanc * 30 + 10 + i * 32
 			x += 0
 			e.style.top = y + "px"
@@ -876,7 +822,7 @@ function layout_calendar() {
 		for (let i = 0; i < list.length; ++i) {
 			let e = list[i]
 			let x = cx, y = cy, z = 30 - i
-			let len_york = calendar_layout_york[loc].length
+			let len_york = calendar_lord_york[loc].length
 			y += len_york * 30 + 10 + i * 32
 			x += 51
 			e.style.top = y + "px"
@@ -888,8 +834,8 @@ function layout_calendar() {
 		for (let i = 0; i < list.length; ++i) {
 			let e = list[i]
 			let x = cx, y = cy, z = 20 - i
-			let len_lanc = calendar_layout_lanc[loc].length * 30 + 10
-			let len_york = calendar_layout_york[loc].length * 30 + 10
+			let len_lanc = calendar_lord_lanc[loc].length * 30 + 10
+			let len_york = calendar_lord_york[loc].length * 30 + 10
 			let len_lanc2 = calendar_vassal_lanc[loc].length * 32
 			let len_york2 = calendar_vassal_york[loc].length * 32
 			y += Math.max(len_lanc + len_lanc2, len_york + len_york2) + i * 32
@@ -922,7 +868,7 @@ function add_routed_retinue(parent, lord) {
 		elt.classList.remove("fled")
 }
 
-function add_vassal(parent, vassal, lord, routed) {
+function add_vassal(parent, vassal) {
 	let elt = ui.vassal_mat[vassal]
 	elt.classList.toggle("selected", view.vassal === vassal || set_has(view.vassal, vassal))
 	elt.classList.toggle("action", is_action("vassal", vassal))
@@ -983,9 +929,9 @@ function update_lord_vassals(parent, lord_ix) {
 	for_each_vassal_with_lord(lord_ix, v => {
 		if (view.battle) {
 			if (!set_has(view.battle.routed_vassals, v))
-				add_vassal(parent, v, lord_ix, false)
+				add_vassal(parent, v)
 		} else {
-			add_vassal(parent, v, lord_ix, false)
+			add_vassal(parent, v)
 		}
 	})
 }
@@ -998,7 +944,7 @@ function update_lord_routed_retinue_vassal(parent, forces, lord_ix) {
 	for_each_vassal_with_lord(lord_ix, v => {
 		if (view.battle) {
 			if (set_has(view.battle.routed_vassals, v))
-				add_vassal(parent, v, lord_ix, true)
+				add_vassal(parent, v)
 		}
 	})
 }
@@ -1033,10 +979,8 @@ function update_assets(parent, assets, lord_ix) {
 	}
 }
 
-function add_valour(parent, lord) {
-	let elt
-	elt = get_cached_element("marker valour small")
-	parent.appendChild(elt)
+function add_valour(parent) {
+	parent.appendChild(get_cached_element("marker valour small"))
 }
 
 function update_valour(lord, parent, battle) {
@@ -1106,18 +1050,18 @@ function update_lord(ix) {
 	}
 	if (locale < CALENDAR) {
 		if (is_york_lord(ix))
-			locale_layout_york[locale].push(ix)
+			locale_lord_york[locale].push(ix)
 		else
-			locale_layout_lanc[locale].push(ix)
+			locale_lord_lanc[locale].push(ix)
 		ui.lord_cylinder[ix].classList.remove("hide")
 		update_lord_mat(ix)
 		ui.lord_exile[ix].classList.add("hide")
 	} else if (locale <= CALENDAR_EXILE + 16) {
 		let t = locale > CALENDAR_EXILE ? locale - CALENDAR_EXILE : locale - CALENDAR
 		if (is_york_lord(ix))
-			calendar_layout_york[t].push(ix)
+			calendar_lord_york[t].push(ix)
 		else
-			calendar_layout_lanc[t].push(ix)
+			calendar_lord_lanc[t].push(ix)
 		ui.lord_cylinder[ix].classList.remove("hide")
 		ui.lord_exile[ix].classList.toggle("hide", !is_lord_in_exile(ix))
 	}
@@ -1133,20 +1077,17 @@ function update_lord(ix) {
 
 function update_locale(loc) {
 	if (data.locales[loc].type === "exile_box") {
-		layout_exile_box_cylinders(loc, locale_layout_lanc[loc], 0)
-		layout_exile_box_cylinders(loc, locale_layout_york[loc], 30)
+		layout_exile_box_cylinders(loc, locale_lord_lanc[loc], 0)
+		layout_exile_box_cylinders(loc, locale_lord_york[loc], 30)
 	} else {
-		layout_locale_cylinders(loc, locale_layout_lanc[loc], -30)
-		layout_locale_cylinders(loc, locale_layout_york[loc], 30)
+		layout_locale_cylinders(loc, locale_lord_lanc[loc], -30)
+		layout_locale_cylinders(loc, locale_lord_york[loc], 30)
 	}
 
-	ui.locale[loc].classList.toggle("action", is_action("locale", loc) || is_action("laden_march", loc))
+	ui.locale[loc].classList.toggle("action", is_action("locale", loc))
 	ui.locale[loc].classList.toggle("selected", view.where === loc || set_has(view.where, loc))
 	ui.locale[loc].classList.toggle("supply_path", !!(view.supply && view.supply[0] === loc))
 	ui.locale[loc].classList.toggle("supply_source", !!(view.supply && view.supply[1] === loc))
-	if (ui.locale_name[loc]) {
-		ui.locale_name[loc].classList.toggle("action", is_action("locale", loc) || is_action("laden_march", loc))
-	}
 
 	if (set_has(view.pieces.exhausted, loc))
 		ui.depleted[loc].className = "marker small exhausted"
@@ -1361,8 +1302,8 @@ var track_offset = new Array(46).fill(0)
 
 function show_track_marker(elt, pos) {
 	let n = track_offset[pos]++
-	let x = track_xy[pos][0] - 25
-	let y = track_xy[pos][1] - 25
+	let x = TRACK_XY[pos][0] - 25
+	let y = TRACK_XY[pos][1] - 25
 
 	if (pos <= 10) {
 		y -= 51 * n
@@ -1377,16 +1318,6 @@ function show_track_marker(elt, pos) {
 
 	elt.style.left = x + "px"
 	elt.style.top = y + "px"
-}
-
-function list_has_friendly_lords(list) {
-	for (let lord of list) {
-		if (player === "York" && is_york_lord(lord))
-			return true
-		if (player === "Lancaster" && is_lancaster_lord(lord))
-			return true
-	}
-	return false
 }
 
 function on_update() {
@@ -1405,16 +1336,16 @@ function on_update() {
 	}
 
 	for (let i = 0; i <= 16; ++i) {
-		calendar_layout_york[i].length = 0
-		calendar_layout_lanc[i].length = 0
+		calendar_lord_york[i].length = 0
+		calendar_lord_lanc[i].length = 0
 		calendar_vassal_disband[i].length = 0
 		calendar_vassal_york[i].length = 0
 		calendar_vassal_lanc[i].length = 0
 	}
 
 	for (let i = 0; i < data.locales.length; ++i) {
-		locale_layout_york[i].length = 0
-		locale_layout_lanc[i].length = 0
+		locale_lord_york[i].length = 0
+		locale_lord_lanc[i].length = 0
 	}
 
 	track_offset.fill(0)
@@ -1451,13 +1382,13 @@ function on_update() {
 	} else {
 		ui.turn.className = `marker circle turn levy`
 	}
-	ui.turn.style.left = (calendar_xy[view.turn >> 1][0] + 91 - 52) + "px"
-	ui.turn.style.top = (calendar_xy[view.turn >> 1][1] + 94) + "px"
+	ui.turn.style.left = (CALENDAR_XY[view.turn >> 1][0] + 91 - 52) + "px"
+	ui.turn.style.top = (CALENDAR_XY[view.turn >> 1][1] + 94) + "px"
 
 	if (view.end < 16) {
 		ui.end.style.display = null
-		ui.end.style.left = (calendar_xy[view.end][0] + 91 - 52) + "px"
-		ui.end.style.top = (calendar_xy[view.end][1] + 94) + "px"
+		ui.end.style.left = (CALENDAR_XY[view.end][0] + 91 - 52) + "px"
+		ui.end.style.top = (CALENDAR_XY[view.end][1] + 94) + "px"
 	} else {
 		ui.end.style.display = "none"
 	}
@@ -1590,7 +1521,40 @@ function on_update() {
 	action_button("undo", "Undo")
 }
 
-// === LOG ===
+// === LOG & TIP ===
+
+function register_tooltip(elt, focus, blur) {
+	if (typeof focus === "function")
+		elt.onmouseenter = focus
+	else
+		elt.onmouseenter = () => on_focus(focus)
+	if (blur)
+		elt.onmouseleave = blur
+	else
+		elt.onmouseleave = on_blur
+}
+
+function on_focus(text) {
+	document.getElementById("status").textContent = text
+}
+
+function on_blur() {
+	document.getElementById("status").textContent = ""
+	update_current_card_display()
+}
+
+function get_locale_tip(id) {
+	return data.locales[id].name
+}
+
+function on_focus_cylinder(evt) {
+	let lord = evt.target.my_id
+	let info = data.lords[lord]
+	let tip = info.short_name
+	on_focus(tip)
+	ui.command.replaceChildren(ui.lords2[lord])
+}
+
 
 function on_focus_card_tip(c) {
 	ui.command.replaceChildren(ui.cards2[c])
@@ -1600,51 +1564,57 @@ function on_blur_card_tip() {
 	update_current_card_display()
 }
 
-function sub_card_capability(match, p1) {
-	let x = p1 | 0
-	return `<span class="card_tip" onmouseenter="on_focus_card_tip(${x})" onmouseleave="on_blur_card_tip(${x})">${data.cards[x].capability}</span>`
-}
-
-function sub_card_event(match, p1) {
-	let x = p1 | 0
-	return `<span class="card_tip" onmouseenter="on_focus_card_tip(${x})" onmouseleave="on_blur_card_tip(${x})">${data.cards[x].event}</span>`
-}
-
 function on_focus_locale_tip(loc) {
 	ui.locale[loc].classList.add("tip")
-	if (ui.locale_name[loc])
-		ui.locale_name[loc].classList.add("tip")
 }
 
 function on_blur_locale_tip(loc) {
 	ui.locale[loc].classList.remove("tip")
-	if (ui.locale_name[loc])
-		ui.locale_name[loc].classList.remove("tip")
 }
 
 function on_click_locale_tip(loc) {
 	ui.locale[loc].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" })
 }
 
+function on_focus_lord_tip(lord) {
+	ui.lord_cylinder[lord].classList.add("tip")
+	ui.command.replaceChildren(ui.lords2[lord])
+}
+
+function on_blur_lord_tip(lord) {
+	ui.lord_cylinder[lord].classList.remove("tip")
+	update_current_card_display()
+}
+
 function on_click_lord_tip(lord) {
 	ui.mat[lord].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" })
 }
 
-function sub_locale_name(match, p1) {
+function sub_card_capability(_match, p1) {
+	let x = p1 | 0
+	return `<span class="card_tip" onmouseenter="on_focus_card_tip(${x})" onmouseleave="on_blur_card_tip(${x})">${data.cards[x].capability}</span>`
+}
+
+function sub_card_event(_match, p1) {
+	let x = p1 | 0
+	return `<span class="card_tip" onmouseenter="on_focus_card_tip(${x})" onmouseleave="on_blur_card_tip(${x})">${data.cards[x].event}</span>`
+}
+
+function sub_locale_name(_match, p1) {
 	let x = p1 | 0
 	let n = data.locales[x].name
 	return `<span class="locale_tip" onmouseenter="on_focus_locale_tip(${x})" onmouseleave="on_blur_locale_tip(${x})" onclick="on_click_locale_tip(${x})">${n}</span>`
 }
 
-function sub_lord_name(match, p1) {
+function sub_lord_name(_match, p1) {
 	let x = p1 | 0
 	let n = data.lords[x].short_name
-	return `<span class="lord_tip" onclick="on_click_lord_tip(${x})">${n}</span>`
+	return `<span class="lord_tip" onmouseenter="on_focus_lord_tip(${x})" onmouseleave="on_blur_lord_tip(${x})" onclick="on_click_lord_tip(${x})">${n}</span>`
 }
 
-function sub_vassal_name(match, x) {
+function sub_vassal_name(_match, x) {
 	let n = data.vassals[x].name
-	return `<span class="vassal_tip" >${n}</span>`
+	return `<span class="vassal_tip">${n}</span>`
 }
 
 const ICONS_SVG = {
@@ -1662,23 +1632,6 @@ const ICONS_SVG = {
 	W4: '<span class="white d4"></span>',
 	W5: '<span class="white d5"></span>',
 	W6: '<span class="white d6"></span>',
-}
-
-const ICONS_HTM = {
-	B0: '<span class="black d0">0</span>',
-	B1: '<span class="black d1">1</span>',
-	B2: '<span class="black d2">2</span>',
-	B3: '<span class="black d3">3</span>',
-	B4: '<span class="black d4">4</span>',
-	B5: '<span class="black d5">5</span>',
-	B6: '<span class="black d6">6</span>',
-	W0: '<span class="white d0">0</span>',
-	W1: '<span class="white d1">1</span>',
-	W2: '<span class="white d2">2</span>',
-	W3: '<span class="white d3">3</span>',
-	W4: '<span class="white d4">4</span>',
-	W5: '<span class="white d5">5</span>',
-	W6: '<span class="white d6">6</span>',
 }
 
 const ICONS_TXT = {
@@ -1699,7 +1652,7 @@ const ICONS_TXT = {
 }
 
 function sub_icon(match) {
-	return ICONS_TXT[match]
+	return ICONS_SVG[match]
 }
 
 function on_log(text) {
@@ -1753,64 +1706,3 @@ function on_log(text) {
 	p.innerHTML = text
 	return p
 }
-
-build_map()
-scroll_with_middle_mouse("main")
-// === COMMON LIBRARY ===
-
-function map_get(map, key, missing) {
-	let a = 0
-	let b = (map.length >> 1) - 1
-	while (a <= b) {
-		let m = (a + b) >> 1
-		let x = map[m << 1]
-		if (key < x)
-			b = m - 1
-		else if (key > x)
-			a = m + 1
-		else
-			return map[(m << 1) + 1]
-	}
-	return missing
-}
-
-function map_get_pack4(map, lord, k) {
-	return pack4_get(map_get(map, lord, 0), k)
-}
-
-function map2_get(map, x, y, v) {
-	return map_get(map, (x << 1) + y, v)
-}
-
-function set_has(set, item) {
-	if (!Array.isArray(set))
-		return false
-	let a = 0
-	let b = set.length - 1
-	while (a <= b) {
-		let m = (a + b) >> 1
-		let x = set[m]
-		if (item < x)
-			b = m - 1
-		else if (item > x)
-			a = m + 1
-		else
-			return true
-	}
-	return false
-}
-
-function pack1_get(word, n) {
-	return (word >>> n) & 1
-}
-
-function pack2_get(word, n) {
-	n = n << 1
-	return (word >>> n) & 3
-}
-
-function pack4_get(word, n) {
-	n = n << 2
-	return (word >>> n) & 15
-}
-
