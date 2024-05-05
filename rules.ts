@@ -4524,31 +4524,49 @@ function can_action_forage() {
 
 function goto_forage() {
 	push_undo()
-	let here = get_lord_locale(game.command)
+	game.state = "forage"
+}
 
-	if (!has_adjacent_enemy(here) && is_neutral_locale(here)) {
+states.forage = {
+	prompt() {
+		let here = get_lord_locale(game.command)
+		if (is_friendly_locale(here) && !has_adjacent_enemy(here)) {
+			view.prompt = "Forage: Add one provender."
+			view.actions.take_prov = 1
+		} else if (is_neutral_locale(here) && !has_adjacent_enemy(here)) {
+			view.prompt = "Forage: Roll 1-4 to add one provender."
+			view.actions.roll = 1
+		} else if (is_enemy_locale(here) || has_adjacent_enemy(here)) {
+			view.prompt = "Forage: Roll 1-3 to add one provender."
+			view.actions.roll = 1
+		}
+	},
+	roll() {
+		let here = get_lord_locale(game.command)
+		let target = 3
+		if (is_neutral_locale(here) && !has_adjacent_enemy(here))
+			target = 4
+
 		let die = roll_die()
-		if (die <= 4) {
-			log(`Forage at S${here} 1-4: B${die}`)
+		if (die <= target) {
+			log(`Forage at S${here} 1-${target}: B${die}`)
 			add_lord_assets(game.command, PROV, 1)
 			deplete_locale(here)
 		} else {
-			log(`Forage at S${here} 1-4: W${die}`)
+			log(`Forage at S${here} 1-${target}: W${die}`)
 		}
-	} else if (has_adjacent_enemy(here) || is_enemy_locale(here)) {
-		let die = roll_die()
-		if (die <= 3) {
-			log(`Forage at S${here} 1-3: B${die}`)
-			add_lord_assets(game.command, PROV, 1)
-			deplete_locale(here)
-		} else {
-			log(`Forage at S${here} 1-3: W${die}`)
-		}
-	} else {
+		end_forage()
+	},
+	take_prov() {
+		let here = get_lord_locale(game.command)
 		log(`Forage at S${here}.`)
 		add_lord_assets(game.command, PROV, 1)
 		deplete_locale(here)
-	}
+		end_forage()
+	},
+}
+
+function end_forage() {
 	if (lord_has_capability(game.command, AOW_YORK_SCOURERS)) {
 		logcap(AOW_YORK_SCOURERS)
 		add_lord_assets(game.command, PROV, 1)
@@ -5003,6 +5021,7 @@ states.parley = {
 		}
 	},
 	locale(loc) {
+		push_undo()
 		game.where = loc
 		let here = get_lord_locale(game.command)
 		if (!is_adjacent(here, loc)) {
@@ -6600,8 +6619,6 @@ states.suspicion_1 = {
 	},
 	lord(lord) {
 		push_undo()
-		logevent(game.this_event)
-		logi("L" + lord)
 		game.who = lord
 		game.state = "suspicion_2"
 	},
@@ -6614,7 +6631,7 @@ states.suspicion_2 = {
 		prompt_influence_check(game.who)
 	},
 	check(spend) {
-		if (roll_influence_check("Suspicion L" + game.who, game.who, spend)) {
+		if (roll_influence_check("L" + game.who, game.who, spend)) {
 			game.state = "suspicion_3"
 		} else {
 			game.who = NOBODY
@@ -6634,6 +6651,9 @@ states.suspicion_3 = {
 	},
 	lord(lord) {
 		push_undo()
+
+		logi("L" + lord)
+
 		remove_lord_from_battle(lord)
 		disband_lord(lord)
 		game.who = NOBODY
