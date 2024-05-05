@@ -7008,9 +7008,9 @@ function use_culverins(lord: Lord) {
 		if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE) && game.active === YORK) {
 			logevent(EVENT_YORK_PATRICK_DE_LA_MOTE)
 			die2 = roll_die()
-			logi(`${die1} + ${die2} Cannons`)
+			logii(`+ B${die1} B${die2} Artillery`)
 		} else {
-			logi(`${die1} Cannons`)
+			logii(`+ B${die1} Artillery`)
 		}
 		set_delete(game.battle.culverins, lord)
 		return (die1 + die2) << 1
@@ -8521,7 +8521,7 @@ states.capture_of_the_king = {
 	prompt() {
 		view.prompt = "Capture of the King: Place Henry VI with any unrouted Yorkist lord."
 		for (let lord of all_york_lords)
-			if (is_lord_on_map(lord) && !set_has(game.battle.routed, lord))
+			if (get_lord_locale(lord) === game.battle.where && !set_has(game.battle.routed, lord))
 				gen_action_lord(lord)
 	},
 	lord(lord) {
