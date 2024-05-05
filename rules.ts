@@ -1495,6 +1495,16 @@ function can_pick_up_lords(lord: Lord) {
 	return false
 }
 
+function can_pick_up_other(lord: Lord, other: Lord) {
+	if (game.scenario === SCENARIO_II) {
+		if (lord === LORD_WARWICK_L && other === LORD_MARGARET)
+			return false
+		if (lord === LORD_MARGARET && other === LORD_WARWICK_L)
+			return false
+	}
+	return (other !== lord && !is_marshal(other))
+}
+
 // === STATE: LORD (SHARED) ===
 
 function get_york_shared_assets(loc: Locale, what: Asset) {
@@ -3905,7 +3915,7 @@ states.command = {
 
 		if (can_pick_up_lords(game.command)) {
 			for_each_friendly_lord_in_locale(here, other => {
-				if (other !== game.command && !is_marshal(other))
+				if (can_pick_up_other(game.command, other))
 					gen_action_lord(other)
 			})
 		}
@@ -5367,7 +5377,7 @@ states.intercept = {
 
 			if (can_pick_up_lords(game.who)) {
 				for_each_friendly_lord_in_locale(get_lord_locale(game.who), other => {
-					if (other !== game.who && !is_marshal(other) && is_move_allowed(other, to))
+					if (can_pick_up_other(game.who, other) && is_move_allowed(other, to))
 						gen_action_lord(other)
 				})
 			}
@@ -12749,7 +12759,7 @@ states.surprise_landing = {
 
 		if (can_pick_up_lords(game.command)) {
 			for_each_friendly_lord_in_locale(get_lord_locale(game.command), other => {
-				if (other !== game.command && !is_marshal(other))
+				if (can_pick_up_other(game.command, other))
 					gen_action_lord(other)
 			})
 		}
