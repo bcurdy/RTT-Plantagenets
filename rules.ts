@@ -271,9 +271,8 @@ interface View {
 	actions: any,
 	log: string[],
 
-	end: number,
+	scenario: number,
 	turn: number,
-	victory_check: number,
 	influence: number,
 
 	events: Card[],
@@ -10022,7 +10021,6 @@ function setup_ItoIII() {
 
 	set_flag(FLAG_REBEL_IS_YORK)
 	game.active = YORK
-	game.victory_check = 45
 	game.influence = 0
 	muster_lord(LORD_YORK, LOC_ELY)
 	muster_lord(LORD_MARCH, LOC_LUDLOW)
@@ -10071,7 +10069,6 @@ function setup_II_Y() {
 	game.scenario = "IIY. The Kingmaker"
 	clear_flag(FLAG_REBEL_IS_YORK)
 	game.active = LANCASTER
-	game.victory_check = 45
 	game.influence = 0
 
 	for (let lord of all_lords) {
@@ -10194,7 +10191,6 @@ function setup_II_L() {
 	game.scenario = "IIL. Lancastrian Legitimacy Fades"
 	set_flag(FLAG_REBEL_IS_YORK)
 	game.active = YORK
-	game.victory_check = 40
 	game.influence = 0
 
 	for (let lord of all_lords) {
@@ -10323,7 +10319,6 @@ function setup_III_Y() {
 	game.scenario = "IIIY. New Rivals"
 	clear_flag(FLAG_REBEL_IS_YORK)
 	game.active = LANCASTER
-	game.victory_check = 45
 	game.influence = 0
 
 	if (!is_lord_in_play(LORD_YORK)) {
@@ -10520,7 +10515,6 @@ function setup_III_L() {
 	game.scenario = "IIIL. Yorkists Last Stand"
 	set_flag(FLAG_REBEL_IS_YORK)
 	game.active = YORK
-	game.victory_check = 45
 	game.influence = 0
 
 	if (!is_lord_in_play(LORD_YORK)) {
@@ -12912,9 +12906,8 @@ exports.view = function (state, current) {
 		log: game.log,
 		reveal: 0,
 
-		end: scenario_end_marker[game.scenario],
+		scenario: game.scenario,
 		turn: game.turn,
-		victory_check: scenario_victory_threshold(),
 		influence: game.influence,
 
 		events: game.events,

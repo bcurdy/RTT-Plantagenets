@@ -256,6 +256,45 @@ function is_lord_selected(ix) {
 	return false
 }
 
+const SCENARIO_IA = 0
+const SCENARIO_IB = 1
+const SCENARIO_IC = 2
+const SCENARIO_II = 3
+const SCENARIO_III = 4
+
+const scenario_end_marker = [
+	16,
+	2,
+	8,
+	16,
+	10,
+]
+
+function scenario_victory_threshold() {
+	let turn = view.turn >> 1
+	switch (view.scenario) {
+		case SCENARIO_IA:
+			if (turn <= 5)
+				return 40
+			if (turn <= 10)
+				return 35
+			return 30
+		case SCENARIO_IB:
+			return 100 // no threshold
+		case SCENARIO_IC:
+			return 25
+		case SCENARIO_II:
+			if (turn <= 5)
+				return 40
+			if (turn <= 10)
+				return 35
+			return 30
+		case SCENARIO_III:
+			return 45
+	}
+	return 45
+}
+
 // === BUILD UI ===
 
 function is_action(action, arg) {
@@ -1320,18 +1359,44 @@ function show_track_marker(elt, pos) {
 	elt.style.top = y + "px"
 }
 
+function update_lancaster_favicon() {
+	switch (view.scenario) {
+		default:
+		case SCENARIO_IA: return "favicons/favicon_lancaster_henry_vi.png"
+		case SCENARIO_IB: return "favicons/favicon_lancaster_somerset.png"
+		case SCENARIO_IC: return "favicons/favicon_lancaster_henry_vi.png"
+		case SCENARIO_II: return "favicons/favicon_lancaster_margaret.png"
+		case SCENARIO_III: return "favicons/favicon_lancaster_henry_tudor.png"
+	}
+}
+
+function update_york_favicon() {
+	switch (view.scenario) {
+		default:
+		case SCENARIO_IA: return "favicons/favicon_york_york.png"
+		case SCENARIO_IB: return "favicons/favicon_york_warwick.png"
+		case SCENARIO_IC: return "favicons/favicon_york_march.png"
+		case SCENARIO_II: return "favicons/favicon_york_edward_iv.png"
+		case SCENARIO_III: return "favicons/favicon_york_gloucester.png"
+	}
+}
+
+function update_observer_favicon() {
+	return "favicons/favicon_france.png"
+}
+
 function on_update() {
 	restart_cache()
 
 	switch (player) {
 		case "York":
-			ui.favicon.href = "favicons/favicon_york.png"
+			ui.favicon.href = update_york_favicon()
 			break
 		case "Lancaster":
-			ui.favicon.href = "favicons/favicon_henry_vi.png"
+			ui.favicon.href = update_lancaster_favicon()
 			break
 		default:
-			ui.favicon.href = "favicons/favicon_warwick.png"
+			ui.favicon.href = update_observer_favicon()
 			break
 	}
 
@@ -1385,10 +1450,11 @@ function on_update() {
 	ui.turn.style.left = (CALENDAR_XY[view.turn >> 1][0] + 91 - 52) + "px"
 	ui.turn.style.top = (CALENDAR_XY[view.turn >> 1][1] + 94) + "px"
 
-	if (view.end < 16) {
+	let end = scenario_end_marker[view.scenario]
+	if (end < 16) {
 		ui.end.style.display = null
-		ui.end.style.left = (CALENDAR_XY[view.end][0] + 91 - 52) + "px"
-		ui.end.style.top = (CALENDAR_XY[view.end][1] + 94) + "px"
+		ui.end.style.left = (CALENDAR_XY[end][0] + 91 - 52) + "px"
+		ui.end.style.top = (CALENDAR_XY[end][1] + 94) + "px"
 	} else {
 		ui.end.style.display = "none"
 	}
@@ -1396,9 +1462,10 @@ function on_update() {
 	ui.held_york.textContent = `${view.held_y} Held`
 	ui.held_lancaster.textContent = `${view.held_l} Held`
 
-	if (view.victory_check <= 45) {
+	let vc = scenario_victory_threshold()
+	if (vc <= 45) {
 		ui.victory_check.style.display = null
-		show_track_marker(ui.victory_check, view.victory_check)
+		show_track_marker(ui.victory_check, vc)
 	} else {
 		ui.victory_check.style.display = "none"
 	}
