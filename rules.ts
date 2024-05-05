@@ -2278,7 +2278,7 @@ states.levy_arts_of_war_first = {
 	lord(lord) {
 		push_undo()
 		let c = game.arts_of_war.shift()
-		log(`Assign Capability.`)
+		log("Assign Capability.")
 		add_lord_capability(lord, c)
 		capability_muster_effects_common(lord, c)
 		resume_levy_arts_of_war_first()
@@ -2353,7 +2353,7 @@ states.levy_arts_of_war = {
 	},
 	hold() {
 		let c = game.arts_of_war.shift()
-		log(`Held Event.`)
+		log("Held Event.")
 		if (game.active === YORK)
 			set_add(game.hand_y, c)
 		else
@@ -2645,7 +2645,7 @@ states.pay_lords = {
 			}
 
 			if (done) {
-				view.prompt = `Pay Lords: All done.`
+				view.prompt = "Pay Lords: All done."
 				view.actions.done = 1
 			} else {
 				view.prompt = `Pay Lords: Pay influence or disband your lords. Pay ${total} for all lords.`
@@ -3213,7 +3213,7 @@ states.muster_lord = {
 	take_ship() {
 		push_undo()
 		push_the_kings_name()
-		log(`Levy Transport.`)
+		log("Levy Transport.")
 		if (can_naval_blockade(get_lord_locale(game.command)))
 			game.state = "blockade_levy_ship"
 		else
@@ -3223,7 +3223,7 @@ states.muster_lord = {
 	take_cart() {
 		push_undo()
 		push_the_kings_name()
-		log(`Levy Transport.`)
+		log("Levy Transport.")
 		add_lord_assets(game.command, CART, 2)
 		goto_the_kings_name("Levy Cart")
 	},
@@ -3231,14 +3231,14 @@ states.muster_lord = {
 	levy_troops() {
 		push_undo()
 		push_the_kings_name()
-		log(`Levy Troops.`)
+		log("Levy Troops.")
 		do_levy_troops()
 	},
 
 	levy_beloved_warwick() {
 		push_undo()
 		push_the_kings_name()
-		log(`Levy Troops.`)
+		log("Levy Troops.")
 		logcap(AOW_YORK_BELOVED_WARWICK)
 		add_lord_forces(game.command, MILITIA, 5)
 		end_levy_troops()
@@ -3247,7 +3247,7 @@ states.muster_lord = {
 	levy_irishmen() {
 		push_undo()
 		push_the_kings_name()
-		log(`Levy Troops.`)
+		log("Levy Troops.")
 		logcap(AOW_YORK_IRISHMEN)
 		add_lord_forces(game.command, MILITIA, 5)
 		end_levy_troops()
@@ -3256,7 +3256,7 @@ states.muster_lord = {
 	soldiers_of_fortune() {
 		push_undo()
 		push_the_kings_name()
-		log(`Levy Troops.`)
+		log("Levy Troops.")
 		logcap(AOW_YORK_SOLDIERS_OF_FORTUNE)
 		game.state = "soldiers_of_fortune"
 	},
@@ -3264,7 +3264,7 @@ states.muster_lord = {
 	commission_of_array() {
 		push_undo()
 		push_the_kings_name()
-		log(`Levy Troops.`)
+		log("Levy Troops.")
 		logcap(AOW_LANCASTER_COMMISSION_OF_ARRAY)
 		game.state = "commission_of_array"
 	},
@@ -3272,7 +3272,7 @@ states.muster_lord = {
 	capability() {
 		push_undo()
 		push_the_kings_name()
-		log(`Levy Capability.`)
+		log("Levy Capability.")
 		game.state = "levy_capability"
 	},
 
@@ -4362,7 +4362,7 @@ states.sail = {
 		let overflow_cart = (cart / 2 - ships) * 2
 
 		if (overflow_prov <= 0 && overflow_cart <= 0) {
-			view.prompt = `Sail: Choose a destination port or sea.`
+			view.prompt = "Sail: Choose a destination port or sea."
 			for (let to of find_sail_locales(here)) {
 				if (to === here)
 					continue
@@ -4467,7 +4467,7 @@ function goto_confirm_approach_sail() {
 states.confirm_approach_sail = {
 	inactive: "Sail",
 	prompt() {
-		view.prompt = `Sail: Approach enemy?`
+		view.prompt = "Sail: Approach enemy?"
 		view.group = game.group
 		view.actions.approach = 1
 	},
@@ -5162,7 +5162,7 @@ states.march_haul = {
 		view.group = game.group
 		view.where = game.march.to
 
-		view.prompt = `March: Haul.`
+		view.prompt = "March: Haul."
 
 		if (prov > transport) {
 			let overflow_prov = prov - transport
@@ -5480,7 +5480,7 @@ states.intercept_haul = {
 
 		view.group = game.intercept
 
-		view.prompt = `Intercept: Haul.`
+		view.prompt = "Intercept: Haul."
 
 		if (prov > transport) {
 			let overflow_prov = prov - transport
@@ -5783,7 +5783,7 @@ function list_spoils() {
 	else if (game.spoils[CART] > 0)
 		return `${game.spoils[CART]} carts`
 	else
-		return `nothing`
+		return "nothing"
 }
 
 function prompt_spoils() {
@@ -6947,7 +6947,7 @@ function end_culverins_and_falconets() {
 states.culverins_and_falconets = {
 	inactive: "Culverins and Falconets",
 	prompt() {
-		view.prompt = `Culverins and Falconets: You may discard capability to add missile hits.`
+		view.prompt = "Culverins and Falconets: You may discard capability to add missile hits."
 
 		for (let p of battle_strike_positions) {
 			let lord = game.battle.array[p]
@@ -7305,7 +7305,7 @@ function goto_select_engagement() {
 states.select_engagement = {
 	inactive: "Engagement",
 	prompt() {
-		view.prompt = `Battle: Choose the next engagement.`
+		view.prompt = "Battle: Choose the next engagement."
 
 		for (let eng of game.battle.engagements) {
 			for (let pos of eng) {
@@ -8067,7 +8067,7 @@ function has_defeated_lords() {
 // === 4.4.3 ENDING THE BATTLE: INFLUENCE ===
 
 function goto_battle_influence() {
-	log_h4(`Influence`)
+	log_h4("Influence")
 
 	if (game.battle.loser !== BOTH) {
 		set_active_loser()
@@ -8176,7 +8176,7 @@ function goto_battle_losses_victor() {
 	set_active_victor()
 	game.who = NOBODY
 	if (has_battle_losses())
-		log_h4(`Losses`)
+		log_h4("Losses")
 	resume_battle_losses()
 }
 
@@ -8353,7 +8353,7 @@ states.death_check = {
 	inactive: "Death Check",
 	prompt() {
 		if (game.who === NOBODY) {
-			view.prompt = `Death Check: Routed lords now die or disband.`
+			view.prompt = "Death Check: Routed lords now die or disband."
 
 			prompt_held_event_at_death_check()
 
@@ -8613,7 +8613,7 @@ function goto_play_escape_ship() {
 }
 
 states.escape_ship = {
-	inactive: `Escape ship`,
+	inactive: "Escape Ship",
 	prompt() {
 		view.prompt = "Escape Ship: Choose lords to go to exile."
 		for (let lord of game.battle.routed)
@@ -8920,7 +8920,7 @@ states.feed = {
 
 		// Pillage
 		if (done) {
-			view.prompt = `Feed: Pillage with lords who have unfed troops.`
+			view.prompt = "Feed: Pillage with lords who have unfed troops."
 			for (let lord of all_friendly_lords()) {
 				if (is_lord_unfed(lord) && can_pillage(get_lord_locale(lord))) {
 					gen_action_lord(lord)
@@ -8931,7 +8931,7 @@ states.feed = {
 
 		// Disband
 		if (done) {
-			view.prompt = `Feed: Disband lords who have unfed troops.`
+			view.prompt = "Feed: Disband lords who have unfed troops."
 			for (let lord of all_friendly_lords()) {
 				if (is_lord_unfed(lord)) {
 					gen_action_lord(lord)
@@ -10834,7 +10834,7 @@ states.soldiers_of_fortune = {
 states.commission_of_array = {
 	inactive: "Muster",
 	prompt() {
-		view.prompt = `Commission of Array: Levy troops from an adjacent friendly stronghold.`
+		view.prompt = "Commission of Array: Levy troops from an adjacent friendly stronghold."
 		let here = get_lord_locale(game.command)
 		for (let next of data.locales[here].adjacent) {
 			if (is_friendly_locale(next) && !has_enemy_lord(next))
@@ -10971,7 +10971,7 @@ states.merchants_1 = {
 states.merchants_2 = {
 	inactive: "Merchants",
 	prompt() {
-		view.prompt = `Merchants: Remove 2 depleted or exhausted markers.`
+		view.prompt = "Merchants: Remove 2 depleted or exhausted markers."
 		let here = get_lord_locale(game.command)
 		if (has_exhausted_marker(here) || has_depleted_marker(here))
 			gen_action_locale(here)
@@ -11387,7 +11387,7 @@ function end_lancaster_event_french_troops() {
 states.french_troops = {
 	inactive: "French Troops",
 	prompt() {
-		view.prompt = `French Troops: Add up to 2 men-at-arms and up to 2 militia to a lord at a port.`
+		view.prompt = "French Troops: Add up to 2 men-at-arms and up to 2 militia to a lord at a port."
 		if (game.who === NOBODY) {
 			for (let lord of all_friendly_lords()) {
 				if (is_lord_on_map(lord) && is_seaport(get_lord_locale(lord))) {
@@ -11456,7 +11456,7 @@ function goto_warwicks_propaganda() {
 states.warwicks_propaganda = {
 	inactive: "Warwick's Propaganda",
 	prompt() {
-		view.prompt = `Warwick's Propaganda: Select 3 Yorkist strongholds.`
+		view.prompt = "Warwick's Propaganda: Select 3 Yorkist strongholds."
 		view.where = game.event_propaganda
 		for (let loc of all_locales) {
 			if (game.count < 3 && has_york_favour(loc) && !is_exile_box(loc) && !is_propaganda_target(loc)) {
@@ -11727,7 +11727,7 @@ function goto_yorkist_aragne() {
 states.aragne_2 = {
 	inactive: "L'Universelle Aragne",
 	prompt() {
-		view.prompt = `L'Universelle Aragne: Check influence for each selected vassal.`
+		view.prompt = "L'Universelle Aragne: Check influence for each selected vassal."
 		let done = true
 		for (let v of game.event_aragne) {
 			gen_action_vassal(v)
@@ -11794,7 +11794,7 @@ function goto_lancaster_event_to_wilful_disobedience() {
 states.wilful_disobedience = {
 	inactive: "To wilful disobedience",
 	prompt() {
-		view.prompt = `To wilful disobedience: Remove Yorkist favour from 2 strongholds.`
+		view.prompt = "To wilful disobedience: Remove Yorkist favour from 2 strongholds."
 		for (let loc of all_locales) {
 			if (
 				game.count < 2 &&
@@ -11921,7 +11921,7 @@ function goto_lancaster_event_tudor_banners() {
 states.tudor_banners = {
 	inactive: "Tudor banners",
 	prompt() {
-		view.prompt = `Tudor Banners: Mark strongholds adjacent to Henry Tudor with Lancastrian favour.`
+		view.prompt = "Tudor Banners: Mark strongholds adjacent to Henry Tudor with Lancastrian favour."
 		let here = get_lord_locale(LORD_HENRY_TUDOR)
 		let done = true
 		for (let next of data.locales[here].adjacent) {
@@ -12065,7 +12065,7 @@ function goto_york_event_london_for_york() {
 states.london_for_york = {
 	inactive: "London for York",
 	prompt() {
-		view.prompt = `London for York: Add a second favour marker at London.`
+		view.prompt = "London for York: Add a second favour marker at London."
 		gen_action_locale(LOC_LONDON)
 	},
 	locale(loc) {
@@ -12134,9 +12134,9 @@ states.richard_leigh = {
 	inactive: "Sir Richard Leigh",
 	prompt() {
 		if (has_lancaster_favour(LOC_LONDON))
-			view.prompt = `Sir Richard Leigh: Remove Lancastrian favour from London.`
+			view.prompt = "Sir Richard Leigh: Remove Lancastrian favour from London."
 		else
-			view.prompt = `Sir Richard Leigh: Place Yorkist favour at London.`
+			view.prompt = "Sir Richard Leigh: Place Yorkist favour at London."
 		gen_action_locale(LOC_LONDON)
 	},
 	locale(loc) {
@@ -12198,7 +12198,7 @@ function goto_dubious_clarence() {
 states.dubious_clarence = {
 	inactive: "Dubious Clarence",
 	prompt() {
-		view.prompt = `Dubious Clarence: Edward IV may attempt to disband Clarence.`
+		view.prompt = "Dubious Clarence: Edward IV may attempt to disband Clarence."
 		prompt_influence_check(game.who)
 		view.actions.pass = 1
 	},
@@ -12309,7 +12309,7 @@ function goto_the_kings_name(_action_name) {
 states.the_kings_name = {
 	inactive: "The King's Name",
 	prompt() {
-		view.prompt = `The King's Name: You may pay 1 influence to cancel the last levy action.`
+		view.prompt = "The King's Name: You may pay 1 influence to cancel the last levy action."
 		view.actions.pass = 1
 		view.actions.pay = 1
 	},
@@ -12376,7 +12376,7 @@ function goto_the_commons() {
 states.the_commons = {
 	inactive: "The Commons",
 	prompt() {
-		view.prompt = `The Commons: Add up to 2 militia.`
+		view.prompt = "The Commons: Add up to 2 militia."
 		view.actions.add_militia = 1
 		view.actions.add_militia2 = 1
 		view.actions.pass = 1
@@ -13531,8 +13531,8 @@ exports.fuzz_log = function (fuzz_info) {
 
 		if (false)
 			if (log_sanity.every(l => l === fuzz_info.state.state)) {
-				console.log(`STATE`, fuzz_info.state)
-				console.log(`VIEW`, fuzz_info.view)
+				console.log("STATE", fuzz_info.state)
+				console.log("VIEW", fuzz_info.view)
 				throw new Error("Too many times in the same state.")
 			}
 	}
