@@ -1,15 +1,5 @@
 "use strict"
 
-/*
-	report when used to parley/tax by sea
-		AOW_YORK_GREAT_SHIPS, AOW_LANCASTER_GREAT_SHIPS
-
-	report in better place
-		AOW_YORK_FINAL_CHARGE
-
-	Review all who = NOBODY etc resets
-*/
-
 // === TYPES ===
 
 declare function require(name: string): any
