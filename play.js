@@ -1075,8 +1075,8 @@ function update_lord_mat(ix) {
 			ui.marker_area[ix].appendChild(ui.captured_king)
 	}
 	let m = get_lord_moved(ix)
-	ui.lord_moved1[ix].classList.toggle("hide", is_levy_phase() || (m !== 1 && m !== 2))
-	ui.lord_moved2[ix].classList.toggle("hide", is_levy_phase() || (m !== 2))
+	ui.lord_moved1[ix].classList.toggle("hide", is_levy_phase() || !!view.battle || (m !== 1 && m !== 2))
+	ui.lord_moved2[ix].classList.toggle("hide", is_levy_phase() || !!view.battle || (m !== 2))
 	update_valour(ix, ui.valour_area[ix], view.battle)
 }
 
