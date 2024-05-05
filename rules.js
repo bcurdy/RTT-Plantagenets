@@ -6359,6 +6359,10 @@ function goto_defender_assign_hits() {
     else
         game.state = "assign_hits";
 }
+function resume_defender_assign_hits() {
+    set_active_defender();
+    game.state = "assign_hits";
+}
 function end_defender_assign_hits() {
     game.who = NOBODY;
     game.battle.ahits = 0;
@@ -6370,6 +6374,10 @@ function goto_attacker_assign_hits() {
         end_attacker_assign_hits();
     else
         game.state = "assign_hits";
+}
+function resume_attacker_assign_hits() {
+    set_active_attacker();
+    game.state = "assign_hits";
 }
 function end_attacker_assign_hits() {
     game.who = NOBODY;
@@ -6663,9 +6671,9 @@ function finish_action_assign_hits() {
     else
         game.battle.dhits--;
     if (game.active === game.battle.attacker)
-        goto_attacker_assign_hits();
+        resume_attacker_assign_hits();
     else
-        goto_defender_assign_hits();
+        resume_defender_assign_hits();
 }
 // === BATTLE EVENT: SWIFT MANEUVER ===
 states.swift_maneuver_1 = {
