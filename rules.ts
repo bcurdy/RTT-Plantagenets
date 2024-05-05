@@ -7491,8 +7491,7 @@ states.final_charge = {
 	},
 	final_charge() {
 		logcap(AOW_YORK_FINAL_CHARGE)
-		log_hits("+3", "L" + find_lord_with_capability_card(AOW_YORK_FINAL_CHARGE))
-		log_hits("+1", "Final Charge")
+		log_hits("+3/+1", "L" + find_lord_with_capability_card(AOW_YORK_FINAL_CHARGE))
 		game.battle.final_charge = 1
 		if (game.battle.attacker === YORK) {
 			game.battle.ahits += 1
@@ -11821,7 +11820,6 @@ states.wilful_disobedience = {
 		logi(`Yorkist Favour removed at S${loc}`)
 	},
 	done() {
-		logi("No effect.")
 		end_immediate_event()
 	}
 }
@@ -11829,14 +11827,39 @@ states.wilful_disobedience = {
 // === EVENT: FRENCH WAR LOANS ===
 
 function goto_lancaster_event_french_war_loans() {
-	for (let lord of all_lancaster_lords) {
-		if (is_lord_on_map(lord) && !is_lord_on_calendar(lord)) {
-			logi(">L" + lord)
-			add_lord_assets(lord, PROV, 1)
-			add_lord_assets(lord, COIN, 1)
-		}
+	if (can_french_war_loans()) {
+		game.state = "french_war_loans"
+	} else {
+		logi("No effect.")
+		end_immediate_event()
 	}
-	end_immediate_event()
+}
+
+function can_french_war_loans() {
+	for (let lord of all_lancaster_lords)
+		if (is_lord_on_map(lord) && !get_lord_moved(lord))
+			return true
+	return false
+}
+
+states.french_war_loans = {
+	inactive: "French War Loans",
+	prompt() {
+		view.prompt = "French War Loans: Add 1 coin and 1 provender to each Lancastrian lord."
+		for (let lord of all_lancaster_lords)
+			if (is_lord_on_map(lord) && !get_lord_moved(lord))
+				gen_action_lord(lord)
+	},
+	lord(lord) {
+		set_lord_moved(lord, 1)
+		logi(">L" + lord)
+		add_lord_assets(lord, PROV, 1)
+		add_lord_assets(lord, COIN, 1)
+		if (!can_french_war_loans()) {
+			clear_lords_moved()
+			end_immediate_event()
+		}
+	},
 }
 
 // === EVENT: ROBINS REBELLION ===
@@ -12360,7 +12383,7 @@ function goto_the_commons() {
 states.the_commons = {
 	inactive: "The Commons",
 	prompt() {
-		view.prompt = `The Commons: Add up to 2 militia .`
+		view.prompt = `The Commons: Add up to 2 militia.`
 		view.actions.add_militia = 1
 		view.actions.add_militia2 = 1
 		view.actions.done = 1
