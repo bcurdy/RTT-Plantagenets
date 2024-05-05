@@ -7281,8 +7281,8 @@ states.foreign_haven = {
     },
     exile() {
         exile_lord(LORD_EDWARD_IV);
-        set_delete(game.battle.routed, LORD_HENRY_VI);
-        set_delete(game.battle.fled, LORD_HENRY_VI);
+        set_delete(game.battle.routed, LORD_EDWARD_IV);
+        set_delete(game.battle.fled, LORD_EDWARD_IV);
         goto_death_check();
     },
     pass() {
