@@ -7280,6 +7280,8 @@ states.foreign_haven = {
         view.actions.pass = 1;
     },
     exile() {
+        log_br();
+        log("Foreign Haven.");
         exile_lord(LORD_EDWARD_IV);
         set_delete(game.battle.routed, LORD_EDWARD_IV);
         set_delete(game.battle.fled, LORD_EDWARD_IV);
