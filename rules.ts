@@ -7,6 +7,11 @@
 	report in better place
 		AOW_YORK_FINAL_CHARGE
 
+	streamline pay
+		pay troops -> lords -> vassals -> done
+
+	manual french war loans
+
 	Review all undo steps.
 	Review all states for needless pauses.
 	Review all states for adding extra pauses to prevent loss of control.
@@ -2471,8 +2476,6 @@ states.pay_troops = {
 		}
 	},
 	coin(lord) {
-		// TODO: no choice so no need to undo here?
-		push_undo()
 		add_lord_assets(lord, COIN, -1)
 		pay_lord(lord)
 	},
@@ -2490,6 +2493,7 @@ states.pay_troops = {
 		}
 	},
 	done() {
+		push_undo()
 		end_pay_troops()
 	},
 }
@@ -2679,6 +2683,7 @@ states.pay_lords = {
 		}
 	},
 	done() {
+		push_undo()
 		end_pay_lords()
 	},
 }
@@ -2756,7 +2761,6 @@ states.pay_vassals = {
 		game.vassal = v
 	},
 	pay() {
-		push_undo()
 		pay_vassal(game.vassal)
 		game.vassal = NOVASSAL
 	},
@@ -2769,7 +2773,6 @@ states.pay_vassals = {
 		}
 	},
 	disband() {
-		push_undo()
 		disband_vassal(game.vassal)
 		game.vassal = NOVASSAL
 	},
@@ -3958,19 +3961,18 @@ states.command = {
 	merchants: goto_merchants,
 	agitators: goto_agitators,
 	exile_pact: goto_exile_pact,
+	parley: goto_parley_campaign,
 
-	locale: goto_march,
+	locale(loc) {
+		push_undo()
+		goto_march(loc)
+	},
 
 	lord(lord) {
 		set_toggle(game.group, lord)
 	},
 
 	card: action_held_event_at_campaign,
-
-	parley() {
-		push_undo()
-		goto_parley_campaign()
-	},
 }
 
 // === 4.5 ACTION: SUPPLY ===
@@ -4918,6 +4920,7 @@ function goto_parley_campaign() {
 	let lord = game.command
 	let here = get_lord_locale(lord)
 
+	push_undo()
 	game.state = "parley"
 
 	// Campaign phase, and current location is no cost (except some events), and always successful.
@@ -5534,8 +5537,6 @@ states.kings_parley = {
 		view.actions.pass = 1
 	},
 	card(_) {
-		push_undo()
-
 		logcap(AOW_LANCASTER_KINGS_PARLEY)
 
 		discard_lord_capability(LORD_HENRY_VI, AOW_LANCASTER_KINGS_PARLEY)
@@ -6551,7 +6552,6 @@ states.caltrops = {
 		}
 	},
 	lord(lord) {
-		push_undo()
 		game.battle.caltrops = lord
 		logevent(EVENT_YORK_CALTROPS)
 		logi("L" + lord)
@@ -7684,6 +7684,7 @@ states.assign_hits = {
 		game.who = NOBODY
 		goto_regroup()
 	},
+
 	done() {
 		if (game.active === game.battle.attacker)
 			end_attacker_assign_hits()
@@ -7978,7 +7979,6 @@ states.battle_lord_rout = {
 		}
 	},
 	lord(lord) {
-		push_undo()
 		rout_lord(lord)
 	},
 	done() {
@@ -8731,6 +8731,7 @@ states.warden_of_the_marches = {
 		// lords without troops are disbanded during aftermath
 	},
 	done() {
+		push_undo()
 		end_held_event()
 		game.where = NOWHERE
 		game.state = "death_check"
@@ -8946,8 +8947,7 @@ states.feed = {
 		}
 	},
 	prov(lord) {
-		// TODO: no choice so no need to undo here?
-		push_undo()
+		// no choice so no need to undo here?
 		add_lord_assets(lord, PROV, -1)
 		feed_lord(lord)
 	},
@@ -9267,7 +9267,6 @@ states.disembark = {
 		}
 	},
 	lord(lord) {
-		push_undo()
 		game.who = lord
 	},
 	roll() {
@@ -10821,8 +10820,6 @@ states.soldiers_of_fortune = {
 		}
 	},
 	coin(lord) {
-		push_undo()
-
 		add_lord_assets(lord, COIN, -1)
 
 		let n = Math.min(2, count_available_mercenaries())
@@ -10846,7 +10843,6 @@ states.commission_of_array = {
 		}
 	},
 	locale(loc) {
-		push_undo()
 		let loc_type = data.locales[loc].type
 		deplete_locale(loc)
 
@@ -10994,9 +10990,9 @@ states.merchants_2 = {
 }
 
 function end_merchants() {
+	push_undo()
 	spend_action(1)
 	game.count = 0
-	push_undo()
 	resume_command()
 }
 
@@ -11096,8 +11092,8 @@ states.agitators = {
 }
 
 function end_agitators() {
-	spend_action(1)
 	push_undo()
+	spend_action(1)
 	resume_command()
 }
 
@@ -11507,17 +11503,16 @@ states.warwicks_propaganda_yorkist_choice = {
 		}
 	},
 	locale(loc) {
+		push_undo()
 		game.where = loc
 	},
 	favour() {
-		push_undo()
 		remove_york_favour(game.where)
 		remove_propaganda_target(game.where)
 		logi(`Removed York Favour at S${game.where}.`)
 		game.where = NOWHERE
 	},
 	influence() {
-		push_undo()
 		reduce_influence(2)
 		logi(`Paid 2 to keep S${game.where}`)
 		remove_propaganda_target(game.where)
@@ -11781,7 +11776,7 @@ function end_universelle_aragne() {
 
 function goto_lancaster_event_to_wilful_disobedience() {
 	let can_play = false
-	for (let loc of all_locales){
+	for (let loc of all_locales) {
 		if (has_york_favour(loc) && !has_enemy_lord(loc) && !has_adjacent_enemy(loc) && (has_friendly_lord(loc) || has_adjacent_friendly(loc))) {
 			can_play = true
 		}
@@ -11939,7 +11934,6 @@ states.tudor_banners = {
 			view.actions.done = 1
 	},
 	locale(loc) {
-		push_undo()
 		remove_york_favour(loc)
 		add_lancaster_favour(loc)
 		log(`Placed Lancastrian Favour at S${loc}`)
@@ -12003,6 +11997,7 @@ states.tax_collectors_lord = {
 		}
 	},
 	locale(loc) {
+		push_undo()
 		game.where = loc
 		if (loc === get_lord_seat(game.who)) {
 			do_tax(game.who, game.where, 2)
@@ -12074,7 +12069,6 @@ states.london_for_york = {
 		gen_action_locale(LOC_LONDON)
 	},
 	locale(loc) {
-		push_undo()
 		add_york_favour(LONDON_FOR_YORK)
 		log(`Two favour at S${loc}.`)
 		end_immediate_event()
@@ -12358,7 +12352,6 @@ states.rising_wages = {
 		}
 	},
 	coin(lord) {
-		push_undo()
 		add_lord_assets(lord, COIN, -1)
 		logevent(EVENT_LANCASTER_RISING_WAGES)
 		end_rising_wages()
@@ -12386,19 +12379,22 @@ states.the_commons = {
 		view.prompt = `The Commons: Add up to 2 militia.`
 		view.actions.add_militia = 1
 		view.actions.add_militia2 = 1
-		view.actions.done = 1
+		view.actions.pass = 1
 	},
 	add_militia() {
+		push_undo()
 		logevent(EVENT_YORK_THE_COMMONS)
 		add_lord_forces(game.command, MILITIA, 1)
 		end_the_commons()
 	},
 	add_militia2() {
+		push_undo()
 		logevent(EVENT_YORK_THE_COMMONS)
 		add_lord_forces(game.command, MILITIA, 2)
 		end_the_commons()
 	},
-	done() {
+	pass() {
+		push_undo()
 		end_the_commons()
 	}
 }
@@ -12451,7 +12447,6 @@ states.exile_pact = {
 
 function end_exile_pact() {
 	spend_action(1)
-	push_undo()
 	resume_command()
 }
 
@@ -12825,6 +12820,7 @@ states.surprise_landing = {
 		set_toggle(game.group, lord)
 	},
 	locale(loc) {
+		push_undo()
 		end_held_event()
 		goto_march(loc)
 	},
