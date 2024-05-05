@@ -355,8 +355,10 @@ const ui = {
 	mat: [],
 	mat_card: [],
 	mat_caps: [],
-	retinue: [],
-	routed_retinue: [],
+
+	retinue_area: [],
+	vassal_area: [],
+	routed_retinue_vassal_area: [],
 	troops: [],
 	routed_troops: [],
 	assets: [],
@@ -449,8 +451,9 @@ function build_lord_mat(lord, ix, side, name) {
 	ui.mat_card[ix] = build_div(board, "card lord " + side + " " + name)
 	ui.lords2[ix] = build_div(null, "card lord " + side + " " + name)
 	build_div(board, "mask " + side)
-	ui.retinue[ix] = build_div(board, "retinue_vassals")
-	ui.routed_retinue[ix] = build_div(board, "routed_retinue_vassals")
+	ui.retinue_area[ix] = build_div(board, "retinue_area")
+	ui.vassal_area[ix] = build_div(board, "vassal_area")
+	ui.routed_retinue_vassal_area[ix] = build_div(board, "routed_retinue_vassal_area")
 	ui.troops[ix] = build_div(board, "troops")
 	ui.routed_troops[ix] = build_div(board, "routed_troops")
 	ui.assets[ix] = build_div(board, "assets")
@@ -968,22 +971,34 @@ function update_lord_troops(parent, forces, lord_ix, routed) {
 	}
 }
 
-function update_lord_retinue(parent, forces, lord_ix, routed, fled) {
+function update_lord_retinue(parent, forces, lord_ix) {
 	parent.replaceChildren()
 	let n = map_get_pack4(forces, lord_ix, 0, 0)
-	if (n > 0) {
-		if (routed)
-			add_routed_retinue(parent, lord_ix)
-		else
-			add_retinue(parent, lord_ix)
-	}
+	if (n > 0)
+		add_retinue(parent, lord_ix)
+}
+
+function update_lord_vassals(parent, lord_ix) {
+	parent.replaceChildren()
 	for_each_vassal_with_lord(lord_ix, v => {
 		if (view.battle) {
-			if (set_has(view.battle.routed_vassals, v) === routed)
-				add_vassal(parent, v, lord_ix, routed)
+			if (!set_has(view.battle.routed_vassals, v))
+				add_vassal(parent, v, lord_ix, false)
 		} else {
-			if (routed === false)
-				add_vassal(parent, v, lord_ix, routed)
+			add_vassal(parent, v, lord_ix, false)
+		}
+	})
+}
+
+function update_lord_routed_retinue_vassal(parent, forces, lord_ix) {
+	parent.replaceChildren()
+	let n = map_get_pack4(forces, lord_ix, 0, 0)
+	if (n > 0)
+		add_routed_retinue(parent, lord_ix)
+	for_each_vassal_with_lord(lord_ix, v => {
+		if (view.battle) {
+			if (set_has(view.battle.routed_vassals, v))
+				add_vassal(parent, v, lord_ix, true)
 		}
 	})
 }
@@ -1051,8 +1066,9 @@ function update_lord_mat(ix) {
 		ui.mat[ix].classList.remove("hidden")
 		update_assets(ui.assets[ix], view.pieces.assets, ix)
 
-		update_lord_retinue(ui.retinue[ix], view.pieces.forces, ix, false)
-		update_lord_retinue(ui.routed_retinue[ix], view.pieces.routed, ix, true)
+		update_lord_retinue(ui.retinue_area[ix], view.pieces.forces, ix)
+		update_lord_vassals(ui.vassal_area[ix], ix)
+		update_lord_routed_retinue_vassal(ui.routed_retinue_vassal_area[ix], view.pieces.routed, ix)
 
 		update_lord_troops(ui.troops[ix], view.pieces.forces, ix, false)
 		update_lord_troops(ui.routed_troops[ix], view.pieces.routed, ix, true)

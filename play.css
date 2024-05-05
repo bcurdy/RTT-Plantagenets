@@ -461,11 +461,11 @@ body.Lancaster #plan_actions .york { display: none }
 	box-shadow: 0 0 0 1px #333, 0 0 0 4px yellow !important;
 }
 
-.routed_retinue_vassals .unit.retinue.action {
+.routed_retinue_vassal_area .unit.retinue.action {
 	box-shadow: 0 0 0 1px #333, 0 0 0 4px red !important;
 }
 
-.routed_retinue_vassals .unit.vassal.action {
+.routed_retinue_vassal_area .unit.vassal.action {
 	box-shadow: 0 0 0 1px #333, 0 0 0 4px red !important;
 }
 
@@ -564,11 +564,21 @@ body.shift .mat .capabilities {
 	background-color: #fef0d3;
 }
 
-.mat .board .retinue_vassals {
+.mat .board .retinue_area {
 	position: absolute;
 	top: 38px;
 	left: 24px;
 	height: 50px;
+width: 50px;
+	max-width: 50px;
+}
+
+.mat .board .vassal_area {
+	position: absolute;
+	top: 38px;
+	left: 79px;
+	height: 50px;
+width:105px;
 	max-width: 170px;
 	display: flex;
 	align-content: center;
@@ -576,7 +586,7 @@ body.shift .mat .capabilities {
 	gap: 5px;
 }
 
-.mat .board .routed_retinue_vassals {
+.mat .board .routed_retinue_vassal_area {
 	position: absolute;
 	top: 240px;
 	left: 24px;
