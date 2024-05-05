@@ -8274,27 +8274,24 @@ function end_battle_losses() {
 function goto_death_check() {
 	log_h4("Death Check")
 
-	set_active_defender()
-	if (has_defeated_lords() || has_any_friendly_routed_vassals()) {
-		if (is_bloody_thou_art_triggered())
-			goto_bloody_thou_art()
-		else
-			game.state = "death_check"
-	} else {
-		end_death_check()
+	if (is_bloody_thou_art_triggered()) {
+		goto_bloody_thou_art()
+		return
 	}
+
+	set_active_defender()
+	if (has_defeated_lords() || has_any_friendly_routed_vassals())
+		game.state = "death_check"
+	else
+		end_death_check()
 }
 
 function end_death_check() {
 	set_active_enemy()
-	if (has_defeated_lords() || has_any_friendly_routed_vassals()) {
-		if (is_bloody_thou_art_triggered())
-			goto_bloody_thou_art()
-		else
-			game.state = "death_check"
-	} else {
+	if (has_defeated_lords() || has_any_friendly_routed_vassals())
+		game.state = "death_check"
+	else
 		goto_battle_aftermath()
-	}
 }
 
 function prompt_held_event_at_death_check() {
@@ -8407,7 +8404,6 @@ states.death_check = {
 
 function is_bloody_thou_art_triggered() {
 	return (
-		game.active === LANCASTER &&
 		game.battle.loser === LANCASTER &&
 		lord_has_capability(LORD_RICHARD_III, AOW_YORK_BLOODY_THOU_ART) &&
 		get_lord_locale(LORD_RICHARD_III) === game.battle.where
@@ -8415,14 +8411,30 @@ function is_bloody_thou_art_triggered() {
 }
 
 function goto_bloody_thou_art() {
-	game.state = "bloody_thou_art"
 	logcap(AOW_YORK_BLOODY_THOU_ART)
+
+	set_active_defender()
+	if (has_defeated_lords() || has_any_friendly_routed_vassals())
+		game.state = "bloody_thou_art"
+	else
+		end_bloody_thou_art()
+}
+
+function end_bloody_thou_art() {
+	set_active_enemy()
+	if (has_defeated_lords() || has_any_friendly_routed_vassals())
+		game.state = "bloody_thou_art"
+	else
+		goto_battle_aftermath()
 }
 
 states.bloody_thou_art = {
 	inactive: "Bloody thou art",
 	prompt() {
-		view.prompt = "Bloody thou art: All routed Lancastrian lords die."
+		if (game.active === LANCASTER)
+			view.prompt = "Bloody thou art: All routed Lancastrian lords die."
+		else
+			view.prompt = "Bloody thou art: All routed Yorkist lords disband."
 
 		let done = true
 		for (let lord of game.battle.routed) {
@@ -8443,7 +8455,11 @@ states.bloody_thou_art = {
 		}
 	},
 	lord(lord) {
-		death_lord(lord)
+		if (is_lancaster_lord(lord))
+			death_lord(lord)
+		else
+			disband_lord(lord)
+		set_delete(game.battle.fled, lord)
 		set_delete(game.battle.routed, lord)
 	},
 	vassal(v) {
@@ -8451,7 +8467,7 @@ states.bloody_thou_art = {
 		disband_vassal(v)
 	},
 	done() {
-		end_death_check()
+		end_bloody_thou_art()
 	},
 }
 
