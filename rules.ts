@@ -176,8 +176,7 @@ interface State {
 	// BUTTONS
 
 	// questions
-	favour?(): void,
-	influence?(): void,
+	remove?(): void,
 	stronghold?(): void,
 	port?(): void,
 	by_way?(): void,
@@ -9297,9 +9296,16 @@ function disband_influence_penalty(lord: Lord) {
 }
 
 function goto_advance_campaign() {
+	let old_vc = scenario_victory_threshold()
+
 	game.turn++
 	set_active(P1)
 	log_h1("Levy " + current_turn_name())
+
+	let new_vc = scenario_victory_threshold()
+	if (old_vc !== new_vc)
+		log("Victory Threshold: " + new_vc)
+
 	goto_levy_arts_of_war()
 }
 
@@ -11469,7 +11475,7 @@ states.warwicks_propaganda_yorkist_choice = {
 	prompt() {
 		let done = true
 		if (game.where === NOWHERE) {
-			view.prompt = "Warwick's Propaganda: Pay 2 influence or remove favour for each selected stronghold."
+			view.prompt = "Warwick's Propaganda: Remove favour or pay 2 influence for each selected stronghold."
 			for (let loc of all_locales) {
 				if (is_propaganda_target(loc)) {
 					gen_action_locale(loc)
@@ -11477,25 +11483,26 @@ states.warwicks_propaganda_yorkist_choice = {
 				}
 			}
 			if (done) {
+				view.prompt = "Warwick's Propaganda: All done."
 				view.actions.done = 1
 			}
 		} else {
-			view.prompt = `Warwick's Propaganda: Pay 2 influence or remove favour for ${locale_name[game.where]}.`
-			view.actions.influence = 1
-			view.actions.favour = 1
+			view.prompt = `Warwick's Propaganda: Remove favour or pay 2 influence for ${locale_name[game.where]}.`
+			view.actions.pay = 1
+			view.actions.remove = 1
 		}
 	},
 	locale(loc) {
 		push_undo()
 		game.where = loc
 	},
-	favour() {
+	remove() {
 		remove_york_favour(game.where)
 		remove_propaganda_target(game.where)
 		logi(`Removed York Favour at S${game.where}.`)
 		game.where = NOWHERE
 	},
-	influence() {
+	pay() {
 		reduce_influence(2)
 		logi(`Paid 2 to keep S${game.where}`)
 		remove_propaganda_target(game.where)

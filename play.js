@@ -1509,8 +1509,7 @@ function on_update() {
 	update_court()
 
 	// QUESTIONS
-	action_button("favour", "Favour")
-	action_button("influence", "Influence")
+	action_button("remove", "Remove")
 	action_button("stronghold", "Stronghold")
 	action_button("port", "Port")
 	action_button("by_way", "By way")
