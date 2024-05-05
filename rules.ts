@@ -4,31 +4,13 @@
 	report when used to parley/tax by sea
 		AOW_YORK_GREAT_SHIPS, AOW_LANCASTER_GREAT_SHIPS
 
-	report at tides of war start
-		AOW_YORK_WELSHMEN
-		AOW_YORK_SOUTHERNERS
-		AOW_LANCASTER_NORTHMEN
-
 	report in better place
 		AOW_YORK_FINAL_CHARGE
-
-	report mustering special vassals?
-		if (c === AOW_LANCASTER_MONTAGU)
-		if (c === AOW_LANCASTER_MY_FATHERS_BLOOD)
-		if (c === AOW_LANCASTER_ANDREW_TROLLOPE)
-		if (c === AOW_LANCASTER_EDWARD)
-		if (c === AOW_LANCASTER_THOMAS_STANLEY) {
-		if (c === AOW_YORK_HASTINGS) {
 
 	Review all undo steps.
 	Review all states for needless pauses.
 	Review all states for adding extra pauses to prevent loss of control.
 	Review all who = NOBODY etc resets
-
-	Review all prompts.
-	Review all inactive prompts.
-	Add cap/event effect log messages.
-	Review all log messages.
 */
 
 // === TYPES ===
@@ -161,7 +143,7 @@ interface Battle {
 }
 
 interface State {
-	inactive?: string,
+	inactive: string,
 	prompt(current?: Side): void,
 
 	undo?(_:any, current: Side): void,
@@ -2990,6 +2972,7 @@ function is_group_move_forbidden(group: Lord[], to: Locale) {
 }
 
 states.shaky_allies = {
+	inactive: "Shaky Allies",
 	prompt() {
 		view.prompt = "Shaky Allies: Remove Clarence from play."
 		gen_action_lord(LORD_CLARENCE)
@@ -4527,6 +4510,7 @@ function goto_forage() {
 }
 
 states.forage = {
+	inactive: "Forage",
 	prompt() {
 		let here = get_lord_locale(game.command)
 		if (is_friendly_locale(here) && !has_adjacent_enemy(here)) {
@@ -5287,6 +5271,7 @@ function goto_march_confirm() {
 }
 
 states.march_confirm_approach = {
+	inactive: "March",
 	prompt() {
 		view.prompt = "March: Approach enemy?"
 		view.actions.approach = 1
@@ -5297,6 +5282,7 @@ states.march_confirm_approach = {
 }
 
 states.march_confirm_intercept = {
+	inactive: "March",
 	prompt() {
 		view.prompt = "March: You may be intercepted!"
 		view.actions.march = 1
@@ -6788,6 +6774,7 @@ function goto_regroup() {
 }
 
 states.regroup = {
+	inactive: "Regroup",
 	prompt() {
 		for (let p of battle_strike_positions) {
 			let lord = game.battle.array[p]
@@ -6823,6 +6810,7 @@ states.regroup = {
 }
 
 states.regroup_roll_protection = {
+	inactive: "Regroup",
 	prompt() {
 		view.prompt = "Regroup: Roll each routed troop's protection for them to recover."
 		if (game.event_regroup[MEN_AT_ARMS] > 0)
@@ -7495,6 +7483,7 @@ function can_final_charge() {
 }
 
 states.final_charge = {
+	inactive: "Final Charge",
 	prompt() {
 		view.prompt = "Final Charge: Retinue may suffer +1 hit to add +3 extra hits against enemy."
 		view.actions.final_charge = 1
