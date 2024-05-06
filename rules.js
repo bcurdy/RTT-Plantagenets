@@ -2708,7 +2708,7 @@ function do_levy_troops() {
             break;
         case "fortress":
             add_lord_forces(game.command, MEN_AT_ARMS, 1);
-            add_lord_forces(game.command, MILITIA, 1);
+            add_lord_forces(game.command, LONGBOWMEN, 1);
             break;
     }
     end_levy_troops();
