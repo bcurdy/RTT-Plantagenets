@@ -4725,8 +4725,6 @@ function fail_tax(who: Lord) {
 // === 4.6.4 ACTION: PARLEY ===
 
 function has_free_parley_levy() {
-	if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET))
-		return true
 	if (game.levy_flags.jack_cade > 0)
 		return true
 	if (game.levy_flags.my_crown_is_in_my_heart > 0)
@@ -4926,10 +4924,7 @@ function end_parley(success: boolean) {
 
 	// Track use of parley capabilities / events.
 	if (is_levy_phase()) {
-		if (game.command === LORD_DEVON && get_lord_locale(LORD_DEVON) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET)) {
-			logevent(EVENT_YORK_DORSET)
-			++game.actions
-		} else if (game.levy_flags.jack_cade > 0) {
+		if (game.levy_flags.jack_cade > 0) {
 			// Jack Cade: free action, zero influence cost, and success
 			logevent(EVENT_YORK_JACK_CADE)
 			--game.levy_flags.jack_cade
