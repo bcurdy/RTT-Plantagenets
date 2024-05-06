@@ -4658,7 +4658,7 @@ states.tax = {
 	locale(loc) {
 		game.where = loc
 		if (loc === get_lord_seat(game.command)) {
-			log("Tax at S" + game.where + ".")
+			log("Tax S" + game.where + ".")
 			do_tax(game.command, game.where, 1)
 			end_tax()
 		} else {
@@ -12000,6 +12000,7 @@ states.tax_collectors_lord = {
 		push_undo()
 		game.where = loc
 		if (loc === get_lord_seat(game.who)) {
+			log("Tax S" + game.where + ".")
 			do_tax(game.who, game.where, 2)
 			end_tax_collectors_lord()
 		} else {
