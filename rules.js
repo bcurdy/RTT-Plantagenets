@@ -3162,24 +3162,15 @@ states.command = {
     inactive: "Command",
     prompt() {
         let here = get_lord_locale(game.command);
-        if (game.actions === 0)
-            view.prompt = `Command: ${lord_name[game.command]} has no more actions.`;
-        else if (game.actions === 1)
+        if (game.actions === 1)
             view.prompt = `Command: ${lord_name[game.command]} has ${game.actions} action.`;
         else
             view.prompt = `Command: ${lord_name[game.command]} has ${game.actions} actions.`;
-        view.group = game.group;
         prompt_held_event_at_campaign();
         if (!is_lord_on_map(game.command)) {
             view.prompt = `Command: ${lord_name[game.command]} is not on the map.`;
             view.actions.end_command = 1;
             return;
-        }
-        if (can_pick_up_lords(game.command)) {
-            for_each_friendly_lord_in_locale(here, other => {
-                if (can_pick_up_other(game.command, other))
-                    gen_action_lord(other);
-            });
         }
         if (game.actions > 0) {
             // show "always" actions
@@ -3194,15 +3185,24 @@ states.command = {
         else {
             view.actions.end_command = 1;
         }
-        prompt_march();
+        let can_move = prompt_march();
+        if (can_action_sail()) {
+            view.actions.sail = 1;
+            can_move = true;
+        }
+        if (can_move && can_pick_up_lords(game.command)) {
+            view.group = game.group;
+            for_each_friendly_lord_in_locale(here, other => {
+                if (can_pick_up_other(game.command, other))
+                    gen_action_lord(other);
+            });
+        }
         if (can_action_supply())
             view.actions.supply = 1;
         if (can_action_forage())
             view.actions.forage = 1;
         if (can_action_tax())
             view.actions.tax = 1;
-        if (can_action_sail())
-            view.actions.sail = 1;
         if (can_action_parley_campaign())
             view.actions.parley = 1;
         if (can_action_heralds())
@@ -3214,6 +3214,8 @@ states.command = {
         if (is_york_lord(game.command) && game.group.length === 1)
             if (can_action_exile_pact())
                 view.actions.exile_pact = 1;
+        if (game.actions === 0 && !can_move)
+            view.prompt = "Command: All done.";
     },
     pass() {
         push_undo();
@@ -3538,7 +3540,7 @@ function can_action_sail() {
         if ((is_event_in_play(EVENT_LANCASTER_FRENCH_FLEET) || !is_first_action() && !is_event_in_play(EVENT_YORK_SEAMANSHIP)))
             return false;
     }
-    if (game.actions === 0)
+    if (game.actions < 1)
         return false;
     // at a seaport (or sea)
     let here = get_lord_locale(game.command);
@@ -3997,7 +3999,7 @@ function search_parley_levy(result, start, lord, ships) {
         return false;
 }
 function can_action_parley_campaign() {
-    if (game.actions <= 0)
+    if (game.actions < 1)
         return false;
     if (is_lord_at_sea(game.command))
         return false;
@@ -4034,7 +4036,7 @@ function search_parley_campaign(here, lord) {
     return result;
 }
 function can_action_parley_levy() {
-    if (game.actions <= 0 && !has_free_parley_levy())
+    if (game.actions < 1 && !has_free_parley_levy())
         return false;
     let here = get_lord_locale(game.command);
     if (can_parley_at(here))
@@ -4234,17 +4236,28 @@ function can_action_march_to(to, type) {
 }
 function prompt_march() {
     let from = get_lord_locale(game.command);
+    let has_march = false;
     if (!is_locale_on_map(from))
-        return;
-    for (let to of data.locales[from].highways)
-        if (can_action_march_to(to, "highway"))
+        return false;
+    for (let to of data.locales[from].highways) {
+        if (can_action_march_to(to, "highway")) {
             gen_action_locale(to);
-    for (let to of data.locales[from].roads)
-        if (can_action_march_to(to, "road"))
+            has_march = true;
+        }
+    }
+    for (let to of data.locales[from].roads) {
+        if (can_action_march_to(to, "road")) {
             gen_action_locale(to);
-    for (let to of data.locales[from].paths)
-        if (can_action_march_to(to, "path"))
+            has_march = true;
+        }
+    }
+    for (let to of data.locales[from].paths) {
+        if (can_action_march_to(to, "path")) {
             gen_action_locale(to);
+            has_march = true;
+        }
+    }
+    return has_march;
 }
 function goto_march(to) {
     push_undo();
@@ -9424,7 +9437,7 @@ function count_merchants_deplete(loc) {
 }
 function can_action_merchants() {
     let loc = get_lord_locale(game.command);
-    if (game.actions <= 0)
+    if (game.actions < 1)
         return false;
     if (lord_has_capability(game.command, AOW_LANCASTER_MERCHANTS))
         return count_merchants_deplete(loc) > 0;
@@ -9526,7 +9539,7 @@ function roll_blockade(fail) {
 // === CAPABILITY: AGITATORS ===
 function can_action_agitators() {
     let here = get_lord_locale(game.command);
-    if (game.actions <= 0)
+    if (game.actions < 1)
         return false;
     if (lord_has_capability(game.command, AOW_YORK_AGITATORS)) {
         for (let next of data.locales[here].adjacent) {
@@ -9566,7 +9579,7 @@ function end_agitators() {
 }
 // === CAPABILITY: HERALDS ===
 function can_action_heralds() {
-    if (game.actions <= 0)
+    if (game.actions < 1)
         return false;
     if (!is_first_action())
         return false;
