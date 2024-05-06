@@ -1056,7 +1056,13 @@ function update_lord_mat(ix) {
 		update_lord_troops(ui.troops[ix], view.pieces.forces, ix, false)
 		update_lord_troops(ui.routed_troops[ix], view.pieces.routed, ix, true)
 
-		ui.lord_feed[ix].classList.toggle("hide", count_lord_all_forces(ix) <= 6)
+		let n = count_lord_all_forces(ix)
+		if (n < 6)
+			ui.lord_feed[ix].className = "hide"
+		else if (n < 12)
+			ui.lord_feed[ix].className = "marker small feed x2"
+		else
+			ui.lord_feed[ix].className = "marker small feed x3"
 
 		if (get_lord_locale(LORD_HENRY_VI) === CAPTURE_OF_THE_KING + ix)
 			ui.marker_area[ix].appendChild(ui.captured_king)
@@ -1070,7 +1076,7 @@ function update_lord_mat(ix) {
 		ui.routed_troops[ix].replaceChildren()
 		ui.lord_moved1[ix].classList.add("hide")
 		ui.lord_moved2[ix].classList.add("hide")
-		ui.lord_feed[ix].classList.add("hide")
+		ui.lord_feed[ix].className = "hide"
 
 		if (get_lord_locale(LORD_HENRY_VI) === CAPTURE_OF_THE_KING + ix)
 			ui.marker_area[ix].appendChild(ui.captured_king)
