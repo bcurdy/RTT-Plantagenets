@@ -3414,7 +3414,7 @@ states.supply_source = {
         let port_supply = get_port_supply_amount(loc, false);
         let stronghold_supply = get_stronghold_supply_amount(loc, false);
         if (stronghold_supply > 0 && port_supply === 0) {
-            use_stronghold_supply(loc, stronghold_supply);
+            use_stronghold_supply(loc, get_stronghold_supply_amount(loc, true));
             end_supply();
             return;
         }
@@ -3425,7 +3425,7 @@ states.supply_source = {
                 game.state = "blockade_supply";
             }
             else {
-                use_port_supply(loc, port_supply);
+                use_port_supply(loc, get_port_supply_amount(loc, true));
                 end_supply();
             }
             return;
@@ -5647,7 +5647,7 @@ states.for_trust_not_him_bribe = {
         prompt_influence_check(game.who, vassal_ic);
     },
     check(spend) {
-        if (roll_influence_check("Bribe L" + game.vassal, game.who, spend, vassal_ic))
+        if (roll_influence_check("Bribe V" + game.vassal, game.who, spend, vassal_ic))
             muster_vassal(game.vassal, game.who);
         end_for_trust_not_him();
     },
