@@ -1949,6 +1949,15 @@ function is_lancaster_dominating_wales() {
 
 // === 1.4 INFLUENCE ===
 
+function log_favour(loc) {
+	if (has_york_favour(loc))
+		log(`S${loc} to Yorkist.`)
+	else if (has_lancaster_favour(loc))
+		log(`S${loc} to Lancastrian.`)
+	else
+		log(`S${loc} to Neutral.`)
+}
+
 function log_ip(n) {
 	if (n < 0)
 		log(".ip " + n)
@@ -3401,8 +3410,8 @@ states.levy_lord_at_seat = {
 		levy_burgundians(game.who)
 
 		if (game.active === YORK) {
-			add_york_favour(loc)
 			remove_lancaster_favour(loc)
+			add_york_favour(loc)
 		} else {
 			if (loc === LOC_LONDON && has_york_favour(LONDON_FOR_YORK)) {
 				logevent(EVENT_YORK_LONDON_FOR_YORK)
@@ -11501,7 +11510,7 @@ states.warwicks_propaganda_yorkist_choice = {
 	remove() {
 		remove_york_favour(game.where)
 		remove_propaganda_target(game.where)
-		logi(`Removed York Favour at S${game.where}.`)
+		log_favour(game.where)
 		game.where = NOWHERE
 	},
 	pay() {
@@ -11650,7 +11659,7 @@ states.welsh_rebellion_remove_favour = {
 	locale(loc) {
 		push_undo()
 		remove_york_favour(loc)
-		log(`Removed York Favour at S${loc}.`)
+		log_favour(loc)
 		game.count++
 	},
 	done() {
@@ -11803,8 +11812,8 @@ states.wilful_disobedience = {
 	locale(loc) {
 		push_undo()
 		remove_york_favour(loc)
+		log_favour(loc)
 		game.count++
-		logi(`Yorkist Favour removed at S${loc}`)
 	},
 	done() {
 		end_immediate_event()
@@ -11888,7 +11897,7 @@ states.robins_rebellion = {
 	locale(loc) {
 		push_undo()
 		shift_favour_toward(loc)
-		log(`Placed/Removed Favour at S${loc}.`)
+		log_favour(loc)
 		game.count++
 	},
 	done() {
@@ -11936,7 +11945,7 @@ states.tudor_banners = {
 	locale(loc) {
 		remove_york_favour(loc)
 		add_lancaster_favour(loc)
-		log(`Placed Lancastrian Favour at S${loc}`)
+		log_favour(loc)
 	},
 	done() {
 		game.who = NOBODY
@@ -12142,10 +12151,7 @@ states.richard_leigh = {
 	},
 	locale(loc) {
 		shift_favour_toward(loc)
-		if (has_york_favour(loc))
-			log(`L${loc} to Yorkist Favour.`)
-		else
-			log(`L${loc} to neutral.`)
+		log_favour(loc)
 		end_immediate_event()
 	}
 }
