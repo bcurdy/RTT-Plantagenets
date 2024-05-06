@@ -1057,9 +1057,9 @@ function update_lord_mat(ix) {
 		update_lord_troops(ui.routed_troops[ix], view.pieces.routed, ix, true)
 
 		let n = count_lord_all_forces(ix)
-		if (n < 6)
+		if (n <= 6)
 			ui.lord_feed[ix].className = "hide"
-		else if (n < 12)
+		else if (n <= 12)
 			ui.lord_feed[ix].className = "marker small feed x2"
 		else
 			ui.lord_feed[ix].className = "marker small feed x3"
