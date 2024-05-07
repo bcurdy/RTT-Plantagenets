@@ -10330,8 +10330,9 @@ states.robins_rebellion = {
 };
 // === EVENT: TUDOR BANNERS ===
 function tudor_banner_eligible() {
-    if (is_lord_on_map(LORD_HENRY_TUDOR) && !is_lord_on_calendar(LORD_HENRY_TUDOR)) {
-        for (let next of data.locales[get_lord_locale(LORD_HENRY_TUDOR)].adjacent) {
+    let here = get_lord_locale(LORD_HENRY_TUDOR);
+    if (is_stronghold(here) && is_friendly_locale(here)) {
+        for (let next of data.locales[here].adjacent) {
             if (can_parley_at(next))
                 return true;
         }
