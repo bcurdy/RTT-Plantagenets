@@ -1165,6 +1165,13 @@ function set_lord_calendar(lord: Lord, turn: number) {
 	set_lord_locale(lord, CALENDAR + turn as Locale)
 }
 
+function set_lord_calendar_keep_exile(lord: Lord, turn: number) {
+	let x = is_lord_in_exile(lord)
+	set_lord_calendar(lord, turn)
+	if (x)
+		set_lord_in_exile(lord)
+}
+
 function set_lord_in_exile(lord: Lord) {
 	let turn = get_lord_calendar(lord)
 	set_lord_locale(lord, CALENDAR_EXILE + turn as Locale)
@@ -9878,19 +9885,13 @@ function foreign_haven_shift_lords() {
 
 	for (let lord of all_lancaster_lords) {
 		if (is_lord_on_calendar(lord) && get_lord_calendar(lord) > turn) {
-			let x = is_lord_in_exile(lord)
-			set_lord_calendar(lord, turn)
-			if (x)
-				set_lord_in_exile(lord)
+			set_lord_calendar_keep_exile(lord, turn)
 		}
 	}
 
 	for (let lord of all_york_lords) {
 		if (is_lord_on_calendar(lord) && get_lord_calendar(lord) > turn + 1) {
-			let x = is_lord_in_exile(lord)
-			set_lord_calendar(lord, turn + 1)
-			if (x)
-				set_lord_in_exile(lord)
+			set_lord_calendar_keep_exile(lord, turn + 1)
 		}
 	}
 }
@@ -11156,7 +11157,7 @@ states.heralds_attempt = {
 	},
 	check(spend) {
 		if (roll_influence_check("C" + AOW_LANCASTER_HERALDS + " L" + game.who, game.command, spend))
-			set_lord_calendar(game.who, current_turn() + 1)
+			set_lord_calendar_keep_exile(game.who, current_turn() + 1)
 		end_heralds_attempt()
 	},
 }
