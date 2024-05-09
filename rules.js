@@ -3094,7 +3094,7 @@ function goto_command() {
             game.actions += 1;
         }
     }
-    if (lord_has_capability(game.command, AOW_YORK_THOMAS_BOURCHIER) && is_city(here)) {
+    if (lord_has_capability(game.command, AOW_YORK_THOMAS_BOURCHIER) && is_city(here) && is_friendly_locale(here)) {
         logcap(AOW_YORK_THOMAS_BOURCHIER);
         game.actions += 1;
     }
