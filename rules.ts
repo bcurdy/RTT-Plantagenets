@@ -9168,7 +9168,6 @@ function goto_tides_of_war() {
 	if (set_has(INFLUENCE_TURNS, current_turn()))
 		lanc += tow_influence(all_lancaster_lords)
 
-	increase_lancaster_influence(lanc)
 	log("Total: " + lanc)
 
 	log_h3("York")
@@ -9201,8 +9200,9 @@ function goto_tides_of_war() {
 	if (set_has(INFLUENCE_TURNS, current_turn()))
 		york += tow_influence(all_york_lords)
 
-	increase_york_influence(york)
 	log("Total: " + york)
+
+	game.influence = Math.max(0, Math.min(45, game.influence + lanc - york))
 
 	if (eligible_charity())
 		goto_we_done_deeds_of_charity()
