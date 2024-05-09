@@ -3263,7 +3263,7 @@ states.command = {
 */
 function can_supply_at(source, ships) {
     // if theoretically possible to supply from this source (does not check carts or ships)
-    if (is_stronghold(source) && is_friendly_locale(source)) {
+    if (is_stronghold(source) && is_friendly_locale(source) && !has_enemy_lord(source)) {
         if (ships > 0 && is_seaport(source))
             return true;
         if (!has_exhausted_marker(source))
@@ -3286,7 +3286,7 @@ function search_supply_by_way(result, start, carts, ships) {
             else
                 return true;
         }
-        if (is_friendly_locale(here)) {
+        if (is_friendly_locale(here) && !has_enemy_lord(here)) {
             if ((next_dist >> 3) <= carts) {
                 for (let next of data.locales[here].adjacent) {
                     if (!search_seen[next]) {
@@ -3763,7 +3763,7 @@ function end_forage() {
 }
 // === 4.6.3 ACTION: TAX ===
 function can_tax_at(here, lord) {
-    if (is_friendly_locale(here) && !has_exhausted_marker(here)) {
+    if (is_friendly_locale(here) && !has_enemy_lord(here) && !has_exhausted_marker(here)) {
         // London, Calais, and Harlech
         if (here === LOC_LONDON || here === LOC_CALAIS || here === LOC_HARLECH)
             return true;
@@ -3795,7 +3795,7 @@ function search_tax(result, start, lord, ships) {
             else
                 return true;
         }
-        if (is_friendly_locale(here)) {
+        if (is_friendly_locale(here) && !has_enemy_lord(here)) {
             for (let next of data.locales[here].adjacent) {
                 if (!search_seen[next]) {
                     search_seen[next] = 1;
