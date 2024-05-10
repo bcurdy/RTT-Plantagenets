@@ -415,7 +415,7 @@ for (let i = 0; i <= 45; ++i) {
 		x = 1205 + 22
 		y = 1577 - (i-25) * 47.25 + 22
 	}
-	TRACK_XY[i] = [ x, y ]
+	TRACK_XY[i] = [ Math.round(x), Math.round(y) ]
 }
 
 const CALENDAR_XY = [
