@@ -7268,12 +7268,12 @@ states.capture_of_the_king = {
     },
     lord(lord) {
         push_undo();
+        increase_york_influence(10);
         log(`L${LORD_HENRY_VI} captured by L${lord}.`);
         set_delete(game.battle.routed, LORD_HENRY_VI);
         set_delete(game.battle.fled, LORD_HENRY_VI);
         clear_lord(LORD_HENRY_VI);
         set_lord_locale(LORD_HENRY_VI, CAPTURE_OF_THE_KING + lord);
-        increase_york_influence(10);
         end_battle_losses();
     },
 };
@@ -7283,9 +7283,9 @@ function check_capture_of_the_king() {
         if (loc >= CAPTURE_OF_THE_KING) {
             let who = loc - CAPTURE_OF_THE_KING;
             if (!is_lord_on_map(who)) {
+                increase_lancaster_influence(10);
                 log(`L${LORD_HENRY_VI} released!`);
                 disband_lord(LORD_HENRY_VI);
-                increase_lancaster_influence(10);
             }
         }
     }
