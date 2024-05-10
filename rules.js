@@ -7273,7 +7273,7 @@ states.capture_of_the_king = {
         set_delete(game.battle.fled, LORD_HENRY_VI);
         clear_lord(LORD_HENRY_VI);
         set_lord_locale(LORD_HENRY_VI, CAPTURE_OF_THE_KING + lord);
-        // Note: the other 10 influence were already gained from normal battle victory
+        increase_york_influence(10);
         end_battle_losses();
     },
 };
