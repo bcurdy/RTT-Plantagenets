@@ -1966,6 +1966,9 @@ function log_favour(loc) {
 }
 
 function log_ip(n) {
+	// +ve ip is lancastrian
+	if ((game.command === NOBODY && game.active === YORK) || is_york_lord(game.command))
+		n = -n
 	if (n < 0)
 		log(".ip " + n)
 	else if (n > 0)
@@ -1980,12 +1983,12 @@ function reduce_influence(amt: number) {
 }
 
 function reduce_york_influence(amt: number) {
-	log_ip(-amt)
+	log_ip(amt)
 	game.influence = Math.max(-45, Math.min(45, game.influence + amt))
 }
 
 function increase_york_influence(amt: number) {
-	log_ip(amt)
+	log_ip(-amt)
 	game.influence = Math.max(-45, Math.min(45, game.influence - amt))
 }
 
@@ -9201,6 +9204,7 @@ function goto_tides_of_war() {
 		york += tow_influence(all_york_lords)
 
 	log("Total: " + york)
+	log_br()
 
 	game.influence = Math.max(0, Math.min(45, game.influence + lanc - york))
 

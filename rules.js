@@ -1491,6 +1491,9 @@ function log_favour(loc) {
         log(`S${loc} to Neutral.`);
 }
 function log_ip(n) {
+    // +ve ip is lancastrian
+    if ((game.command === NOBODY && game.active === YORK) || is_york_lord(game.command))
+        n = -n;
     if (n < 0)
         log(".ip " + n);
     else if (n > 0)
@@ -1503,11 +1506,11 @@ function reduce_influence(amt) {
         reduce_lancaster_influence(amt);
 }
 function reduce_york_influence(amt) {
-    log_ip(-amt);
+    log_ip(amt);
     game.influence = Math.max(-45, Math.min(45, game.influence + amt));
 }
 function increase_york_influence(amt) {
-    log_ip(amt);
+    log_ip(-amt);
     game.influence = Math.max(-45, Math.min(45, game.influence - amt));
 }
 function reduce_lancaster_influence(amt) {
@@ -7846,6 +7849,7 @@ function goto_tides_of_war() {
     if (set_has(INFLUENCE_TURNS, current_turn()))
         york += tow_influence(all_york_lords);
     log("Total: " + york);
+    log_br();
     game.influence = Math.max(0, Math.min(45, game.influence + lanc - york));
     if (eligible_charity())
         goto_we_done_deeds_of_charity();
