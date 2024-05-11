@@ -3932,7 +3932,7 @@ function has_free_parley_levy() {
         return true;
     return false;
 }
-function has_route_to(start, to) {
+function has_york_route_to(start, to) {
     if (start === to)
         return true;
     search_seen.fill(0);
@@ -3943,7 +3943,7 @@ function has_route_to(start, to) {
         if (here === to)
             return true;
         // exception for start locale
-        if (here === start || (is_friendly_locale(here) && !has_enemy_lord(here))) {
+        if (here === start || (has_york_favour(here) && !has_lancaster_lord(here))) {
             for (let next of data.locales[here].adjacent) {
                 if (!search_seen[next]) {
                     search_seen[next] = 1;
@@ -5103,7 +5103,7 @@ function add_battle_capability_troops() {
             log_battle_cap(lord, AOW_YORK_PERCYS_NORTH1);
             add_lord_forces(lord, MILITIA, 4);
         }
-        if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && has_route_to(here, LOC_CARLISLE)) {
+        if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && has_york_route_to(here, LOC_CARLISLE)) {
             log_battle_cap(lord, AOW_YORK_PERCYS_NORTH2);
             add_lord_forces(lord, MEN_AT_ARMS, 2);
         }
@@ -5137,7 +5137,7 @@ function remove_battle_capability_troops(lord) {
     if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH1) && is_north(here)) {
         add_lord_forces(lord, MILITIA, -4);
     }
-    if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && has_route_to(here, LOC_CARLISLE)) {
+    if (lord_has_capability(lord, AOW_YORK_PERCYS_NORTH2) && has_york_route_to(here, LOC_CARLISLE)) {
         add_lord_forces(lord, MEN_AT_ARMS, -2);
     }
     if (lord_has_capability(lord, AOW_YORK_KINGDOM_UNITED) && (is_north(here) || is_south(here) || is_wales(here))) {
