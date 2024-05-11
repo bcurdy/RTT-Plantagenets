@@ -9206,7 +9206,7 @@ function goto_tides_of_war() {
 	log("Total: " + york)
 	log_br()
 
-	game.influence = Math.max(0, Math.min(45, game.influence + lanc - york))
+	game.influence = Math.max(-45, Math.min(45, game.influence + lanc - york))
 
 	if (eligible_charity())
 		goto_we_done_deeds_of_charity()
