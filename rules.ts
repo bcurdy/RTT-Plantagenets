@@ -533,13 +533,18 @@ function find_sea_mask(here: Locale) {
 	return 0
 }
 
-function find_ports(here: Locale, lord: Lord): Locale[] {
+function find_disembark_ports(here: Locale): Locale[] {
+	if (here === data.sea_1) return data.port_1
+	if (here === data.sea_2) return data.port_2
+	if (here === data.sea_3) return data.port_3
+	throw "IMPOSSIBLE"
+}
 
-	// for Parley, Supply, and Tax purposes only (not Disembark)
-	if (lord !== NOBODY) {
-		if ((lord_has_capability(lord, AOW_YORK_GREAT_SHIPS) || lord_has_capability(lord, AOW_LANCASTER_GREAT_SHIPS)))
-			return data.all_ports
-	}
+function find_ports(here: Locale, lord: Lord): Locale[] {
+	// for Parley, Supply, and Tax purposes only
+
+	if ((shared_has_capability(lord, AOW_YORK_GREAT_SHIPS) || shared_has_capability(lord, AOW_LANCASTER_GREAT_SHIPS)))
+		return data.all_ports
 
 	if (here === data.sea_1) return data.port_1
 	if (here === data.sea_2) return data.port_2
@@ -1220,6 +1225,22 @@ function lord_has_capability_card(lord: Lord, c: Card) {
 		return true
 	if (get_lord_capability(lord, 1) === c)
 		return true
+	return false
+}
+
+function group_has_capability(group: Lord[], card_or_list: Card | Card[]) {
+	for (let lord of group)
+		if (lord_has_capability(lord, card_or_list))
+			return true
+	return false
+}
+
+function shared_has_capability(lord: Lord, card_or_list: Card | Card[]) {
+	let loc = get_lord_locale(lord)
+	for (let lord of all_friendly_lords())
+		if (get_lord_locale(lord) === loc)
+			if (lord_has_capability(lord, card_or_list))
+				return true
 	return false
 }
 
@@ -4209,7 +4230,7 @@ states.supply_source = {
 function use_stronghold_supply(source: Locale, amount: number) {
 	log(`Supply ${amount} from S${source}.`)
 
-	if (lord_has_capability(game.command, AOW_LANCASTER_HAY_WAINS))
+	if (shared_has_capability(game.command, AOW_LANCASTER_HAY_WAINS))
 		logcap(AOW_LANCASTER_HAY_WAINS)
 
 	add_lord_assets(game.command, PROV, amount)
@@ -4224,11 +4245,11 @@ function use_stronghold_supply(source: Locale, amount: number) {
 function use_port_supply(source: Locale, amount: number) {
 	log(`Supply ${amount} from S${source} (Port).`)
 
-	if (lord_has_capability(game.command, AOW_LANCASTER_HAY_WAINS))
+	if (shared_has_capability(game.command, AOW_LANCASTER_HAY_WAINS))
 		logcap(AOW_LANCASTER_HAY_WAINS)
-	if (lord_has_capability(game.command, AOW_YORK_GREAT_SHIPS))
+	if (shared_has_capability(game.command, AOW_YORK_GREAT_SHIPS))
 		logcap(AOW_YORK_GREAT_SHIPS)
-	if (lord_has_capability(game.command, AOW_LANCASTER_GREAT_SHIPS))
+	if (shared_has_capability(game.command, AOW_LANCASTER_GREAT_SHIPS))
 		logcap(AOW_LANCASTER_GREAT_SHIPS)
 
 	add_lord_assets(game.command, PROV, amount)
@@ -4420,9 +4441,9 @@ function do_sail(to: Locale) {
 	if (!is_marshal(game.command) && !is_lieutenant(game.command) && game.group.length > 1)
 		logcap(AOW_YORK_CAPTAIN)
 
-	if (lord_has_capability(game.command, AOW_YORK_GREAT_SHIPS))
+	if (group_has_capability(game.group, AOW_YORK_GREAT_SHIPS))
 		logcap(AOW_YORK_GREAT_SHIPS)
-	if (lord_has_capability(game.command, AOW_LANCASTER_GREAT_SHIPS))
+	if (group_has_capability(game.group, AOW_LANCASTER_GREAT_SHIPS))
 		logcap(AOW_LANCASTER_GREAT_SHIPS)
 
 	game.sail_from = get_lord_locale(game.command)
@@ -5197,7 +5218,7 @@ function march_with_group_2() {
 	if (!is_marshal(game.command) && !is_lieutenant(game.command) && game.group.length > 1)
 		logcap(AOW_YORK_CAPTAIN)
 
-	if (lord_has_capability(game.command, AOW_LANCASTER_HAY_WAINS))
+	if (group_has_capability(game.group, AOW_LANCASTER_HAY_WAINS))
 		logcap(AOW_LANCASTER_HAY_WAINS)
 
 	if (game.group.length === 1 && type === "road") {
@@ -9260,7 +9281,7 @@ function roll_disembark() {
 }
 
 function has_safe_ports(sea: Locale) {
-	for (let loc of find_ports(sea, NOBODY))
+	for (let loc of find_disembark_ports(sea))
 		if (!has_enemy_lord(loc))
 			if (is_move_allowed(game.who, loc))
 				return true
@@ -9306,7 +9327,7 @@ states.disembark_to = {
 	inactive: "Disembark",
 	prompt() {
 		view.prompt = `Disembark: Land ${lord_name[game.who]} at a port.`
-		for (let loc of find_ports(get_lord_locale(game.who), NOBODY))
+		for (let loc of find_disembark_ports(get_lord_locale(game.who)))
 			if (!has_enemy_lord(loc) && is_move_allowed(game.who, loc))
 				gen_action_locale(loc)
 	},
