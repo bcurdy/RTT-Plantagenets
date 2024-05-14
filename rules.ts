@@ -10938,7 +10938,7 @@ function goto_we_done_deeds_of_charity() {
 }
 
 states.we_done_deeds_of_charity = {
-	inactive: "We done needs of charity",
+	inactive: "We done deeds of charity",
 	prompt() {
 		let lord = find_lord_with_capability_card(AOW_YORK_WE_DONE_DEEDS_OF_CHARITY)
 		let here = get_lord_locale(lord)
