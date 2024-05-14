@@ -6579,16 +6579,21 @@ states.assign_hits = {
 function action_spend_valour(lord, force, vassal = NOVASSAL) {
     game.state = "assign_hits";
     game.battle.reroll = 0;
+    // always true, unless Yeomen are triggered
+    if (get_lord_remaining_valour(lord) > 0) {
+        let protection = get_modified_protection(lord, force);
+        spend_valour(lord);
+        if (!assign_hit_roll("Reroll", protection, ">>")) {
+            unrout_unit(lord, force, vassal);
+            game.vassal = NOVASSAL;
+            return;
+        }
+    }
     if (is_yeomen_of_the_crown_triggered(lord, force)) {
         logcap(AOW_LANCASTER_YEOMEN_OF_THE_CROWN);
         unrout_unit(lord, RETINUE);
         rout_unit(lord, MEN_AT_ARMS);
-        return;
     }
-    let protection = get_modified_protection(lord, force);
-    spend_valour(lord);
-    if (!assign_hit_roll("Reroll", protection, ">>"))
-        unrout_unit(lord, force, vassal);
     game.vassal = NOVASSAL;
 }
 function rout_unit(lord, type, v = NOVASSAL) {
