@@ -358,7 +358,7 @@ let sea_2 = locmap["English Channel"]
 let sea_3 = locmap["Irish Sea"]
 
 let port_1 = ["Newcastle", "Scarborough", "Ravenspur", "Lynn", "Ipswich"].map(name => locmap[name]).sort(cmpnum)
-let port_2 = ["Dover", "Hastings", "Calais", "Arundel", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
+let port_2 = ["Dover", "Hastings", "Calais", "Southampton", "Dorchester", "Exeter", "Plymouth", "Truro"].map(name => locmap[name]).sort(cmpnum)
 let port_3 = ["Bristol","Pembroke","Harlech"].map(name => locmap[name]).sort(cmpnum)
 let all_ports = [ ...port_1, ...port_2, ...port_3 ].sort(cmpnum)
 

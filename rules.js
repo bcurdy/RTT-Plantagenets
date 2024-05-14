@@ -190,12 +190,12 @@ function get_lord_influence(lord) {
     return data.lords[lord].influence;
 }
 // from !node tools/gendata.js
-function is_seaport(x) { return (x >= 0 && x <= 16); }
+function is_seaport(x) { return (x >= 0 && x <= 9) || (x >= 11 && x <= 16); }
 function is_port_1(x) { return (x >= 0 && x <= 4); }
-function is_port_2(x) { return (x >= 5 && x <= 13); }
+function is_port_2(x) { return (x >= 5 && x <= 9) || (x >= 11 && x <= 13); }
 function is_port_3(x) { return (x >= 14 && x <= 16); }
 function is_adjacent_north_sea(x) { return (x >= 0 && x <= 4); }
-function is_adjacent_english_channel(x) { return (x >= 5 && x <= 13); }
+function is_adjacent_english_channel(x) { return (x >= 5 && x <= 9) || (x >= 11 && x <= 13); }
 function is_adjacent_irish_sea(x) { return (x >= 14 && x <= 16); }
 function is_stronghold(x) { return (x >= 0 && x <= 53); }
 function is_fortress(x) { return (x >= 0 && x <= 1) || x === 15 || x === 42 || x === 53; }
