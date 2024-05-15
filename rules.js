@@ -4965,7 +4965,7 @@ function log_lord_engage(lord) {
 }
 const battle_steps = [
     null,
-    { name: "Missiles", hits: count_archery_hits },
+    { name: "Missiles", hits: count_missile_hits },
     { name: "Melee", hits: count_melee_hits },
 ];
 function remove_lord_from_battle(lord) {
@@ -5002,7 +5002,7 @@ function filled(pos) {
         return true;
     return false;
 }
-function count_archery_hits(lord) {
+function count_missile_hits(lord) {
     let hits = 0;
     hits += get_lord_forces(lord, LONGBOWMEN) << 2;
     hits += get_lord_forces(lord, BURGUNDIANS) << 2;

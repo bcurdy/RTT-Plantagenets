@@ -5944,7 +5944,7 @@ function log_lord_engage(lord: Lord) {
 
 const battle_steps = [
 	null,
-	{ name: "Missiles", hits: count_archery_hits },
+	{ name: "Missiles", hits: count_missile_hits },
 	{ name: "Melee", hits: count_melee_hits },
 ]
 
@@ -5986,7 +5986,7 @@ function filled(pos) {
 	return false
 }
 
-function count_archery_hits(lord: Lord) {
+function count_missile_hits(lord: Lord) {
 	let hits = 0
 	hits += get_lord_forces(lord, LONGBOWMEN) << 2
 	hits += get_lord_forces(lord, BURGUNDIANS) << 2
