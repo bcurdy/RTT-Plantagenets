@@ -5942,12 +5942,6 @@ function log_lord_engage(lord: Lord) {
 	log_lord_cap_ii(lord, AOW_YORK_BARRICADES)
 }
 
-const battle_steps = [
-	null,
-	{ name: "Missiles", hits: count_missile_hits },
-	{ name: "Melee", hits: count_melee_hits },
-]
-
 function remove_lord_from_battle(lord) {
 	if (set_has(game.battle.reserves, lord)) {
 		array_remove(game.battle.reserves, lord)
@@ -6022,12 +6016,20 @@ function count_melee_hits(lord: Lord) {
 	return hits
 }
 
-function count_lord_hits(lord: Lord) {
-	return battle_steps[game.battle.step].hits(lord)
+function total_lord_hits(lord: Lord) {
+	let hits = 0
+	if (is_missiles_step())
+		hits += count_missile_hits(lord)
+	else
+		hits += count_melee_hits(lord)
+	return hits
 }
 
 function format_strike_step() {
-	return battle_steps[game.battle.step].name
+	if (is_missiles_step())
+		return "Missiles"
+	else
+		return "Melee"
 }
 
 function format_hits() {
@@ -7450,12 +7452,15 @@ function goto_total_hits() {
 	let ahits = 0
 	let dhits = 0
 
-	log_h4(battle_steps[game.battle.step].name)
+	if (is_missiles_step())
+		log_h4("Missiles")
+	else
+		log_h4("Melee")
 
 	for (let pos of game.battle.engagements[0]) {
 		let lord = game.battle.array[pos]
 		if (lord !== NOBODY) {
-			let hits = count_lord_hits(lord)
+			let hits = total_lord_hits(lord)
 			log_hits(hits / 2, "L" + lord)
 			hits += use_culverins(lord)
 			if (pos === A1 || pos === A2 || pos === A3)
