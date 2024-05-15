@@ -6827,7 +6827,10 @@ states.regroup = {
 		]
 	},
 	pass() {
-		goto_battle_lord_rout()
+		if (game.battle.step < 2)
+			game.state = "assign_hits"
+		else
+			goto_battle_lord_rout_2()
 	},
 }
 
@@ -6893,7 +6896,7 @@ function end_regroup() {
 	if (game.battle.step < 2)
 		game.state = "assign_hits"
 	else
-		goto_battle_lord_rout()
+		goto_battle_lord_rout_2()
 }
 
 // === 4.4.2 BATTLE ROUNDS ===
@@ -7978,6 +7981,11 @@ function goto_battle_lord_rout() {
 		goto_regroup()
 		return
 	}
+
+	goto_battle_lord_rout_2()
+}
+
+function goto_battle_lord_rout_2() {
 
 	log_h4("Lord Rout")
 
