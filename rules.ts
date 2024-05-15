@@ -5967,10 +5967,10 @@ function set_active_attacker() {
 }
 
 function set_active_defender() {
-	if (game.battle.attacker === P1)
-		set_active(P2)
+	if (game.battle.attacker === YORK)
+		set_active(LANCASTER)
 	else
-		set_active(P1)
+		set_active(YORK)
 }
 
 function filled(pos) {
@@ -6022,6 +6022,11 @@ function total_lord_hits(lord: Lord) {
 		hits += count_missile_hits(lord)
 	else
 		hits += count_melee_hits(lord)
+
+	log_hits(hits / 2, "L" + lord)
+
+	hits += use_culverins(lord)
+
 	return hits
 }
 
@@ -7461,8 +7466,6 @@ function goto_total_hits() {
 		let lord = game.battle.array[pos]
 		if (lord !== NOBODY) {
 			let hits = total_lord_hits(lord)
-			log_hits(hits / 2, "L" + lord)
-			hits += use_culverins(lord)
 			if (pos === A1 || pos === A2 || pos === A3)
 				ahits += hits
 			else
