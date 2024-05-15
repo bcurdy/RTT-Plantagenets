@@ -4986,10 +4986,10 @@ function set_active_attacker() {
     set_active(game.battle.attacker);
 }
 function set_active_defender() {
-    if (game.battle.attacker === P1)
-        set_active(P2);
+    if (game.battle.attacker === YORK)
+        set_active(LANCASTER);
     else
-        set_active(P1);
+        set_active(YORK);
 }
 function filled(pos) {
     let lord = game.battle.array[pos];
@@ -5003,10 +5003,6 @@ function count_missile_hits(lord) {
     hits += get_lord_forces(lord, BURGUNDIANS) << 2;
     hits += get_lord_forces(lord, MILITIA);
     hits += get_lord_forces(lord, MERCENARIES);
-    if (is_leeward_battle_line_in_play(lord)) {
-        // half rounded up!
-        return (hits + 1) >> 1;
-    }
     return hits;
 }
 function count_melee_hits(lord) {
@@ -5033,6 +5029,8 @@ function total_lord_hits(lord) {
         hits += count_missile_hits(lord);
     else
         hits += count_melee_hits(lord);
+    log_hits(hits / 2, "L" + lord);
+    hits += use_culverins(lord);
     return hits;
 }
 function format_strike_step() {
@@ -5706,22 +5704,13 @@ function end_for_trust_not_him() {
     resume_battle_events();
 }
 // === BATTLE EVENT: LEEWARD BATTLE LINE ===
-function is_leeward_battle_line_in_play(lord) {
-    if (is_missiles_step()) {
-        if (is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
-            && !is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE)
-            && is_york_lord(lord)) {
-            logevent(EVENT_LANCASTER_LEEWARD_BATTLE_LINE);
-            return true;
-        }
-        if (is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE)
-            && !is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
-            && is_lancaster_lord(lord)) {
-            logevent(EVENT_YORK_LEEWARD_BATTLE_LINE);
-            return true;
-        }
-    }
-    return false;
+function is_york_leeward_battle_line_in_play() {
+    return (is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE) &&
+        !is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE));
+}
+function is_lancaster_leeward_battle_line_in_play() {
+    return (is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE) &&
+        !is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE));
 }
 // === BATTLE EVENT: REGROUP ===
 function is_regroup_in_play() {
@@ -6330,12 +6319,30 @@ function goto_total_hits() {
         let lord = game.battle.array[pos];
         if (lord !== NOBODY) {
             let hits = total_lord_hits(lord);
-            log_hits(hits / 2, "L" + lord);
-            hits += use_culverins(lord);
+            if (is_missiles_step()) {
+                if (is_york_lord(lord) && is_lancaster_leeward_battle_line_in_play())
+                    logii("\xbd E" + EVENT_LANCASTER_LEEWARD_BATTLE_LINE);
+                if (is_lancaster_lord(lord) && is_york_leeward_battle_line_in_play())
+                    logii("\xbd E" + EVENT_YORK_LEEWARD_BATTLE_LINE);
+            }
             if (pos === A1 || pos === A2 || pos === A3)
                 ahits += hits;
             else
                 dhits += hits;
+        }
+    }
+    if (is_missiles_step()) {
+        if (game.battle.attacker === YORK) {
+            if (is_york_leeward_battle_line_in_play())
+                dhits = (dhits + 1) >> 1;
+            if (is_lancaster_leeward_battle_line_in_play())
+                ahits = (ahits + 1) >> 1;
+        }
+        else {
+            if (is_lancaster_leeward_battle_line_in_play())
+                dhits = (dhits + 1) >> 1;
+            if (is_york_leeward_battle_line_in_play())
+                ahits = (ahits + 1) >> 1;
         }
     }
     if (ahits & 1)

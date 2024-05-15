@@ -5986,12 +5986,6 @@ function count_missile_hits(lord: Lord) {
 	hits += get_lord_forces(lord, BURGUNDIANS) << 2
 	hits += get_lord_forces(lord, MILITIA)
 	hits += get_lord_forces(lord, MERCENARIES)
-
-	if (is_leeward_battle_line_in_play(lord)) {
-		// half rounded up!
-		return (hits + 1) >> 1
-	}
-
 	return hits
 }
 
@@ -6766,22 +6760,18 @@ function end_for_trust_not_him() {
 
 // === BATTLE EVENT: LEEWARD BATTLE LINE ===
 
-function is_leeward_battle_line_in_play(lord: Lord) {
-	if (is_missiles_step()) {
-		if (is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
-		&& !is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE)
-		&& is_york_lord(lord)) {
-			logevent(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
-			return true
-		}
-		if (is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE)
-		&& !is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
-		&& is_lancaster_lord(lord)) {
-			logevent(EVENT_YORK_LEEWARD_BATTLE_LINE)
-			return true
-		}
-	}
-	return false
+function is_york_leeward_battle_line_in_play() {
+	return (
+		is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE) &&
+		!is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
+	)
+}
+
+function is_lancaster_leeward_battle_line_in_play() {
+	return (
+		is_event_in_play(EVENT_LANCASTER_LEEWARD_BATTLE_LINE) &&
+		!is_event_in_play(EVENT_YORK_LEEWARD_BATTLE_LINE)
+	)
 }
 
 // === BATTLE EVENT: REGROUP ===
@@ -7462,14 +7452,35 @@ function goto_total_hits() {
 	else
 		log_h4("Melee")
 
+
 	for (let pos of game.battle.engagements[0]) {
 		let lord = game.battle.array[pos]
 		if (lord !== NOBODY) {
 			let hits = total_lord_hits(lord)
+			if (is_missiles_step()) {
+				if (is_york_lord(lord) && is_lancaster_leeward_battle_line_in_play())
+					logii("\xbd E" + EVENT_LANCASTER_LEEWARD_BATTLE_LINE)
+				if (is_lancaster_lord(lord) && is_york_leeward_battle_line_in_play())
+					logii("\xbd E" + EVENT_YORK_LEEWARD_BATTLE_LINE)
+			}
 			if (pos === A1 || pos === A2 || pos === A3)
 				ahits += hits
 			else
 				dhits += hits
+		}
+	}
+
+	if (is_missiles_step()) {
+		if (game.battle.attacker === YORK) {
+			if (is_york_leeward_battle_line_in_play())
+				dhits = (dhits + 1) >> 1
+			if (is_lancaster_leeward_battle_line_in_play())
+				ahits = (ahits + 1) >> 1
+		} else {
+			if (is_lancaster_leeward_battle_line_in_play())
+				dhits = (dhits + 1) >> 1
+			if (is_york_leeward_battle_line_in_play())
+				ahits = (ahits + 1) >> 1
 		}
 	}
 
