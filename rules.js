@@ -5927,7 +5927,7 @@ function use_culverins(lord) {
     if (game.battle.culverins && set_has(game.battle.culverins, lord)) {
         let die1 = roll_die();
         let die2 = 0;
-        if (is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE) && game.active === YORK) {
+        if (is_york_lord(lord) && is_event_in_play(EVENT_YORK_PATRICK_DE_LA_MOTE)) {
             logevent(EVENT_YORK_PATRICK_DE_LA_MOTE);
             die2 = roll_die();
             logii(`+ B${die1} B${die2} Artillery`);
