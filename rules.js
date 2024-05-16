@@ -4290,7 +4290,6 @@ function prompt_march() {
     return has_march;
 }
 function goto_march(to) {
-    push_undo();
     let from = get_lord_locale(game.command);
     game.march = { from, to };
     march_with_group_1();

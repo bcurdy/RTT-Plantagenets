@@ -5161,7 +5161,6 @@ function prompt_march() {
 }
 
 function goto_march(to: Locale) {
-	push_undo()
 	let from = get_lord_locale(game.command)
 	game.march = { from, to }
 	march_with_group_1()
