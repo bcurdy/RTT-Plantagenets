@@ -2995,6 +2995,7 @@ function goto_levy_discard_events() {
     // Discard "This Levy" events from play.
     discard_events("this_levy");
     // Discard Held "This Levy" events.
+    set_delete(game.events, EVENT_YORK_SUN_IN_SPLENDOUR);
     set_delete(game.events, EVENT_YORK_YORKIST_PARADE);
     goto_campaign_plan();
 }
