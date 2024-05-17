@@ -2519,6 +2519,8 @@ states.muster = {
 };
 function resume_muster_lord() {
     game.state = "muster_lord";
+    // Reset The King's Name after failed levy actions
+    delete_state_for_the_kings_name();
     // Pay for Levy action
     --game.actions;
     // Muster over unless there are more actions possible
