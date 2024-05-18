@@ -535,7 +535,7 @@ function build_card(c, name) {
 		e.style.width = aw + "px"
 		e.style.height = ah + "px"
 		register_action(e, "locale", ix)
-		register_tooltip(e, get_locale_tip(ix))
+		register_tooltip(e, on_focus_locale)
 		document.getElementById("locales").appendChild(e)
 
 		// London for York
@@ -1616,8 +1616,32 @@ function on_blur() {
 	update_current_card_display()
 }
 
-function get_locale_tip(id) {
-	return data.locales[id].name
+function on_focus_locale(evt) {
+	let id = evt.target.my_id
+	let info = data.locales[id]
+	let tip = info.name
+
+	if (info.type === "fortress")
+		tip += " - Fortress"
+	else if (info.type === "city")
+		tip += " - City"
+	else if (info.type === "town")
+		tip += " - Town"
+
+	if (set_has(data.all_ports, id))
+		tip += " - Port"
+
+	if (set_has(view.pieces.depleted, id))
+		tip += " - Depleted"
+	if (set_has(view.pieces.exhausted, id))
+		tip += " - Exhausted"
+
+	if (set_has(view.pieces.favourl, id))
+		tip += " - Lancastrian"
+	if (set_has(view.pieces.favoury, id))
+		tip += " - Yorkist"
+
+	on_focus(tip)
 }
 
 function on_focus_cylinder(evt) {
