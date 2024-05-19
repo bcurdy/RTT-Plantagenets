@@ -254,7 +254,7 @@ cards:[
 {"name":"L17","event":"My crown is in my heart","roses":1,"when":"this_levy","capability":"Margaret","lords":[14]},
 {"name":"L18","event":"Parliament Votes","roses":1,"when":"this_levy","capability":"Council Member","lords":[16,17,18,19,20]},
 {"name":"L19","event":"Henry's Proclamation","roses":1,"when":"now","capability":"Andrew Trollope","lords":[16,17,18,19,20]},
-{"name":"L20","event":"Parliament Truce","roses":1,"when":"hold","capability":"Veteran of French Wars","lords":[16,17,18,19]},
+{"name":"L20","event":"Parliament's Truce","roses":1,"when":"hold","capability":"Veteran of French Wars","lords":[16,17,18,19]},
 {"name":"L21","event":"French Fleet","roses":1,"when":"this_campaign","capability":"My Father's Blood","lords":[14,15,16,17,18,19,20,21,22,23,24,25,26,27]},
 {"name":"L22","event":"French Troops","roses":1,"when":"now","capability":"Stafford Estates","lords":[20]},
 {"name":"L23","event":"Warwick's Propaganda","roses":2,"when":"now","capability":"Montagu","lords":[27]},
