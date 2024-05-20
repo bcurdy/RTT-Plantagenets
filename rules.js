@@ -6693,9 +6693,12 @@ function get_modified_protection(lord, force) {
                 protection = 2;
         }
     }
-    if (lord_has_capability(lord, AOW_LANCASTER_CHEVALIERS))
-        if (force === MEN_AT_ARMS)
-            protection--;
+    if (lord_has_capability(lord, AOW_LANCASTER_CHEVALIERS)) {
+        if (force === MEN_AT_ARMS) {
+            if (is_missiles_step())
+                protection--;
+        }
+    }
     return protection;
 }
 function is_yeomen_of_the_crown_triggered(lord, type) {
