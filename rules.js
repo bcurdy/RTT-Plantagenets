@@ -5968,9 +5968,10 @@ states.flee_battle = {
         for (let p of battle_strike_positions)
             if (is_friendly_lord(game.battle.array[p]))
                 gen_action_lord(game.battle.array[p]);
-        view.actions.battle = 1;
+        view.actions.end_flee = 1;
     },
-    battle() {
+    battle() { this.end_flee(); }, // TODO: remove backwards compatibility
+    end_flee() {
         end_flee();
     },
     lord(lord) {

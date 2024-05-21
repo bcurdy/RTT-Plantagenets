@@ -1544,7 +1544,6 @@ function on_update() {
 	action_button("march", "March")
 	action_button("approach", "Approach")
 	action_button("intercept", "Intercept")
-	action_button("battle", "Battle")
 
 	// ARTS OF WAR
 	action_button("play", "Play")
@@ -1583,6 +1582,7 @@ function on_update() {
 	action_button("end_battle_round", "End Round")
 	action_button("end_command", "End Command")
 	action_button("end_feed", "End Feed")
+	action_button("end_flee", "End Flee")
 	action_button("end_muster", "End Muster")
 	action_button("end_pay", "End Pay")
 	action_button("end_plan", "End Plan")

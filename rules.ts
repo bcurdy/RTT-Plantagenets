@@ -214,7 +214,7 @@ interface State {
 	march?(): void,
 	approach?(): void,
 	intercept?(): void,
-	battle?(): void,
+	battle?(): void, // TODO: remove backwards compatible
 
 	// pay/feed/pillage
 	pay?(): void,
@@ -226,6 +226,7 @@ interface State {
 	end_battle_round?(): void,
 	end_command?(): void,
 	end_feed?(): void,
+	end_flee?(): void,
 	end_muster?(): void,
 	end_pay?(): void,
 	end_spoils?(): void,
@@ -7060,9 +7061,10 @@ states.flee_battle = {
 		for (let p of battle_strike_positions)
 			if (is_friendly_lord(game.battle.array[p]))
 				gen_action_lord(game.battle.array[p])
-		view.actions.battle = 1
+		view.actions.end_flee = 1
 	},
-	battle() {
+	battle() { this.end_flee() }, // TODO: remove backwards compatibility
+	end_flee() {
 		end_flee()
 	},
 	lord(lord) {
