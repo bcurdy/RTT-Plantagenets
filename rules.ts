@@ -2424,6 +2424,9 @@ function reset_unpaid_lords(here: Locale) {
 }
 
 function goto_pay_troops() {
+	if (is_percys_power_triggered())
+		logcap(AOW_LANCASTER_PERCYS_POWER)
+
 	for (let lord of all_friendly_lords()) {
 		let here = get_lord_locale(lord)
 		let n = Math.ceil(count_lord_all_forces(lord) / 6)
@@ -2431,8 +2434,7 @@ function goto_pay_troops() {
 			logcap(AOW_LANCASTER_MADAME_LA_GRANDE)
 			add_lord_assets(lord, COIN, 1)
 		}
-		if (lord_has_capability(lord, AOW_LANCASTER_PERCYS_POWER) && is_lord_in_north(lord)) {
-			logcap(AOW_LANCASTER_PERCYS_POWER)
+		if (is_percys_power_triggered() && is_lord_in_north(lord)) {
 			n = 0
 		}
 		set_lord_unfed(lord, n)
@@ -2623,7 +2625,7 @@ function goto_pay_lords() {
 
 	for (let lord of all_friendly_lords()) {
 		if (is_lord_on_map(lord)) {
-			if (lord_has_capability(lord, AOW_LANCASTER_PERCYS_POWER) && is_lord_in_north(lord))
+			if (is_percys_power_triggered() && is_lord_in_north(lord))
 				continue
 			set_lord_unfed(lord, 1)
 		}
@@ -2711,7 +2713,7 @@ function for_each_unpaid_vassal(f) {
 	for (let v of all_vassals) {
 		let lord = get_vassal_lord(v)
 		if (is_friendly_lord(lord) && get_vassal_service(v) === current_turn()) {
-			if (lord_has_capability(lord, AOW_LANCASTER_PERCYS_POWER) && is_lord_in_north(lord))
+			if (is_percys_power_triggered() && is_lord_in_north(lord))
 				continue
 			f(v)
 		}
@@ -11229,6 +11231,16 @@ states.heralds_attempt = {
 function end_heralds_attempt() {
 	spend_all_actions()
 	resume_command()
+}
+
+// === CAPABILITY: PERCY'S POWER ===
+
+function is_percys_power_triggered() {
+	return (
+		game.active === LANCASTER &&
+		lord_has_capability(LORD_NORTHUMBERLAND_L, AOW_LANCASTER_PERCYS_POWER) &&
+		is_lord_in_north(LORD_NORTHUMBERLAND_L)
+	)
 }
 
 // === EVENTS: IMMEDIATE ===
