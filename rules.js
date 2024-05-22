@@ -9651,6 +9651,7 @@ function can_action_heralds() {
     return false;
 }
 function goto_heralds() {
+    push_undo();
     game.state = "heralds";
 }
 states.heralds = {

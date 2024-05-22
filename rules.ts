@@ -11200,6 +11200,7 @@ function can_action_heralds() {
 }
 
 function goto_heralds() {
+	push_undo()
 	game.state = "heralds"
 }
 
