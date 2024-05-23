@@ -6394,7 +6394,7 @@ states.final_charge = {
         logcap(AOW_YORK_FINAL_CHARGE);
         log_hits("+3/+1", "L" + find_lord_with_capability_card(AOW_YORK_FINAL_CHARGE));
         game.battle.final_charge = 1;
-        if (game.battle.attacker === YORK) {
+        if (game.battle.attacker === LANCASTER) {
             game.battle.ahits += 1;
             game.battle.dhits += 3;
         }
