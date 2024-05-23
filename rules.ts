@@ -3346,8 +3346,10 @@ function chamberlains_eligible_levy(loc: Locale) {
 }
 
 function do_levy_troops() {
-	let here = get_lord_locale(game.command)
+	do_levy_troops_from(get_lord_locale(game.command))
+}
 
+function do_levy_troops_from(here: Locale) {
 	if (lord_has_capability(game.command, AOW_YORK_WOODVILLES))
 		logcap(AOW_YORK_WOODVILLES)
 	else if (lord_has_capability(game.command, AOW_LANCASTER_QUARTERMASTERS))
@@ -10922,37 +10924,7 @@ states.commission_of_array = {
 		}
 	},
 	locale(loc) {
-		let loc_type = data.locales[loc].type
-		deplete_locale(loc)
-
-		switch (loc_type) {
-			case "calais":
-				add_lord_forces(game.command, MEN_AT_ARMS, 2)
-				add_lord_forces(game.command, LONGBOWMEN, 1)
-				break
-			case "london":
-				add_lord_forces(game.command, MEN_AT_ARMS, 1)
-				add_lord_forces(game.command, LONGBOWMEN, 1)
-				add_lord_forces(game.command, MILITIA, 1)
-				break
-			case "harlech":
-				add_lord_forces(game.command, MEN_AT_ARMS, 1)
-				add_lord_forces(game.command, LONGBOWMEN, 2)
-				break
-			case "city":
-				add_lord_forces(game.command, LONGBOWMEN, 1)
-				add_lord_forces(game.command, MILITIA, 1)
-				break
-			case "town":
-				add_lord_forces(game.command, MILITIA, 2)
-				break
-			case "fortress":
-				add_lord_forces(game.command, MEN_AT_ARMS, 1)
-				add_lord_forces(game.command, MILITIA, 1)
-				break
-		}
-
-		end_levy_troops()
+		do_levy_troops_from(loc)
 	},
 }
 
