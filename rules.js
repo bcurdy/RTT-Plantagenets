@@ -2890,9 +2890,8 @@ function can_add_troops_beloved_warwick(lord, here) {
         lord_has_capability(lord, AOW_YORK_BELOVED_WARWICK));
 }
 function can_add_troops_irishmen(lord, here) {
-    return (can_add_troops(here) &&
-        lord_has_capability(lord, AOW_YORK_IRISHMEN) &&
-        (here === LOC_IRELAND || is_adjacent_irish_sea(here)));
+    return ((here === LOC_IRELAND || (is_adjacent_irish_sea(here) && can_add_troops(here))) &&
+        lord_has_capability(lord, AOW_YORK_IRISHMEN));
 }
 function count_available_mercenaries() {
     let n = 0;

@@ -3547,9 +3547,8 @@ function can_add_troops_beloved_warwick(lord: Lord, here: Locale) {
 
 function can_add_troops_irishmen(lord: Lord, here: Locale) {
 	return (
-		can_add_troops(here) &&
-		lord_has_capability(lord, AOW_YORK_IRISHMEN) &&
-		(here === LOC_IRELAND || is_adjacent_irish_sea(here))
+		(here === LOC_IRELAND || (is_adjacent_irish_sea(here) && can_add_troops(here))) &&
+		lord_has_capability(lord, AOW_YORK_IRISHMEN)
 	)
 }
 
