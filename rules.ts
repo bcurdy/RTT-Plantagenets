@@ -5623,11 +5623,13 @@ function goto_parliaments_truce() {
 states.parliaments_truce = {
 	inactive: "Parliament's Truce",
 	prompt() {
-		view.prompt = "Approach: You may play Parliament's Truce to cancel approach."
-		if (game.active === YORK)
-			gen_action_card_if_held(EVENT_YORK_PARLIAMENTS_TRUCE)
+		view.prompt = "Approach: You may play Parliament's Truce to cancel appreach."
+		if (has_card_in_hand(EVENT_YORK_PARLIAMENTS_TRUCE))
+			gen_action_card(EVENT_YORK_PARLIAMENTS_TRUCE)
+		else if (has_card_in_hand(EVENT_LANCASTER_PARLIAMENTS_TRUCE))
+			gen_action_card(EVENT_LANCASTER_PARLIAMENTS_TRUCE)
 		else
-			gen_action_card_if_held(EVENT_LANCASTER_PARLIAMENTS_TRUCE)
+			view.prompt = "Approach: You don't have Parliament's Truce."
 		view.actions.pass = 1
 	},
 	card(c) {
@@ -5695,12 +5697,12 @@ states.blocked_ford = {
 	inactive: "Blocked Ford",
 	prompt() {
 		view.prompt = "Approach: You may play Blocked Ford."
-
-		if (game.active === YORK)
-			gen_action_card_if_held(EVENT_YORK_BLOCKED_FORD)
+		if (has_card_in_hand(EVENT_YORK_BLOCKED_FORD))
+			gen_action_card(EVENT_YORK_BLOCKED_FORD)
+		else if (has_card_in_hand(EVENT_LANCASTER_BLOCKED_FORD))
+			gen_action_card(EVENT_LANCASTER_BLOCKED_FORD)
 		else
-			gen_action_card_if_held(EVENT_LANCASTER_BLOCKED_FORD)
-
+			view.prompt = "Approach: You don't have Blocked Ford."
 		view.actions.pass = 1
 	},
 	card(c) {
