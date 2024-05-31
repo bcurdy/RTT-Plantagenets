@@ -2071,23 +2071,27 @@ function parley_ic_cost(lord: Lord, spend: number) {
 	return cost
 }
 
-function common_ic_success(_lord: Lord) {
+function common_ic_success(_lord: Lord, _report: boolean) {
 	return false
 }
 
-function vassal_ic_success(lord: Lord) {
+function vassal_ic_success(lord: Lord, report: boolean) {
 	if (game.active === LANCASTER) {
 		if (is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND)) {
+			if (report)
+				logevent(EVENT_LANCASTER_THE_EARL_OF_RICHMOND)
 			return true
 		}
 		if (lord_has_capability(lord, AOW_LANCASTER_TWO_ROSES)) {
+			if (report)
+				logcap(AOW_LANCASTER_TWO_ROSES)
 			return true
 		}
 	}
 	return false
 }
 
-function parley_ic_success(lord: Lord) {
+function parley_ic_success(lord: Lord, report: boolean) {
 	if (is_levy_phase()) {
 		if (game.levy_flags.jack_cade > 0) {
 			return true
@@ -2101,6 +2105,8 @@ function parley_ic_success(lord: Lord) {
 		}
 	} else {
 		if (lord === LORD_DEVON && get_lord_locale(lord) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET)) {
+			if (report)
+				logevent(EVENT_YORK_DORSET)
 			return true
 		}
 	}
@@ -2194,7 +2200,7 @@ function parley_ic_rating(lord: Lord, spend: number, report: boolean) {
 
 function prompt_influence_check(lord: Lord, calc=common_ic) {
 	let cost = calc.cost(lord, 0)
-	if (calc.success(lord)) {
+	if (calc.success(lord, false)) {
 		view.prompt += ` Influence success for ${cost} IP.`
 		view.actions.check = [ 0 ]
 	} else {
@@ -2217,8 +2223,9 @@ function roll_influence_check(what: string, lord: Lord, spend: number, calc=comm
 
 	reduce_influence(cost)
 
-	if (calc.success(lord)) {
+	if (calc.success(lord, false)) {
 		log(`${what}.`)
+		calc.success(lord, true)
 		return true
 	} else {
 		let rating = Math.max(1, Math.min(5, calc.rating(lord, spend, false)))

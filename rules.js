@@ -1584,21 +1584,25 @@ function parley_ic_cost(lord, spend) {
     }
     return cost;
 }
-function common_ic_success(_lord) {
+function common_ic_success(_lord, _report) {
     return false;
 }
-function vassal_ic_success(lord) {
+function vassal_ic_success(lord, report) {
     if (game.active === LANCASTER) {
         if (is_event_in_play(EVENT_LANCASTER_THE_EARL_OF_RICHMOND)) {
+            if (report)
+                logevent(EVENT_LANCASTER_THE_EARL_OF_RICHMOND);
             return true;
         }
         if (lord_has_capability(lord, AOW_LANCASTER_TWO_ROSES)) {
+            if (report)
+                logcap(AOW_LANCASTER_TWO_ROSES);
             return true;
         }
     }
     return false;
 }
-function parley_ic_success(lord) {
+function parley_ic_success(lord, report) {
     if (is_levy_phase()) {
         if (game.levy_flags.jack_cade > 0) {
             return true;
@@ -1614,6 +1618,8 @@ function parley_ic_success(lord) {
     }
     else {
         if (lord === LORD_DEVON && get_lord_locale(lord) === LOC_EXETER && is_event_in_play(EVENT_YORK_DORSET)) {
+            if (report)
+                logevent(EVENT_YORK_DORSET);
             return true;
         }
     }
@@ -1701,7 +1707,7 @@ function parley_ic_rating(lord, spend, report) {
 }
 function prompt_influence_check(lord, calc = common_ic) {
     let cost = calc.cost(lord, 0);
-    if (calc.success(lord)) {
+    if (calc.success(lord, false)) {
         view.prompt += ` Influence success for ${cost} IP.`;
         view.actions.check = [0];
     }
@@ -1720,8 +1726,9 @@ function prompt_influence_check(lord, calc = common_ic) {
 function roll_influence_check(what, lord, spend, calc = common_ic) {
     let cost = calc.cost(lord, spend);
     reduce_influence(cost);
-    if (calc.success(lord)) {
+    if (calc.success(lord, false)) {
         log(`${what}.`);
+        calc.success(lord, true);
         return true;
     }
     else {
