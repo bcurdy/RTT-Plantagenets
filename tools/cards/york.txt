@@ -60,7 +60,7 @@ This Campaign Yorkists may Sail for just 1 Command action.
 
 Great Ships
 
-This Lord's Ships count double for Sail and Supply and connect all Ports of all Seas.
+This Lord's Ships count double for Sail and Supply and connect all Ports of all Seas for Parley, Supply, and Tax.
 
 Y7
 
