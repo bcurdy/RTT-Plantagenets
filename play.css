@@ -486,12 +486,31 @@ body.Lancaster #plan_actions .york { display: none }
 .mat.engaged .board { box-shadow: 0 0 0 1px #333, 0 0 0 4px indianred; }
 
 #court1 .mat.hidden .board,
-#court2 .mat.hidden .board {
-	filter: grayscale(100%)
+#court2 .mat.hidden .board,
+.mat.ravine .board
+{
+	background-image: url(images/lord_mat_75_gray.jpg);
+	background-color: #999;
+	border-color: #aaa #666 #666 #aaa;
 }
 
-.mat.ravine .board {
-	filter: grayscale(100%)
+.defender .att #court1 .mat.hidden .board,
+.defender .att #court2 .mat.hidden .board,
+.defender .att .mat.ravine .board,
+.attacker .def #court1 .mat.hidden .board,
+.attacker .def #court2 .mat.hidden .board,
+.attacker .def .mat.ravine .board
+{
+	border-color: #666 #aaa #aaa #666;
+}
+
+@media (min-resolution: 97dpi) {
+	#court1 .mat.hidden .board,
+	#court2 .mat.hidden .board,
+	.mat.ravine .board
+	{
+		background-image: url(images/lord_mat_150_gray.jpg);
+	}
 }
 
 .mat .capabilities {
