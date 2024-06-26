@@ -996,6 +996,12 @@ function count_lord_all_forces(lord) {
         get_lord_forces(lord, MILITIA) +
         get_lord_forces(lord, LONGBOWMEN));
 }
+function count_group_all_forces(list) {
+    let n = 0;
+    for (let lord of list)
+        n += count_lord_all_forces(lord);
+    return n;
+}
 function lord_has_unrouted_units(lord) {
     for (let x of all_force_types)
         if (get_lord_forces(lord, x) > 0)
@@ -3232,7 +3238,7 @@ states.command = {
             view.actions.sail = 1;
             can_move = true;
         }
-        if (can_move && can_pick_up_lords(game.command)) {
+        if (can_pick_up_lords(game.command)) {
             view.group = game.group;
             for_each_friendly_lord_in_locale(here, other => {
                 if (can_pick_up_other(game.command, other))
@@ -3553,7 +3559,7 @@ states.blockade_supply = {
 // === 4.6.1 ACTION: SAIL ===
 function has_enough_available_ships_for_army() {
     let ships = count_group_ships(game.group, true);
-    let army = count_lord_all_forces(game.command);
+    let army = count_group_all_forces(game.group);
     let needed_ships = army / 6;
     return needed_ships <= ships;
 }
