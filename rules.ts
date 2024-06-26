@@ -7764,6 +7764,7 @@ states.assign_hits = {
 	},
 
 	done() {
+		game.battle.reroll = 0
 		if (game.active === game.battle.attacker)
 			end_attacker_assign_hits()
 		else
