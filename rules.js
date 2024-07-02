@@ -989,12 +989,15 @@ function is_enemy_lord(lord) {
         return is_lancaster_lord(lord);
     return is_york_lord(lord);
 }
-function count_lord_all_forces(lord) {
+function count_lord_all_troops(lord) {
     return (get_lord_forces(lord, BURGUNDIANS) +
         get_lord_forces(lord, MERCENARIES) +
         get_lord_forces(lord, MEN_AT_ARMS) +
         get_lord_forces(lord, MILITIA) +
         get_lord_forces(lord, LONGBOWMEN));
+}
+function count_lord_all_forces(lord) {
+    return 1 + count_vassals_with_lord(lord) + count_lord_all_troops(lord);
 }
 function count_group_all_forces(list) {
     let n = 0;
@@ -1916,7 +1919,7 @@ function reset_unpaid_lords(here) {
     for (let lord of all_friendly_lords()) {
         if (is_lord_unfed(lord) && get_lord_locale(lord) === here) {
             // Note: Percy's Power only affects Pay -- so will never end up here
-            set_lord_unfed(lord, Math.ceil(count_lord_all_forces(lord) / 6));
+            set_lord_unfed(lord, Math.ceil(count_lord_all_troops(lord) / 6));
         }
     }
 }
@@ -1925,7 +1928,7 @@ function goto_pay_troops() {
         logcap(AOW_LANCASTER_PERCYS_POWER);
     for (let lord of all_friendly_lords()) {
         let here = get_lord_locale(lord);
-        let n = Math.ceil(count_lord_all_forces(lord) / 6);
+        let n = Math.ceil(count_lord_all_troops(lord) / 6);
         if (lord_has_capability(lord, AOW_LANCASTER_MADAME_LA_GRANDE) && is_at_or_adjacent_to_lancastrian_english_channel_port(here)) {
             logcap(AOW_LANCASTER_MADAME_LA_GRANDE);
             add_lord_assets(lord, COIN, 1);
@@ -7626,7 +7629,7 @@ function has_friendly_lord_who_must_feed() {
 function set_lord_feed_requirements(lord) {
     // Count how much food each lord needs
     if (get_lord_moved(lord))
-        set_lord_unfed(lord, Math.ceil(count_lord_all_forces(lord) / 6));
+        set_lord_unfed(lord, Math.ceil(count_lord_all_troops(lord) / 6));
     else
         set_lord_unfed(lord, 0);
 }
@@ -11786,7 +11789,7 @@ function assert_mutually_exclusive_lords() {
 }
 function assert_all_lords_have_troops_or_retinue() {
     for (let lord of all_lords) {
-        if (is_lord_on_map(lord) && !count_lord_all_forces(lord) && !get_lord_forces(lord, RETINUE))
+        if (is_lord_on_map(lord) && !count_lord_all_troops(lord) && !get_lord_forces(lord, RETINUE))
             throw Error(`ASSERT: Lord "${lord_name[lord]}" without troops or retinue.`);
     }
 }
