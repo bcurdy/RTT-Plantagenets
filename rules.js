@@ -2700,6 +2700,7 @@ states.muster_lord = {
         game.levy_flags.loyalty_and_trust = 0;
     },
     done() {
+        push_undo();
         set_lord_moved(game.command, 1);
         game.command = NOBODY;
         game.state = "muster";

@@ -1,5 +1,7 @@
 "use strict"
 
+// TODO: manually trigger percy's power (make it optional)
+
 // === TYPES ===
 
 declare function require(name: string): any
@@ -3328,6 +3330,7 @@ states.muster_lord = {
 	},
 
 	done() {
+		push_undo()
 		set_lord_moved(game.command, 1)
 		game.command = NOBODY
 		game.state = "muster"
