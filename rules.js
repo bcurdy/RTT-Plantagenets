@@ -11018,7 +11018,7 @@ states.sun_in_splendour = {
     prompt() {
         view.prompt = "Sun in Splendour: Muster Edward IV at any friendly locale with no enemy lord.";
         for (let loc of all_locales)
-            if (is_friendly_locale(loc))
+            if (is_friendly_locale(loc) && !has_enemy_lord(loc))
                 gen_action_locale(loc);
     },
     locale(loc) {
@@ -11037,7 +11037,7 @@ states.sun_in_splendour_now = {
     prompt() {
         view.prompt = "Sun in Splendour: Muster Edward IV at any friendly locale with no enemy lord.";
         for (let loc of all_locales)
-            if (is_friendly_locale(loc))
+            if (is_friendly_locale(loc) && !has_enemy_lord(loc))
                 gen_action_locale(loc);
     },
     locale(loc) {
