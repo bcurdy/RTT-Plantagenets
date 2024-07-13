@@ -12720,6 +12720,7 @@ states.sun_in_splendour_now = {
 	locale(loc) {
 		muster_lord(LORD_EDWARD_IV, loc)
 		log(`L${LORD_EDWARD_IV} at S${loc}.`)
+		set_delete(game.events, game.this_event)
 		end_immediate_event()
 	},
 }
