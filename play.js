@@ -350,7 +350,8 @@ const ui = {
 
 	lord_moved1: [],
 	lord_moved2: [],
-	lord_feed: [],
+	lord_feed1: [],
+	lord_feed2: [],
 
 	cards: [],
 	cards2: [],
@@ -470,7 +471,8 @@ function build_lord_mat(ix, side, name) {
 
 	ui.lord_moved1[ix] = build_div(ui.marker_area[ix], "marker square moved_fought one hide")
 	ui.lord_moved2[ix] = build_div(ui.marker_area[ix], "marker square moved_fought two hide")
-	ui.lord_feed[ix] = build_div(ui.marker_area[ix], "marker small feed x2")
+	ui.lord_feed1[ix] = build_div(ui.marker_area[ix], "marker small feed x2")
+	ui.lord_feed2[ix] = build_div(ui.marker_area[ix], "marker small feed x2")
 
 	ui.mat[ix] = mat
 	register_action(ui.mat_card[ix], "lord", ix)
@@ -1057,12 +1059,25 @@ function update_lord_mat(ix) {
 		update_lord_troops(ui.routed_troops[ix], view.pieces.routed, ix, true)
 
 		let n = count_lord_all_forces(ix)
-		if (n <= 6)
-			ui.lord_feed[ix].className = "hide"
-		else if (n <= 12)
-			ui.lord_feed[ix].className = "marker small feed x2"
-		else
-			ui.lord_feed[ix].className = "marker small feed x3"
+		if (n <= 6) {
+			ui.lord_feed1[ix].className = "hide"
+			ui.lord_feed2[ix].className = "hide"
+		} else if (n <= 12) {
+			ui.lord_feed1[ix].className = "marker small feed x2"
+			ui.lord_feed2[ix].className = "hide"
+		} else if (n <= 18) {
+			ui.lord_feed1[ix].className = "marker small feed x3"
+			ui.lord_feed2[ix].className = "hide"
+		} else if (n <= 24) {
+			ui.lord_feed1[ix].className = "marker small feed x2"
+			ui.lord_feed2[ix].className = "marker small feed x2"
+		} else if (n <= 30) {
+			ui.lord_feed1[ix].className = "marker small feed x3"
+			ui.lord_feed2[ix].className = "marker small feed x2"
+		} else {
+			ui.lord_feed1[ix].className = "marker small feed x3"
+			ui.lord_feed2[ix].className = "marker small feed x3"
+		}
 
 		if (get_lord_locale(LORD_HENRY_VI) === CAPTURE_OF_THE_KING + ix)
 			ui.marker_area[ix].appendChild(ui.captured_king)
@@ -1076,7 +1091,8 @@ function update_lord_mat(ix) {
 		ui.routed_troops[ix].replaceChildren()
 		ui.lord_moved1[ix].classList.add("hide")
 		ui.lord_moved2[ix].classList.add("hide")
-		ui.lord_feed[ix].className = "hide"
+		ui.lord_feed1[ix].className = "hide"
+		ui.lord_feed2[ix].className = "hide"
 
 		if (get_lord_locale(LORD_HENRY_VI) === CAPTURE_OF_THE_KING + ix)
 			ui.marker_area[ix].appendChild(ui.captured_king)
