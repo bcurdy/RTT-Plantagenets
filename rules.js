@@ -7437,7 +7437,8 @@ states.escape_ship = {
     prompt() {
         view.prompt = "Escape Ship: Choose lords to go to exile.";
         for (let lord of game.battle.routed)
-            gen_action_lord(lord);
+            if (is_friendly_lord(lord))
+                gen_action_lord(lord);
         view.actions.done = 1;
     },
     lord(lord) {
@@ -7465,7 +7466,8 @@ states.talbot_to_the_rescue = {
     prompt() {
         view.prompt = "Talbot to the Rescue: Disband routed Lancastrians instead of rolling for death.";
         for (let lord of game.battle.routed)
-            gen_action_lord(lord);
+            if (is_friendly_lord(lord))
+                gen_action_lord(lord);
         view.actions.done = 1;
     },
     lord(lord) {
@@ -7507,9 +7509,11 @@ states.warden_of_the_marches = {
             view.prompt = `Warden of the Marches: Move routed Lancastrians to ${locale_name[game.where]}.`;
             let done = true;
             for (let lord of game.battle.routed) {
-                if (is_move_allowed(lord, game.where)) {
-                    gen_action_lord(lord);
-                    done = false;
+                if (is_friendly_lord(lord)) {
+                    if (is_move_allowed(lord, game.where)) {
+                        gen_action_lord(lord);
+                        done = false;
+                    }
                 }
             }
             if (done)
