@@ -2192,6 +2192,15 @@ function for_each_unpaid_vassal(f) {
     }
 }
 function goto_pay_vassals() {
+    // Percy's Power pays all affected vassals
+    if (is_percys_power_triggered()) {
+        for (let v of all_vassals) {
+            let lord = get_vassal_lord(v);
+            if (is_friendly_lord(lord) && get_vassal_service(v) === current_turn() && is_lord_in_north(lord)) {
+                set_vassal_lord_and_service(v, get_vassal_lord(v), current_turn() + 1);
+            }
+        }
+    }
     if (has_unpaid_vassals()) {
         log_h3("Pay Vassals");
         game.state = "pay_vassals";
