@@ -1209,7 +1209,7 @@ function is_lord_on_calendar(lord: Lord) {
 }
 
 function is_lord_ready(lord: Lord) {
-	return (is_lord_on_calendar(lord) && get_lord_calendar(lord) <= current_turn())
+	return (is_lord_on_calendar(lord) && get_lord_calendar(lord) <= current_turn() && !is_lord_in_exile(lord))
 }
 
 function get_lord_capability(lord: Lord, n: 0 | 1): Card {
@@ -3082,7 +3082,7 @@ function end_muster() {
 }
 
 function can_lord_muster(lord: Lord) {
-	return is_lord_on_map(lord) && !get_lord_moved(lord)
+	return is_lord_on_map(lord) && !get_lord_moved(lord) && !is_lord_in_exile(lord)
 }
 
 function has_locale_to_muster(lord: Lord) {

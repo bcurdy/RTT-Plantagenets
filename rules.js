@@ -851,7 +851,7 @@ function is_lord_on_calendar(lord) {
     return loc >= CALENDAR && loc <= CALENDAR_EXILE + 16;
 }
 function is_lord_ready(lord) {
-    return (is_lord_on_calendar(lord) && get_lord_calendar(lord) <= current_turn());
+    return (is_lord_on_calendar(lord) && get_lord_calendar(lord) <= current_turn() && !is_lord_in_exile(lord));
 }
 function get_lord_capability(lord, n) {
     return map2_get(game.pieces.capabilities, lord, n, NOCARD);
@@ -2491,7 +2491,7 @@ function end_muster() {
         goto_levy_discard_events();
 }
 function can_lord_muster(lord) {
-    return is_lord_on_map(lord) && !get_lord_moved(lord);
+    return is_lord_on_map(lord) && !get_lord_moved(lord) && !is_lord_in_exile(lord);
 }
 function has_locale_to_muster(lord) {
     // Can muster at own seat without enemy lord.
