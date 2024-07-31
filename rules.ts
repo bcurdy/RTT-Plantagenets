@@ -6864,7 +6864,7 @@ states.regroup = {
 		]
 	},
 	pass() {
-		if (game.battle.step < 2)
+		if (game.battle.step <= 2)
 			game.state = "assign_hits"
 		else
 			goto_battle_lord_rout_2()
@@ -6930,7 +6930,7 @@ function end_regroup() {
 	game.who = NOBODY
 	delete game.event_regroup
 
-	if (game.battle.step < 2)
+	if (game.battle.step <= 2)
 		game.state = "assign_hits"
 	else
 		goto_battle_lord_rout_2()
@@ -7776,6 +7776,7 @@ states.assign_hits = {
 
 	regroup() {
 		push_undo()
+		game.battle.reroll = 0
 		game.who = NOBODY
 		goto_regroup()
 	},
