@@ -2314,7 +2314,7 @@ function disband_lord(lord) {
     log(`Disband L${lord} to T${get_lord_calendar(lord)}.`);
     clear_lord(lord);
 }
-function exile_lord(lord) {
+function exile_lord(lord, penalty) {
     if (lord_has_capability(lord, AOW_YORK_ENGLAND_IS_MY_HOME) && !is_event_in_play(EVENT_LANCASTER_BLOCKED_FORD)) {
         logcap(AOW_YORK_ENGLAND_IS_MY_HOME);
         log(`Disband L${lord} to T${current_turn() + 1}`);
@@ -2322,6 +2322,8 @@ function exile_lord(lord) {
         clear_lord(lord);
     }
     else {
+        if (penalty)
+            reduce_influence(get_lord_influence(lord) + count_vassals_with_lord(lord));
         set_lord_calendar(lord, current_turn() + 6 - get_lord_influence(lord));
         set_lord_in_exile(lord);
         log(`Exile L${lord} to T${get_lord_calendar(lord)}.`);
@@ -4815,8 +4817,7 @@ states.choose_exile = {
     lord(lord) {
         push_undo();
         give_up_spoils(lord);
-        reduce_influence(get_lord_influence(lord) + count_vassals_with_lord(lord));
-        exile_lord(lord);
+        exile_lord(lord, true);
         if (game.scenario === SCENARIO_II) {
             if (lord === LORD_WARWICK_L)
                 foreign_haven_shift_lords();
@@ -7400,7 +7401,7 @@ states.foreign_haven = {
     exile() {
         log_br();
         log("Foreign Haven.");
-        exile_lord(LORD_EDWARD_IV);
+        exile_lord(LORD_EDWARD_IV, false);
         set_delete(game.battle.routed, LORD_EDWARD_IV);
         set_delete(game.battle.fled, LORD_EDWARD_IV);
         goto_death_check();
@@ -7455,7 +7456,7 @@ states.escape_ship = {
     lord(lord) {
         push_undo();
         // Note: locale must be friendly for this event, so no spoils.
-        exile_lord(lord);
+        exile_lord(lord, false);
         set_delete(game.battle.fled, lord);
         set_delete(game.battle.routed, lord);
     },
