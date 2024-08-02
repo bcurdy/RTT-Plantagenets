@@ -6482,15 +6482,15 @@ function end_attacker_assign_hits() {
 }
 function prompt_hit_forces() {
     let done = true;
+    // Note: Must take hit from Final Charge on Richard III's Retinue.
+    if (game.battle.final_charge && game.active === YORK) {
+        gen_action_retinue(LORD_RICHARD_III);
+        return false;
+    }
     for (let pos of game.battle.engagements[0]) {
         let lord = game.battle.array[pos];
         if (!is_friendly_lord(lord))
             continue;
-        // Note: Must take hit from Final Charge on Retinue.
-        if (lord === LORD_RICHARD_III && game.battle.final_charge) {
-            gen_action_retinue(lord);
-            return false;
-        }
         if (get_lord_forces(lord, RETINUE) > 0) {
             gen_action_retinue(lord);
             done = false;
@@ -6579,7 +6579,8 @@ states.assign_hits = {
             action_assign_hits(get_vassal_lord(vassal), VASSAL, vassal);
     },
     retinue(lord) {
-        game.battle.final_charge = 0;
+        if (lord === LORD_RICHARD_III && game.battle.final_charge)
+            game.battle.final_charge = 0;
         action_assign_hits(lord, RETINUE);
     },
     men_at_arms(lord) {
