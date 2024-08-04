@@ -804,7 +804,7 @@ let lords = [
 			prov: 2,
 			coin: 2,
 		},
-		ships: 2,
+		ships: 0,
 	},
 
 	{
