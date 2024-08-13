@@ -1839,6 +1839,7 @@ function goto_levy_arts_of_war() {
     resume_levy_arts_of_war();
 }
 function resume_levy_arts_of_war() {
+    clear_undo(); // we may reveal the next random card here
     game.state = "levy_arts_of_war";
     if (game.arts_of_war.length === 0)
         end_levy_arts_of_war();
