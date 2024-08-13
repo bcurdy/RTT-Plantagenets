@@ -9810,16 +9810,25 @@ states.scots = {
                     gen_action_lord(lord);
                 }
             }
+            view.actions.done = 1;
         }
         else {
             view.prompt = `Scots: You may add 1 men-at-arms and 1 militia to ${lord_name[game.who]}.`;
             let troops = map_get(game.event_scots, game.who, 0);
             if ((troops & 1) === 0)
                 view.actions.add_militia = 1;
+            else
+                view.actions.add_militia = 0;
             if ((troops & 2) === 0)
                 view.actions.add_men_at_arms = 1;
+            else
+                view.actions.add_men_at_arms = 0;
+            view.actions.pass = 1;
         }
-        view.actions.done = 1;
+    },
+    pass() {
+        map_set(game.event_scots, game.who, 3);
+        game.who = NOBODY;
     },
     done() {
         end_lancaster_event_scots();
