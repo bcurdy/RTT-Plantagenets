@@ -4414,7 +4414,7 @@ states.sail = {
 
 		let here = get_lord_locale(game.command)
 		let ships = count_group_ships(game.group, true)
-		let cart = count_group_carts(game.group, true)
+		let cart = count_group_carts(game.group, false)
 		let prov = count_group_provender(game.group)
 
 		let overflow_prov = (prov / 2 - ships) * 2
