@@ -695,7 +695,7 @@ let lords = [
 		forces: {
 			retinue: 1,
 			men_at_arms: 3,
-			longbowmen: 2,
+			longbowmen: 3,
 			militia: 4,
 		},
 		assets: {
