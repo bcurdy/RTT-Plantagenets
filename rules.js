@@ -5650,6 +5650,9 @@ states.suspicion_3 = {
         for (let lord of game.battle.array)
             if (is_enemy_lord(lord) && get_lord_influence(lord) < highest)
                 gen_action_lord(lord);
+        for (let lord of game.battle.reserves)
+            if (is_enemy_lord(lord) && get_lord_influence(lord) < highest)
+                gen_action_lord(lord);
     },
     lord(lord) {
         push_undo();
