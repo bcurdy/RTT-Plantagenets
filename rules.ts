@@ -5985,7 +5985,7 @@ function log_lord_engage(lord: Lord) {
 
 function remove_lord_from_battle(lord) {
 	if (set_has(game.battle.reserves, lord)) {
-		array_remove(game.battle.reserves, lord)
+		set_delete(game.battle.reserves, lord)
 	} else {
 		for (let x = 0; x < 6; x++) {
 			if (game.battle.array[x] === lord) {
