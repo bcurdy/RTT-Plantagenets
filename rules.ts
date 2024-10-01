@@ -8729,6 +8729,7 @@ function search_escape_ship(start: Locale) {
 function goto_play_escape_ship() {
 	game.state = "escape_ship"
 	game.who = NOBODY
+	game.count = 0
 }
 
 states.escape_ship = {
@@ -8738,7 +8739,8 @@ states.escape_ship = {
 		for (let lord of game.battle.routed)
 			if (is_friendly_lord(lord))
 				gen_action_lord(lord)
-		view.actions.done = 1
+		if (game.count > 0)
+			view.actions.done = 1
 	},
 	lord(lord) {
 		push_undo()
@@ -8748,6 +8750,8 @@ states.escape_ship = {
 
 		set_delete(game.battle.fled, lord)
 		set_delete(game.battle.routed, lord)
+
+		game.count++
 	},
 	done() {
 		push_undo()
@@ -8764,6 +8768,7 @@ function can_play_talbot_to_the_rescue() {
 
 function goto_play_talbot_to_the_rescue() {
 	game.state = "talbot_to_the_rescue"
+	game.count = 0
 }
 
 states.talbot_to_the_rescue = {
@@ -8773,13 +8778,15 @@ states.talbot_to_the_rescue = {
 		for (let lord of game.battle.routed)
 			if (is_friendly_lord(lord))
 				gen_action_lord(lord)
-		view.actions.done = 1
+		if (game.count > 0)
+			view.actions.done = 1
 	},
 	lord(lord) {
 		push_undo()
 		disband_lord(lord)
 		set_delete(game.battle.fled, lord)
 		set_delete(game.battle.routed, lord)
+		game.count++
 	},
 	done() {
 		push_undo()
@@ -8803,6 +8810,7 @@ function can_play_warden_of_the_marches() {
 function goto_play_warden_of_the_marches() {
 	game.state = "warden_of_the_marches"
 	game.where = NOWHERE
+	game.count = 0
 }
 
 states.warden_of_the_marches = {
@@ -8826,7 +8834,8 @@ states.warden_of_the_marches = {
 			}
 			if (done)
 				view.prompt = "Warden of the Marches: All done."
-			view.actions.done = 1
+			if (game.count > 0)
+				view.actions.done = 1
 		}
 	},
 	locale(loc) {
@@ -8852,6 +8861,8 @@ states.warden_of_the_marches = {
 		// vassals are disbanded in usual death check state
 
 		// lords without troops are disbanded during aftermath
+
+		game.count++
 	},
 	done() {
 		push_undo()
