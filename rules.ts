@@ -11430,6 +11430,7 @@ states.scots = {
 	lord(lord) {
 		push_undo()
 		game.who = lord
+		logi("L" + lord)
 	},
 }
 
@@ -11721,27 +11722,33 @@ states.welsh_rebellion_remove_troops = {
 	},
 	lord(lord) {
 		push_undo()
+		logi("L" + lord)
 		set_lord_moved(lord, 1)
 		game.who = lord
 		game.count = 2
 	},
 	burgundians(lord) {
+		logii("Burgundians")
 		add_lord_forces(lord, BURGUNDIANS, -1)
 		resume_welsh_rebellion_remove_troops(lord)
 	},
 	mercenaries(lord) {
+		logii("Mercenaries")
 		add_lord_forces(lord, MERCENARIES, -1)
 		resume_welsh_rebellion_remove_troops(lord)
 	},
 	longbowmen(lord) {
+		logii("Longbowmen")
 		add_lord_forces(lord, LONGBOWMEN, -1)
 		resume_welsh_rebellion_remove_troops(lord)
 	},
 	men_at_arms(lord) {
+		logii("Men-at-arms")
 		add_lord_forces(lord, MEN_AT_ARMS, -1)
 		resume_welsh_rebellion_remove_troops(lord)
 	},
 	militia(lord) {
+		logii("Militia")
 		add_lord_forces(lord, MILITIA, -1)
 		resume_welsh_rebellion_remove_troops(lord)
 	},
@@ -12395,16 +12402,15 @@ states.earl_rivers = {
 	},
 	lord(lord) {
 		push_undo()
+		logi("L" + lord)
 		game.who = lord
 	},
 	add_militia() {
-		log(">L" + game.who)
 		set_lord_moved(game.who, 1)
 		add_lord_forces(game.who, MILITIA, 1)
 		game.who = NOBODY
 	},
 	add_militia2() {
-		log(">L" + game.who)
 		set_lord_moved(game.who, 1)
 		add_lord_forces(game.who, MILITIA, 2)
 		game.who = NOBODY
