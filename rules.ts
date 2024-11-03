@@ -4674,7 +4674,7 @@ function search_tax(result, start: Locale, lord: Lord, ships: boolean) {
 				for (let next of find_ports(here, lord)) {
 					if (!search_seen[next]) {
 						search_seen[next] = 1
-						search_dist[next] = next_dist
+						search_dist[next] = next_dist | find_sea_mask(here) | find_sea_mask(next)
 						queue.push(next)
 					}
 				}
