@@ -1946,7 +1946,7 @@ function is_lancaster_dominating_north() {
 		if (has_lancaster_favour(loc))
 			n++
 	let cap_lord = find_lord_with_capability_card(AOW_LANCASTER_NORTHMEN)
-	if (is_lancaster_lord(cap_lord) && is_north(get_lord_locale(cap_lord)))
+	if (!is_levy_phase() && is_lancaster_lord(cap_lord) && is_north(get_lord_locale(cap_lord)))
 		return n >= 3
 	return n >= all_north_locales.length
 }
@@ -1957,7 +1957,7 @@ function is_york_dominating_south() {
 		if (has_york_favour(loc))
 			n++
 	let cap_lord = find_lord_with_capability_card(AOW_YORK_SOUTHERNERS)
-	if (is_york_lord(cap_lord) && is_south(get_lord_locale(cap_lord)))
+	if (!is_levy_phase() && is_york_lord(cap_lord) && is_south(get_lord_locale(cap_lord)))
 		return n >= 5
 	return n >= all_south_locales.length
 }
@@ -1976,7 +1976,7 @@ function is_york_dominating_wales() {
 		if (has_york_favour(loc))
 			n++
 	let cap_lord = find_lord_with_capability_card(AOW_YORK_WELSHMEN)
-	if (is_york_lord(cap_lord) && is_wales(get_lord_locale(cap_lord)))
+	if (!is_levy_phase() && is_york_lord(cap_lord) && is_wales(get_lord_locale(cap_lord)))
 		return n >= 3
 	return n >= all_wales_locales.length
 }
