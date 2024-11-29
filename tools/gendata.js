@@ -347,10 +347,12 @@ road("Ravenspur", "Lincoln")
 
 // one-way road from Scotland to Bamburgh
 locales[locmap.Scotland].paths.push(locmap.Bamburgh)
+locales[locmap.Scotland].adjacent.push(locmap.Bamburgh)
 map_set(ways[locmap.Scotland], locmap.Bamburgh, "path")
 
 // one-way road from Scotland to Carlisle
 locales[locmap.Scotland].paths.push(locmap.Carlisle)
+locales[locmap.Scotland].adjacent.push(locmap.Carlisle)
 map_set(ways[locmap.Scotland], locmap.Carlisle, "path")
 
 let sea_1 = locmap["North Sea"]

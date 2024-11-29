@@ -4070,7 +4070,7 @@ function search_supply_by_way(result, start: Locale, carts: number, ships: numbe
 		let next_dist = dist + 8
 
 		if (can_supply_at(here, ships)) {
-			if (result)
+			if (Array.isArray(result))
 				map_set(result, here, dist)
 			else
 				return true

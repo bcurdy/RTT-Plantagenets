@@ -78,7 +78,7 @@ locales:[
 {"name":"Burgundy","type":"exile_box","region":null,"adjacent":[],"highways":[],"roads":[],"paths":[],"not_paths":[],"box":{"x":993,"y":684,"w":113,"h":132}},
 {"name":"France","type":"exile_box","region":null,"adjacent":[],"highways":[],"roads":[],"paths":[],"not_paths":[],"box":{"x":888,"y":1428,"w":113,"h":132}},
 {"name":"Ireland","type":"exile_box","region":null,"adjacent":[],"highways":[],"roads":[],"paths":[],"not_paths":[],"box":{"x":48,"y":950,"w":113,"h":132}},
-{"name":"Scotland","type":"exile_box","region":null,"adjacent":[],"highways":[],"roads":[],"paths":[41,42],"not_paths":[],"box":{"x":449,"y":277,"w":113,"h":132}},
+{"name":"Scotland","type":"exile_box","region":null,"adjacent":[41,42],"highways":[],"roads":[],"paths":[41,42],"not_paths":[],"box":{"x":449,"y":277,"w":113,"h":132}},
 {"name":"English Channel","type":"sea","region":null,"adjacent":[],"highways":[],"roads":[],"paths":[],"not_paths":[],"box":{"x":550,"y":1450,"w":246,"h":82}},
 {"name":"Irish Sea","type":"sea","region":null,"adjacent":[],"highways":[],"roads":[],"paths":[],"not_paths":[],"box":{"x":224,"y":664,"w":135,"h":56}},
 {"name":"North Sea","type":"sea","region":null,"adjacent":[],"highways":[],"roads":[],"paths":[],"not_paths":[],"box":{"x":1019,"y":824,"w":150,"h":65}},
