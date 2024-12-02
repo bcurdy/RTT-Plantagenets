@@ -4170,14 +4170,18 @@ function goto_supply() {
 	init_supply()
 }
 
-function modify_supply(loc: Locale, supply: number, report: boolean) {
+function modify_supply(loc: Locale, supply: number, is_port_supply: boolean, report: boolean) {
 	let here = get_lord_locale(game.command)
 	let carts = count_shared_carts(here, true)
 
 	// Must carry supply over land with one cart per provender per way
-	let distance = map_get(game.supply, loc, 0) >> 3
-	if (distance > 0)
-		supply = Math.min(supply, Math.floor(carts / distance))
+	if (is_exile_box(here) && is_port_supply) {
+		/* exception: supply from exile box to port on same sea! */
+	} else {
+		let distance = map_get(game.supply, loc, 0) >> 3
+		if (distance > 0)
+			supply = Math.min(supply, Math.floor(carts / distance))
+	}
 
 	// Harbingers capability doubles supply received
 	if (lord_has_capability(game.command, AOW_LANCASTER_HARBINGERS)) {
@@ -4198,7 +4202,7 @@ function get_port_supply_amount(loc: Locale, report: boolean) {
 	if (is_seaport(loc) || is_exile_box(loc)) {
 		let here = get_lord_locale(game.command)
 		let ships = count_shared_ships(here, true)
-		return modify_supply(loc, ships, report)
+		return modify_supply(loc, ships, true, report)
 	}
 	return 0
 }
@@ -4220,7 +4224,7 @@ function get_stronghold_supply_amount(loc: Locale, report: boolean) {
 			supply += 1
 		}
 
-		return modify_supply(loc, supply, report)
+		return modify_supply(loc, supply, false, report)
 	}
 	return 0
 }
