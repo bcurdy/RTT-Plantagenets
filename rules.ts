@@ -4132,15 +4132,6 @@ function chamberlains_eligible_supply(source: Locale) {
 	return false
 }
 
-function quartermasters_eligible_supply(source: Locale) {
-	if (lord_has_capability(game.command, AOW_LANCASTER_QUARTERMASTERS)) {
-		for (let vassal of all_vassals)
-			if (is_vassal_mustered_with(vassal, game.command) && source === get_vassal_seat(vassal))
-				return true
-	}
-	return false
-}
-
 function lord_has_stafford_branch(loc: Locale, lord: Lord) {
 	if (lord_has_capability(lord, AOW_YORK_STAFFORD_BRANCH)) {
 		return (
@@ -4282,8 +4273,6 @@ function use_stronghold_supply(source: Locale, amount: number) {
 	add_lord_assets(game.command, PROV, amount)
 	if (chamberlains_eligible_supply(source))
 		logcap(AOW_LANCASTER_CHAMBERLAINS)
-	else if (quartermasters_eligible_supply(source))
-		logcap(AOW_LANCASTER_QUARTERMASTERS)
 	else
 		deplete_locale(source)
 }
