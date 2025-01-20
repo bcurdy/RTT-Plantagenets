@@ -2607,6 +2607,8 @@ states.muster_lord = {
                 if (!is_rising_wages() || can_pay_from_shared(game.command, 2)) {
                     if (can_add_troops_sof(game.command, here))
                         view.actions.soldiers_of_fortune = 1;
+                    if (can_add_troops_sof(game.command, here) && (can_add_troops_irishmen(game.command, here)) || can_add_troops_sof(game.command, here) && (can_add_troops_beloved_warwick(game.command, here)))
+                        view.actions.soldiers_of_fortune_militia = 1;
                 }
             }
         }
@@ -2666,7 +2668,6 @@ states.muster_lord = {
     },
     levy_beloved_warwick() {
         push_undo();
-        push_the_kings_name();
         log("Levy Troops.");
         logcap(AOW_YORK_BELOVED_WARWICK);
         add_lord_forces(game.command, MILITIA, 5);
@@ -2674,7 +2675,6 @@ states.muster_lord = {
     },
     levy_irishmen() {
         push_undo();
-        push_the_kings_name();
         log("Levy Troops.");
         logcap(AOW_YORK_IRISHMEN);
         add_lord_forces(game.command, MILITIA, 5);
@@ -2682,10 +2682,19 @@ states.muster_lord = {
     },
     soldiers_of_fortune() {
         push_undo();
-        push_the_kings_name();
         log("Levy Troops.");
         logcap(AOW_YORK_SOLDIERS_OF_FORTUNE);
         game.state = "soldiers_of_fortune";
+    },
+    soldiers_of_fortune_militia() {
+        push_undo();
+        log("Levy Troops.");
+        logcap(AOW_YORK_SOLDIERS_OF_FORTUNE);
+        if (lord_has_capability(game.command, AOW_YORK_IRISHMEN))
+            logcap(AOW_YORK_IRISHMEN);
+        if (lord_has_capability(game.command, AOW_YORK_BELOVED_WARWICK))
+            logcap(AOW_YORK_BELOVED_WARWICK);
+        game.state = "soldiers_of_fortune_militia";
     },
     commission_of_array() {
         push_undo();
@@ -9437,6 +9446,29 @@ states.soldiers_of_fortune = {
         do_levy_troops();
     },
 };
+
+states.soldiers_of_fortune_militia = {
+    inactive: "Muster",
+    prompt() {
+        view.prompt = `Soldiers of Fortune: Pay 1 coin to add 2 mercenaries to ${lord_name[game.command]}.`;
+        let here = get_lord_locale(game.command);
+        for (let lord of all_friendly_lords()) {
+            if (get_lord_locale(lord) === here) {
+                if (get_lord_assets(lord, COIN) > 0)
+                    gen_action_coin(lord);
+            }
+        }
+    },
+    coin(lord) {
+        add_lord_assets(lord, COIN, -1);
+        let n = Math.min(2, count_available_mercenaries());
+        add_lord_forces(game.command, MERCENARIES, n);
+        add_lord_forces(game.command, MILITIA, 5);
+        end_levy_troops();
+    },
+};
+
+
 // === MUSTER CAPABILITY: COMMISSION OF ARRAY ===
 states.commission_of_array = {
     inactive: "Muster",

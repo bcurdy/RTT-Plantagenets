@@ -1549,6 +1549,7 @@ function on_update() {
 	action_button("heralds", "Heralds")
 	action_button("levy_beloved_warwick", "Beloved Warwick")
 	action_button("levy_irishmen", "Irishmen")
+	action_button("soldiers_of_fortune_militia", "SoF & Militia")
 	action_button("loyalty_and_trust", "Loyalty and Trust")
 	action_button("merchants", "Merchants")
 	action_button("regroup", "Regroup")
