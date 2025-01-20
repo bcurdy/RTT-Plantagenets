@@ -3220,12 +3220,13 @@ states.muster_lord = {
 					if (can_add_troops_coa(game.command, here))
 						view.actions.commission_of_array = 1
 				}
-                if (!is_rising_wages() || can_pay_from_shared(game.command, 2)) {
-                    if (can_add_troops_sof(game.command, here))
-                        view.actions.soldiers_of_fortune = 1;
-                    if (can_add_troops_sof(game.command, here) && (can_add_troops_irishmen(game.command, here)) || can_add_troops_sof(game.command, here) && (can_add_troops_beloved_warwick(game.command, here)))
-                        view.actions.soldiers_of_fortune_militia = 1;
-                }
+				if (!is_rising_wages() || can_pay_from_shared(game.command, 2)) {
+					if (can_add_troops_sof(game.command, here)) {
+						view.actions.soldiers_of_fortune = 1
+						if (can_add_troops_irishmen(game.command, here) || can_add_troops_beloved_warwick(game.command, here))
+							view.actions.soldiers_of_fortune_militia = 1
+					}
+				}
 			}
 
 		} else {
@@ -3315,15 +3316,15 @@ states.muster_lord = {
 	},
 
 	soldiers_of_fortune_militia() {
-        push_undo();
-        log("Levy Troops.");
-        logcap(AOW_YORK_SOLDIERS_OF_FORTUNE);
-        if (lord_has_capability(game.command, AOW_YORK_IRISHMEN))
-            logcap(AOW_YORK_IRISHMEN);
-        if (lord_has_capability(game.command, AOW_YORK_BELOVED_WARWICK))
-            logcap(AOW_YORK_BELOVED_WARWICK);
-        game.state = "soldiers_of_fortune_militia";
-    },
+		push_undo()
+		log("Levy Troops.")
+		logcap(AOW_YORK_SOLDIERS_OF_FORTUNE)
+		if (lord_has_capability(game.command, AOW_YORK_IRISHMEN))
+			logcap(AOW_YORK_IRISHMEN)
+		if (lord_has_capability(game.command, AOW_YORK_BELOVED_WARWICK))
+			logcap(AOW_YORK_BELOVED_WARWICK)
+		game.state = "soldiers_of_fortune_militia"
+	},
 
 	commission_of_array() {
 		push_undo()

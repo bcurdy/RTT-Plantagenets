@@ -2605,10 +2605,11 @@ states.muster_lord = {
                         view.actions.commission_of_array = 1;
                 }
                 if (!is_rising_wages() || can_pay_from_shared(game.command, 2)) {
-                    if (can_add_troops_sof(game.command, here))
+                    if (can_add_troops_sof(game.command, here)) {
                         view.actions.soldiers_of_fortune = 1;
-                    if (can_add_troops_sof(game.command, here) && (can_add_troops_irishmen(game.command, here)) || can_add_troops_sof(game.command, here) && (can_add_troops_beloved_warwick(game.command, here)))
-                        view.actions.soldiers_of_fortune_militia = 1;
+                        if (can_add_troops_irishmen(game.command, here) || can_add_troops_beloved_warwick(game.command, here))
+                            view.actions.soldiers_of_fortune_militia = 1;
+                    }
                 }
             }
         }
@@ -9446,7 +9447,6 @@ states.soldiers_of_fortune = {
         do_levy_troops();
     },
 };
-
 states.soldiers_of_fortune_militia = {
     inactive: "Muster",
     prompt() {
@@ -9467,8 +9467,6 @@ states.soldiers_of_fortune_militia = {
         end_levy_troops();
     },
 };
-
-
 // === MUSTER CAPABILITY: COMMISSION OF ARRAY ===
 states.commission_of_array = {
     inactive: "Muster",
