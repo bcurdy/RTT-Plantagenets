@@ -3556,7 +3556,7 @@ states.select_supply_type = {
     },
     port() {
         // blockade at source or destination
-        if (can_naval_blockade(get_lord_locale(game.command)) || can_naval_blockade(game.where)) {
+		if (can_naval_blockade(game.where) || (is_exile_box(get_lord_locale(game.command)) && can_naval_blockade_route(get_lord_locale(game.command)))) {
             game.state = "blockade_supply";
         }
         else {
