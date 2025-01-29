@@ -4262,7 +4262,7 @@ states.supply_source = {
 		if (port_supply > 0 && stronghold_supply === 0) {
 			game.where = loc
 			// blockade at source or destination
-			if (can_naval_blockade(get_lord_locale(game.command)) || can_naval_blockade(game.where)) {
+			if (can_naval_blockade_supply()) {
 				game.state = "blockade_supply"
 			} else {
 				use_port_supply(loc, get_port_supply_amount(loc, true))
@@ -4309,6 +4309,16 @@ function end_supply() {
 	game.where = NOWHERE
 }
 
+function can_naval_blockade_supply() {
+	if (can_naval_blockade(game.where))
+		return true
+	if (is_exile_box(get_lord_locale(game.command))) {
+		let dist = map_get(game.supply, game.where, 0)
+		return can_naval_blockade_route(dist)
+	}
+	return false
+}
+
 states.select_supply_type = {
 	inactive: "Supply",
 	prompt() {
@@ -4324,7 +4334,7 @@ states.select_supply_type = {
 	},
 	port() {
 		// blockade at source or destination
-		if (can_naval_blockade(game.where) || (is_exile_box(get_lord_locale(game.command)) && can_naval_blockade_route(get_lord_locale(game.command)))) {
+		if (can_naval_blockade_supply()) {
 			game.state = "blockade_supply"
 		} else {
 			use_port_supply(game.where, get_port_supply_amount(game.where, true))
