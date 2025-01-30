@@ -194,7 +194,7 @@ Hold: Play in Battle to add +2 Melee Hits against the Enemy each Round.
 
 Welshmen
 
-Each Tides of War, Yorkists Dominate Wales with this Lord and 3+ Friendly Strongholds there.
+Yorkists Dominate Wales with this Lord and 3+ Friendly Strongholds there.
 
 Y20
 
@@ -215,7 +215,7 @@ Remove Lancastrian Favour from London or, if neutral, place Yorkist Favour there
 
 Southerners
 
-Each Tides of War, Yorkists Dominate the South with this Lord and 5+ Friendly Strongholds there.
+Yorkists Dominate the South with this Lord and 5+ Friendly Strongholds there.
 
 Y22
 
