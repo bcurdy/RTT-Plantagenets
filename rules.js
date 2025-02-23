@@ -3046,7 +3046,7 @@ function goto_levy_discard_events() {
 function goto_campaign_plan() {
     game.turn++;
     log_h1("Campaign " + current_turn_name());
-    set_active(BOTH);
+    set_active([P1, P2]);
     game.state = "campaign_plan";
     game.plan_y = [];
     game.plan_l = [];
@@ -3094,11 +3094,11 @@ states.campaign_plan = {
         }
     },
     end_plan(_, current) {
-        if (game.active === BOTH) {
+        if (game.active.length === 2) {
             if (current === YORK)
-                set_active(LANCASTER);
+                set_active([LANCASTER]);
             else
-                set_active(YORK);
+                set_active([YORK]);
         }
         else {
             end_campaign_plan();
@@ -11415,7 +11415,7 @@ exports.view = function (state, current) {
     if (game.state === "game_over") {
         view.prompt = game.victory;
     }
-    else if (current === "Observer" || (game.active !== current && game.active !== BOTH)) {
+    else if (game.active !== current && !game.active.includes(current)) {
         let inactive = states[game.state].inactive || game.state;
         view.prompt = `Waiting for ${game.active} \u2014 ${inactive}.`;
     }
