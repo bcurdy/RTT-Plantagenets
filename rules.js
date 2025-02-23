@@ -2505,7 +2505,7 @@ function has_locale_to_muster(lord) {
     // Else, can muster at any friendly seat (of a friendly lord who is also in play)
     for (let other of all_friendly_lords()) {
         let other_seat = get_lord_seat(other);
-        if (is_lord_in_play(other) && is_friendly_locale(other_seat))
+        if (is_lord_in_play(other) && is_friendly_locale(other_seat) && !has_enemy_lord(other_seat))
             if (is_move_allowed(lord, other_seat))
                 return true;
     }
@@ -2830,11 +2830,11 @@ states.levy_lord_at_seat = {
             found = true;
         }
         if (!found) {
-            for (let lord of all_friendly_lords()) {
-                let seat = get_lord_seat(lord);
-                if ((is_lord_on_map(lord) || is_lord_on_calendar(lord)) && (is_friendly_locale(seat) && !has_enemy_lord(seat))) {
-                    if (is_move_allowed(game.who, seat))
-                        gen_action_locale(seat);
+            for (let other of all_friendly_lords()) {
+                let other_seat = get_lord_seat(other);
+                if (is_lord_in_play(other) && is_friendly_locale(other_seat) && !has_enemy_lord(other_seat)) {
+                    if (is_move_allowed(game.who, other_seat))
+                        gen_action_locale(other_seat);
                 }
             }
         }
