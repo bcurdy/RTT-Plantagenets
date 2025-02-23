@@ -9235,7 +9235,7 @@ function tow(n: number, what: string): number {
 }
 
 function goto_tides_of_war() {
-	set_active(BOTH)
+	set_active(P1)
 
 	log_h2_common("Tides of War")
 

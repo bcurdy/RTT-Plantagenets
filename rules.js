@@ -7890,7 +7890,7 @@ function tow(n, what) {
     return n;
 }
 function goto_tides_of_war() {
-    set_active(BOTH);
+    set_active(P1);
     log_h2_common("Tides of War");
     let cities = count_favour(all_city_locales);
     let towns = count_favour(all_town_locales);
