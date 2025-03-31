@@ -1867,7 +1867,7 @@ states.levy_arts_of_war = {
                 break;
         }
         // allow playing this Held card immediately
-        if (c === EVENT_YORK_SUN_IN_SPLENDOUR) {
+        if (c === EVENT_YORK_SUN_IN_SPLENDOUR && can_play_sun_in_splendour()) {
             view.prompt = `Arts of War: Play or hold ${data.cards[c].event}.`;
             view.actions.hold = 1;
             view.actions.play = 1;
