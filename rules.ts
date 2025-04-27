@@ -4211,6 +4211,9 @@ function get_port_supply_amount(loc: Locale, report: boolean) {
 }
 
 function get_stronghold_supply_amount(loc: Locale, report: boolean) {
+	let uses_port = map_get(game.supply, loc, 0) & 7
+	if (uses_port)
+		return 0
 	if (!has_exhausted_marker(loc)) {
 		let supply = 0
 

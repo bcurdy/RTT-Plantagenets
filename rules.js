@@ -3460,6 +3460,9 @@ function get_port_supply_amount(loc, report) {
     return 0;
 }
 function get_stronghold_supply_amount(loc, report) {
+    let uses_port = map_get(game.supply, loc, 0) & 7;
+    if (uses_port)
+        return 0;
     if (!has_exhausted_marker(loc)) {
         let supply = 0;
         if (loc === LOC_LONDON || loc === LOC_CALAIS)
