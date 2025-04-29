@@ -9598,7 +9598,6 @@ states.merchants_2 = {
     },
 };
 function end_merchants() {
-    push_undo();
     spend_action(1);
     game.count = 0;
     resume_command();
