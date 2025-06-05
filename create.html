@@ -1,3 +1,57 @@
+<style>
+.scenario_info { display: none; }
+.scenario_info.show { display: block; }
+</style>
+
+<div class="scenario_info" data-scenario="Ia. Henry VI">
+<p><i>Richard of York and his sons, with the help of Richard Neville and his son, rebel against King Henry VI.</i>
+<p>
+This is a
+<a href="/plantagenet/info/rulebook.html#page20">longer scenario</a>
+(15 turns, three years).
+</div>
+
+<div class="scenario_info" data-scenario="Ib. Towton">
+<p><i>A climactic showdown will decide who is to be King of England for the next 10 years, Henry VI or Edward IV.</i>
+<p>
+This is a
+<a href="/plantagenet/info/rulebook.html#page22">brief introductory scenario</a>
+(1 Turn).
+</div>
+
+<div class="scenario_info" data-scenario="Ic. Somerset's Return">
+<p><i>As the Scots expel Henry VI, Henry Beaufort, Duke of Somerset, turns on Edward IV—a new king seeking to prove himself in the shadow of the mighty Warwick.</i>
+<p>
+This is a
+<a href="/plantagenet/info/rulebook.html#page23">short scenario</a>
+(three turns, eight months).
+</div>
+
+<div class="scenario_info" data-scenario="II. Warwick's Rebellion">
+<p><i>Slighted by the King he made, Warwick schemes with Edward’s brother, the Duke of Clarence, then allies with Margaret d’Anjou and Lancastrian exiles in France.</i>
+<p>
+This is a
+<a href="/plantagenet/info/rulebook.html#page24">longer scenario</a>
+(15 turns, three years).
+</div>
+
+<div class="scenario_info" data-scenario="III. My Kingdom for a Horse">
+<p><i>King Richard III defends his crown against Henry Tudor to set the fate of the Plantagenet dynasty.</i>
+<p>
+This is a
+<a href="/plantagenet/info/rulebook.html#page25">medium scenario</a>
+(seven turns, 16 months).
+</div>
+
+<script>
+let scenario = document.querySelector("select[name='scenario']")
+scenario.onchange = function (evt) {
+	document.querySelectorAll(".scenario_info").forEach(e=>e.classList.remove("show"))
+	document.querySelector(`[data-scenario="${scenario.value}"]`).classList.add("show")
+}
+scenario.onchange()
+</script>
+
 <p>
 <label><input type="checkbox" name="hidden" value="true">Hidden Mats</label>
 </p>
