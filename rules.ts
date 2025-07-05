@@ -8151,17 +8151,6 @@ function end_battle_round() {
 		return
 	}
 
-	if (game.scenario === SCENARIO_IB && game.battle.where === LOC_YORK) {
-		if (game.battle.loser === YORK) {
-			log("Test of Arms: York favours Lancaster.")
-			set_lancaster_favour(LOC_YORK)
-		}
-		if (game.battle.loser === LANCASTER) {
-			log("Test of Arms: York favours York.")
-			set_york_favour(LOC_YORK)
-		}
-	}
-
 	game.battle.round++
 	goto_battle_rounds()
 }
@@ -8188,6 +8177,17 @@ function end_battle() {
 		log("Both sides lose.")
 	else
 		log(`${game.battle.loser} lose.`)
+
+	if (game.scenario === SCENARIO_IB && game.battle.where === LOC_YORK) {
+		if (game.battle.loser === YORK) {
+			log("Test of Arms: York favours Lancaster.")
+			set_lancaster_favour(LOC_YORK)
+		}
+		if (game.battle.loser === LANCASTER) {
+			log("Test of Arms: York favours York.")
+			set_york_favour(LOC_YORK)
+		}
+	}
 
 	goto_battle_influence()
 }
