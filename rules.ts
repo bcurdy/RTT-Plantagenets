@@ -3160,7 +3160,7 @@ function resume_muster_lord() {
 	--game.actions
 
 	// Muster over unless there are more actions possible
-	if (game.actions === 0 && !has_free_parley_levy() && !has_free_levy_troops()) {
+	if (game.actions <= 0 && !has_free_parley_levy() && !has_free_levy_troops()) {
 		set_lord_moved(game.command, 1)
 		game.command = NOBODY
 		game.state = "muster"
@@ -3923,14 +3923,16 @@ function spend_sail_action() {
 	}
 }
 
+function can_play_free_action() {
+	return game.actions >= 0
+}
+
 function spend_all_actions() {
 	/* No more actions (including free ones)! */
 	clear_flag(FLAG_SURPRISE_LANDING)
 	clear_flag(FLAG_FIRST_ACTION)
 	clear_flag(FLAG_FIRST_MARCH_HIGHWAY)
-	clear_flag(FLAG_MARCH_TO_PORT)
-	clear_flag(FLAG_SAIL_TO_PORT)
-	game.actions = 0
+	game.actions = -1
 }
 
 function end_command() {
@@ -4009,7 +4011,7 @@ states.command = {
 			if (can_action_exile_pact())
 				view.actions.exile_pact = 1
 
-		if (game.actions === 0 && !can_move)
+		if (game.actions <= 0 && !can_move)
 			view.prompt = "Command: All done."
 	},
 
@@ -12955,7 +12957,7 @@ function end_rebel_supply_depot() {
 
 function can_play_surprise_landing() {
 	let here = get_lord_locale(game.command)
-	if (has_flag(FLAG_SAIL_TO_PORT)) {
+	if (can_play_free_action() && has_flag(FLAG_SAIL_TO_PORT)) {
 		if (
 			is_seaport(here) &&
 			here !== LOC_CALAIS &&
