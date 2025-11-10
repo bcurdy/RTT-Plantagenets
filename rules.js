@@ -8268,6 +8268,7 @@ const SCENARIO_IC = 2;
 const SCENARIO_II = 3;
 const SCENARIO_III = 4;
 const scenario_name = exports.scenarios = [
+    "Tutorial", 
     "Ia. Henry VI",
     "Ib. Towton",
     "Ic. Somerset's Return",
@@ -8282,6 +8283,8 @@ const scenario_setup = [
     setup_II,
     setup_III,
 ];
+
+
 const scenario_end_marker = [
     16,
     2,
@@ -8345,6 +8348,14 @@ function muster_lord(lord, locale) {
     muster_lord_forces(lord);
 }
 exports.setup = function (seed, scenario, options) {
+    // === TUTORIAL ROUTER ===
+    //  This hecks if the scenario is "Tutorial" and delegates to tutorial.js if it is.
+    if (scenario === "Tutorial") {
+        const tutorial = require("./tutorial.js");
+        return tutorial.setup(seed, scenario, options);
+    }
+    // === TUTORIAL ROUTER ===
+
     game = {
         seed,
         scenario: scenario_name.indexOf(scenario),
@@ -11368,6 +11379,16 @@ function reveal_lord(lord) {
     view.reveal |= (1 << lord);
 }
 exports.view = function (state, current) {
+    // === TUTORIAL ROUTER (START) ===
+    // This checks the flag on every view request.
+    // If the flag is set, this is a tutorial session,
+    // we delegate the 'view' call to tutorial.js.
+    if (state.is_tutorial) {
+        const tutorial = require("./tutorial.js");
+        return tutorial.view(state, current);
+    }
+    // === TUTORIAL ROUTER (END) ===
+
     load_state(state);
     view = {
         prompt: null,
@@ -11439,6 +11460,17 @@ exports.view = function (state, current) {
     return view;
 };
 exports.action = function (state, current, action, arg) {
+    
+    // === TUTORIAL ROUTER (START) ===
+    // This checks the flag on every user action.
+    // If the flag is set, this is a tutorial session,
+    // wedelegate the 'action' call to tutorial.js.
+    if (state.is_tutorial) {
+        const tutorial = require("./tutorial.js");
+        return tutorial.action(state, current, action, arg);
+    }
+    // === TUTORIAL ROUTER (END) ===
+
     load_state(state);
     // Object.seal(game) // XXX: don't allow adding properties
     let S = states[game.state];
